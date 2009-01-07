@@ -1,6 +1,4 @@
-TARGET= fence.8 \
-	fenced.8  \
-	fence_ack_manual.8 \
+TARGET=	fence_ack_manual.8 \
 	fence_alom.8 \
 	fence_apc.8 \
 	fence_bladecenter.8 \
@@ -15,11 +13,9 @@ TARGET= fence.8 \
 	fence_ldom.8 \
 	fence_manual.8 \
 	fence_mcdata.8 \
-	fence_node.8 \
 	fence_rib.8 \
 	fence_rsa.8 \
 	fence_sanbox2.8 \
-	fence_tool.8 \
 	fence_vixel.8 \
 	fence_virsh.8 \
 	fence_vmware.8 \
