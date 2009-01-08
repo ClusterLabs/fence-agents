@@ -72,7 +72,7 @@ def main():
 
 	options["-x"]=1
 
-	options["ssh_options"]="-t '/bin/bash -c \"PS1=\[EXPECT\]#\  /bin/bash\"'"
+	options["ssh_options"]="-t '/bin/bash -c \"PS1=\[EXPECT\]#\  /bin/bash --noprofile --norc\"'"
 
 	## Operate the fencing device
 	conn = fence_login(options)

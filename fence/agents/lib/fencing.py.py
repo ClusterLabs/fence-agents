@@ -559,7 +559,11 @@ def fence_login(options):
 			conn.sendline(options["-p"])
 			conn.log_expect(options, options["-c"], LOGIN_TIMEOUT)
 		elif options.has_key("-x") and 1 == options.has_key("-k"):
-			conn = fspawn('%s %s@%s -i %s' % (SSH_PATH, options["-l"], options["-a"], options["-k"]))
+			command = '%s %s@%s -i %s' % (SSH_PATH, options["-l"], options["-a"], options["-k"])
+			if options.has_key("ssh_options"):
+				command += ' ' + options["ssh_options"]
+			conn = fspawn(command)
+
 			result = conn.log_expect(options, [ options["-c"], "Are you sure you want to continue connecting (yes/no)?", "Enter passphrase for key '"+options["-k"]+"':" ], LOGIN_TIMEOUT)
 			if result == 1:
 				conn.sendline("yes")
