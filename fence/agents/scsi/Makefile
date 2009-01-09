@@ -14,5 +14,6 @@ $(NOTIFYD): $(S)/$(NOTIFYD).in
 
 $(INITDT): $(S)/$(INITDT).in
 	cat $(S)/$(INITDT).in | sed \
+		-e 's#@SBINDIR@#${sbindir}#g' \
 		-e 's#@INITDDIR@#${initddir}#g' \
 	> $(INITDT)
