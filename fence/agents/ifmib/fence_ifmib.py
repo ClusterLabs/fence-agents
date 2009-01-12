@@ -4,7 +4,7 @@
 # anything that supports the IF-MIB and SNMP v2c.
 #
 # Written by Ross Vandegrift <ross@kallisti.us>
-# Copyright (C) 2008 Ross Vandegrift
+# Copyright (C) 2008-2009 Ross Vandegrift
 #  This copyrighted material is made available to anyone wishing to use,
 #  modify, copy, or redistribute it subject to the terms and conditions
 #  of the GNU General Public License v.2.
