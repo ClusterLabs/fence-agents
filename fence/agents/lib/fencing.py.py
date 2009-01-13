@@ -178,21 +178,26 @@ all_opt = {
 		"help" : "",
 		"order" : 1,
 		"obsolete" : "use -o status instead" },
-	"vmipaddr" : {
-		"getopt" : "A:",
-		"help" : "-A <ip>        IP address or hostname of managed VMware ESX (default localhost)",
-		"order" : 2 },
-	"vmlogin" : {
-		"getopt" : "L:",
-		"help" : "-L <name>      VMware ESX management login name",
-		"order" : 2 },
-	"vmpasswd" : {
-		"getopt" : "P:",
-		"help" : "-P <password>  VMware ESX management login password",
-		"order" : 2 },
-	"vmpasswd_script" : {
-		"getopt" : "B:",
-		"help" : "-B <script>    Script to run to retrieve VMware ESX management password",
+	"exec" : {
+		"getopt" : "e:",
+		"longopt" : "exec",
+		"help" : "-e, --exec=<command>           Command to execute",
+		"required" : "0",
+		"shortdesc" : "Command to execute",
+		"order" : 1 },
+	"vmware_type" : {
+		"getopt" : "d:",
+		"longopt" : "vmware_type",
+		"help" : "-d, --vmware_type=<type>       Type of VMware to connect",
+		"required" : "0",
+		"shortdesc" : "Type of VMware to connect",
+		"order" : 1 },
+	"vmware_datacenter" : {
+		"getopt" : "s:",
+		"longopt" : "vmware_datacenter",
+		"help" : "-s, --vmware_datacenter=<dc>   VMWare datacenter filter",
+		"required" : "0",
+		"shortdesc" : "Show only machines in specified datacenter",
 		"order" : 2 },
 	"separator" : {
 		"getopt" : "C:",
@@ -444,20 +449,6 @@ def check_input(device_opt, opt):
 
 	if options.has_key("-v") and options.has_key("debug_fh") == 0:
 		options["debug_fh"] = sys.stderr
-
-	## VMware
-	#######
-	if options.has_key("-B"):
-		options["-P"] = os.popen(options["-B"]).read().rstrip()
-
-	if (device_opt.count("vmlogin") and (not options.has_key("-L"))):
-		fail_usage("Failed: You have to set login name for VMware ESX management console")
-
-	if (options.has_key("-L") and (not (options.has_key("-P") or options.has_key("-B")))):
-		fail_usage("Failed: You have to enter password or password script for VMware ESX management console")
-
-	if (["list", "monitor"].count(options["-o"])==0 and (options.has_key("-L") and (not (options.has_key("-n"))))):
-		fail_usage("Failed: You have to enter virtual machine name")
 
 	return options
 	
