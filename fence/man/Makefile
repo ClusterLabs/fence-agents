@@ -19,7 +19,6 @@ TARGET=	fence_ack_manual.8 \
 	fence_vixel.8 \
 	fence_virsh.8 \
 	fence_vmware.8 \
-	fence_vmware_vmrun.8 \
 	fence_wti.8 \
 	fence_xvm.8 \
 	fence_xvmd.8
