@@ -36,7 +36,7 @@ VMWARE_TYPE_SERVER2=2
 VMRUN_MINIMUM_REQUIRED_VERSION=2
 
 # Default path to vmhelper command
-VMHELPER_COMMAND="fence_vmware_vi_helper"
+VMHELPER_COMMAND="fence_vmware_helper"
 # Default path to vmrun command
 VMRUN_COMMAND="/usr/bin/vmrun"
 # Default type of vmware
