@@ -40,7 +40,8 @@ sub convert_field_to_dsv {
 my %opts = (
    'operation' => {
       type => "=s",
-      help => "The operation to perform (on,off,list). Operations on/off require name of the virtual machine",
+      help => "The operation to perform (on,off,list,status). "
+             . "Operations on/off/status require name of the virtual machine",
       default => "list",
       required => 0,
    },
@@ -73,15 +74,15 @@ Opts::add_options(%opts);
 Opts::parse();
 Opts::validate();
 
-if (!(Opts::get_option('operation')=~/^(on|off|list)$/i)) {
-  show_error "Operation should be on, off or list!\n";
+if (!(Opts::get_option('operation')=~/^(on|off|list|status)$/i)) {
+  show_error "Operation should be on, off, list or status!\n";
   exit 2;
 }
 
 my $operation=lc(Opts::get_option('operation'));
 
 if (($operation ne 'list') && (!defined Opts::get_option('vmname'))) {
-  show_error "Operation on, off require vmname parameter!\n";
+  show_error "Operation on, off, status require vmname parameter!\n";
   exit 2;
 }
 
@@ -125,7 +126,7 @@ my $found=0;
 
 # Traverse all found vm
 foreach $vm(@$vm_views) {
-  if ($operation eq 'list') {
+  if (($operation eq 'list') or ($operation eq 'status')) {
     if (!$vm->summary->config->template) {
       print convert_field_to_dsv($vm->name).":".
             convert_field_to_dsv($vm->summary->config->vmPathName).":".
@@ -169,12 +170,12 @@ __END__
 
 =head1 NAME
 
-fence_vmware_vi_helper - Perform list of virtual machines and
+fence_vmware_helper - Perform list of virtual machines and
                poweron, poweroff  of operations on virtual machines.
 
 =head1 SYNOPSIS
 
- fence_vmware_vi_helper --operation <on|off|list> [options]
+ fence_vmware_helper --operation <on|off|list|status> [options]
 
 =head1 DESCRIPTION
 
@@ -195,6 +196,7 @@ Operation to be performed.  One of the following:
   <on> (power on one or more virtual machines),
   <off> (power off one  or more virtual machines),
   <list> (list virtual machines and their status)
+  <status> (same as list, but show only machines with vmname)
 
 =item B<vmname>
 
@@ -212,26 +214,31 @@ Operations will be performed on all the virtual machines under the given datacen
 
 Power on a virtual machine
 
-   fence_vmware_vi_helper --username administrator --password administrator --operation on
+   fence_vmware_helper --username administrator --password administrator --operation on
                 --vmname rhel --server win1
 
-   fence_vmware_vi_helper --username administrator --password administrator --operation on
+   fence_vmware_helper --username administrator --password administrator --operation on
                 --vmname rhel --server win1 --datacenter Datacenter
 
 Power off a virtual machine
 
-   fence_vmware_vi_helper --username administrator --password administrator --operation off
+   fence_vmware_helper --username administrator --password administrator --operation off
                 --vmname rhel --server win1
 
-   perl fence_vmware_vi_helper --username administrator --password administrator --operation off
+   perl fence_vmware_helper --username administrator --password administrator --operation off
                 --vmname rhel --server win1 --datacenter Datacenter
 
 List of virtual machines
 
-   fence_vmware_vi_helper --username administrator --password administrator --server win1
+   fence_vmware_helper --username administrator --password administrator --server win1
 
-   fence_vmware_vi_helper --username administrator --password administrator --server win1
+   fence_vmware_helper --username administrator --password administrator --server win1
                 --operation list
+
+Get status of virtual machine
+
+   fence_vmware_helper --username administrator --password administrator --server win1
+	    --vmname rhel --operation status
 
 =head1 SUPPORTED PLATFORMS
 

@@ -136,53 +136,69 @@ def vmware_run_command(options,add_login_params,additional_params,additional_tim
 
 	return res_output
 
-def get_outlets_status(conn, options):
+# Get outlet list with status as hash table. If you will use add_vm_name, only VM with vmname is
+# returned. This is used in get_status function
+def vmware_get_outlets_vi(conn, options, add_vm_name):
 	outlets={}
 
-	if (vmware_internal_type==VMWARE_TYPE_ESX):
-		all_machines=vmware_run_command(options,True,"--operation list",0)
+	if (add_vm_name):
+		all_machines=vmware_run_command(options,True,("--operation status --vmname '%s'"%(options["-n"])),0)
+	else:
+		all_machines=vmware_run_command(options,True,"--operation list",POWER_TIMEOUT)
 
-		all_machines_array=all_machines.splitlines()
+	all_machines_array=all_machines.splitlines()
 
-		for machine in all_machines_array:
-			machine_array=dsv_split(machine)
-			if (len(machine_array)==4):
-				if (machine_array[0] in outlets):
-					fail_usage("Failed. More machines with same name %s found!"%(machine_array[0]))
+	for machine in all_machines_array:
+		machine_array=dsv_split(machine)
+		if (len(machine_array)==4):
+			if (machine_array[0] in outlets):
+				fail_usage("Failed. More machines with same name %s found!"%(machine_array[0]))
 
-				if (vmware_disconnected_hack):
-					outlets[machine_array[0]]=("",(
-							((machine_array[2].lower() in ["poweredon"]) and
-							 (machine_array[3].lower()=="connected"))
-							and "on" or "off"))
-				else:
-					outlets[machine_array[0]]=("",((machine_array[2].lower() in ["poweredon"]) and "on" or "off"))
+			if (vmware_disconnected_hack):
+				outlets[machine_array[0]]=("",(
+						((machine_array[2].lower() in ["poweredon"]) and
+						 (machine_array[3].lower()=="connected"))
+						and "on" or "off"))
+			else:
+				outlets[machine_array[0]]=("",((machine_array[2].lower() in ["poweredon"]) and "on" or "off"))
+	return outlets
 
-	if ((vmware_internal_type==VMWARE_TYPE_SERVER1) or (vmware_internal_type==VMWARE_TYPE_SERVER2)):
-		running_machines=vmware_run_command(options,True,"list",0)
-		running_machines_array=running_machines.splitlines()[1:]
+# Get outlet list with status as hash table.
+def vmware_get_outlets_vix(conn,options):
+	outlets={}
 
-		if (vmware_internal_type==VMWARE_TYPE_SERVER2):
-			all_machines=vmware_run_command(options,True,"listRegisteredVM",0)
-			all_machines_array=all_machines.splitlines()[1:]
-		elif (vmware_internal_type==VMWARE_TYPE_SERVER1):
-			all_machines_array=running_machines_array
+	running_machines=vmware_run_command(options,True,"list",0)
+	running_machines_array=running_machines.splitlines()[1:]
 
-		for machine in all_machines_array:
-			if (machine!=""):
-				outlets[machine]=("",((machine in running_machines_array) and "on" or "off"))
+	if (vmware_internal_type==VMWARE_TYPE_SERVER2):
+		all_machines=vmware_run_command(options,True,"listRegisteredVM",0)
+		all_machines_array=all_machines.splitlines()[1:]
+	elif (vmware_internal_type==VMWARE_TYPE_SERVER1):
+		all_machines_array=running_machines_array
+
+	for machine in all_machines_array:
+		if (machine!=""):
+			outlets[machine]=("",((machine in running_machines_array) and "on" or "off"))
 
 	return outlets
 
+def get_outlets_status(conn, options):
+	if (vmware_internal_type==VMWARE_TYPE_ESX):
+		return vmware_get_outlets_vi(conn,options,False)
+	if ((vmware_internal_type==VMWARE_TYPE_SERVER1) or (vmware_internal_type==VMWARE_TYPE_SERVER2)):
+		return vmware_get_outlets_vix(conn,options)
+
 def get_power_status(conn,options):
-	outlets=get_outlets_status(conn,options)
+	if (vmware_internal_type==VMWARE_TYPE_ESX):
+		outlets=vmware_get_outlets_vi(conn,options,True)
+	else:
+		outlets=get_outlets_status(conn,options,False)
 
 	if ((vmware_internal_type==VMWARE_TYPE_SERVER2) or (vmware_internal_type==VMWARE_TYPE_ESX)):
 		if (not (options["-n"] in outlets)):
 			fail_usage("Failed: You have to enter existing name of virtual machine!")
 		else:
 			return outlets[options["-n"]][1]
-
 	elif (vmware_internal_type==VMWARE_TYPE_SERVER1):
 		return ((options["-n"] in outlets) and "on" or "off")
 
