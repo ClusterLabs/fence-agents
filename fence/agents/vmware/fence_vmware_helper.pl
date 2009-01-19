@@ -139,8 +139,18 @@ foreach $vm(@$vm_views) {
     };
 
     if ($@) {
-      show_error "Cannot power on vm ".Opts::get_option('vmname')."!\nVMware error:".$@;
-      my_exit 6;
+      # If error is SoapFault with InvalidPowerState, user maybe use some auto power on tool.
+      # This is not error, warning is enought.
+      if (ref($@) eq 'SoapFault') {
+        if (ref($@->detail) eq 'InvalidPowerState') {
+          show_error "Warning: Cannot power on vm (somebody done it before???) ".Opts::get_option('vmname').
+                     "!\nVMware error:".$@."\n";
+        }
+      } else {
+        # Some other more serious problem
+        show_error "Cannot power on vm ".Opts::get_option('vmname')."!\nVMware error:".$@."\n";
+        my_exit 6;
+      }
     }
   } elsif ($operation eq 'off') {
     eval {
@@ -148,8 +158,18 @@ foreach $vm(@$vm_views) {
     };
 
     if ($@) {
-      show_error "Cannot power off vm ".Opts::get_option('vmname')."!\nVMware error:".$@;
-      my_exit 6;
+      # If error is SoapFault with InvalidPowerState, user maybe use some auto power off tool.
+      # This is not error, warning is enought.
+      if (ref($@) eq 'SoapFault') {
+        if (ref($@->detail) eq 'InvalidPowerState') {
+          show_error "Warning: Cannot power off vm (somebody done it before???) ".Opts::get_option('vmname').
+                     "!\nVMware error:".$@."\n";
+        }
+      } else {
+        # Some other more serious problem
+        show_error "Cannot power off vm ".Opts::get_option('vmname')."!\nVMware error:".$@."\n";
+        my_exit 6;
+      }
     }
   } else {
     show_error "Operation should be on, off or list!\n";
