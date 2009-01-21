@@ -317,7 +317,7 @@ def process_input(avail_opt):
 			if o.startswith("--"):
 				for x in all_opt.keys():
 					if all_opt[x].has_key("longopt") and "--" + all_opt[x]["longopt"] == o:
-						opt["-" + all_opt[x]["getopt"]] = dict(old_opt)[o]
+						opt["-" + all_opt[x]["getopt"].rstrip(":")] = dict(old_opt)[o]
 			else:
 				opt[o] = dict(old_opt)[o]
 
