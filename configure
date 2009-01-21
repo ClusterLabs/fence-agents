@@ -330,15 +330,17 @@ if (defined($release_version) && not length $release_version) {
   $release_version="";
 }
 
-@args = "find fence/agents -mindepth 2 -maxdepth 2 -name Makefile -printf '%h'";
-open (IFILE, "@args |");
-while (<IFILE>) {
-  chomp;
-  s|fence\/agents\/| |g;
-  s|lib ||g;
-  $all_fence = $_;
+if ((!$fence_agents) || ($fence_agents eq "all") || ($fence_agents eq "help")) {
+  @args = "find fence/agents -mindepth 2 -maxdepth 2 -name Makefile -printf '%h'";
+  open (IFILE, "@args |");
+  while (<IFILE>) {
+    chomp;
+    s|fence\/agents\/| |g;
+    s|lib ||g;
+    $all_fence = $_;
+  }
+  close IFILE;
 }
-close IFILE;
 
 if ($fence_agents eq "help") {
   print "Available fence agents:\n$all_fence\n";
