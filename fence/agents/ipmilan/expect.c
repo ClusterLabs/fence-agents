@@ -68,7 +68,7 @@ ExpectToken(int	fd, struct Etoken * toklist, int to_secs, char * buf
 	clock_t		ticks;
 	int		nchars = 1; /* reserve space for an EOS */
 	struct timeval	tv;
-
+	struct tms      foo_tms; /*This tms is used, because cygwin doesn't like NULL in times*/
 	struct Etoken *	this;
 
 	/* Figure out when to give up.  Handle lbolt wraparound */
@@ -77,7 +77,7 @@ ExpectToken(int	fd, struct Etoken * toklist, int to_secs, char * buf
 		return -1;
 	}
 	
-	starttime = times(NULL);
+	starttime = times(&foo_tms);
 	ticks = (to_secs*CLOCKS_PER_SEC);
 	endtime = starttime + ticks;
 
@@ -94,7 +94,7 @@ ExpectToken(int	fd, struct Etoken * toklist, int to_secs, char * buf
 	}
 
 
-	while (now = times(NULL),
+	while (now = times(&foo_tms),
 		(wraparound && (now > starttime || now <= endtime))
 		||	(!wraparound && now <= endtime)) {
 
