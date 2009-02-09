@@ -366,7 +366,7 @@ ipmi_op(struct ipmi *ipmi, int op, struct Etoken *toklist)
 static int
 ipmi_off(struct ipmi *ipmi)
 {
-	int ret, retries = 5;
+	int ret, retries = 7;
 
 	ret = ipmi_op(ipmi, ST_STATUS, power_status);
 	switch(ret) {
@@ -378,12 +378,12 @@ ipmi_off(struct ipmi *ipmi)
 		return ret;
 	}
 
-	ret = ipmi_op(ipmi, ST_POWEROFF, power_off_complete);
-	if (ret != 0)
-		return ret;
-
 	while (retries>=0) {
-		sleep(5);
+		ret = ipmi_op(ipmi, ST_POWEROFF, power_off_complete);
+		if (ret != 0)
+			return ret;
+
+		sleep(2);
 		--retries;
 		ret = ipmi_op(ipmi, ST_STATUS, power_status);
 
@@ -408,7 +408,7 @@ ipmi_off(struct ipmi *ipmi)
 static int
 ipmi_on(struct ipmi *ipmi)
 {
-	int ret, retries = 5; 
+	int ret, retries = 7;
 
 	ret = ipmi_op(ipmi, ST_STATUS, power_status);
 	switch(ret) {
@@ -420,12 +420,12 @@ ipmi_on(struct ipmi *ipmi)
 		return ret;
 	}
 
-	ret = ipmi_op(ipmi, ST_POWERON, power_on_complete);
-	if (ret != 0)
-		return ret;
-
 	while (retries>=0) {
-		sleep(5);
+		ret = ipmi_op(ipmi, ST_POWERON, power_on_complete);
+		if (ret != 0)
+			return ret;
+
+		sleep(2);
 		--retries;
 		ret = ipmi_op(ipmi, ST_STATUS, power_status);
 
