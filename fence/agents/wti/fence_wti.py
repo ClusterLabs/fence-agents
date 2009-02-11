@@ -75,7 +75,8 @@ def set_power_status(conn, options):
 def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
-			"cmd_prompt", "secure", "port", "no_login", "test" ]
+			"cmd_prompt", "secure", "port", "no_login", "no_password",
+			"test" ]
 
 	options = check_input(device_opt, process_input(device_opt))
 
@@ -88,15 +89,22 @@ def main():
 	##
 	## Operate the fencing device
 	##
-	## @note: if there is not a login name then we assume that it is WTI-IPS
-	##        where no login name is used
+	## @note: if it possible that this device does not need either login, password or both of them
 	#####	
-	if (0 == options.has_key("-l")):
+	if 0 == options.has_key("-x"):
 		try:
 			conn = fspawn ('telnet ' + options["-a"])
-			conn.log_expect(options, "Password: ", SHELL_TIMEOUT)
-			conn.send(options["-p"]+"\r\n")
-			conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+			re_login = re.compile("(login: )|(Login Name:  )|(username: )|(User Name :)", re.IGNORECASE)
+			re_prompt = re.compile("|".join(map (lambda x: "(" + x + ")", options["-c"])), re.IGNORECASE)
+
+			result = conn.log_expect(options, [ re_login, "Password: ", re_prompt ], SHELL_TIMEOUT)
+			if result == 0:
+				conn.send(options["-l"]+"\r\n")
+				result = conn.log_expect(options, [ re_login, "Password: ", re_prompt ], SHELL_TIMEOUT)
+		
+			if result == 1:
+				conn.send(options["-p"]+"\r\n")
+				conn.log_expect(options, options["-c"], SHELL_TIMEOUT)	
 		except pexpect.EOF:
 			fail(EC_LOGIN_DENIED) 
 		except pexpect.TIMEOUT:
