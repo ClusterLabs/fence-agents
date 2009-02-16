@@ -21,19 +21,30 @@ BUILD_DATE=""
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):
-	try:
-		conn.send("lssyscfg -r lpar -m "+ options["-s"] +" --filter 'lpar_names=" + options["-n"] + "'\n")
-		conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	if options["-H"] == "3":
+		try:
+			conn.send("lssyscfg -r lpar -m " + options["-s"] + " -n " + options["-n"] + " -F name,state\n")
+			conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+		except pexpect.EOF:
+			fail(EC_CONNECTION_LOST)
+		except pexpect.TIMEOUT:
+			fail(EC_TIMED_OUT)
+
+		status = re.compile("^" + options["-n"] + ",(.*?),.*$", re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
+	elif options["-H"] == "4":
+		try:
+			conn.send("lssyscfg -r lpar -m "+ options["-s"] +" --filter 'lpar_names=" + options["-n"] + "'\n")
+			conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+		except pexpect.EOF:
+			fail(EC_CONNECTION_LOST)
+		except pexpect.TIMEOUT:
+			fail(EC_TIMED_OUT)
 				
-	status = re.compile(",state=(.*?),", re.IGNORECASE).search(conn.before).group(1)
+		status = re.compile(",state=(.*?),", re.IGNORECASE).search(conn.before).group(1)
 
 	##
 	## Transformation to standard ON/OFF status if possible
-	if status in ["Running", "Open Firmware", "Shutting Down"]:
+	if status in ["Running", "Open Firmware", "Shutting Down", "Starting"]:
 		status = "on"
 	else:
 		status = "off"
@@ -41,21 +52,31 @@ def get_power_status(conn, options):
 	return status
 
 def set_power_status(conn, options):
-	try:
-		if options["-o"] == "on":
-			conn.send("chsysstate -o on -r lpar -m " + options["-s"] + 
-				" -n " + options["-n"] + 
-				" -f `lssyscfg -r lpar -F curr_profile " +
-				" -m " + options["-s"] +
-				" --filter \"lpar_names="+ options["-n"] +"\"`\n" )
-		else:
-			conn.send("chsysstate -o shutdown -r lpar --immed" +
-				" -m " + options["-s"] + " -n " + options["-n"] + "\n")		
-		conn.log_expect(options, options["-c"], POWER_TIMEOUT)
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	if options["-H"] == "3":
+		try:
+			conn.send("chsysstate -o " + options["-o"] + " -r lpar -m " + options["-s"]
+				+ " -n " + options["-n"] + "\n")
+			conn.log_expect(options, options["-c"], POWER_TIMEOUT)
+		except pexpect.EOF:
+			fail(EC_CONNECTION_LOST)
+		except pexpect.TIMEOUT:
+			fail(EC_TIMED_OUT)		
+	elif options["-H"] == "4":
+		try:
+			if options["-o"] == "on":
+				conn.send("chsysstate -o on -r lpar -m " + options["-s"] + 
+					" -n " + options["-n"] + 
+					" -f `lssyscfg -r lpar -F curr_profile " +
+					" -m " + options["-s"] +
+					" --filter \"lpar_names="+ options["-n"] +"\"`\n" )
+			else:
+				conn.send("chsysstate -o shutdown -r lpar --immed" +
+					" -m " + options["-s"] + " -n " + options["-n"] + "\n")		
+			conn.log_expect(options, options["-c"], POWER_TIMEOUT)
+		except pexpect.EOF:
+			fail(EC_CONNECTION_LOST)
+		except pexpect.TIMEOUT:
+			fail(EC_TIMED_OUT)
 
 def get_lpar_list(conn, options):
 	outlets = { }
@@ -85,7 +106,7 @@ def get_lpar_list(conn, options):
 def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
-			"secure", "partition", "managed" ]
+			"secure", "partition", "managed", "hmc_version", "cmd_prompt" ]
 
 	options = check_input(device_opt, process_input(device_opt))
 
@@ -93,16 +114,18 @@ def main():
 	## Fence agent specific defaults
 	#####
 	if 0 == options.has_key("-c"):
-		options["-c"] = ":~>"
+		options["-c"] = [ ":~>", "]\$" ]
 
 	if 0 == options.has_key("-x"):
 		fail_usage("Failed: You have to use ssh connection (-x) to fence device")
 
 	if 0 == options.has_key("-s"):
 		fail_usage("Failed: You have to enter name of managed system")
-
         if (0 == ["list", "monitor"].count(options["-o"].lower())) and (0 == options.has_key("-n")):
                 fail_usage("Failed: You have to enter name of the partition")
+
+	if 1 == options.has_key("-H") and (options["-H"] != "3" and options["-H"] != "4"):
+		fail_usage("Failed: You have to enter valid version number: 3 or 4")
 
 	##
 	## Operate the fencing device

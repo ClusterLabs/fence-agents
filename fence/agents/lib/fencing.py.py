@@ -122,6 +122,12 @@ all_opt = {
 		"longopt" : "drac-version",
 		"help" : "-D, --drac-version=<version>   Force DRAC version to use",
 		"order" : 1 },
+	"hmc_version" : {
+		"getopt" : "H:",
+		"longopt" : "hmc-version",
+		"help" : "-H, --hmc-version=<version>   Force HMC version to use: 3, 4 (default)",
+		"default" : 4, 
+		"order" : 1 },
 	"ribcl" : {
 		"getopt" : "r:",
 		"longopt" : "ribcl-version",
