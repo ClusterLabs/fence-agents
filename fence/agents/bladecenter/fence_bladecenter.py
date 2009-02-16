@@ -87,7 +87,7 @@ def get_blades_list(conn, options):
 def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
-			"cmd_prompt", "secure", "port", "identity_file" ]
+			"cmd_prompt", "secure", "port", "identity_file", "separator" ]
 
 	options = check_input(device_opt, process_input(device_opt))
 
