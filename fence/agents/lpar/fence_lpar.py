@@ -80,33 +80,54 @@ def set_power_status(conn, options):
 
 def get_lpar_list(conn, options):
 	outlets = { }
-	try:
-		conn.send("lssyscfg -r lpar -m " + options["-s"] + 
-			" -F name:state\n")
-		conn.log_expect(options, options["-c"], POWER_TIMEOUT)
+	if options["-H"] == "3":
+		try:
+			conn.send("query_partition_names -m " + options["-s"] + "\n")
+			conn.log_expect(options, options["-c"], POWER_TIMEOUT)
 
-		## We have to remove first line (command) and last line (part of new prompt)
-		####
-		res = re.search("^.+?\n(.*)\n.*$", conn.before, re.S)
+			## We have to remove first 3 lines (command + header) and last line (part of new prompt)
+			####
+			res = re.search("^.+?\n(.+?\n){2}(.*)\n.*$", conn.before, re.S)
 
-		if res == None:
-			fail_usage("Unable to parse output of list command")
+			if res == None:
+				fail_usage("Unable to parse output of list command")
 		
-		lines = res.group(1).split("\n")
-		for x in lines:
-			s = x.split(":")
-			outlets[s[0]] = ("", s[1])
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+			lines = res.group(2).split("\n")
+			for x in lines:
+				outlets[x.rstrip()] = ("", "")
+		except pexpect.EOF:
+			fail(EC_CONNECTION_LOST)
+		except pexpect.TIMEOUT:
+			fail(EC_TIMED_OUT)		
+	elif options["-H"] == "4":
+		try:
+			conn.send("lssyscfg -r lpar -m " + options["-s"] + 
+				" -F name:state\n")
+			conn.log_expect(options, options["-c"], POWER_TIMEOUT)
+
+			## We have to remove first line (command) and last line (part of new prompt)
+			####
+			res = re.search("^.+?\n(.*)\n.*$", conn.before, re.S)
+
+			if res == None:
+				fail_usage("Unable to parse output of list command")
+		
+			lines = res.group(1).split("\n")
+			for x in lines:
+				s = x.split(":")
+				outlets[s[0]] = ("", s[1])
+		except pexpect.EOF:
+			fail(EC_CONNECTION_LOST)
+		except pexpect.TIMEOUT:
+			fail(EC_TIMED_OUT)
 
 	return outlets
 
 def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
-			"secure", "partition", "managed", "hmc_version", "cmd_prompt" ]
+			"secure", "partition", "managed", "hmc_version", "cmd_prompt",
+			"separator" ]
 
 	options = check_input(device_opt, process_input(device_opt))
 
