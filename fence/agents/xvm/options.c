@@ -181,6 +181,8 @@ assign_op(fence_xvm_args_t *args, struct arg_info *arg, char *value)
 		args->op = FENCE_OFF;
 	} else if (!strcasecmp(value, "reboot")) {
 		args->op = FENCE_REBOOT;
+	} else if (!strcasecmp(value, "metadata")) {
+		args->flags |= F_METADATA;
 	} else {
 		logt_print(LOG_ERR, "Unsupported operation: %s\n", value);
 		args->flags |= F_ERR;
@@ -506,6 +508,31 @@ args_usage(char *progname, char *optstr, int print_stdin)
 	}
 
 	printf("\n");
+}
+
+
+void
+args_metadata(char *progname, char *optstr)
+{
+	int x;
+	struct arg_info *arg;
+
+	printf("<parameters>\n");
+
+	for (x = 0; x < strlen(optstr); x++) {
+		arg = find_arg_by_char(optstr[x]);
+		if (!arg)
+			continue;
+		if (!arg->stdin_opt)
+			continue;
+
+		printf("\t<parameter name=\"%s\">\n",arg->stdin_opt);
+		printf("\t\t<shortdesc lang=\"C\">%s</shortdesc>\n",
+		       arg->desc);
+		printf("\t</parameter>\n");
+	}
+
+	printf("</parameters>\n");
 }
 
 

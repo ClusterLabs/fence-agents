@@ -338,6 +338,11 @@ main(int argc, char **argv)
 		exit(0);
 	}
 
+	if (args.flags & F_METADATA) {
+		args_metadata(argv[0], my_options);
+		exit(0);
+	}
+
 	if (args.flags & F_VERSION) {
 		printf("%s %s\n", basename(argv[0]), XVM_VERSION);
 		printf("fence release %s\n", RELEASE_VERSION);

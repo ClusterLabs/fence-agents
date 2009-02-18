@@ -11,7 +11,8 @@ typedef enum {
 	F_CCSERR	= 0x40,
 	F_CCSFAIL	= 0x80,
 	F_NOCLUSTER	= 0x100,
-	F_DEBUG		= 0x200
+	F_DEBUG		= 0x200,
+	F_METADATA	= 0x400
 } arg_flags_t;
 
 
@@ -52,6 +53,7 @@ void args_get_getopt(int argc, char **argv, char *optstr,
 void args_get_stdin(char *optstr, fence_xvm_args_t *args);
 void args_get_ccs(char *optstr, fence_xvm_args_t *args);
 void args_usage(char *progname, char *optstr, int print_stdin);
+void args_metadata(char *progname, char *optstr);
 void args_print(fence_xvm_args_t *args);
 
 #endif
