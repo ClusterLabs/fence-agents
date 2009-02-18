@@ -126,7 +126,7 @@ all_opt = {
 		"getopt" : "H:",
 		"longopt" : "hmc-version",
 		"help" : "-H, --hmc-version=<version>   Force HMC version to use: 3, 4 (default)",
-		"default" : 4, 
+		"default" : "4", 
 		"order" : 1 },
 	"ribcl" : {
 		"getopt" : "r:",
