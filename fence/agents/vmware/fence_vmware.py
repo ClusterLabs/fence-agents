@@ -83,24 +83,43 @@ def dsv_split(dsv_str):
 
 	return res
 
+# Quote string for proper existence in quoted string used for pexpect.run function
+# Ex. test'this will return test'\''this. So pexpect run will really pass ' to argument
+def quote_for_run(str):
+	dstr=''
+
+	for c in str:
+		if c==r"'":
+			dstr+="'\\''"
+		else:
+			dstr+=c
+
+	return dstr
+
 # Return string with command and additional parameters (something like vmrun -h 'host'
 def vmware_prepare_command(options,add_login_params,additional_params):
 	res=options["-e"]
 
 	if (add_login_params):
 		if (vmware_internal_type==VMWARE_TYPE_ESX):
-			res+=" --server '%s' --username '%s' --password '%s' "%(options["-a"],options["-l"],options["-p"])
+			res+=" --server '%s' --username '%s' --password '%s' "%(quote_for_run(options["-a"]),
+										quote_for_run(options["-l"]),
+										quote_for_run(options["-p"]))
 		elif (vmware_internal_type==VMWARE_TYPE_SERVER2):
-			res+=" -h 'https://%s/sdk' -u '%s' -p '%s' -T server "%(options["-a"],options["-l"],options["-p"])
+			res+=" -h 'https://%s/sdk' -u '%s' -p '%s' -T server "%(quote_for_run(options["-a"]),
+										quote_for_run(options["-l"]),
+										quote_for_run(options["-p"]))
 		elif (vmware_internal_type==VMWARE_TYPE_SERVER1):
 			host_name_array=options["-a"].split(':')
 
-			res+=" -h '%s' -u '%s' -p '%s' -T server1 "%(host_name_array[0],options["-l"],options["-p"])
+			res+=" -h '%s' -u '%s' -p '%s' -T server1 "%(quote_for_run(host_name_array[0]),
+								     quote_for_run(options["-l"]),
+								     quote_for_run(options["-p"]))
 			if (len(host_name_array)>1):
-				res+="-P '%s' "%(host_name_array[1])
+				res+="-P '%s' "%(quote_for_run(host_name_array[1]))
 
 	if ((options.has_key("-s")) and (vmware_internal_type==VMWARE_TYPE_ESX)):
-		res+="--datacenter '%s' "%(options["-s"])
+		res+="--datacenter '%s' "%(quote_for_run(options["-s"]))
 
 	if (additional_params!=""):
 		res+=additional_params
@@ -142,7 +161,7 @@ def vmware_get_outlets_vi(conn, options, add_vm_name):
 	outlets={}
 
 	if (add_vm_name):
-		all_machines=vmware_run_command(options,True,("--operation status --vmname '%s'"%(options["-n"])),0)
+		all_machines=vmware_run_command(options,True,("--operation status --vmname '%s'"%(quote_for_run(options["-n"]))),0)
 	else:
 		all_machines=vmware_run_command(options,True,"--operation list",POWER_TIMEOUT)
 
@@ -204,9 +223,9 @@ def get_power_status(conn,options):
 
 def set_power_status(conn, options):
 	if (vmware_internal_type==VMWARE_TYPE_ESX):
-		additional_params="--operation %s --vmname '%s'"%((options["-o"]=="on" and "on" or "off"),options["-n"])
+		additional_params="--operation %s --vmname '%s'"%((options["-o"]=="on" and "on" or "off"),quote_for_run(options["-n"]))
 	elif ((vmware_internal_type==VMWARE_TYPE_SERVER1) or (vmware_internal_type==VMWARE_TYPE_SERVER2)):
-		additional_params="%s '%s'"%((options["-o"]=="on" and "start" or "stop"),options["-n"])
+		additional_params="%s '%s'"%((options["-o"]=="on" and "start" or "stop"),quote_for_run(options["-n"]))
 		if (options["-o"]=="off"):
 			additional_params+=" hard"
 
