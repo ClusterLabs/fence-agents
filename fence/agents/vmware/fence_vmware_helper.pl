@@ -3,6 +3,15 @@
 use strict;
 use warnings;
 
+my $ME = $0;
+
+END {
+  defined fileno STDOUT or return;
+  close STDOUT and return;
+  warn "$ME: failed to close standard output: $!\n";
+  $? ||= 1;
+}
+
 my ($RELEASE_VERSION, $REDHAT_COPYRIGHT, $BUILD_DATE);
 
 #BEGIN_VERSION_GENERATION
