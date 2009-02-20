@@ -8,6 +8,7 @@ ifdef SBINSYMT
 endif
 ifdef INITDT
 	install -d ${initddir}
+	set -e; \
 	for i in ${INITDT}; do \
 		if [ -f $$i ]; then \
 			install -m755 $$i ${initddir}; \
@@ -26,6 +27,7 @@ ifdef FENCEAGENTSLIB
 endif
 ifdef DOCS
 	install -d ${docdir}
+	set -e; \
 	for i in ${DOCS}; do \
 		install -m644 $(S)/$$i ${docdir}; \
 	done
