@@ -200,8 +200,8 @@ all_opt = {
 		"order" : 1 },
 	"vmware_datacenter" : {
 		"getopt" : "s:",
-		"longopt" : "vmware_datacenter",
-		"help" : "-s, --vmware_datacenter=<dc>   VMWare datacenter filter",
+		"longopt" : "vmware-datacenter",
+		"help" : "-s, --vmware-datacenter=<dc>   VMWare datacenter filter",
 		"required" : "0",
 		"shortdesc" : "Show only machines in specified datacenter",
 		"order" : 2 },
