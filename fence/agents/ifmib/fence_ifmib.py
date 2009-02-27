@@ -9,11 +9,10 @@
 #  modify, copy, or redistribute it subject to the terms and conditions
 #  of the GNU General Public License v.2.
 
-# this is a ugly hack to make the build system happy. The original
-# author and copyright are the one on the file header right above.
+COPYRIGHT="Copyright (C) 2008-2009 Ross Vandegrift <ross@kallisti.us>"
+
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New fence_ifmib"
-REDHAT_COPYRIGHT=""
 BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
 
@@ -33,6 +32,9 @@ def usage():
     print 'This script fences a node by sending a command via SNMP to set'
     print 'ifAdminStatus to down.  It is designed to kill node access'
     print 'to the shared storage.  It only supports SNMP v2c.'
+    print ''
+    print RELEASE_VERSION, BUILD_DATE
+    print COPYRIGHT
     print ''
     print 'Usage: fence_ifmib [options]'
     print line % ('-h', '\tPrint usage')
