@@ -4,6 +4,15 @@ use Getopt::Std;
 use IPC::Open3;
 use POSIX;
 
+my $ME = $0;
+
+END {
+  defined fileno STDOUT or return;
+  close STDOUT and return;
+  warn "$ME: failed to close standard output: $!\n";
+  $? ||= 1;
+}
+
 my @device_list;
 
 $_ = $0;

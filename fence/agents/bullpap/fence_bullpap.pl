@@ -3,6 +3,15 @@
 use Getopt::Std;
 use POSIX;
 
+my $ME = $0;
+
+END {
+  defined fileno STDOUT or return;
+  close STDOUT and return;
+  warn "$ME: failed to close standard output: $!\n";
+  $? ||= 1;
+}
+
 # Get the program name from $0 and strip directory names
 $_=$0;
 s/.*\///;
