@@ -28,8 +28,11 @@ esac
 
 awk "{print}(\$1 ~ /#BEGIN_VERSION_GENERATION/){exit 0}" $realinfile
 echo ${start}RELEASE_VERSION=\"${release}\"${end}
-echo ${start}REDHAT_COPYRIGHT=${definedata}${end}
 echo ${start}BUILD_DATE=\"\(built $(date)\)\"${end}
+if awk -v p=0 "(\$1 ~ /#BEGIN_VERSION_GENERATION/){p = 1} (\$1 ~ /#END_VERSION_GENERATION/){p = 0} {if(p==1)print}" $realinfile | \
+		grep -q REDHAT_COPYRIGHT; then
+	echo ${start}REDHAT_COPYRIGHT=${definedata}${end}
+fi
 awk -v p=0 "(\$1 ~ /#END_VERSION_GENERATION/){p = 1} {if(p==1)print}" $realinfile
 
 exit 0
