@@ -281,6 +281,8 @@ def main():
 		       "test", "port", "separator", "exec", "vmware_type",
 		       "vmware_datacenter", "secure" ]
 
+	atexit.register(atexit_handler)
+
 	vmware_define_defaults()
 
 	options = check_input(device_opt, process_input(device_opt))

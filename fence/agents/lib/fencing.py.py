@@ -3,6 +3,7 @@
 import sys, getopt, time, os
 import pexpect, re
 import telnetlib
+import atexit
 
 ## do not add code here.
 #BEGIN_VERSION_GENERATION
@@ -219,6 +220,14 @@ class fspawn(pexpect.spawn):
 		if options["log"] >= LOG_MODE_VERBOSE:
 			options["debug_fh"].write(self.before + self.after)
 		return result
+
+def atexit_handler():
+	try:
+		sys.stdout.close()
+		os.close(1)
+	except IOError:
+		sys.stderr.write("%s failed to close standard output\n"%(sys.argv[0]))
+		sys.exit(1)
 
 def version(command, release, build_date, copyright_notice):
 	print command, " ", release, " ", build_date

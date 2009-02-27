@@ -64,6 +64,8 @@ def main():
 			"action", "ipaddr", "login", "passwd", "passwd_script",
 			"secure", "identity_file", "test", "port", "separator" ]
 
+	atexit.register(atexit_handler)
+
 	options = check_input(device_opt, process_input(device_opt))
 
 	## Defaults for fence agent

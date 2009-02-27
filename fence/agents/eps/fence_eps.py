@@ -98,6 +98,8 @@ def main():
 			"test", "port", "hidden_page", "no_login", "no_password",
 			"separator" ]
 
+	atexit.register(atexit_handler)
+
 	eps_define_new_opts()
 
 	options = check_input(device_opt,process_input(device_opt))

@@ -86,7 +86,8 @@ def main():
 			"secure",  "identity_file", "test" , "port", "cmd_prompt",
 			"separator" ]
 
-    	
+	atexit.register(atexit_handler)
+
 	options = check_input(device_opt, process_input(device_opt))
 
 	## 

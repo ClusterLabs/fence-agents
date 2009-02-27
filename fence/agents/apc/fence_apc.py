@@ -177,6 +177,8 @@ def main():
 			"action", "ipaddr", "login", "passwd", "passwd_script",
 			"secure", "port", "switch", "test", "separator" ]
 
+	atexit.register(atexit_handler)
+
 	options = check_input(device_opt, process_input(device_opt))
 
 	## 
