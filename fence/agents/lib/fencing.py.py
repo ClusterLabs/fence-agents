@@ -66,7 +66,7 @@ all_opt = {
 		"getopt" : "o:",
 		"longopt" : "action",
 		"help" : "-o, --action=<action>          Action: status, reboot (default), off or on",
-		"required" : "0",
+		"required" : "1",
 		"shortdesc" : "Fencing Action",
 		"default" : "reboot",
 		"order" : 1 },
