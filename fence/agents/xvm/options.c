@@ -511,38 +511,23 @@ args_usage(char *progname, char *optstr, int print_stdin)
 }
 
 
-static char *clean_tags(char *desc)
+static void
+print_desc_xml(char *desc)
 {
-	static char result[16384];
-	char *r, *d;
+	char *d;
 
-	if (strlen(desc) > sizeof(result)) 
-		return "";
-
-	/* XXX could overflow, but the data used in this
-           function is statically defined at compile time, so
-	   there's no chance that external information is being
-           parsed here -- for now.  This will need to be changed
-           if we parse data that isn't hardcoded. */
-
-	memset(result,0,sizeof(result));
-	r = result;
 	for (d = desc; *d; d++) {
 		switch (*d) {
 		case '<':
-			memcpy(r, "&lt;", 4);
-			r+=4;
+			printf("&lt;");
 			break;
 		case '>':
-			memcpy(r, "&gt;", 4);
-			r+=4;
+			printf("&gt;");
 			break;
 		default:
-			*r++ = *d;
+			printf("%c", *d);
 		}
 	}
-
-	return result;
 }
 
 
@@ -562,8 +547,9 @@ args_metadata(char *progname, char *optstr)
 			continue;
 
 		printf("\t<parameter name=\"%s\">\n",arg->stdin_opt);
-		printf("\t\t<shortdesc lang=\"C\">%s</shortdesc>\n",
-		       clean_tags(arg->desc));
+		printf("\t\t<shortdesc lang=\"C\">");
+		print_desc_xml(arg->desc);
+		printf("</shortdesc>\n");
 		printf("\t</parameter>\n");
 	}
 
