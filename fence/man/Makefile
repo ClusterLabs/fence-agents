@@ -5,6 +5,7 @@ TARGET=	fence_ack_manual.8 \
 	fence_bladecenter.8 \
 	fence_brocade.8 \
 	fence_bullpap.8 \
+	fence_cisco_mds.8 \
 	fence_cpint.8 \
 	fence_drac.8 \
 	fence_egenera.8 \

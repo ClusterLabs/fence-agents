@@ -206,6 +206,63 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "Show only machines in specified datacenter",
 		"order" : 2 },
+	"snmp_version" : {
+		"getopt" : "d:",
+		"longopt" : "snmp-version",
+		"help" : "-d, --snmp-version=<ver>       Specifies SNMP version to use",
+		"required" : "0",
+		"shortdesc" : "Specifies SNMP version to use (1,2c,3)",
+		"order" : 1 },
+	"community" : {
+		"getopt" : "c:",
+		"longopt" : "community",
+		"help" : "-c, --community=<community>    Set the community string",
+		"required" : "0",
+		"shortdesc" : "Set the community string",
+		"order" : 1},
+	"snmp_auth_prot" : {
+		"getopt" : "b:",
+		"longopt" : "snmp-auth-prot",
+		"help" : "-b, --snmp-auth-prot=<prot>    Set authentication protocol (MD5|SHA)",
+		"required" : "0",
+		"shortdesc" : "Set authentication protocol (MD5|SHA)",
+		"order" : 1},
+	"snmp_sec_level" : {
+		"getopt" : "E:",
+		"longopt" : "snmp-sec-level",
+		"help" : "-E, --snmp-sec-level=<level>   Set security level\n"+
+		"                                  (noAuthNoPriv|authNoPriv|authPriv)",
+		"required" : "0",
+		"shortdesc" : "Set security level (noAuthNoPriv|authNoPriv|authPriv)",
+		"order" : 1},
+	"snmp_priv_prot" : {
+		"getopt" : "B:",
+		"longopt" : "snmp-priv-prot",
+		"help" : "-B, --snmp-priv-prot=<prot>    Set privacy protocol (DES|AES)",
+		"required" : "0",
+		"shortdesc" : "Set privacy protocol (DES|AES)",
+		"order" : 1},
+	"snmp_priv_passwd" : {
+		"getopt" : "P:",
+		"longopt" : "snmp-priv-passwd",
+		"help" : "-P, --snmp-priv-passwd=<pass>  Set privacy protocol password",
+		"required" : "0",
+		"shortdesc" : "Set privacy protocol password",
+		"order" : 1},
+	"snmp_priv_passwd_script" : {
+		"getopt" : "R:",
+		"longopt" : "snmp-priv-passwd-script",
+		"help" : "-R, --snmp-priv-passwd-script  Script to run to retrieve privacy password",
+		"required" : "0",
+		"shortdesc" : "Script to run to retrieve privacy password",
+		"order" : 1},
+	"udpport" : {
+		"getopt" : "u:",
+		"longopt" : "udpport",
+		"help" : "-u, --udpport                  UDP/TCP port to use",
+		"required" : "0",
+		"shortdesc" : "UDP/TCP port to use for connection with device",
+		"order" : 1},
 	"separator" : {
 		"getopt" : "C:",
 		"longopt" : "separator",
@@ -464,6 +521,9 @@ def check_input(device_opt, opt):
 
 	if options.has_key("-v") and options.has_key("debug_fh") == 0:
 		options["debug_fh"] = sys.stderr
+
+	if options.has_key("-R"):
+		options["-P"] = os.popen(options["-R"]).read().rstrip()
 
 	return options
 	
