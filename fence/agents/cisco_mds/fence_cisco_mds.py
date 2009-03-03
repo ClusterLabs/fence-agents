@@ -39,7 +39,7 @@ def cisco_port2oid(port):
 	if ((nums) and (len(nums.groups()))==2):
 		return "%s.%d.%d"%(PORT_ADMIN_STATUS_OID,int(nums.group(1))+21,int(nums.group(2))-1)
 	else:
-		fail_usage("Mangled port number: %s",port)
+		fail_usage("Mangled port number: %s"%(port))
 
 def get_power_status(conn,options):
 	global port_oid
@@ -104,7 +104,8 @@ def main():
 
 	options = check_input(device_opt, options)
 
-	port_oid=cisco_port2oid(options["-n"])
+	if (not (options["-o"] in ["list","monitor"])):
+		port_oid=cisco_port2oid(options["-n"])
 
 	# Operate the fencing device
 	fence_action(FencingSnmp(options), options, set_power_status, get_power_status, get_outlets_status)
