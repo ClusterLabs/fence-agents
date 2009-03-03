@@ -4,6 +4,7 @@ import getopt, sys
 import os
 import socket
 import time
+import atexit
 
 from telnetlib import Telnet
 
@@ -39,6 +40,14 @@ def version():
   print "fence_rsb %s  %s\n" % (RELEASE_VERSION, BUILD_DATE)
   print "%s\n" % REDHAT_COPYRIGHT
   sys.exit(0)
+
+def atexit_handler():
+	try:
+		sys.stdout.close()
+		os.close(1)
+	except IOError:
+		sys.stderr.write("%s failed to close standard output\n"%(sys.argv[0]))
+		sys.exit(1)
 
 def main():
   depth = 0
@@ -79,6 +88,8 @@ def main():
   regex_list.append("[Pp]ress any key to continue")
   regex_list.append("really want to")
   regex_list.append("CLOSING TELNET CONNECTION")
+
+  atexit.register(atexit_handler)
 
   if len(sys.argv) > 1:
     try:

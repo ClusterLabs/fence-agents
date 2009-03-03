@@ -4,6 +4,7 @@ import getopt, sys
 import os
 import socket
 import time
+import atexit
 
 from telnetlib import Telnet
 
@@ -38,6 +39,14 @@ def version():
   print "%s\n" % REDHAT_COPYRIGHT
   sys.exit(0)
 
+def atexit_handler():
+	try:
+		sys.stdout.close()
+		os.close(1)
+	except IOError:
+		sys.stderr.write("%s failed to close standard output\n"%(sys.argv[0]))
+		sys.exit(1)
+
 def main():
 
   POWER_OFF = 0
@@ -66,6 +75,8 @@ def main():
   regex_list.append(".*>")
   regex_list.append("Power:")
   regex_list.append("Error:")
+
+  atexit.register(atexit_handler)
 
   if len(sys.argv) > 1:
     try:

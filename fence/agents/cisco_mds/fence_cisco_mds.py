@@ -87,6 +87,8 @@ def main():
 		       "snmp_priv_prot", "snmp_priv_passwd", "snmp_priv_passwd_script",
 		       "udpport"]
 
+	atexit.register(atexit_handler)
+
 	options=process_input(device_opt)
 
 	# Emulate enable/disable functionality

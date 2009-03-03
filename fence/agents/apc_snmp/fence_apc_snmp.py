@@ -13,6 +13,7 @@ import datetime
 import time
 import select
 import signal
+import atexit
 from glob import glob
 
 #BEGIN_VERSION_GENERATION
@@ -243,9 +244,18 @@ def log(msg, error=False):
 		o = sys.stdout
 	o.write(msg)
 
+def atexit_handler():
+	try:
+		sys.stdout.close()
+		os.close(1)
+	except IOError:
+		sys.stderr.write("%s failed to close standard output\n"%(sys.argv[0]))
+		sys.exit(1)
 
 
 def main():
+	atexit.register(atexit_handler)
+
 	try:
 		main2()
 		return 0

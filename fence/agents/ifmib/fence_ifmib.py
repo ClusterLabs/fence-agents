@@ -19,6 +19,7 @@ BUILD_DATE="March, 2008"
 import os
 os.environ['PYSNMP_API_VERSION'] = 'v2'
 import sys, getopt, random, socket
+import atexit
 from pysnmp import role, v2c, asn1
 
 ifAdminStatus = '.1.3.6.1.2.1.2.2.1.7.'
@@ -160,8 +161,17 @@ def snmpset (host, comm, oid, type, value):
     else:
         raise IOError('SNMP error while setting')
 
+def atexit_handler():
+	try:
+		sys.stdout.close()
+		os.close(1)
+	except IOError:
+		sys.stderr.write("%s failed to close standard output\n"%(sys.argv[0]))
+		sys.exit(1)
 
 def main():
+    atexit.register(atexit_handler)
+
     if len (sys.argv) > 1:
         (comm, host, index, option, verbose) = parseargs ()
     else:
