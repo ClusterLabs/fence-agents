@@ -265,7 +265,9 @@ foreach my $line (@lines)
    }
    next unless ( $field eq "Blocked" );
    if ( ($block && $b_state eq "true") ||
-        (!$block && $b_state eq "false") )
+        (!$block && $b_state eq "false") ||
+        ($block && $b_state eq "Blocked") ||
+        (!$block && $b_state eq "Unblocked") )
    {
       $fail = 0;
    }
