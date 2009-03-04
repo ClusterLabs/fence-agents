@@ -2,9 +2,9 @@ Intro:
 ------
 This is an SNMP-based fencing agent for RHCS.  It was designed with the use-case
 of disabling ethernet ports on an iSCSI SAN, but could be used to disable any
-port on any SNMP v2c device that implementes the IF-MIB.
+port on any SNMP v1/2c/3 device that implementes the IF-MIB.
 
-The script requires PySNMP version 2 to be installed and working on all nodes
+The script requires NetSNMP to be installed and working on all nodes
 in the cluster.  There are no requirements for any MIBs to be setup --- all of
 the required OIDs are hard-coded into the script.  Since the IF-MIB is an IETF
 standard, these identifiers are very widely supported and will not change.
@@ -16,7 +16,7 @@ To use this agen with the switch used on the iSCSI network, you'll require:
    1) A managed switch running SNMP.
    2) An SNMP community with write privileges.
    3) Permission to send SNMP through any ACLs or firewalls from the nodes.
-   4) The ifIndex associated with the ports being used by the cluster nodes.
+   4) The ifIndex or ifPort associated with the ports being used by the cluster nodes.
 
 Consider a three-node cluster composed of A, B, and C.  Each node has two
 network interfaces - one used for network and cluster communication, the second
@@ -37,9 +37,9 @@ need something like this cluster.conf
 
 In a node's fencing methods, you'll include a line like this:
 
-<device name="myswitch" ifindex="43" option="off"/>
+<device name="myswitch" port="43" option="off"/>
 
 This node will be fenced by disabling the port with ifIndex 43 on the host sw1.
 In SNMP speak, we set IF-MIB::ifAdminStatus.43 = down(2).
 
-
+If you will use port name (like fc1/1), script will try to find ifIndex.

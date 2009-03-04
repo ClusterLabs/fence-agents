@@ -1,233 +1,131 @@
 #!/usr/bin/python
-# fence_ifmib.py: fabric fencing for RHCS based on setting a network interface
-# to admin down.  Intended to be used for iSCSI connections, can be used with
-# anything that supports the IF-MIB and SNMP v2c.
-#
-# Written by Ross Vandegrift <ross@kallisti.us>
-# Copyright (C) 2008-2009 Ross Vandegrift
-#  This copyrighted material is made available to anyone wishing to use,
-#  modify, copy, or redistribute it subject to the terms and conditions
-#  of the GNU General Public License v.2.
 
-COPYRIGHT="Copyright (C) 2008-2009 Ross Vandegrift <ross@kallisti.us>"
+# The Following agent has been tested on:
+# - Cisco MDS UROS 9134 FC (1 Slot) Chassis ("1/2/4 10 Gbps FC/Supervisor-2") Motorola, e500v2
+#   with BIOS 1.0.16, kickstart 4.1(1c), system 4.1(1c)
+# - Cisco MDS 9124 (1 Slot) Chassis ("1/2/4 Gbps FC/Supervisor-2") Motorola, e500
+#   with BIOS 1.0.16, kickstart 4.1(1c), system 4.1(1c)
+# - Partially with APC PDU (Network Management Card AOS v2.7.0, Rack PDU APP v2.7.3)
+#   Only lance if is visible
+
+import sys, re, pexpect
+from fencing import *
+from fencing_snmp import *
 
 #BEGIN_VERSION_GENERATION
-RELEASE_VERSION="New fence_ifmib"
-BUILD_DATE="March, 2008"
+RELEASE_VERSION="IF:MIB SNMP fence agent"
+REDHAT_COPYRIGHT=""
+BUILD_DATE=""
 #END_VERSION_GENERATION
 
-import os
-os.environ['PYSNMP_API_VERSION'] = 'v2'
-import sys, getopt, random, socket
-import atexit
-from pysnmp import role, v2c, asn1
+### CONSTANTS ###
+# IF-MIB trees for alias, status and port
+ALIASES_OID=".1.3.6.1.2.1.31.1.1.1.18"
+PORTS_OID=".1.3.6.1.2.1.2.2.1.2"
+STATUSES_OID=".1.3.6.1.2.1.2.2.1.7"
 
-ifAdminStatus = '.1.3.6.1.2.1.2.2.1.7.'
-up = 1
-down = 2
-testing = 3
+# Status constants returned as value from SNMP
+STATUS_UP=1
+STATUS_DOWN=2
+STATUS_TESTING=3
 
-def usage():
-    line = '\t%s\t%s'
-    print ''
-    print 'This script fences a node by sending a command via SNMP to set'
-    print 'ifAdminStatus to down.  It is designed to kill node access'
-    print 'to the shared storage.  It only supports SNMP v2c.'
-    print ''
-    print RELEASE_VERSION, BUILD_DATE
-    print COPYRIGHT
-    print ''
-    print 'Usage: fence_ifmib [options]'
-    print line % ('-h', '\tPrint usage')
-    print line % ('-V', '\tRun verbosely')
-    print line % ('-c [private]', 'Write community string to use')
-    print line % ('-a [hostname]', 'IP/hostname of SNMP agent')
-    print line % ('-i [index]', 'ifIndex entry of the port ')
-    print line % ('-o [action]', 'One of down, up, or status')
+### GLOBAL VARIABLES ###
+# Port number converted from port name or index
+port_num=None
 
+### FUNCTIONS ###
 
-def vprint(v, s):
-    if v:
-        print s
+# Convert port index or name to port index
+def port2index(conn,port):
+	res=None
 
+	if (port.isdigit()):
+		res=int(port)
+	else:
+		ports=conn.walk(PORTS_OID,30)
 
-def parseargs():
-    try:
-        opt, arg = getopt.getopt (sys.argv[1:], 'hVc:v:a:i:o:')
-    except getopt.GetoptError, e:
-        print str (e)
-        usage ()
-        sys.exit (-1)
+		for x in ports:
+			if (x[1].strip('"')==port):
+				res=int(x[0].split('.')[-1])
+				break
 
-    comm = ipaddr = ifindex = option = verbose = None
+	if (res==None):
+		fail_usage("Can't find port with name %s!"%(port))
 
-    for o, a in opt:
-        if o == '-h':
-            usage ()
-            sys.exit (-1)
-        if o == '-V':
-            verbose = True
-        if o == '-c':
-            comm = a
-        if o == '-a':
-            ipaddr = a
-        if o == '-i':
-            try:
-                ifindex = int(a)
-            except:
-                sys.stderr.write ('fence_ifmib: ifIndex must be an integer\n')
-                usage ()
-                sys.exit (-1)
-        if o == '-o':
-            option = a
-            if option not in ('on', 'off', 'status'):
-                sys.stderr.write ('fence_ifmib: option must be one of on, off, or status\n')
-                usage ()
-                sys.exit (-1)
+	return res
 
-    if comm == None or ipaddr == None or ifindex == None \
-            or option == None:
-        sts.stderr.write ('All args are madatory!\n')
-        usage ()
-        sys.exit (-1)
+def get_power_status(conn,options):
+	global port_num
 
-    return (comm, ipaddr, ifindex, option, verbose)
+	if (port_num==None):
+		port_num=port2index(conn,options["-n"])
 
+	(oid,status)=conn.get("%s.%d"%(STATUSES_OID,port_num))
+	return (status==str(STATUS_UP) and "on" or "off")
 
-def parsestdin():
-    params = {}
-    for line in sys.stdin:
-        val = line.split('=')
-        if len (val) == 2:
-            params[val[0].strip ()] = val[1].strip ()
+def set_power_status(conn, options):
+	global port_num
 
-    try:
-        comm = params['comm']
-    except:
-        sys.stdout.write ('fence_ifmib: Error reading community string\n')
-        sys.exit (1)
+	if (port_num==None):
+		port_num=port2index(conn,options["-n"])
 
-    try:
-        ipaddr = params['ipaddr']
-    except:
-        sys.stdout.write ('fence_ifmib: Error reading destination IP/host\n')
-        sys.exit (1)
+	conn.set("%s.%d"%(STATUSES_OID,port_num),(options["-o"]=="on" and STATUS_UP or STATUS_DOWN))
 
-    try:
-        ifindex = params['ifindex']
-    except:
-        sys.stdout.write ('fence_ifmib: Error reading ifindex\n')
-        sys.exit (1)
+# Convert array of format [[key1, value1], [key2, value2], ... [keyN, valueN]] to dict, where key is
+# in format a.b.c.d...z and returned dict has key only z
+def array_to_dict(ar):
+	return dict(map(lambda y:[y[0].split('.')[-1],y[1]],ar))
 
-    try:
-        option = params['option']
-    except:
-        option = 'off'
+def get_outlets_status(conn, options):
+	result={}
 
-    return (comm, ipaddr, ifindex, option)
-            
+	res_fc=conn.walk(PORTS_OID,30)
+	res_aliases=array_to_dict(conn.walk(ALIASES_OID,30))
 
-def snmpget (host, comm, oid):
-    req = v2c.GETREQUEST ()
-    encoded_oids = map (asn1.OBJECTID().encode, [oid,])
-    req['community'] = comm
-    tr = role.manager ((host, 161))
-    rsp = v2c.RESPONSE ()
-    (rawrsp, src) = tr.send_and_receive (req.encode (encoded_oids=encoded_oids))
-    rsp.decode (rawrsp)
-    if rsp['error_status']:
-        raise IOError('SNMP error while reading')
-    oids = map (lambda x: x[0], map(asn1.OBJECTID ().decode, rsp['encoded_oids']))
-    vals = map (lambda x: x[0] (), map(asn1.decode, rsp['encoded_vals']))
-    return vals[0]
+	for x in res_fc:
+		port_num=x[0].split('.')[-1]
 
+		port_name=x[1].strip('"')
+		port_alias=(res_aliases.has_key(port_num) and res_aliases[port_num].strip('"') or "")
+		port_status=""
+		result[port_name]=(port_alias,port_status)
 
-def snmpset (host, comm, oid, type, value):
-    req = v2c.SETREQUEST (request_id=random.randint (1,2**16-1))
-    req['community'] = comm
-    tr = role.manager ((host, 161))
-    rsp = v2c.RESPONSE ()
-    encoded_oids = map (asn1.OBJECTID ().encode, [oid,])
-    encoded_vals = []
-    encoded_vals.append (eval ('asn1.' + type + '()').encode (value))
-    (rawrsp, src) = tr.send_and_receive (req.encode (encoded_oids=encoded_oids, encoded_vals=encoded_vals))
-    rsp.decode(rawrsp)
-    if rsp['error_status']:
-        raise IOError('SNMP error while setting')
-    oids = map (lambda x: x[0], map (asn1.OBJECTID().decode, rsp['encoded_oids']))
-    vals = map (lambda x: x[0] (), map (asn1.decode, rsp['encoded_vals']))
-    if vals[0] == value:
-        return vals[0]
-    else:
-        raise IOError('SNMP error while setting')
+	return result
 
-def atexit_handler():
-	try:
-		sys.stdout.close()
-		os.close(1)
-	except IOError:
-		sys.stderr.write("%s failed to close standard output\n"%(sys.argv[0]))
-		sys.exit(1)
+# Define new options
+def ifmib_define_defaults():
+	all_opt["snmp_version"]["default"]="2c"
 
+# Main agent method
 def main():
-    atexit.register(atexit_handler)
+	global port_oid
 
-    if len (sys.argv) > 1:
-        (comm, host, index, option, verbose) = parseargs ()
-    else:
-        verbose = False
-        (comm, host, index, option) = parsestdin ()
+	device_opt = [ "help", "version", "agent", "quiet", "verbose", "debug",
+		       "action", "ipaddr", "login", "passwd", "passwd_script",
+		       "test", "port", "separator", "no_login", "no_password",
+		       "snmp_version", "community", "snmp_auth_prot", "snmp_sec_level",
+		       "snmp_priv_prot", "snmp_priv_passwd", "snmp_priv_passwd_script",
+		       "udpport"]
 
-    try:
-        switch = socket.gethostbyname (host)
-    except socket.gaierror, err:
-        vprint (verbose, 'fence_ifmib: %s' % str (err[1]))
-        sys.exit(1)
+	atexit.register(atexit_handler)
 
-    if option == 'on':
-        value = up
-    elif option == 'off':
-        value = down
-    elif option == 'status':
-        value = None
+	options=process_input(device_opt)
 
-    if value:
-        # For option in (on, off) - write and verify
-        try:
-            r = snmpset (switch, comm, ifAdminStatus + str (index), 'INTEGER', value)
-        except:
-            sys.stderr.write ('fence_ifmib: Error during snmp write\n')
-            sys.exit (1)
-        
-        try:
-            s = int (snmpget (switch, comm, ifAdminStatus + str (index)))
-        except:
-            sys.stderr.write ('fence_ifmib: Error during fence verification\n')
-            sys.exit (1)
+	# Emulate enable/disable functionality
+	if (options.has_key("-o")):
+		options["-o"]=options["-o"].lower()
 
-        if s == value:
-            vprint (verbose, 'fence_ifmib: action %s sucessful' % option)
-            sys.exit (0)
-        else:
-            vprint (verbose, 'fence_ifmib: action %s failed' % option)
-            sys.exit (1)
-    else: # status
-        try: 
-            r = int (snmpget (switch, comm, ifAdminStatus + str (index)))
-        except:
-            sys.stderr.write ('fence_ifmib: Error during snmp read\n')
-            sys.exit (1)
+		if (options["-o"]=="enable"):
+			options["-o"]="on"
+		if (options["-o"]=="disable"):
+			options["-o"]="off"
+	else:
+		options["-o"]="off"
 
-        if r == up:
-            vprint (verbose, 'fence_ifmib: Port is admin up')
-            sys.exit (0)
-        elif r == down:
-            vprint (verbose, 'fence_ifmib: Port is admin down')
-            sys.exit (2)
-        elif r == testing:
-            vprint (verbose, 'fence_ifmib: Port is admin testing')
-            sys.exit (2)
+	options = check_input(device_opt, options)
 
+	# Operate the fencing device
+	fence_action(FencingSnmp(options), options, set_power_status, get_power_status, get_outlets_status)
 
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+	main()
