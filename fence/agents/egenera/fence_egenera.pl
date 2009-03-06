@@ -41,6 +41,7 @@ sub usage
 	print "  -l <string>      lpan\n";
 	print "  -o <string>      Action: reboot (default), off, on or status\n";
 	print "  -p <string>      pserver\n";
+	print "  -u <string>      username (default=root)\n";
 	print "  -q               quiet mode\n";
 	print "  -V               version\n";
 	
@@ -74,7 +75,7 @@ sub version
 
 if (@ARGV > 0) 
 {
-	getopts("c:hl:o:p:qV") || fail_usage ;
+	getopts("c:hl:o:p:u:qV") || fail_usage ;
 
 	usage if defined $opt_h;
 	version if defined $opt_V;
@@ -85,6 +86,7 @@ if (@ARGV > 0)
 	$lpan   = $opt_l if defined $opt_l;
 	$pserv  = $opt_p if defined $opt_p;
 	$action = $opt_o if defined $opt_o;
+	$user   = $opt_u if defined $opt_u;
 } 
 else 
 {
@@ -92,6 +94,7 @@ else
 } 
 
 $action = "reboot" unless defined $action;
+$user = "root" unless defined $user;
 
 fail "failed: no cserver defined" unless defined $cserv;
 fail "failed: no lpan defined" unless defined $lpan;
@@ -157,6 +160,10 @@ sub get_options_stdin
 		{
 			$esh = $val;
 		} 
+		elsif ($name eq "user" )
+		{
+			$user = $val;
+		}
 
 		# FIXME should we do more error checking?  
 		# Excess name/vals will be eaten for now
@@ -182,7 +189,7 @@ sub _pserver_query_field
 
 	my $val;
 
-	my $cmd = "ssh $cserv $esh pserver $lpan/$pserv";
+	my $cmd = "ssh -l $user $cserv $esh pserver $lpan/$pserv";
 	my $pid = open3 (\*WTR, \*RDR,\*RDR, $cmd)
 		or die "error open3(): $!";
 
@@ -270,7 +277,7 @@ sub pserver_boot
 		}
 
 		# Is there any harm in sending this command multiple times?
-		my $cmd = "ssh $cserv $esh pserver -b $lpan/$pserv";
+		my $cmd = "ssh -l $user $cserv $esh pserver -b $lpan/$pserv";
 		my $pid = open3 (\*WTR, \*RDR,\*RDR, $cmd)
 			or die "error open3(): $!";
 
@@ -334,7 +341,7 @@ sub pserver_shutdown
 
 			# is there any harm in sending this command multiple 
 			# times?
-			my $cmd = "ssh $cserv $esh blade -s $_";
+			my $cmd = "ssh -l $user $cserv $esh blade -s $_";
                         print egen_log "shutdown: $cmd  being called, before open3\n";
 			my $pid = open3 (\*WTR, \*RDR,\*RDR, $cmd)
 				or die "error open3(): $!";
