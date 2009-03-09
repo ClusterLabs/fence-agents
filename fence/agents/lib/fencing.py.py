@@ -329,6 +329,8 @@ def metadata(avail_opt):
 	sorted_list = [ (key, all_opt[key]) for key in avail_opt ]
 	sorted_list.sort(lambda x, y: cmp(x[1]["order"], y[1]["order"]))
 
+	print "<?xml version=\"1.0\" ?>"
+	print "<resource-agent name=\"" + os.path.basename(sys.argv[0]) + "\" >"
 	print "<parameters>"
 	for option, value in sorted_list:
 		if all_opt[option].has_key("shortdesc"):
@@ -345,6 +347,7 @@ def metadata(avail_opt):
 			print "\t\t<shortdesc lang=\"en\">" + all_opt[option]["shortdesc"] + "</shortdesc>"
 			print "\t</parameter>"
 	print "</parameters>"
+	print "</resource-agent>"
 
 def process_input(avail_opt):
 	global all_opt
