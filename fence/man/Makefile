@@ -1,6 +1,7 @@
 TARGET=	fence_ack_manual.8 \
 	fence_alom.8 \
 	fence_apc.8 \
+	fence_apc_snmp.8 \
 	fence_baytech.8 \
 	fence_bladecenter.8 \
 	fence_brocade.8 \
