@@ -13,6 +13,7 @@ TARGET=	fence_ack_manual.8 \
 	fence_ibmblade.8 \
 	fence_ifmib.8 \
 	fence_ilo.8 \
+	fence_intelmodular.8 \
 	fence_ipmilan.8 \
 	fence_ldom.8 \
 	fence_manual.8 \
