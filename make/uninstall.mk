@@ -8,9 +8,6 @@ endif
 ifdef INITDT
 	${UNINSTALL} ${INITDT} ${initddir}
 endif
-ifdef MIBRESOURCE
-	${UNINSTALL} ${MIBRESOURCE} ${mibdir}
-endif
 ifdef FENCEAGENTSLIB
 	${UNINSTALL} ${FENCEAGENTSLIB}* ${DESTDIR}/${fenceagentslibdir}
 endif

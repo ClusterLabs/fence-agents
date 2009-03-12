@@ -6,7 +6,6 @@ docdir ?= ${DESTDIR}@DOCDIR@
 logdir ?= ${DESTDIR}@LOGDIR@
 mandir ?= ${DESTDIR}@MANDIR@
 incdir ?= ${DESTDIR}@INCDIR@
-mibdir ?= ${DESTDIR}@MIBDIR@
 snmpbin ?= @SNMPBIN@
 notifyddir ?= ${DESTDIR}@CONFDIR@/cman-notify.d
 
