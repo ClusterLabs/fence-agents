@@ -27,7 +27,10 @@ def get_power_status(conn, options):
 		node_cmd = "system:blade\[" + options["-n"] + "\]>"
 
 		conn.send("env -T system:blade[" + options["-n"] + "]\r\n")
-		conn.log_expect(options, node_cmd, SHELL_TIMEOUT)
+		i = conn.log_expect(options, [ node_cmd, "system>" ] , SHELL_TIMEOUT)
+		if i == 1:
+			## Given blade number does not exist
+			fail(EC_STATUS)
 		conn.send("power -state\r\n")
 		conn.log_expect(options, node_cmd, SHELL_TIMEOUT)
 		status = conn.before.splitlines()[-1]

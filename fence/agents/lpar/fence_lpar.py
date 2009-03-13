@@ -30,7 +30,10 @@ def get_power_status(conn, options):
 		except pexpect.TIMEOUT:
 			fail(EC_TIMED_OUT)
 
-		status = re.compile("^" + options["-n"] + ",(.*?),.*$", re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
+		try:
+			status = re.compile("^" + options["-n"] + ",(.*?),.*$", re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
+		except AttributeError:
+			fail(EC_STATUS_HMC)
 	elif options["-H"] == "4":
 		try:
 			conn.send("lssyscfg -r lpar -m "+ options["-s"] +" --filter 'lpar_names=" + options["-n"] + "'\n")
@@ -39,8 +42,11 @@ def get_power_status(conn, options):
 			fail(EC_CONNECTION_LOST)
 		except pexpect.TIMEOUT:
 			fail(EC_TIMED_OUT)
-				
-		status = re.compile(",state=(.*?),", re.IGNORECASE).search(conn.before).group(1)
+
+		try:				
+			status = re.compile(",state=(.*?),", re.IGNORECASE).search(conn.before).group(1)
+		except AttributeError:
+			fail(EC_STATUS_HMC)
 
 	##
 	## Transformation to standard ON/OFF status if possible

@@ -26,6 +26,7 @@ EC_TIMED_OUT       = 5
 EC_WAITING_ON      = 6
 EC_WAITING_OFF     = 7
 EC_STATUS          = 8
+EC_STATUS_HMC      = 9
 
 TELNET_PATH = "/usr/bin/telnet"
 SSH_PATH    = "/usr/bin/ssh"
@@ -304,7 +305,8 @@ def fail(error_code):
 		EC_TIMED_OUT : "Connection timed out",
 		EC_WAITING_ON : "Failed: Timed out waiting to power ON",
 		EC_WAITING_OFF : "Failed: Timed out waiting to power OFF",
-		EC_STATUS : "Failed: Unable to obtain correct plug status"
+		EC_STATUS : "Failed: Unable to obtain correct plug status or plug is not available",
+		EC_STATUS_HMC : "Failed: Either unable to obtaion correct plug status, partition is not available or incorrect HMC version used"
 	}[error_code] + "\n"
 	sys.stderr.write(message)
 	sys.exit(error_code)

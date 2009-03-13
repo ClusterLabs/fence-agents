@@ -25,7 +25,7 @@ BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):
-	result = ""
+	exp_result = 0
 	outlets = {}
 	try:
 		conn.send("1\r\n")
@@ -67,8 +67,8 @@ def get_power_status(conn, options):
 		else:
 			conn.send(options["-s"]+"\r\n")
 			
-		while 1 == conn.log_expect(options, [ options["-c"],  "Press <ENTER>" ], SHELL_TIMEOUT):
-			result += conn.before
+		while True:
+			exp_result == conn.log_expect(options, [ options["-c"],  "Press <ENTER>" ], SHELL_TIMEOUT)
 			lines = conn.before.split("\n");
 			show_re = re.compile('^\s*(\d+)- (.*?)\s+(ON|OFF)\s*$')
 			for x in lines:
@@ -76,7 +76,8 @@ def get_power_status(conn, options):
 				if (res != None):
 					outlets[res.group(1)] = (res.group(2), res.group(3))
 			conn.send("\r\n")
-		result += conn.before
+			if exp_result == 0:
+				break
 		conn.send(chr(03))		
 		conn.log_expect(options, "- Logout", SHELL_TIMEOUT)
 		conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
@@ -88,8 +89,11 @@ def get_power_status(conn, options):
 	if ["list", "monitor"].count(options["-o"]) == 1:
 		return outlets
 	else:
-		status = re.compile("\s*"+options["-n"]+"-.*(ON|OFF)", re.IGNORECASE).search(result).group(1)
-		return status.lower().strip()
+		try:
+			(_, status) = outlets[options["-n"]]
+			return status.lower().strip()
+		except KeyError:
+			fail(EC_STATUS)
 
 def set_power_status(conn, options):
 	action = {

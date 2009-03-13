@@ -93,6 +93,8 @@ def main():
 		conn.send("</LOGIN>\r\n")
 	except pexpect.TIMEOUT:
 		fail(EC_LOGIN_DENIED)
+	except pexpect.EOF:
+		fail(EC_LOGIN_DENIED)
 
 	##
 	## Fence operations
