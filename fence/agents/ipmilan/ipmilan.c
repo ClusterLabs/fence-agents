@@ -117,6 +117,24 @@ static struct Etoken power_status[] = {
 	{NULL, 0, 0}
 };
 
+/* Structure describing one xml metadata value*/
+struct xml_parameter_s {
+  char *name;
+  char *description;
+};
+
+/* Array of xml metadatas*/
+struct xml_parameter_s xml_parameters[]={
+  {"auth","IPMI Lan Auth type (md5, password, or none)"},
+  {"ipaddr","IPMI Lan IP to talk to"},
+  {"passwd","Password (if required) to control power on IPMI device"},
+  {"passwd_script","Script to retrieve password (if required)"},
+  {"lanplus","Use Lanplus"},
+  {"login","Username/Login (if required) to control power on IPMI device"},
+  {"action","Operation to perform. Valid operations: on, off, reboot, status, list, monitor or metadata"},
+  {"timeout","Timeout (sec) for IPMI operation"},
+  {"cipher","Ciphersuite to use (same as ipmitool -C parameter)"},
+  {"verbose","Verbose mode"}};
 
 /*
    Search for ipmitool
@@ -722,7 +740,7 @@ printf("   -S <path>      Script to retrieve password (if required)\n");
 printf("   -l <login>     Username/Login (if required) to control power\n"
        "                  on IPMI device\n");
 printf("   -o <op>        Operation to perform.\n");
-printf("                  Valid operations: on, off, reboot, status\n");
+printf("                  Valid operations: on, off, reboot, status, list or monitor\n");
 printf("   -t <timeout>   Timeout (sec) for IPMI operation (default %d)\n",DEFAULT_TIMEOUT);
 printf("   -C <cipher>    Ciphersuite to use (same as ipmitool -C parameter)\n");
 printf("   -V             Print version and exit\n");
@@ -745,6 +763,26 @@ printf("   verbose               Same as -v\n\n");
 }
 
 
+/** Print XML metadata of fence agent*/
+void print_xml_metadata(char *pname) {
+  int i;
+
+  printf("%s\n","<?xml version=\"1.0\" ?>");
+  printf("%s%s%s\n","<resource-agent name=\"",pname,"\" >");
+  printf("%s\n","<parameters>");
+
+  for (i=0;i<(sizeof(xml_parameters)/sizeof(struct xml_parameter_s));i++) {
+    printf("\t<parameter name=\"%s\" unique=\"0\">\n",xml_parameters[i].name);
+
+    printf("\t\t<shortdesc lang=\"C\">");
+    printf("%s",xml_parameters[i].description);
+    printf("</shortdesc>\n");
+    printf("\t</parameter>\n");
+  }
+  printf("%s\n","</parameters>");
+  printf("%s\n","</resource-agent>");
+}
+
 int
 main(int argc, char **argv)
 {
@@ -761,7 +799,8 @@ main(int argc, char **argv)
 	char *pname = basename(argv[0]);
 	struct ipmi *i;
 	int timeout=DEFAULT_TIMEOUT;
-        int cipher=-1;
+	int cipher=-1;
+	int print_final_status=1;
 
 	memset(ip, 0, sizeof(ip));
 	memset(authtype, 0, sizeof(authtype));
@@ -874,9 +913,11 @@ main(int argc, char **argv)
 		snprintf(op,sizeof(op), "reboot");
 
 	if (strcasecmp(op, "off") && strcasecmp(op, "on") &&
-	    strcasecmp(op, "status") && strcasecmp(op, "reboot")) {
+	    strcasecmp(op, "status") && strcasecmp(op, "reboot") &&
+	    strcasecmp(op, "monitor") && strcasecmp(op, "list") &&
+	    strcasecmp(op, "metadata")) {
 		fail_exit("operation must be 'on', 'off', 'status', "
-			  "or 'reboot'");
+			  "'reboot', 'list', 'monitor' or 'metadata'");
 	}
 
 	if (strlen(authtype) &&
@@ -913,33 +954,47 @@ main(int argc, char **argv)
 		printf("Powering off machine @ IPMI:%s...", ip);
 		fflush(stdout);
 		ret = ipmi_off(i);
-	} else if (!strcasecmp(op, "status")) {
+	} else if (!strcasecmp(op, "status") || !strcasecmp(op, "monitor")) {
 		printf("Getting status of IPMI:%s...",ip);
 		fflush(stdout);
 		ret = ipmi_op(i, ST_STATUS, power_status);
 		switch(ret) {
 		case STATE_ON:
-			printf("Chassis power = On\n");
+		  if (!strcasecmp(op, "status"))
+			    printf("Chassis power = On\n");
 			ret = 0;
 			break;
 		case STATE_OFF:
-			printf("Chassis power = Off\n");
+		  if (!strcasecmp(op, "status"))
+			    printf("Chassis power = Off\n");
 			ret = 0;
 			break;
 		default:
-			printf("Chassis power = Unknown\n");
+		  if (!strcasecmp(op, "status"))
+			    printf("Chassis power = Unknown\n");
 			ret = 1;
 			break;
 		}
+	} else if (!strcasecmp(op, "list")) {
+	  printf("%s\n","N/A");
+	  ret=0;
+	  print_final_status=0;
+	} else if (!strcasecmp(op, "metadata")) {
+	  print_xml_metadata(pname);
+	  ret=0;
+	  print_final_status=0;
 	}
 
 
 out:
 	ipmi_destroy(i);
 	free(i);
-	if (ret == 0)
-		printf("Done\n");
-	else
-		printf("Failed\n");
+
+	if (print_final_status) {
+	  if (ret == 0)
+	    printf("Done\n");
+	  else
+	    printf("Failed\n");
+	}
 	return ret;
 }
