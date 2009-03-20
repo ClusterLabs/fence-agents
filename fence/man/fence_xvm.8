@@ -1,7 +1,7 @@
 .TH fence_xvm 8
 
 .SH NAME
-fence_xvm - I/O Fencing agent for Xen virtual machines.
+fence_xvm - General purpose fencing agent for virtual machines.
 
 .SH SYNOPSIS
 .B
@@ -9,10 +9,11 @@ fence_xvm
 [\fIOPTION\fR]...
 
 .SH DESCRIPTION
-fence_xvm is an I/O Fencing agent which can be used with Xen virtual machines
-which are part of a cluster.  There is a requirement that the parent 
-domain-0s are also a part of a CMAN/OpenAIS based cluster, such as
-linux-cluster.
+fence_xvm is an I/O Fencing agent which can be used with any virtual
+machines for which libvirt has a backend.  When used on virtual machines
+which are backed by clustered storage (and thus, may be migrated about
+several physical machines), there is a requirement that the host machines
+are also a part of a CMAN/OpenAIS based cluster, such as linux-cluster.
 
 fence_xvm accepts options on the command line as well as from standard input.  
 If no command line options are present, fence_xvm will automatically use
@@ -51,8 +52,8 @@ random number generation and a shared private key.
 \fB-c\fP \fIhash\fP
 Packet hash type (none, sha1, sha256, sha512; default=sha256).  This
 controls the hashing mechanism used to authenticate fencing requests.  The
-three SHA hashes use a key which must be shared between both the Xen virtual
-machines and the host domain-0 cluster.
+three SHA hashes use a key which must be shared between both the virtual
+machines and the host (physical) cluster.
 .TP
 \fB-k\fP \fIkey_file\fP
 Use the specified key file for packet hashing / SHA authentication.
@@ -60,12 +61,13 @@ When both the hash type and the authentication type are set to "none",
 this parameter is ignored.
 .TP
 \fB-H\fP \fIdomain\fP
-This specifies unique domain name of the Xen guest which needs to be fenced.
+This specifies unique domain name of the virtual machine name (or
+UUID) which needs to be fenced.
 .TP
 \fB-u\fP
-Fence by UUID instead of Xen Domain name.  If specified, the above -H
-parameter should be the statically-defined 36-character UUID of the Xen
-domain rather than its human-readable name.
+Fence by UUID instead of virtual machine name.  If specified, the above -H
+parameter should be the statically-defined 36-character UUID of the virtual
+machine rather than its human-readable name.
 .TP
 \fB-o\fP \fIoperation\fP
 Fencing operation to perform (null, off, reboot; default=off).  This specifies
