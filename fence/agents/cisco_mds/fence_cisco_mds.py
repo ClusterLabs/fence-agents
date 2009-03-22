@@ -7,6 +7,7 @@
 #   with BIOS 1.0.16, kickstart 4.1(1c), system 4.1(1c)
 
 import sys, re, pexpect
+sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing_snmp import *
 

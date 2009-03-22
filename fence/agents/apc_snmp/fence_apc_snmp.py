@@ -9,6 +9,7 @@
 #    MN:AP7951 HR:B2) - SNMP v1
 
 import sys, re, pexpect
+sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing_snmp import *
 

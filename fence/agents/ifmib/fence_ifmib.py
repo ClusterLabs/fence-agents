@@ -9,6 +9,7 @@
 #   Only lance if is visible
 
 import sys, re, pexpect
+sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing_snmp import *
 
