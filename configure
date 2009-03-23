@@ -146,7 +146,7 @@ if ($help || !$err) {
   print "--virtlibdir=\tthe base directory for libvirt libraries.  (Default: {libdir})\n";
   print "--fence_agents=\tlist of fence agents to configure.  (Default: all)\n";
   print "\t\tUse --fence_agents=help for a list\n";
-  print "--fenceagentslibdir=\tspecify directory where to install common fence python lib.  (Default: /usr/share/fence)\n";
+  print "--fenceagentslibdir=\tspecify directory where to install common fence python lib.  (Default: {prefix}/share/fence)\n";
   print "--enable_crack_of_the_day\tEnable build of highly experimental features that rely on code that is not yet available for general use. (Default: no)\n";
   print "--enable_legacy_code\tEnable build of old/obsolete/unsupported code/tools.  (Default: no)\n";
   print "--enable_virt\tEnable building of virtualization code (Default: disabled)\n";
@@ -297,7 +297,7 @@ if (!$fence_agents) {
   $fence_agents="all";
 }
 if (!$fenceagentslibdir) {
-  $fenceagentslibdir="/usr/share/fence";
+  $fenceagentslibdir="${prefix}/share/fence";
 }
 if (!$enable_crack_of_the_day) {
   $enable_crack_of_the_day="";
