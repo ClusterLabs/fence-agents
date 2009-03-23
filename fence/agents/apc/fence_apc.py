@@ -106,7 +106,8 @@ def set_power_status(conn, options):
 		conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
 
 		version = 0
-		admin = 0
+		admin2 = 0
+		admin3 = 0
 		switch = 0
 
 		if (None != re.compile('.* MasterSwitch plus.*', re.IGNORECASE | re.S).match(conn.before)):
@@ -129,19 +130,23 @@ def set_power_status(conn, options):
 			version = 3
 
 		if (None == re.compile('.*Outlet Control/Configuration.*', re.IGNORECASE | re.S).match(conn.before)):
-			admin = 0
+			admin2 = 0
 		else:
-			admin = 1
+			admin2 = 1
 
 		if switch == 0:
 			if version == 2:
-				if admin == 0:
+				if admin2 == 0:
 					conn.send("2\r\n")
 				else:
 					conn.send("3\r\n")
 			else:
 				conn.send("2\r\n")
 				conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+				if (None == re.compile('.*2- Outlet Restriction.*', re.IGNORECASE | re.S).match(conn.before)):
+					admin3 = 0
+				else:
+					admin3 = 1
 				conn.send("1\r\n")
 		else:
 			conn.send(options["-s"] + "\r\n")
@@ -152,10 +157,10 @@ def set_power_status(conn, options):
 		conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
 
 		if switch == 0:
-			if admin == 1:
+			if admin2 == 1:
 				conn.send("1\r\n")
 				conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
-			if version == 3:
+			if admin3 == 1:
 				conn.send("1\r\n")
 				conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
 		else:
