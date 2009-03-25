@@ -19,6 +19,7 @@ $(TARGET):
 		-e 's#@FENCEAGENTSLIBDIR@#${fenceagentslibdir}#g' \
 		-e 's#@SNMPBIN@#${snmpbin}#g' \
 		-e 's#@LOGDIR@#${logdir}#g' \
+		-e 's#@SBINDIR@#${sbindir}#g' \
 	> $@
 
 clean: generalclean

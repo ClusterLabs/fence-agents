@@ -30,7 +30,7 @@ EC_STATUS_HMC      = 9
 
 TELNET_PATH = "/usr/bin/telnet"
 SSH_PATH    = "/usr/bin/ssh"
-SSL_PATH    = "@FENCEAGENTSLIBDIR@/telnet_ssl"
+SSL_PATH    = "@SBINDIR@/fence_nss_wrapper"
 
 all_opt = {
 	"help"    : {
