@@ -59,7 +59,15 @@ class FencingSnmp:
 			if (self.options.has_key("-"+item[0])):
 				cmd+=" -%s '%s'"%(item[1],self.quote_for_run(self.options["-"+item[0]]))
 
-		cmd+=" '%s%s'"%(self.quote_for_run(self.options["-a"]),
+		force_ipvx=""
+
+		if (self.options.has_key("-6")):
+			force_ipvx="udp6:"
+
+		if (self.options.has_key("-4")):
+			force_ipvx="udp:"
+
+		cmd+=" '%s%s%s'"%(force_ipvx, self.quote_for_run(self.options["-a"]),
 				self.options.has_key("-u") and self.quote_for_run(":"+self.options["-u"]) or "")
 		return cmd
 

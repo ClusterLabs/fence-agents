@@ -257,6 +257,20 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "Script to run to retrieve privacy password",
 		"order" : 1},
+	"force_ipv4" : {
+		"getopt" : "4",
+		"longopt" : "force-ipv4",
+		"help" : "-4, --force-ipv4               Forces agent to use IPv4 addresses only",
+		"required" : "0",
+		"shortdesc" : "Forces agent to use IPv4 addresses only",
+		"order" : 1 },
+	"force_ipv6" : {
+		"getopt" : "6",
+		"longopt" : "force-ipv6",
+		"help" : "-6, --force-ipv6               Forces agent to use IPv6 addresses only",
+		"required" : "0",
+		"shortdesc" : "Forces agent to use IPv6 addresses only",
+		"order" : 1 },
 	"udpport" : {
 		"getopt" : "u:",
 		"longopt" : "udpport",
@@ -599,15 +613,23 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 		1
 
 def fence_login(options):
+	force_ipvx=""
+
+	if (options.has_key("-6")):
+		force_ipvx="-6 "
+
+	if (options.has_key("-4")):
+		force_ipvx="-4 "
+
 	try:
 		re_login = re.compile("(login: )|(Login Name:  )|(username: )|(User Name :)", re.IGNORECASE)
 		re_pass  = re.compile("password", re.IGNORECASE)
 
 		if options.has_key("-z"):
-			command = '%s %s %s' % (SSL_PATH, options["-a"], "443")
+			command = '%s %s %s %s' % (SSL_PATH, force_ipvx, options["-a"], "443")
 			conn = fspawn(command)
 		elif options.has_key("-x") and 0 == options.has_key("-k"):
-			command = '%s %s@%s' % (SSH_PATH, options["-l"], options["-a"])
+			command = '%s %s %s@%s' % (SSH_PATH, force_ipvx, options["-l"], options["-a"])
 			if options.has_key("ssh_options"):
 				command += ' ' + options["ssh_options"]
 			conn = fspawn(command)
@@ -630,7 +652,7 @@ def fence_login(options):
 			conn.sendline(options["-p"])
 			conn.log_expect(options, options["-c"], LOGIN_TIMEOUT)
 		elif options.has_key("-x") and 1 == options.has_key("-k"):
-			command = '%s %s@%s -i %s' % (SSH_PATH, options["-l"], options["-a"], options["-k"])
+			command = '%s %s %s@%s -i %s' % (SSH_PATH, force_ipvx, options["-l"], options["-a"], options["-k"])
 			if options.has_key("ssh_options"):
 				command += ' ' + options["ssh_options"]
 			conn = fspawn(command)

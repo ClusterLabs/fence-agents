@@ -56,7 +56,7 @@ def set_power_status(conn, options):
 def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
-			"ssl", "ribcl" ]
+			"ssl", "ribcl", "force_ipv4", "force_ipv6" ]
 
 	atexit.register(atexit_handler)
 
