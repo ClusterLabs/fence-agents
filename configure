@@ -331,6 +331,7 @@ if ((!$fence_agents) || ($fence_agents eq "all") || ($fence_agents eq "help")) {
     chomp;
     s|fence\/agents\/| |g;
     s|lib ||g;
+    s|nss_wrapper ||g;
     $all_fence = $_;
   }
   close IFILE;

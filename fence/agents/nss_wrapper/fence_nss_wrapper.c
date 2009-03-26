@@ -373,7 +373,7 @@ int poll_cycle(PRFileDesc *socket,int mode) {
       return 0;
     }
 
-    if (pool[1].out_flags==PR_POLL_READ) {
+    if (pool[1].out_flags&PR_POLL_READ) {
       /*We have something in socket*/
       if ((readed_bytes=PR_Read(pool[1].fd,buffer,sizeof(buffer)))>0) {
         if (PR_Write(PR_STDOUT,buffer,readed_bytes)!=readed_bytes) {
@@ -387,7 +387,7 @@ int poll_cycle(PRFileDesc *socket,int mode) {
       }
     }
 
-    if (pool[0].out_flags==PR_POLL_READ) {
+    if (pool[0].out_flags&(PR_POLL_READ|PR_POLL_HUP)) {
       /*We have something in stdin*/
       if ((readed_bytes=PR_Read(pool[0].fd,buffer,sizeof(buffer)))>0) {
 
@@ -402,8 +402,9 @@ int poll_cycle(PRFileDesc *socket,int mode) {
           return 0;
         }
       } else {
-        /*End of stream -> quit*/
+        /*End of stream -> send EOL (if needed)*/
         if (!(mode&MODE_RAW)) {
+          eol_state+=100;
           convert_eols(NULL,0,buffer_eol,&bytes_to_write,&eol_state);
           if (PR_Write(pool[1].fd,buffer_eol,bytes_to_write)!=bytes_to_write) {
             print_nspr_error();
@@ -411,8 +412,6 @@ int poll_cycle(PRFileDesc *socket,int mode) {
             return 0;
           }
         }
-
-        can_exit=1;
       }
     }
 

@@ -1,6 +1,6 @@
 include ../../make/defines.mk
 
-SUBDIRS = ${fence_agents} lib
+SUBDIRS = ${fence_agents} lib nss_wrapper
 
 all: ${SUBDIRS}
 
