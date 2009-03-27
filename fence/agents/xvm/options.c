@@ -267,6 +267,7 @@ assign_noccs(fence_xvm_args_t *args, struct arg_info *arg, char *value)
 static inline void
 assign_nocluster(fence_xvm_args_t *args, struct arg_info *arg, char *value)
 {
+	args->flags |= F_NOCCS;
 	args->flags |= F_NOCLUSTER;
 }
 
@@ -365,7 +366,7 @@ static struct arg_info _arg_info[] = {
 	  assign_noccs }, 
 
 	{ 'L', "-L", NULL,
- 	  "Local mode only (no cluster)",
+ 	  "Local mode only (no cluster; implies -X)",
 	  assign_nocluster }, 
 
 	{ 'U', "-U", "uri",
