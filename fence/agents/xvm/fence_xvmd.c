@@ -591,7 +591,7 @@ xvmd_loop(cman_handle_t ch, void *h, int fd, fence_xvm_args_t *args,
 
 	vp = virConnectOpen(args->uri);
   	if (!vp)
-		logt_print(LOG_ERR, "virConnectOpen failed: %s",
+		logt_print(LOG_ERR, "virConnectOpen failed: %s\n",
 			   strerror(errno));
   
   	if (!(args->flags & F_NOCLUSTER))
