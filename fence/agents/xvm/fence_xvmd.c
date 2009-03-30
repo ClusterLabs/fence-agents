@@ -862,18 +862,30 @@ int
 main(int argc, char **argv)
 {
 	fence_xvm_args_t args;
-	int mc_sock;
 	char key[MAX_KEY_LEN];
-	int key_len = 0, x;
 	char *my_options = "dfi:a:p:I:C:U:c:k:u?hLXV";
-	cman_handle_t ch = NULL;
 	void *h = NULL;
+	char *dbgp = getenv("FENCE_XVMD_DEBUG");
+	cman_handle_t ch = NULL;
+	int key_len = 0, x, mc_sock;
 
 	/* Start w/ stderr output only */
 	conf_logging(0, LOG_MODE_OUTPUT_STDERR, SYSLOGFACILITY,
 		     SYSLOGLEVEL, SYSLOGLEVEL, NULL);
 
 	args_init(&args);
+
+	/* Grab debug level from our environment variable,
+	 * if specified.
+	 */
+	if (dbgp) {
+		x = atoi(dbgp);
+		if (x <= 0)
+			x = 1;	 /* Being set at all implies debug == 1 */
+
+		args.flags |= F_DEBUG;
+		args.debug = x;
+	}
 	args_get_getopt(argc, argv, my_options, &args);
 
 	if (args.flags & F_HELP) {
