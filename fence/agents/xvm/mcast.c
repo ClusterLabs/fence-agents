@@ -35,6 +35,8 @@ ipv4_recv_sk(char *addr, int port, unsigned int ifindex)
 	struct ip_mreqn mreq;
 	struct sockaddr_in sin;
 
+	memset(&mreq, 0, sizeof(mreq));
+
 	/* Store multicast address */
 	if (inet_pton(PF_INET, addr,
 		      (void *)&mreq.imr_multiaddr.s_addr) < 0) {
@@ -72,13 +74,19 @@ ipv4_recv_sk(char *addr, int port, unsigned int ifindex)
 	 * Join multicast group
 	 */
 	/* mreq.imr_multiaddr.s_addr is set above */
-	mreq.imr_ifindex = ifindex;
+	if (ifindex <= 0) {
+		dbg_printf(4,"Using 'any' address/interface\n");
+        	mreq.imr_address.s_addr = htonl(INADDR_ANY);
+	} else {
+		dbg_printf(4,"Using interface index %d\n", ifindex);
+		mreq.imr_ifindex = ifindex;
+	}
 	dbg_printf(4, "Joining multicast group\n");
 	if (setsockopt(sock, IPPROTO_IP, IP_ADD_MEMBERSHIP,
 		       &mreq, sizeof(mreq)) == -1) {
-		printf("Failed to bind multicast receive socket to "
+		dbg_printf(1,"Failed to bind multicast receive socket to "
 		       "%s: %s\n", addr, strerror(errno));
-		printf("Check network configuration.\n");
+		dbg_printf(1,"Check network configuration.\n");
 		close(sock);
 		return -1;
 	}
@@ -105,6 +113,8 @@ ipv4_send_sk(char *send_addr, char *addr, int port, struct sockaddr *tgt,
 		errno = EINVAL;
 		return -1;
 	}
+
+	memset(&mreq, 0, sizeof(mreq));
 
 	/* Store multicast address */
 	mcast.sin_family = PF_INET;
