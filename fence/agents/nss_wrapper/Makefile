@@ -10,11 +10,13 @@ include $(OBJDIR)/make/clean.mk
 include $(OBJDIR)/make/install.mk
 include $(OBJDIR)/make/uninstall.mk
 
-OBJS=	fence_nss_wrapper.o
+OBJS=	$(TARGET).o
 
-CFLAGS += -I${incdir} -I${nsprincdir} -I${nssincdir}
+CFLAGS += -I${nsprincdir} -I${nssincdir}
+CFLAGS += -I${incdir}
 
-LDFLAGS += -L${libdir} -L${nsprlibdir} -L${nsslibdir} -lnss3 -lssl3
+LDFLAGS += -L${nsslibdir} -lnss3 -lssl3
+LDFLAGS += -L${libdir}
 
 ${TARGET}: ${OBJS}
 	$(CC) -o $@ $^ $(LDFLAGS)
