@@ -53,9 +53,7 @@ def main():
 		options["-c"] = ">"
 		
 	# This device will not allow us to login even with LANG=C
-#	os.unsetenv("LANG")
-	if "LANG" in os.environ:
-		del os.environ["LANG"]
+	options["ssh_options"] = "-F /dev/null"
 	
 	##
 	## Operate the fencing device
