@@ -16,6 +16,11 @@ MFSYS35 as well). Agent internally uses snmpget, snmpset and snmpwalk command.
 fence_intelmodular accepts options on the command line as well as from stdin.
 Fenced sends parameters through stdin when it execs the agent.  fence_intelmodular can be run by itself with command line options.  This is useful for testing.
 
+\fBNote:\fR
+Since firmware update version 2.7, SNMP v2 write support is removed, and replaced by SNMP v3 support. So
+agent now has default SNMP version 3. If you are using older firmware, please supply \fB-d\fR for command line and
+\fIsnmp_version\fR option for your cluster.conf.
+
 .SH OPTIONS
 .TP
 \fB-a\fP \fIIPaddress\fR
@@ -46,7 +51,7 @@ Script to run to retrieve privacy for SNMP v3 (privacy protocol password).
 Login name for SNMP v3 (security name).
 .TP
 \fB-d\fP \fIversion\fR
-SNMP version (1,2c,3). Default is 1.
+SNMP version (1,2c,3). Default is 3.
 .TP
 \fB-b\fP \fIauth_protocol\fR
 SNMP authentication protocol (MD5|SHA).
@@ -103,7 +108,7 @@ Password for privacy for SNMP v3 (privacy protocol password).
 Login name for SNMP v3 (security name).
 .TP
 \fIsnmp_version = < param >\fR
-SNMP version (1,2c,3). Default is 1.
+SNMP version (1,2c,3). Default is 3.
 .TP
 \fIsnmp_auth_prot = < param >\fR
 SNMP authentication protocol (MD5|SHA).
