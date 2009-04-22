@@ -86,7 +86,7 @@ def main():
 		       "test", "port", "separator", "no_login", "no_password",
 		       "snmp_version", "community", "snmp_auth_prot", "snmp_sec_level",
 		       "snmp_priv_prot", "snmp_priv_passwd", "snmp_priv_passwd_script",
-		       "udpport","force_ipv4","force_ipv6"]
+		       "udpport","inet4_only","inet6_only"]
 
 	atexit.register(atexit_handler)
 

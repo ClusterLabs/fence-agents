@@ -133,7 +133,7 @@ def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
 			"secure", "partition", "managed", "hmc_version", "cmd_prompt",
-			"separator", "force_ipv4", "force_ipv6" ]
+			"separator", "inet4_only", "inet6_only" ]
 
 	atexit.register(atexit_handler)
 

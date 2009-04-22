@@ -257,17 +257,17 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "Script to run to retrieve privacy password",
 		"order" : 1},
-	"force_ipv4" : {
+	"inet4_only" : {
 		"getopt" : "4",
-		"longopt" : "force-ipv4",
-		"help" : "-4, --force-ipv4               Forces agent to use IPv4 addresses only",
+		"longopt" : "inet4-only",
+		"help" : "-4, --inet4-only               Forces agent to use IPv4 addresses only",
 		"required" : "0",
 		"shortdesc" : "Forces agent to use IPv4 addresses only",
 		"order" : 1 },
-	"force_ipv6" : {
+	"inet6_only" : {
 		"getopt" : "6",
-		"longopt" : "force-ipv6",
-		"help" : "-6, --force-ipv6               Forces agent to use IPv6 addresses only",
+		"longopt" : "inet6-only",
+		"help" : "-6, --inet6-only               Forces agent to use IPv6 addresses only",
 		"required" : "0",
 		"shortdesc" : "Forces agent to use IPv6 addresses only",
 		"order" : 1 },
