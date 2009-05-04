@@ -7,7 +7,6 @@ logdir ?= ${DESTDIR}@LOGDIR@
 mandir ?= ${DESTDIR}@MANDIR@
 incdir ?= ${DESTDIR}@INCDIR@
 snmpbin ?= @SNMPBIN@
-notifyddir ?= ${DESTDIR}@CONFDIR@/cman-notify.d
 
 # Build information
 

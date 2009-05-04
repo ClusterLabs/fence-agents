@@ -29,7 +29,3 @@ ifdef DOCS
 		install -m644 $(S)/$$i ${docdir}; \
 	done
 endif
-ifdef NOTIFYD
-	install -d ${notifyddir}
-	install -m755 ${NOTIFYD} ${notifyddir}
-endif

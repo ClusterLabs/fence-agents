@@ -14,6 +14,3 @@ endif
 ifdef DOCS
 	${UNINSTALL} ${DOCS} ${docdir}
 endif
-ifdef NOTIFYD
-	${UNINSTALL} ${NOTIFYD} ${notifyddir}
-endif
