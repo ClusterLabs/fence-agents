@@ -122,7 +122,7 @@ all_opt = {
 	"drac_version" : {
 		"getopt" : "d:",
 		"longopt" : "drac-version",
-		"help" : "-D, --drac-version=<version>   Force DRAC version to use",
+		"help" : "-d, --drac-version=<version>   Force DRAC version to use",
 		"order" : 1 },
 	"hmc_version" : {
 		"getopt" : "H:",
