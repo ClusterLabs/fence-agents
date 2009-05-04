@@ -17,7 +17,6 @@ TARGET=	fence_ack_manual.8 \
 	fence_intelmodular.8 \
 	fence_ipmilan.8 \
 	fence_ldom.8 \
-	fence_manual.8 \
 	fence_mcdata.8 \
 	fence_rackswitch.8 \
 	fence_rib.8 \
