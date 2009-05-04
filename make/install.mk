@@ -4,6 +4,7 @@ ifdef SBINDIRT
 	install -m755 ${SBINDIRT} ${sbindir}
 endif
 ifdef SBINSYMT
+	install -d ${sbindir}
 	cp -a ${SBINSYMT} ${sbindir}
 endif
 ifdef INITDT
