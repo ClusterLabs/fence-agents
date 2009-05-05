@@ -37,7 +37,7 @@
   @param port_s Input port or service name
   @return port number (converted with ntohs) on success, otherwise -1.
 */
-int return_port(char *port_s) {
+static int return_port(char *port_s) {
   char *end_c;
   int res;
   struct servent *serv;
@@ -60,13 +60,13 @@ int return_port(char *port_s) {
   @param fd socket cased error
   @return SECSuccess.
 */
-SECStatus nss_bad_cert_hook(void *arg,PRFileDesc *fd) {
+static SECStatus nss_bad_cert_hook(void *arg,PRFileDesc *fd) {
   return SECSuccess;
 }
 
 /** Display last NSPR/NSS error code and user readable message.
 */
-void print_nspr_error(void) {
+static void print_nspr_error(void) {
   fprintf(stderr,"Error (%d): %s\n",PR_GetError(),PR_ErrorToString(PR_GetError(),PR_LANGUAGE_I_DEFAULT));
 }
 
@@ -74,7 +74,7 @@ void print_nspr_error(void) {
   domnestic policy.
   @return 1 on success, otherwise 0.
 */
-int init_nss(void) {
+static int init_nss(void) {
   if ((NSS_NoDB_Init(NULL)!=SECSuccess) ||
       (NSS_SetDomesticPolicy()!=SECSuccess)) {
     print_nspr_error();
@@ -92,7 +92,7 @@ int init_nss(void) {
   @param ipv6 New socket will be IPv4 if this value is 0, otherwise it will be ipv6
   @return NULL on error, otherwise socket.
 */
-PRFileDesc *create_socket(int ssl,int ipv6) {
+static PRFileDesc *create_socket(int ssl,int ipv6) {
   PRFileDesc *res_socket;
 
   res_socket=PR_OpenTCPSocket((ipv6?PR_AF_INET6:PR_AF_INET));
@@ -138,15 +138,15 @@ PRFileDesc *create_socket(int ssl,int ipv6) {
   @param mode Connection mode. Bit-array of MODE_NO_SSL, MODE_IP6MODE, MODE_IP4MODE.
   @return NULL on error, otherwise connected socket.
 */
-PRFileDesc *create_connected_socket(char *hostname,int port,int mode) {
+static PRFileDesc *create_connected_socket(char *hostname,int port,int mode) {
   PRAddrInfo *addr_info;
   void *addr_iter;
   PRNetAddr addr;
-  PRFileDesc *socket;
+  PRFileDesc *localsocket;
   int can_exit,valid_socket;
   PRUint16 af_spec;
 
-  socket=NULL;
+  localsocket=NULL;
 
   addr_info=NULL;
 
@@ -177,45 +177,45 @@ PRFileDesc *create_connected_socket(char *hostname,int port,int mode) {
         /*Type of address is what user want, try to create socket and make connection*/
 
         /*Create socket*/
-        socket=create_socket(!(mode&MODE_NO_SSL),(PR_NetAddrFamily(&addr)==PR_AF_INET6));
+        localsocket=create_socket(!(mode&MODE_NO_SSL),(PR_NetAddrFamily(&addr)==PR_AF_INET6));
 
-        if (socket) {
+        if (localsocket) {
           /*Try to connect*/
-          if (PR_Connect(socket,&addr,PR_INTERVAL_NO_TIMEOUT)==PR_SUCCESS) {
+          if (PR_Connect(localsocket,&addr,PR_INTERVAL_NO_TIMEOUT)==PR_SUCCESS) {
             /*Force handshake*/
-            if ((!(mode&MODE_NO_SSL)) && SSL_ForceHandshake(socket)!=SECSuccess) {
+            if ((!(mode&MODE_NO_SSL)) && SSL_ForceHandshake(localsocket)!=SECSuccess) {
               /*Handhake failure -> fail*/
               print_nspr_error();
-              if (PR_Close(socket)!=PR_SUCCESS) {
+              if (PR_Close(localsocket)!=PR_SUCCESS) {
                 print_nspr_error();
                 can_exit=1;
               }
-              socket=NULL;
+              localsocket=NULL;
             }
 
             /*Socket is connected -> we can return it*/
             can_exit=1;
           } else {
             /*Try another address*/
-            if (PR_Close(socket)!=PR_SUCCESS) {
+            if (PR_Close(localsocket)!=PR_SUCCESS) {
               print_nspr_error();
               can_exit=1;
             }
-            socket=NULL;
+            localsocket=NULL;
           }
         }
       }
     }
   }
 
-  if (!socket) {
+  if (!localsocket) {
     /*Socket is unvalid -> we don't found any usable address*/
     fprintf(stderr,"Can't connect to host %s on port %d!\n",hostname,port);
   }
 
   PR_FreeAddrInfo(addr_info);
 
-  return socket;
+  return localsocket;
 }
 
 /** Parse arguments from command line.
@@ -225,7 +225,7 @@ PRFileDesc *create_connected_socket(char *hostname,int port,int mode) {
   @param mode Pointer to int will be filled with MODE_DEFAULT, MODE_IP4MODE or MODE_IP4MODE.
   @return 1 on success, otherwise 0.
 */
-int parse_cli(int argc,char *argv[],int *operation,int *mode,char **hostname,char **port) {
+static int parse_cli(int argc,char *argv[],int *operation,int *mode,char **hostname,char **port) {
   int opt;
 
   *operation=OPERATION_DEFAULT;
@@ -280,7 +280,7 @@ int parse_cli(int argc,char *argv[],int *operation,int *mode,char **hostname,cha
 /** Show usage of application.
   @param pname Name of program (usually basename of argv[0])
 */
-void show_usage(char *pname) {
+static void show_usage(char *pname) {
   printf("usage: %s [options] hostname port\n", pname);
   printf("   -4             Force to use IPv4\n");
   printf("   -6             Force to use IPv6\n");
@@ -298,7 +298,7 @@ void show_usage(char *pname) {
     shouldn't change this value. After end of file, you may add to this value +100 and call this
     again, to make sure of proper end (in_buffer can be in this case everything, including NULL).
 */
-void convert_eols(char *in_buffer,int in_size,char *out_buffer,int *out_size,int *in_state) {
+static void convert_eols(char *in_buffer,int in_size,char *out_buffer,int *out_size,int *in_state) {
   int in_pos,out_pos;
   int status;
   char in_char;
@@ -346,7 +346,7 @@ void convert_eols(char *in_buffer,int in_size,char *out_buffer,int *out_size,int
   @param mode Bit-array of MODE_*. This function take care on MODE_RAW.
   @return 0 on failure, otherwise 1
 */
-int poll_cycle(PRFileDesc *socket,int mode) {
+static int poll_cycle(PRFileDesc *localsocket,int mode) {
   PRPollDesc pool[2];
   char buffer[1024],buffer_eol[1024*2];
   int readed_bytes;
@@ -359,7 +359,7 @@ int poll_cycle(PRFileDesc *socket,int mode) {
   eol_state=0;
 
   /* Fill pool*/
-  pool[1].fd=socket;
+  pool[1].fd=localsocket;
   pool[0].fd=PR_STDIN;
   pool[0].in_flags=pool[1].in_flags=PR_POLL_READ;
   pool[0].out_flags=pool[1].out_flags=0;
@@ -421,7 +421,7 @@ int poll_cycle(PRFileDesc *socket,int mode) {
   return 1;
 }
 
-void atexit_handler(void) {
+static void atexit_handler(void) {
   if (PR_Initialized())
     PR_Cleanup();
 

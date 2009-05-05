@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 
+#include "tcp.h"
 #include "debug.h"
 
 static int connect_nb(int fd, struct sockaddr *dest, socklen_t len, int timeout);

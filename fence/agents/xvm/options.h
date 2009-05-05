@@ -36,10 +36,10 @@ typedef struct {
 
 /* Private structure for commandline / stdin fencing args */
 struct arg_info {
-	char opt;
-	char *opt_desc;
-	char *stdin_opt;
-	char *desc;
+	const char opt;
+	const char *opt_desc;
+	const char *stdin_opt;
+	const char *desc;
 	void (*assign)(fence_xvm_args_t *, struct arg_info *, char *);
 };
 
@@ -48,12 +48,15 @@ struct arg_info {
 void args_init(fence_xvm_args_t *args);
 void args_finalize(fence_xvm_args_t *args);
 
-void args_get_getopt(int argc, char **argv, char *optstr,
+void args_get_getopt(int argc, char **argv, const char *optstr,
 		     fence_xvm_args_t *args);
-void args_get_stdin(char *optstr, fence_xvm_args_t *args);
-void args_get_ccs(char *optstr, fence_xvm_args_t *args);
-void args_usage(char *progname, char *optstr, int print_stdin);
-void args_metadata(char *progname, char *optstr);
+void args_get_stdin(const char *optstr, fence_xvm_args_t *args);
+void args_get_ccs(const char *optstr, fence_xvm_args_t *args);
+void args_usage(char *progname, const char *optstr, int print_stdin);
+void args_metadata(char *progname, const char *optstr);
 void args_print(fence_xvm_args_t *args);
+
+struct arg_info *find_arg_by_char(char arg);
+struct arg_info *find_arg_by_string(char *arg);
 
 #endif

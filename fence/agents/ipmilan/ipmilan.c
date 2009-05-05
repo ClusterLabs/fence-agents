@@ -49,7 +49,7 @@ do { \
 
 
 struct ipmi {
-	char *i_id;
+	const char *i_id;
 	const char *i_ipmitool;
 	char *i_host;
 	char *i_user;
@@ -119,8 +119,8 @@ static struct Etoken power_status[] = {
 
 /* Structure describing one xml metadata value*/
 struct xml_parameter_s {
-  char *name;
-  char *description;
+  const char *name;
+  const char *description;
 };
 
 /* Array of xml metadatas*/
@@ -175,7 +175,7 @@ ipmitool_path(void)
   @param max_len Maximum length of data written to dest string (including end 0)
   @return Pointer to start of destination string.
 */
-char *str_prepare_for_sh(char *dest,char *source,int max_len) {
+static char *str_prepare_for_sh(char *dest,char *source,int max_len) {
   char *dest_p=dest;
   char *max_dest=dest+max_len;
 
@@ -577,7 +577,7 @@ ipmi_init(struct ipmi *i, char *host, char *authtype,
 /**
    Remove leading and trailing whitespace from a line of text.
  */
-int
+static int
 cleanup(char *line, size_t linelen)
 {
 	char *p;
@@ -624,7 +624,7 @@ eol:
 /**
    Parse args from stdin.  Dev + devlen + op + oplen must be valid.
  */
-int
+static int
 get_options_stdin(char *ip, size_t iplen,
 		  char *authtype, size_t atlen,
 		  char *passwd, size_t pwlen,
@@ -719,14 +719,14 @@ get_options_stdin(char *ip, size_t iplen,
 /**
    Print a message to stderr and call exit(1).
  */
-void
-fail_exit(char *msg)
+static void
+fail_exit(const char *msg)
 {
 	fprintf(stderr, "failed: %s\n", msg);
 	exit(1);
 }
 
-void
+static void
 usage_exit(char *pname)
 {
 printf("usage: %s <options>\n", pname);
@@ -764,7 +764,7 @@ printf("   verbose               Same as -v\n\n");
 
 
 /** Print XML metadata of fence agent*/
-void print_xml_metadata(char *pname) {
+static void print_xml_metadata(char *pname) {
   int i;
 
   printf("%s\n","<?xml version=\"1.0\" ?>");

@@ -1,6 +1,6 @@
 #include "do_rack.h"
 
-char *pname = "fence_rack";
+const char *pname = "fence_rack";
 
 int quiet_flag = 0;
 int verbose_flag = 0;
@@ -136,7 +136,7 @@ void ignore_message_status(void)
 
 
 
-void print_usage(void)
+static void print_usage(void)
 {
   printf("Usage:\n");
   printf("\n");
@@ -156,7 +156,7 @@ void print_usage(void)
 
 
 
-void get_options(int argc, char **argv)
+static void get_options(int argc, char **argv)
 {
   int c;
   char *value;

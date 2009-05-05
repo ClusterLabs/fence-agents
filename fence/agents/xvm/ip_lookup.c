@@ -154,7 +154,7 @@ add_ip_addresses(int family, ip_list_t *ipl)
 			continue;
 		}
 
-		rta = (struct rtattr *)((void *)ifa + sizeof(*ifa));
+		rta = (struct rtattr *)((char *)ifa + sizeof(*ifa));
 		len -= sizeof(*ifa);
 		do {
 			/* Make sure we've got a valid rtaddr field */
@@ -178,7 +178,7 @@ add_ip_addresses(int family, ip_list_t *ipl)
 			if (!nrta)
 				break;
 
-			len -= ((void *)nrta - (void *)rta);
+			len -= ((char *)nrta - (char *)rta);
 			rta = nrta;
 		} while (RTA_OK(rta, len));
 

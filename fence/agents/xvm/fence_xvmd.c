@@ -47,9 +47,9 @@ static int reload_key;
 #define LOG_MODE_DEFAULT LOG_MODE_OUTPUT_SYSLOG|LOG_MODE_OUTPUT_FILE
 static int log_mode_default = LOG_MODE_DEFAULT;
 
-int cleanup_xml(char *xmldesc, char **ret, size_t *retsz);
+extern int cleanup_xml(char *xmldesc, char **ret, size_t *retsz);
 
-int
+static int
 connect_tcp(fence_req_t *req, fence_auth_type_t auth,
 	    void *key, size_t key_len)
 {
@@ -110,7 +110,7 @@ connect_tcp(fence_req_t *req, fence_auth_type_t auth,
 }
 
 
-int
+static int
 do_notify_caller_tcp(fence_req_t *req, fence_auth_type_t auth,
 		     void *key, size_t key_len, char response)
 {
@@ -131,24 +131,6 @@ out:
 
 	return -1;
 }
-
-
-void
-raise_error(virConnectPtr vp)
-{
-	virErrorPtr vep;
-
-	vep = virConnGetLastError(vp);
-	if (!vep) {
-		logt_print(LOG_ERR,
-		   "Error: Unable to retrieve error from connection!\n");
-		return;
-	}
-
-	logt_print(LOG_ERR, "Error: libvirt #%d domain %d: %s\n", vep->code,
-	       vep->domain, vep->message);
-}
-
 
 static inline virDomainPtr
 get_domain(fence_req_t *req, virConnectPtr vp)
@@ -210,7 +192,7 @@ wait_domain(fence_req_t *req, virConnectPtr vp, int timeout)
 
 
 
-int
+static int
 do_fence_request_tcp(fence_req_t *req, fence_auth_type_t auth,
 		     void *key, size_t key_len, virConnectPtr vp,
 		     int flags)
@@ -363,7 +345,7 @@ out:
 }
 
 
-int
+static int
 virt_list_update(virConnectPtr vp, virt_list_t **vl, int my_id)
 {
 	virt_list_t *list = NULL;
@@ -380,7 +362,7 @@ virt_list_update(virConnectPtr vp, virt_list_t **vl, int my_id)
 }
 
 
-int
+static int
 get_cman_ids(cman_handle_t ch, int *my_id, int *high_id)
 {
 	int max_nodes;
@@ -439,7 +421,7 @@ out:
 }
 
 
-int
+static int
 get_domain_state_ckpt(void *hp, unsigned char *domain, vm_state_t *state)
 {
 	errno = EINVAL;
@@ -453,7 +435,7 @@ get_domain_state_ckpt(void *hp, unsigned char *domain, vm_state_t *state)
 }
 
 
-void
+static void
 store_domains_by_name(void *hp, virt_list_t *vl)
 {
 	int x;
@@ -472,7 +454,7 @@ store_domains_by_name(void *hp, virt_list_t *vl)
 }
 
 
-void
+static void
 store_domains_by_uuid(void *hp, virt_list_t *vl)
 {
 	int x;
@@ -573,7 +555,7 @@ handle_remote_domain(cman_handle_t ch, void *h, fence_req_t *data,
 }
 
 
-int
+static int
 xvmd_loop(cman_handle_t ch, void *h, int fd, fence_xvm_args_t *args,
 	  void *key, size_t key_len)
 {
@@ -741,21 +723,19 @@ xvmd_loop(cman_handle_t ch, void *h, int fd, fence_xvm_args_t *args,
 }
 
 
-void
+static void
 sigint_handler(int sig)
 {
 	running = 0;
 }
 
-void
+static void
 sighup_handler(int sig)
 {
 	reload_key = 1;
 }
 
-void malloc_dump_table(void);
-
-int
+static int
 ccs_read_old_logging(int ccsfd, int *facility, int *priority)
 {
 	char query[256];
@@ -794,7 +774,7 @@ ccs_read_old_logging(int ccsfd, int *facility, int *priority)
 }
 
 
-void
+static void
 conf_logging(int debug, int logmode, int facility, int loglevel,
 	     int filelevel, char *fname)
 {
@@ -863,7 +843,7 @@ main(int argc, char **argv)
 {
 	fence_xvm_args_t args;
 	char key[MAX_KEY_LEN];
-	char *my_options = "dfi:a:p:I:C:U:c:k:u?hLXV";
+	const char *my_options = "dfi:a:p:I:C:U:c:k:u?hLXV";
 	void *h = NULL;
 	char *dbgp = getenv("FENCE_XVMD_DEBUG");
 	cman_handle_t ch = NULL;
@@ -1005,8 +985,6 @@ main(int argc, char **argv)
 	signal(SIGTERM, sigint_handler);
 	signal(SIGQUIT, sigint_handler);
 	xvmd_loop(ch, h, mc_sock, &args, key, key_len);
-
-	//malloc_dump_table();
 
 	return 0;
 

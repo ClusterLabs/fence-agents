@@ -40,7 +40,7 @@
 
 #define LOG_DAEMON_NAME "fence_xvm"
 
-int
+static int
 tcp_wait_connect(int lfd, int retry_tenths)
 {
 	int fd;
@@ -70,7 +70,7 @@ tcp_wait_connect(int lfd, int retry_tenths)
 }
 
 
-int
+static int
 tcp_exchange(int fd, fence_auth_type_t auth, void *key,
 	      size_t key_len, int timeout)
 {
@@ -118,7 +118,7 @@ tcp_exchange(int fd, fence_auth_type_t auth, void *key,
 }
 
 
-int
+static int
 send_multicast_packets(ip_list_t *ipl, fence_xvm_args_t *args, void *key,
 		       size_t key_len)
 {
@@ -201,7 +201,7 @@ send_multicast_packets(ip_list_t *ipl, fence_xvm_args_t *args, void *key,
 
 
 /* TODO: Clean this up!!! */
-int
+static int
 fence_xen_domain(fence_xvm_args_t *args)
 {
 	ip_list_t ipl;
@@ -310,7 +310,7 @@ int
 main(int argc, char **argv)
 {
 	fence_xvm_args_t args;
-	char *my_options = "di:a:p:T:r:C:c:k:H:uo:t:?hV";
+	const char *my_options = "di:a:p:T:r:C:c:k:H:uo:t:?hV";
 
 	/* Print to stderr.  Fenced will report our output for us */
 	logt_init(LOG_DAEMON_NAME, LOG_MODE_OUTPUT_STDERR,

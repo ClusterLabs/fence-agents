@@ -13,7 +13,7 @@
 #include "simple_auth.h"
 #include "debug.h"
 
-void
+static void
 print_hash(unsigned char *hash, size_t hashlen)
 {
 	int x; 
@@ -167,7 +167,7 @@ verify_request(fence_req_t *req, fence_hash_t min,
 }
 
 
-int
+static int
 sha_challenge(int fd, fence_auth_type_t auth, void *key,
 	      size_t key_len, int timeout)
 {
@@ -250,7 +250,7 @@ sha_challenge(int fd, fence_auth_type_t auth, void *key,
 }
 
 
-int
+static int
 sha_response(int fd, fence_auth_type_t auth, void *key,
 	     size_t key_len, int timeout)
 {

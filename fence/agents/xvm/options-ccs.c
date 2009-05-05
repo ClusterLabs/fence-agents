@@ -26,9 +26,6 @@
 
 #include <ccs.h>
 
-struct arg_info *find_arg_by_char(char arg);
-struct arg_info *find_arg_by_string(char *arg);
-
 extern int _debug;
 
 /**
@@ -39,7 +36,7 @@ extern int _debug;
   @param args		Args structure to fill in.
  */
 void
-args_get_ccs(char *optstr, fence_xvm_args_t *args)
+args_get_ccs(const char *optstr, fence_xvm_args_t *args)
 {
 	char buf[256];
 	int ccsfd = -1, x, n;

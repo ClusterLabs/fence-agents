@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "virt.h"
+
 typedef struct {
 	uint32_t ck_ready;
 	int ck_timeout;
@@ -198,7 +200,7 @@ good:
 
 
 void *
-ckpt_init(char *ckpt_name, int maxlen, int maxsec,
+ckpt_init(const char *ckpt_name, int maxlen, int maxsec,
 	  int maxseclen, int timeout)
 {
 	ckpt_handle *h;

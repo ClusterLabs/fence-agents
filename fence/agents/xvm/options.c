@@ -480,7 +480,7 @@ args_print(fence_xvm_args_t *args)
 			1 = print fence-style stdin args + description
  */
 void
-args_usage(char *progname, char *optstr, int print_stdin)
+args_usage(char *progname, const char *optstr, int print_stdin)
 {
 	int x;
 	struct arg_info *arg;
@@ -513,9 +513,9 @@ args_usage(char *progname, char *optstr, int print_stdin)
 
 
 static void
-print_desc_xml(char *desc)
+print_desc_xml(const char *desc)
 {
-	char *d;
+	const char *d;
 
 	for (d = desc; *d; d++) {
 		switch (*d) {
@@ -533,7 +533,7 @@ print_desc_xml(char *desc)
 
 
 void
-args_metadata(char *progname, char *optstr)
+args_metadata(char *progname, const char *optstr)
 {
 	int x;
 	struct arg_info *arg;
@@ -568,7 +568,7 @@ args_metadata(char *progname, char *optstr)
   @param linelen	Max size of line
   @return		0 on success, -1 on failure
  */
-int
+static int
 cleanup(char *line, size_t linelen)
 {
 	char *p;
@@ -619,7 +619,7 @@ eol:
   @param args		Args structure to fill in.
  */
 void
-args_get_stdin(char *optstr, fence_xvm_args_t *args)
+args_get_stdin(const char *optstr, fence_xvm_args_t *args)
 {
 	char in[256];
 	int line = 0;
@@ -664,7 +664,7 @@ args_get_stdin(char *optstr, fence_xvm_args_t *args)
   @param args		Args structure to fill in.
  */
 void
-args_get_getopt(int argc, char **argv, char *optstr, fence_xvm_args_t *args)
+args_get_getopt(int argc, char **argv, const char *optstr, fence_xvm_args_t *args)
 {
 	int opt;
 	struct arg_info *arg;
@@ -687,7 +687,7 @@ args_get_getopt(int argc, char **argv, char *optstr, fence_xvm_args_t *args)
 void
 args_finalize(fence_xvm_args_t *args)
 {
-	char *addr = NULL;
+	const char *addr = NULL;
 
 	if (!args->addr) {
 		switch(args->family) {
@@ -705,7 +705,7 @@ args_finalize(fence_xvm_args_t *args)
 	}
 
 	if (!args->addr)
-		args->addr = addr;
+		args->addr = strdup(addr);
 
 	if (!args->addr) {
 		printf("No multicast address available\n");

@@ -8,15 +8,15 @@
 #include <unistd.h>
 #include <ctype.h>
 
-
 #ifdef STANDALONE
 #define dbg_printf(x, fmt, args...) printf("<%d> " fmt, x, ##args)
 #else
 #include "debug.h"
 #endif
 
+int cleanup_xml(char *xmldesc, char **ret, size_t *retsz);
 
-xmlNodePtr
+static xmlNodePtr
 get_os_node(xmlDocPtr doc)
 {
 	xmlNodePtr node;
@@ -35,7 +35,7 @@ get_os_node(xmlDocPtr doc)
 }
 
 
-int
+static int
 flip_graphics_port(xmlDocPtr doc)
 {
 	xmlNodePtr node, curr;
@@ -67,7 +67,7 @@ flip_graphics_port(xmlDocPtr doc)
 }
 
 
-int
+static int
 cleanup_xml_doc(xmlDocPtr doc)
 {
 	xmlNodePtr os_node, curr;
@@ -118,8 +118,8 @@ cleanup_xml_doc(xmlDocPtr doc)
 	return 0;
 }
 
-
-int
+#ifdef STANDALONE
+static int
 xtree_readfile(const char *filename, xmlDocPtr *xtreep)
 {
 	xmlNodePtr cur;
@@ -140,9 +140,10 @@ xtree_readfile(const char *filename, xmlDocPtr *xtreep)
 
 	return 0;
 }
+#endif
 
 
-int
+static int
 xtree_readbuffer(const char *buffer, size_t size, xmlDocPtr *xtreep)
 {
 	xmlNodePtr cur;
@@ -167,8 +168,8 @@ xtree_readbuffer(const char *buffer, size_t size, xmlDocPtr *xtreep)
 	return 0;
 }
 
-
-int
+#ifdef STANDALONE
+static int
 xtree_writefile(const char *filename, xmlDocPtr xtree)
 {
 	char tmpfn[1024];
@@ -244,9 +245,9 @@ xtree_writefile(const char *filename, xmlDocPtr xtree)
 	close(tmpfd);
 	return 0;
 }
+#endif
 
-
-int
+static int
 xtree_writebuffer(xmlDocPtr xtree, char **buffer, size_t *size)
 {
 	*size = 0;
