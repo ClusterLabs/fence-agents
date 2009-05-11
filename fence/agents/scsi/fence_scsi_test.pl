@@ -175,7 +175,22 @@ sub print_usage
     print "  -h     Help. Prints out this usage information.\n\n";
 }
 
+sub test_tools_path
+{
+    my $tool_name = "sg_persist";
+    
+    for my $path ( split /:/, $ENV{PATH} ) {
+        if ( -f "$path/$tool_name" && -x _ ) {
+          return;
+        }
+    }
+    
+    die "No $tool_name command available, please install the sg3_utils package.\n"
+}
+
 ### MAIN #######################################################################
+
+test_tools_path;
 
 if (getopts("cdhst:v") == 0)
 {
