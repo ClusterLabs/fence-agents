@@ -442,6 +442,8 @@ def process_input(avail_opt):
 				name = "port"
 			elif name == "hostname":
 				name = "ipaddr"
+			elif name == "modulename":
+				name = "module_name"
 
 			##
 			######
