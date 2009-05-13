@@ -97,6 +97,8 @@ ais_to_posix(SaAisErrorT err)
 		return E2BIG;
 	case SA_AIS_ERR_NO_SECTIONS:
 		return ENOENT; // XXX
+	case SA_AIS_ERR_SECURITY:
+		return EPERM;
 	}
 
 	return -1;
