@@ -223,6 +223,8 @@ def main():
 		conn.close()
 	except exceptions.OSError:
 		pass
+	except pexpect.ExceptionPexpect:
+		pass
 
 if __name__ == "__main__":
 	main()
