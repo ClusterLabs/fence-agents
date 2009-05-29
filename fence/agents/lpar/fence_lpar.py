@@ -143,7 +143,7 @@ def main():
 	## Fence agent specific defaults
 	#####
 	if 0 == options.has_key("-c"):
-		options["-c"] = [ ":~>", "]\$" ]
+		options["-c"] = [ ":~>", "]\$", "\$ " ]
 
 	if 0 == options.has_key("-x"):
 		fail_usage("Failed: You have to use ssh connection (-x) to fence device")
