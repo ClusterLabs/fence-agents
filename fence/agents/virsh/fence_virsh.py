@@ -82,8 +82,13 @@ def main():
 	fence_action(conn, options, set_power_status, get_power_status, get_outlets_status)
 
 	## Logout from system
-	conn.sendline("quit")
-	conn.close()
+	try:
+		conn.sendline("quit")
+		conn.close()
+	except exceptions.OSError:
+		pass
+	except pexpect.ExceptionPexpect:
+		pass
 
 if __name__ == "__main__":
 	main()
