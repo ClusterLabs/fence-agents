@@ -24,7 +24,7 @@ def get_power_status(conn, options):
 	if options["-H"] == "3":
 		try:
 			conn.send("lssyscfg -r lpar -m " + options["-s"] + " -n " + options["-n"] + " -F name,state\n")
-			conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+			conn.log_expect(options, options["-c"], POWER_TIMEOUT)
 		except pexpect.EOF:
 			fail(EC_CONNECTION_LOST)
 		except pexpect.TIMEOUT:
@@ -37,7 +37,7 @@ def get_power_status(conn, options):
 	elif options["-H"] == "4":
 		try:
 			conn.send("lssyscfg -r lpar -m "+ options["-s"] +" --filter 'lpar_names=" + options["-n"] + "'\n")
-			conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+			conn.log_expect(options, options["-c"], POWER_TIMEOUT)
 		except pexpect.EOF:
 			fail(EC_CONNECTION_LOST)
 		except pexpect.TIMEOUT:
