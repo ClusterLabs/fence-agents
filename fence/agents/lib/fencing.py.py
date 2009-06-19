@@ -78,6 +78,13 @@ all_opt = {
 		"required" : "1",
 		"shortdesc" : "IP Address or Hostname",
 		"order" : 1 },
+	"ipport" : {
+		"getopt" : "u:",
+		"longopt" : "ipport",
+		"help" : "-u, --ipport=<port>            TCP port to use",
+		"required" : "0",
+		"shortdesc" : "TCP port to use for connection with device",
+		"order" : 1 },		
 	"login" : {
 		"getopt" : "l:",
 		"longopt" : "username",
@@ -546,6 +553,14 @@ def check_input(device_opt, opt):
 	if options.has_key("-R"):
 		options["-P"] = os.popen(options["-R"]).read().rstrip()
 
+	if options.has_key("-u") == False:
+		if options.has_key("-x"):
+			options["-u"] = 22
+		elif options.has_key("-z"):
+			options["-u"] = 443
+		else:
+			options["-u"] = 23
+
 	return options
 	
 def wait_power_status(tn, options, get_power_fn):
@@ -628,10 +643,10 @@ def fence_login(options):
 		re_pass  = re.compile("password", re.IGNORECASE)
 
 		if options.has_key("-z"):
-			command = '%s %s %s %s' % (SSL_PATH, force_ipvx, options["-a"], "443")
+			command = '%s %s %s %s' % (SSL_PATH, force_ipvx, options["-a"], options["-u"])
 			conn = fspawn(command)
 		elif options.has_key("-x") and 0 == options.has_key("-k"):
-			command = '%s %s %s@%s' % (SSH_PATH, force_ipvx, options["-l"], options["-a"])
+			command = '%s %s %s@%s -p %s' % (SSH_PATH, force_ipvx, options["-l"], options["-a"], options["-u"])
 			if options.has_key("ssh_options"):
 				command += ' ' + options["ssh_options"]
 			conn = fspawn(command)
@@ -654,7 +669,7 @@ def fence_login(options):
 			conn.sendline(options["-p"])
 			conn.log_expect(options, options["-c"], LOGIN_TIMEOUT)
 		elif options.has_key("-x") and 1 == options.has_key("-k"):
-			command = '%s %s %s@%s -i %s' % (SSH_PATH, force_ipvx, options["-l"], options["-a"], options["-k"])
+			command = '%s %s %s@%s -i %s -p %s' % (SSH_PATH, force_ipvx, options["-l"], options["-a"], options["-k"], options["-u"])
 			if options.has_key("ssh_options"):
 				command += ' ' + options["ssh_options"]
 			conn = fspawn(command)
@@ -672,7 +687,7 @@ def fence_login(options):
 		else:
 			conn = fspawn(TELNET_PATH)
 			conn.send("set binary\n")
-			conn.send("open %s\n"%(options["-a"]))
+			conn.send("open %s -%s\n"%(options["-a"], options["-u"]))
 			conn.log_expect(options, re_login, LOGIN_TIMEOUT)
 			conn.send(options["-l"]+"\r\n")
 			conn.log_expect(options, re_pass, SHELL_TIMEOUT)
