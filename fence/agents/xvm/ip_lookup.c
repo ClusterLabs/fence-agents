@@ -1,6 +1,8 @@
 /** @file
  * Build lists of IPs on the system, excepting loopback ipv6 link-local
  */
+#include "clusterautoconfig.h"
+
 #include <asm/types.h>
 #include <sys/types.h>
 #include <arpa/inet.h>

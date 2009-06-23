@@ -1,3 +1,5 @@
+#include "clusterautoconfig.h"
+
 #include <stdio.h>
 #include "debug.h"
 

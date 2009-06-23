@@ -9,6 +9,9 @@
  *  http://ipmitool.sourceforge.net
  *
  */
+
+#include "clusterautoconfig.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -859,7 +862,7 @@ main(int argc, char **argv)
 				break;
 			case 'V':
         			printf("%s %s (built %s %s)\n", pname,
-				       RELEASE_VERSION,
+				       VERSION,
                				__DATE__, __TIME__);
         			printf("%s\n",
 				       REDHAT_COPYRIGHT);

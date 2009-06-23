@@ -5,6 +5,8 @@
  *
  * Author: Lon Hohberger <lhh at redhat.com>
  */
+#include "clusterautoconfig.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -345,7 +347,7 @@ main(int argc, char **argv)
 
 	if (args.flags & F_VERSION) {
 		printf("%s %s\n", basename(argv[0]), XVM_VERSION);
-		printf("fence release %s\n", RELEASE_VERSION);
+		printf("fence release %s\n", VERSION);
 		exit(0);
 	}
 

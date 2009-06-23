@@ -1,6 +1,8 @@
 /*
  * Author: Lon Hohberger <lhh at redhat.com>
  */
+#include "clusterautoconfig.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

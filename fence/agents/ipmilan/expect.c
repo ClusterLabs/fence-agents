@@ -1,6 +1,7 @@
 /** @file
  * Simple expect module for the STONITH library.
  */
+#include "clusterautoconfig.h"
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,6 +1,8 @@
 /** @file
  * Distributed VM states using saCkpt interface
  */
+#include "clusterautoconfig.h"
+
 #include <string.h>
 #include <errno.h>
 #include <sys/types.h>

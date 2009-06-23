@@ -1,6 +1,8 @@
 /*
  * Author: Lon Hohberger <lhh at redhat.com>
  */
+#include "clusterautoconfig.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,7 +26,7 @@
 #include <pthread.h>
 #define SYSLOG_NAMES
 #include <syslog.h>
-#include <virterror.h>
+#include <libvirt/virterror.h>
 #include <nss.h>
 #include <libgen.h>
 #include <ccs.h>
@@ -523,6 +525,8 @@ handle_remote_domain(cman_handle_t ch, void *h, fence_req_t *data,
 			return;
 		}
 
+#if 0
+		/* FIXME: must be ported to newer cman API */
 		fenced = 0;
 		cman_get_fenceinfo(ch, vst.s_owner, &fence_time, &fenced, NULL);
 		if (fenced == 0) {
@@ -533,7 +537,7 @@ handle_remote_domain(cman_handle_t ch, void *h, fence_req_t *data,
 
 		dbg_printf(1, "Node %d is dead & fenced\n", vst.s_owner);
 		ret = 0;
-					
+#endif					
 	} else if (vst.s_owner == my_id) {
 		dbg_printf(1, "I am the last owner of the domain\n");
 		ret = 0;
@@ -881,7 +885,7 @@ main(int argc, char **argv)
 
 	if (args.flags & F_VERSION) {
 		printf("%s %s\n", basename(argv[0]), XVM_VERSION);
-		printf("fence release %s\n", RELEASE_VERSION);
+		printf("fence release %s\n", VERSION);
 		logt_exit();
 		exit(0);
 	}

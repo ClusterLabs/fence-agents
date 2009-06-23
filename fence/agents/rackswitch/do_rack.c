@@ -1,3 +1,5 @@
+#include "clusterautoconfig.h"
+
 #include "do_rack.h"
 
 const char *pname = "fence_rack";
@@ -207,7 +209,7 @@ static void get_options(int argc, char **argv)
 	    break;
 
 	  case 'V':
-	    printf("%s %s (built %s %s)\n", pname, RELEASE_VERSION,
+	    printf("%s %s (built %s %s)\n", pname, VERSION,
 		   __DATE__, __TIME__);
 	    printf("%s\n", REDHAT_COPYRIGHT);
 	    exit(DID_SUCCESS);

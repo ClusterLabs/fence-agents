@@ -1,3 +1,5 @@
+#include "clusterautoconfig.h"
+
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #include <string.h>
@@ -7,6 +9,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <ctype.h>
+#ifdef STANDALONE
+#include <sys/types.h>
+#include <sys/stat.h>
+#endif
 
 #ifdef STANDALONE
 #define dbg_printf(x, fmt, args...) printf("<%d> " fmt, x, ##args)

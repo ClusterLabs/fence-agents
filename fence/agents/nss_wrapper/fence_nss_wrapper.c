@@ -1,6 +1,8 @@
 /** @file fence_nss_wrapper.c - Main source code of hobbit like tool with
   support for NSS (SSL) connection.
 */
+#include "clusterautoconfig.h"
+
 #include <stdio.h>
 #include <nss.h>
 #include <ssl.h>

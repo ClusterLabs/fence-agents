@@ -1,3 +1,5 @@
+#include "clusterautoconfig.h"
+
 #include <sys/types.h>
 #include <string.h>
 #include <stdlib.h>
