@@ -52,7 +52,6 @@ my %options = (
 	fenceagentslibdir => \$fenceagentslibdir,
 	enable_crack_of_the_day => \$enable_crack_of_the_day,
 	enable_legacy_code => \$enable_legacy_code,
-	enable_virt => \$enable_virt,
 	release_version => \$release_version,
 );
 
@@ -95,8 +94,7 @@ my $err = &GetOptions (\%options,
 		    'fence_agents=s',
 		    'fenceagentslibdir=s',
 		    'enable_crack_of_the_day',
-		    'enable_legacy_code',
-		    'enable_virt');
+		    'enable_legacy_code');
 
 if(!$err) {
   $ret = 1;
@@ -149,7 +147,6 @@ if ($help || !$err) {
   print "--fenceagentslibdir=\tspecify directory where to install common fence python lib.  (Default: {prefix}/share/fence)\n";
   print "--enable_crack_of_the_day\tEnable build of highly experimental features that rely on code that is not yet available for general use. (Default: no)\n";
   print "--enable_legacy_code\tEnable build of old/obsolete/unsupported code/tools.  (Default: no)\n";
-  print "--enable_virt\tEnable building of virtualization code (Default: disabled)\n";
   exit $ret;
 }
 
@@ -317,9 +314,6 @@ if (!$enable_legacy_code) {
   print "\n********************************************************************************************\n";
   $cflags="${cflags} -DLEGACY_CODE";
 }
-if (!$enable_virt) {
-  $enable_virt="";
-}
 if (defined($release_version) && not length $release_version) {
   $release_version="";
 }
@@ -344,7 +338,6 @@ if ($fence_agents eq "help") {
 
 if ((!$fence_agents) || ($fence_agents eq "all")) {
   print "\nThe following fence agents will be build on this system:\n$all_fence\n";
-  print "\nNOTE: xvm will build only if --enable_virt has been specified\n\n";
   $fence_agents = $all_fence
 }
 
@@ -389,7 +382,6 @@ while (<IFILE>) {
   $_ =~ s/\@FENCEAGENTSLIBDIR\@/$fenceagentslibdir/;
   $_ =~ s/\@ENABLE_CRACK_OF_THE_DAY\@/$enable_crack_of_the_day/;
   $_ =~ s/\@ENABLE_LEGACY_CODE\@/$enable_legacy_code/;
-  $_ =~ s/\@ENABLE_VIRT\@/$enable_virt/;
 
   print OFILE "$_\n";
 }
