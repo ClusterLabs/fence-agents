@@ -29,9 +29,9 @@ if [ "$answer" != "absolutely" ]; then
 	exit 1
 fi
 
-while ! [ -e /var/run/cluster/fenced_override ]; do
+while ! [ -e @clustervarrun@/fenced_override ]; do
 	sleep 1
 done
 
-echo $1>/var/run/cluster/fenced_override
+echo $1>@clustervarrun@/fenced_override
 echo Done
