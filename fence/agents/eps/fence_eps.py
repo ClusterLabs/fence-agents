@@ -107,6 +107,8 @@ def main():
 	if (not options.has_key("-c")):
 		options["-c"]="hidden.htm"
 
+	show_docs(options)
+
 	#Run fence action. Conn is None, beacause we always need open new http connection
 	fence_action(None, options, set_power_status, get_power_status,get_power_status)
 

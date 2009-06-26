@@ -54,6 +54,8 @@ def main():
 		
 	# This device will not allow us to login even with LANG=C
 	options["ssh_options"] = "-F /dev/null"
+
+	show_docs(options)
 	
 	##
 	## Operate the fencing device

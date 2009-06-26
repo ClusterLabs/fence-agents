@@ -77,6 +77,8 @@ def main():
 
 	options["ssh_options"]="-t '/bin/bash -c \"PS1=\[EXPECT\]#\  /bin/bash --noprofile --norc\"'"
 
+	show_docs(options)
+
 	## Operate the fencing device
 	conn = fence_login(options)
 	fence_action(conn, options, set_power_status, get_power_status, get_outlets_status)

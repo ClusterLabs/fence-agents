@@ -105,6 +105,8 @@ def main():
 
 	options = check_input(device_opt, options)
 
+	show_docs(options)
+
 	if (not (options["-o"] in ["list","monitor"])):
 		port_oid=cisco_port2oid(options["-n"])
 

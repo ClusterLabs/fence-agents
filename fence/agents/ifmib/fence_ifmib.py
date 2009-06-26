@@ -125,6 +125,8 @@ def main():
 
 	options = check_input(device_opt, options)
 
+	show_docs(options)
+
 	# Operate the fencing device
 	fence_action(FencingSnmp(options), options, set_power_status, get_power_status, get_outlets_status)
 

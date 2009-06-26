@@ -53,11 +53,13 @@ def main():
 
 	# Default command is sc>
 	if (not options.has_key("-c")):
-            options["-c"] = "sc\>\ "
+		options["-c"] = "sc\>\ "
 
 	# Default to ssh
 	options["-x"] = 1
 	options["telnet_over_ssh"] = 1
+	
+	show_docs(options)
 		
 	# Operate the fencing device
 	conn = fence_login(options)

@@ -88,6 +88,8 @@ def main():
 	if 0 == options.has_key("-c"):
 		options["-c"] = [ "RSM>", "MPC>", "IPS>", "TPS>", "NBB>", "NPS>" ]
 
+	show_docs(options)
+	
 	##
 	## Operate the fencing device
 	##

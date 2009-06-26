@@ -290,6 +290,8 @@ def main():
 	# Default is secure connection
 	options["-x"] = 1
 
+	show_docs(options)
+
 	# Check vmware type and set path
 	vmware_check_vmware_type(options)
 

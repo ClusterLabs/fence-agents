@@ -481,20 +481,10 @@ def check_input(device_opt, opt):
 	else:
 		all_opt["login"]["required"] = "0"
 
-	## Process special options (and exit)
+	## In special cases (show help, metadata or version) we don't need to check anything
 	#####
-	if options.has_key("-h"): 
-		usage(device_opt)
-		sys.exit(0)
-
-	if options.has_key("-o") and options["-o"].lower() == "metadata":
-		metadata(device_opt)
-		sys.exit(0)
-
-	if options.has_key("-V"):
-		print RELEASE_VERSION, BUILD_DATE
-		print REDHAT_COPYRIGHT
-		sys.exit(0)
+	if options.has_key("-h") or options.has_key("-V") or (options.has_key("-o") and options["-o"].lower() == "metadata"):
+		return options;
 
 	## Set default values
 	#####
@@ -571,7 +561,27 @@ def wait_power_status(tn, options, get_power_fn):
 			return 1
 	return 0
 
+def show_docs(options):
+	device_opt = options["device_opt"]
+	
+	## Process special options (and exit)
+	#####
+	if options.has_key("-h"): 
+		usage(device_opt)
+		sys.exit(0)
+
+	if options.has_key("-o") and options["-o"].lower() == "metadata":
+		metadata(device_opt)
+		sys.exit(0)
+
+	if options.has_key("-V"):
+		print RELEASE_VERSION, BUILD_DATE
+		print REDHAT_COPYRIGHT
+		sys.exit(0)
+
 def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None):
+	## Process options that manipulate fencing device
+	#####
 	if (options["-o"] == "list") and (0 == options["device_opt"].count("port")) and (0 == options["device_opt"].count("partition")):
 		print "N/A"
 		return

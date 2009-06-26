@@ -98,6 +98,8 @@ def main():
 	
 
 	options["-x"] = 1
+	show_docs(options)
+
 	##
 	## Operate the fencing device
 	####

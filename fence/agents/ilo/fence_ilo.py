@@ -65,6 +65,8 @@ def main():
 	options["-z"] = 1
 	LOGIN_TIMEOUT = 10
 
+	show_docs(options)
+
 	##
 	## Login and get version number
 	####

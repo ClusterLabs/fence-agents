@@ -187,6 +187,8 @@ def main():
 	if (not (options.has_key("-s"))):
 		options["-s"]="1"
 
+	show_docs(options)
+
 	# Operate the fencing device
 	fence_action(FencingSnmp(options), options, set_power_status, get_power_status, get_outlets_status)
 

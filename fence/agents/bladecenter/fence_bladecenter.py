@@ -103,6 +103,8 @@ def main():
 	if 0 == options.has_key("-c"):
 		options["-c"] = "system>"
 
+	show_docs(options)
+	
 	##
 	## Operate the fencing device
 	######

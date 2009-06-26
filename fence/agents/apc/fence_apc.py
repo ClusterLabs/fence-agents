@@ -199,6 +199,8 @@ def main():
 	if 0 == options.has_key("-c"):
 		options["-c"] = "\n>"
 
+	show_docs(options)
+
 	## Support for -n [switch]:[plug] notation that was used before
 	if (options.has_key("-n") == 1) and (-1 != options["-n"].find(":")):
 		(switch, plug) = options["-n"].split(":", 1)

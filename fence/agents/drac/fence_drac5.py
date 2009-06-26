@@ -96,6 +96,8 @@ def main():
 	if 0 == options.has_key("-c"):
 		options["-c"] = "\$"
 
+	show_docs(options)
+
 	##
 	## Operate the fencing device
 	######
