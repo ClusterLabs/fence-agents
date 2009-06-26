@@ -101,12 +101,18 @@ def main():
 
 			result = conn.log_expect(options, [ re_login, "Password: ", re_prompt ], SHELL_TIMEOUT)
 			if result == 0:
-				conn.send(options["-l"]+"\r\n")
-				result = conn.log_expect(options, [ re_login, "Password: ", re_prompt ], SHELL_TIMEOUT)
+				if options.has_key("-l"):
+					conn.send(options["-l"]+"\r\n")
+					result = conn.log_expect(options, [ re_login, "Password: ", re_prompt ], SHELL_TIMEOUT)
+				else:
+					fail_usage("Failed: You have to set login name")
 		
 			if result == 1:
-				conn.send(options["-p"]+"\r\n")
-				conn.log_expect(options, options["-c"], SHELL_TIMEOUT)	
+				if options.has_key("-p"):
+					conn.send(options["-p"]+"\r\n")
+					conn.log_expect(options, options["-c"], SHELL_TIMEOUT)	
+				else:
+					fail_usage("Failed: You have to enter password or password script")
 		except pexpect.EOF:
 			fail(EC_LOGIN_DENIED) 
 		except pexpect.TIMEOUT:
