@@ -37,11 +37,15 @@ all_opt = {
 		"getopt" : "h",
 		"longopt" : "help",
 		"help" : "-h, --help                     Display this help and exit",
+		"required" : "0",
+		"shortdesc" : "Display help and exit",
 		"order" : 54 },
 	"version" : { 
 		"getopt" : "V",
 		"longopt" : "version",
 		"help" : "-V, --version                  Output version information and exit",
+		"required" : "0",
+		"shortdesc" : "Display version information and exit",
 		"order" : 53 },
 	"quiet"   : {
 		"getopt" : "q",
@@ -58,6 +62,8 @@ all_opt = {
 		"getopt" : "D:",
 		"longopt" : "debug-file", 
 		"help" : "-D, --debug-file=<debugfile>   Debugging to output file",
+		"required" : "0",
+		"shortdesc" : "Write debug information to given file",
 		"order" : 52 },
 	"agent"   : {
 		"getopt" : "",
@@ -125,34 +131,44 @@ all_opt = {
 		"getopt" : "m:",
 		"longopt" : "module-name",
 		"help" : "-m, --module-name=<module>     DRAC/MC module name",
+		"required" : "0",
+		"shortdesc" : "DRAC/MC module name",
 		"order" : 1 },
 	"drac_version" : {
 		"getopt" : "d:",
 		"longopt" : "drac-version",
 		"help" : "-d, --drac-version=<version>   Force DRAC version to use",
+		"required" : "0",
+		"shortdesc" : "Force DRAC version to use",
 		"order" : 1 },
 	"hmc_version" : {
 		"getopt" : "H:",
 		"longopt" : "hmc-version",
 		"help" : "-H, --hmc-version=<version>   Force HMC version to use: 3, 4 (default)",
+		"required" : "0",
+		"shortdesc" : "Force HMC version to use (3 or 4)",
 		"default" : "4", 
 		"order" : 1 },
 	"ribcl" : {
 		"getopt" : "r:",
 		"longopt" : "ribcl-version",
 		"help" : "-r, --ribcl-version=<version>  Force ribcl version to use",
+		"required" : "0",
+		"shortdesc" : "Force ribcl version to use",
 		"order" : 1 },
 	"cmd_prompt" : {
 		"getopt" : "c:",
 		"longopt" : "command-prompt",
 		"help" : "-c, --command-prompt=<prompt>  Force command prompt",
+		"shortdesc" : "Force command prompt",
+		"required" : "0",
 		"order" : 1 },
 	"secure" : {
 		"getopt" : "x",
 		"longopt" : "ssh",
 		"help" : "-x, --ssh                      Use ssh connection",
-		"required" : "0",
 		"shortdesc" : "SSH connection",
+		"required" : "0",
 		"order" : 1 },
 	"ssl" : {
 		"getopt" : "z",
@@ -290,6 +306,8 @@ all_opt = {
 		"longopt" : "separator",
 		"help" : "-C, --separator=<char>         Separator for CSV created by 'list' operation",
 		"default" : ",", 
+		"required" : "0",
+		"shortdesc" : "Separator for CSV created by operation list",
 		"order" : 100 }
 }
 
@@ -346,14 +364,15 @@ def usage(avail_opt):
 		if len(value["help"]) != 0:
 			print "   " + value["help"]
 
-def metadata(avail_opt):
+def metadata(avail_opt, options, docs):
 	global all_opt
 
 	sorted_list = [ (key, all_opt[key]) for key in avail_opt ]
 	sorted_list.sort(lambda x, y: cmp(x[1]["order"], y[1]["order"]))
 
 	print "<?xml version=\"1.0\" ?>"
-	print "<resource-agent name=\"" + os.path.basename(sys.argv[0]) + "\" >"
+	print "<resource-agent name=\"" + os.path.basename(sys.argv[0])[:-3] + "\" shortdesc=\"" + docs["shortdesc"] + "\" >"
+	print "<longdesc>" + docs["longdesc"] + "</longdesc>"
 	print "<parameters>"
 	for option, value in sorted_list:
 		if all_opt[option].has_key("shortdesc"):
@@ -362,14 +381,42 @@ def metadata(avail_opt):
 			default = ""
 			if all_opt[option].has_key("default"):
 				default = "default=\""+all_opt[option]["default"]+"\""
+			elif options.has_key("-" + all_opt[option]["getopt"][:-1]):
+				if options["-" + all_opt[option]["getopt"][:-1]]:
+					try:
+						default = "default=\"" + options["-" + all_opt[option]["getopt"][:-1]] + "\""
+					except TypeError:
+						## @todo/@note: Currently there is no clean way how to handle lists
+						## we can create a string from it but we can't set it on command line
+						default = "default=\"list of values\""
+			elif options.has_key("-" + all_opt[option]["getopt"]):
+				default = "default=\"true\" "
+
+			mixed = all_opt[option]["help"]
+			## split it between option and help text
+			res = re.compile("^(.*--\S+)\s+", re.IGNORECASE | re.S).search(mixed)
+			if (None != res):
+				mixed = res.group(1)
+			mixed = mixed.replace("<", "&lt;").replace(">", "&gt;")
+			print "\t\t<getopt mixed=\"" + mixed + "\" />"
 
 			if all_opt[option]["getopt"].count(":") > 0:
 				print "\t\t<content type=\"string\" "+default+" />"
 			else:
 				print "\t\t<content type=\"boolean\" "+default+" />"
+				
 			print "\t\t<shortdesc lang=\"en\">" + all_opt[option]["shortdesc"] + "</shortdesc>"
 			print "\t</parameter>"
 	print "</parameters>"
+	print "<actions>"
+	print "\t<action name=\"on\" />"
+	print "\t<action name=\"off\" />"
+	print "\t<action name=\"reboot\" />"
+	print "\t<action name=\"status\" />"
+	print "\t<action name=\"list\" />"
+	print "\t<action name=\"monitor\" />"
+	print "\t<action name=\"meta-data\" />"	
+	print "</actions>"
 	print "</resource-agent>"
 
 def process_input(avail_opt):
@@ -561,8 +608,13 @@ def wait_power_status(tn, options, get_power_fn):
 			return 1
 	return 0
 
-def show_docs(options):
+def show_docs(options, docs = None):
 	device_opt = options["device_opt"]
+
+	if docs == None:
+		docs = { }
+		docs["shortdesc"] = "Fence agent"
+		docs["longdesc"] = ""
 	
 	## Process special options (and exit)
 	#####
@@ -571,7 +623,7 @@ def show_docs(options):
 		sys.exit(0)
 
 	if options.has_key("-o") and options["-o"].lower() == "metadata":
-		metadata(device_opt)
+		metadata(device_opt, options, docs)
 		sys.exit(0)
 
 	if options.has_key("-V"):
