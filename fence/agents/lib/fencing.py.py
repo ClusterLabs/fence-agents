@@ -19,6 +19,7 @@ LOGIN_TIMEOUT = 5
 LOG_MODE_VERBOSE = 100
 LOG_MODE_QUIET = 0
 
+EC_GENERIC_ERROR   = 1
 EC_BAD_ARGS        = 2
 EC_LOGIN_DENIED    = 3
 EC_CONNECTION_LOST = 4
@@ -706,13 +707,24 @@ def fence_login(options):
 
 		if options.has_key("-z"):
 			command = '%s %s %s %s' % (SSL_PATH, force_ipvx, options["-a"], options["-u"])
-			conn = fspawn(command)
+			try:
+				conn = fspawn(command)
+			except pexpect.ExceptionPexpect, ex:
+			 	## SSL telnet is part of the fencing package
+			 	sys.stderr.write(str(ex) + "\n")
+			 	sys.exit(EC_GENERIC_ERROR)
 		elif options.has_key("-x") and 0 == options.has_key("-k"):
 			command = '%s %s %s@%s -p %s' % (SSH_PATH, force_ipvx, options["-l"], options["-a"], options["-u"])
 			if options.has_key("ssh_options"):
 				command += ' ' + options["ssh_options"]
-			conn = fspawn(command)
-
+			try:
+				conn = fspawn(command)
+			except pexpect.ExceptionPexpect, ex:
+				sys.stderr.write(str(ex) + "\n")
+				sys.stderr.write("Due to limitations, binary dependencies on fence agents "
+				"are not in the spec file and must be installed separately." + "\n")
+				sys.exit(EC_GENERIC_ERROR)
+				
 			if options.has_key("telnet_over_ssh"):
 				#This is for stupid ssh servers (like ALOM) which behave more like telnet (ignore name and display login prompt)
 				result = conn.log_expect(options, [ re_login, "Are you sure you want to continue connecting (yes/no)?" ], LOGIN_TIMEOUT)
@@ -734,7 +746,13 @@ def fence_login(options):
 			command = '%s %s %s@%s -i %s -p %s' % (SSH_PATH, force_ipvx, options["-l"], options["-a"], options["-k"], options["-u"])
 			if options.has_key("ssh_options"):
 				command += ' ' + options["ssh_options"]
-			conn = fspawn(command)
+			try:
+				conn = fspawn(command)
+			except pexpect.ExceptionPexpect, ex:
+				sys.stderr.write(str(ex) + "\n")
+				sys.stderr.write("Due to limitations, binary dependencies on fence agents "
+				"are not in the spec file and must be installed separately." + "\n")
+				sys.exit(EC_GENERIC_ERROR)
 
 			result = conn.log_expect(options, [ options["-c"], "Are you sure you want to continue connecting (yes/no)?", "Enter passphrase for key '"+options["-k"]+"':" ], LOGIN_TIMEOUT)
 			if result == 1:
@@ -747,9 +765,16 @@ def fence_login(options):
 				else:
 					fail_usage("Failed: You have to enter passphrase (-p) for identity file")
 		else:
-			conn = fspawn(TELNET_PATH)
-			conn.send("set binary\n")
-			conn.send("open %s -%s\n"%(options["-a"], options["-u"]))
+			try:
+				conn = fspawn(TELNET_PATH)
+				conn.send("set binary\n")
+				conn.send("open %s -%s\n"%(options["-a"], options["-u"]))
+			except pexpect.ExceptionPexpect, ex:
+				sys.stderr.write(str(ex) + "\n")
+				sys.stderr.write("Due to limitations, binary dependencies on fence agents "
+				"are not in the spec file and must be installed separately." + "\n")
+				sys.exit(EC_GENERIC_ERROR)
+
 			conn.log_expect(options, re_login, LOGIN_TIMEOUT)
 			conn.send(options["-l"]+"\r\n")
 			conn.log_expect(options, re_pass, SHELL_TIMEOUT)

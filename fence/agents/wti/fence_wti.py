@@ -97,7 +97,14 @@ def main():
 	#####	
 	if 0 == options.has_key("-x"):
 		try:
-			conn = fspawn ('telnet ' + options["-a"])
+			try:
+				conn = fspawn('%s %s' % (TELNET_PATH, options["-a"]))
+			except pexpect.ExceptionPexpect, ex:
+				sys.stderr.write(str(ex) + "\n")
+				sys.stderr.write("Due to limitations, binary dependencies on fence agents "
+				"are not in the spec file and must be installed separately." + "\n")
+				sys.exit(EC_GENERIC_ERROR)
+			
 			re_login = re.compile("(login: )|(Login Name:  )|(username: )|(User Name :)", re.IGNORECASE)
 			re_prompt = re.compile("|".join(map (lambda x: "(" + x + ")", options["-c"])), re.IGNORECASE)
 
