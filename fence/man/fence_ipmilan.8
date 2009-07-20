@@ -49,6 +49,11 @@ If you are using lanplus, this option avails you to define type of ciphersuite t
 use. Standard is 3 (defined if you just use lanplus). For more information please
 refer ipmitool man page (option -C).
 .TP
+\fB-M\fP \fImethod\fP
+Method to fence (onoff or cycle). Default is onoff. Use cycle in case your management
+card will power off with default method so there will be no chance to power machine
+on by IPMI.
+.TP
 \fB-t\fP \fItimeout\fP
 Timeout in seconds for IPMI operation. Default is 10, but in some cases it
 must be set to higher value (anything above 30 is not recommended and may
@@ -92,6 +97,11 @@ cause strange problems).
 If you are using lanplus, this option avails you to define type of ciphersuite to
 use. Standard is 3 (defined if you just use lanplus). For more information please
 refer ipmitool man page (option -C).
+.TP
+\fImethod = < param >\fR
+Method to fence (onoff or cycle). Default is onoff. Use cycle in case your management
+card will power off with default method so there will be no chance to power machine
+on by IPMI.
 .TP
 \fIlanplus\fR
 If we are using the lanplus option for ipmitool
