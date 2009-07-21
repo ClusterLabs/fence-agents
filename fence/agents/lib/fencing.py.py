@@ -157,6 +157,11 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "Force ribcl version to use",
 		"order" : 1 },
+	"login_eol_lf" : {
+		"getopt" : "",
+		"help" : "",
+		"order" : 1
+		},
 	"cmd_prompt" : {
 		"getopt" : "c:",
 		"longopt" : "command-prompt",
@@ -701,6 +706,11 @@ def fence_login(options):
 	if (options.has_key("-4")):
 		force_ipvx="-4 "
 
+	if (options["device_opt"].count("login_eol_lf")):
+		login_eol = "\n"
+	else:
+		login_eol = "\r\n"
+
 	try:
 		re_login = re.compile("(login: )|(Login Name:  )|(username: )|(User Name :)", re.IGNORECASE)
 		re_pass  = re.compile("password", re.IGNORECASE)
@@ -776,9 +786,9 @@ def fence_login(options):
 				sys.exit(EC_GENERIC_ERROR)
 
 			conn.log_expect(options, re_login, LOGIN_TIMEOUT)
-			conn.send(options["-l"]+"\r\n")
+			conn.send(options["-l"] + login_eol)
 			conn.log_expect(options, re_pass, SHELL_TIMEOUT)
-			conn.send(options["-p"]+"\r\n")
+			conn.send(options["-p"] + login_eol)
 			conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
 	except pexpect.EOF:
 		fail(EC_LOGIN_DENIED) 
