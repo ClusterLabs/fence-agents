@@ -11,7 +11,7 @@
 ##  WTI IPS-800-CE     v1.40h		(no username) ('list' tested)
 #####
 
-import sys, re, pexpect
+import sys, re, pexpect, exceptions
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 

@@ -5,7 +5,7 @@
 # Virsh 0.3.3 on RHEL 5.2 with xen-3.0.3-51
 #
 
-import sys, re, pexpect
+import sys, re, pexpect, exceptions
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 

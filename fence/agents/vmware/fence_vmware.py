@@ -14,7 +14,7 @@
 # 	VMware Virtual Center 2.5
 #
 
-import sys, re, pexpect
+import sys, re, pexpect, exceptions
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 
