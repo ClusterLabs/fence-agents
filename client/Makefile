@@ -1,0 +1,49 @@
+###############################################################################
+###############################################################################
+##
+##  Copyright (C) 2006 Red Hat, Inc.
+##  
+##  This copyrighted material is made available to anyone wishing to use,
+##  modify, copy, or redistribute it subject to the terms and conditions
+##  of the GNU General Public License v.2.
+##
+###############################################################################
+###############################################################################
+
+
+TARGETS=fence_virt fence_xvm
+
+fence_virt_SOURCES = mcast.c serial.c main.c
+
+INCLUDES=-I../include\
+	-I/usr/include/openais -I/usr/include/libvirt \
+	-I/usr/include/nss3 -I/usr/include/nspr4 \
+	-I../../../cman/lib -I../../../ccs/lib -I/usr/include/libxml2 \
+	-I/usr/include/libvirt
+
+CFLAGS+=-DFENCE_RELEASE_NAME=\"devel\" \
+	-Wall -Werror -Wstrict-prototypes -Wshadow -ggdb -D_GNU_SOURCE
+
+LIBS+=-L../../../cman/lib -L../../../ccs/lib -L${libdir}/openais \
+      -L../../../dlm/lib -lnss3 -lxml2
+
+all: ${TARGETS}
+
+fence_xvm: fence_virt
+	ln -snf fence_virt fence_xvm
+
+fence_virt: ${fence_virt_SOURCES:.c=.o}
+	gcc -o $@ $^ $(LIBS) -L../common -lfence_virt
+
+%.o: %.c
+	gcc $(CFLAGS) -c -o $@ $^ $(INCLUDES)
+
+install: all
+	if [ ! -d ${sbindir} ]; then \
+		install -d ${sbindir}; \
+	fi
+	install -m755 ${TARGETS} ${sbindir}
+
+clean:
+	rm -f ${TARGETS} *.o *.d *~
+
