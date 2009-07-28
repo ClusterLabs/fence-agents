@@ -99,5 +99,12 @@ Name of the node that will perform the fencing operation.
 \fIverbose = < param >\fR
 Verbose output.
 
+.SH LIMITATIONS
+The fence_scsi fencing agent requires a minimum of three nodes in the
+cluster to operate.  For SAN devices connected via fiber channel,
+these must be physical nodes.  SAN devices connected via iSCSI may use
+virtual or physical nodes.  In addition, fence_scsi cannot be used in
+conjunction with qdisk.
+
 .SH SEE ALSO
 fence(8), fence_node(8), sg_persist(8), lvs(8), lvm.conf(5)
