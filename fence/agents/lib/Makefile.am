@@ -2,7 +2,7 @@ MAINTAINERCLEANFILES	= Makefile.in
 
 TARGET			= fencing.py fencing_snmp.py
 
-EXTRA_DIST		= fencing.py.py fencing_snmp.py.py
+EXTRA_DIST		= fencing.py.py fencing_snmp.py.py ra2man.xsl
 
 fencelibdir		= ${FENCEAGENTSLIBDIR}
 
