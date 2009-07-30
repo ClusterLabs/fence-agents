@@ -15,6 +15,7 @@ SUBDIRS 		= alom \
 			  ibmblade \
 			  ifmib \
 			  ilo \
+			  ilo_mp \
 			  intelmodular \
 			  ipmilan \
 			  ldom \
