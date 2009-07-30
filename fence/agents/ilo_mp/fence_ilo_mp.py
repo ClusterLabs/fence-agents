@@ -1,10 +1,5 @@
 #!/usr/bin/python
 
-##
-## Copyright (C) 2008 Red Hat, Inc. All Rights Reserved.
-##
-#####
-
 import sys, re, pexpect, socket
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
