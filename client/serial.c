@@ -58,7 +58,7 @@ char_to_flags(const char *param)
 	}
 
 	for (x = 0; x < 3; x++) {
-		switch (param[0]) {
+		switch (param[x]) {
 		case '5':
 			db_f = CS5;
 			break;
@@ -90,6 +90,7 @@ char_to_flags(const char *param)
 			sb_f = CSTOPB;
 			break;
 		default:
+			printf("Fail: %c\n", param[x]);
 			errno = EINVAL;
 			return -1;
 		}
@@ -177,21 +178,25 @@ serial_fence_virt(fence_virt_args_t *args)
 {
 	serial_req_t req;
 	int fd, ret;
-	char speed[16], *flags = NULL;
+	char speed[32], *flags = NULL;
 	struct timeval tv;
 	serial_resp_t resp;
+
+	strncpy(speed, args->serial.speed, sizeof(speed));
 
 	printf("Port: %s Speed: %s\n", args->serial.device, speed);
 
 	if ((flags = strchr(speed, ','))) {
+		*flags = 0;
 		flags++;
 	}
 
-	strncpy(speed, args->serial.speed, sizeof(speed));
 
 	fd = open_port(args->serial.device, speed, flags);
-	if (fd == -1)
+	if (fd == -1) {
+		perror("open_port");
 		return -1;
+	}
 
 	hangup(fd, 300000);
 
@@ -202,6 +207,7 @@ serial_fence_virt(fence_virt_args_t *args)
 		req.flags |= RF_UUID;
 	strncpy((char *)req.domain, args->domain, sizeof(req.domain));
 
+	
 	tv.tv_sec = 3;
 	tv.tv_usec = 0;
 	ret = _write_retry(fd, &req, sizeof(req), &tv);
@@ -213,13 +219,26 @@ serial_fence_virt(fence_virt_args_t *args)
 
 	tv.tv_sec = args->timeout;
 	tv.tv_usec = 0;
-	ret = _read_retry(fd, &resp, sizeof(resp), &tv);
+	do {
+		memset(&resp, 0, sizeof(resp));
+		ret = _read_retry(fd, &resp, sizeof(resp), &tv);
+	} while(resp.magic != SERIAL_MAGIC && (tv.tv_sec || tv.tv_usec));
 
 	if (resp.magic != SERIAL_MAGIC)
 		return -1;
 	ret = (int)resp.response;
 
+	/* XXX try a response from netcat: e.g.
+	   abba1<cr> = fail; abba0<cr>=ok
+	   should be removed when we have "real" 
+	   server side handling; this was just to
+	   test communications */
+	if (ret & 0x30) 
+		ret &= (~0x30);
+
 	close(fd);
+
+	printf("Response: %d\n", ret);
 
 	return ret;
 }
