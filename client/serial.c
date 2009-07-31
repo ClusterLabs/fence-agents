@@ -5,6 +5,10 @@
  *
  * Written by Lon Hohberger <lhh@redhat.com>
  *
+ * Serial client for fence_virt (incomplete, but 
+ * a good start)
+ *
+ * Based on:
  * Ubersimpledumbterminal "ser" version 1.0.3
  */
 
@@ -190,7 +194,6 @@ serial_fence_virt(fence_virt_args_t *args)
 		*flags = 0;
 		flags++;
 	}
-
 
 	fd = open_port(args->serial.device, speed, flags);
 	if (fd == -1) {
