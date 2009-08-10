@@ -46,6 +46,14 @@ communications:
    configuration discrepancy or we must make it an administrative
    requirement to provide the same serial device on each host
 
+ * Multicast.  This violates the networking requirement, but this is
+   okay since this method of operation is optional.  This operational
+   mode provides for one of the simpler configurations: all that is
+   needed is the guest's name or UUID.  The guest to host
+   communications operates in the same manner as fence_xvm/fence_xvmd,
+   except that there is an implied requirement on restricting the
+   multicast packets accepted to be from the local guests.
+
  * VM Channel over Serial.  This works like direct serial, but
    instead of owning the whole device, the device may be shared between
    multiple applications.  The server subscribes to a channel and
@@ -55,12 +63,6 @@ communications:
    unprivileged users the ability to fence using this method (I
    do not claim to know if this is useful or not).
 
- * Multicast.  This violates requirement, however, provides for one
-   of the simpler configurations: all that is needed is the guest's
-   name or UUID.  The guest to host communications operates in the
-   same manner as fence_xvm/fence_xvmd, except that there is an
-   implied requirement on restricting the multicast packets accepted
-   to be from the local guests.
 
 Host to Hypervisor interaction
 ------------------------------
