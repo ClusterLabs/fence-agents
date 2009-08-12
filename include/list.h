@@ -54,16 +54,6 @@ do { \
 	} \
 } while (0)
 
-/*
-   list_do(list, node) {
-   	stuff;
-   } while (!list_done(list, node));
- */
-#define list_do(list, curr) \
-	if (*list && (curr = *list)) do
-
-#define list_done(list, curr) \
-	(curr && (((curr = (void *)le(curr)->le_next)) && (curr == *list)))
 
 /*
  * list_for(list, tmp, counter) {
