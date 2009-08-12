@@ -65,7 +65,7 @@ typedef struct _mcast_info {
 	void *priv;
 	char key[MAX_KEY_LEN];
 	mcast_options *args;
-	fence_callbacks_t *cb;
+	const fence_callbacks_t *cb;
 	ssize_t key_len;
 	int mc_sock;
 	int need_kill;
@@ -280,7 +280,7 @@ mcast_dispatch(srv_context_t c, struct timeval *timeout)
 
 
 int
-mcast_init(srv_context_t *c, fence_callbacks_t *cb,
+mcast_init(srv_context_t *c, const fence_callbacks_t *cb,
 	   mcast_options *args, void *priv)
 {
 	mcast_info *info;

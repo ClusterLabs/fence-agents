@@ -13,7 +13,7 @@
 
 TARGETS=fence_virtd
 
-fence_virtd_SOURCES = mcast.c libvirt.c main.c
+fence_virtd_SOURCES = mcast.c libvirt.c main.c plugin.c
 
 INCLUDES=-I../include\
 	-I/usr/include/openais -I/usr/include/libvirt \

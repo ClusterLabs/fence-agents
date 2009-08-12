@@ -36,6 +36,9 @@ typedef int (*fence_status_callback)(const char *vm_name,
    is responding to requests. */
 typedef int (*fence_devstatus_callback)(void *priv);
 
+typedef int (*fence_init_callback)(srv_context_t *c);
+typedef int (*fence_cleanup_callback)(srv_context_t c);
+
 typedef struct _fence_callbacks {
 	fence_null_callback null;
 	fence_off_callback off;
@@ -45,10 +48,19 @@ typedef struct _fence_callbacks {
 	fence_devstatus_callback devstatus;
 } fence_callbacks_t;
 
+typedef struct _backend_plugin {
+	const char *name;
+	const char *version;
+	const fence_callbacks_t *callbacks;
+	fence_init_callback init;
+	fence_cleanup_callback cleanup;
+} plugin_t;
 
-extern fence_callbacks_t libvirt_callbacks;
-int libvirt_init(srv_context_t *c);
-int libvirt_shutdown(srv_context_t c);
+#ifndef _USE_MODULES
+void plugin_register(const plugin_t *plugin);
+const plugin_t *plugin_find(const char *name);
+void plugin_dump(void);
+#endif
 
 
 /* TODO: make these 'plugins' instead of static uses */
@@ -73,7 +85,7 @@ typedef struct {
 	unsigned int auth;
 } mcast_options;
 
-int mcast_init(srv_context_t *, fence_callbacks_t *,
+int mcast_init(srv_context_t *, const fence_callbacks_t *,
 	       mcast_options *, void *priv);
 int mcast_dispatch(srv_context_t, struct timeval *timeout);
 int mcast_shutdown(srv_context_t);

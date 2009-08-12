@@ -14,21 +14,28 @@ extern fence_callbacks_t libvirt_callbacks; /* should be in a header */
 int
 main(int argc, char **argv)
 {
+	const char *plugin_name = "libvirt";
+	const plugin_t *p;
 	srv_context_t mcast_context;
 	srv_context_t libvirt_context; /*XXX these should be differently
 					 named context types */
 
 	dset(99);
 
-	/* Only backend we have right now is basic libvirt */
+	plugin_dump();
 
-	if (libvirt_init(&libvirt_context) < 0) {
-		printf("Libvirt failed to initialize\n");
+	p = plugin_find(plugin_name);
+	if (!p) {
+		printf("Could not find plugin \"%s\n", plugin_name);
+	}
+
+	if (p->init(&libvirt_context) < 0) {
+		printf("%s failed to initialize\n", plugin_name);
 		return 1;
 	}
 
 	/* only client we have now is mcast (fence_xvm behavior) */
-	if (mcast_init(&mcast_context, &libvirt_callbacks, NULL,
+	if (mcast_init(&mcast_context, p->callbacks, NULL,
 		       libvirt_context) < 0) {
 		printf("Failed initialization!\n");
 		return 1;
@@ -37,7 +44,7 @@ main(int argc, char **argv)
 	while (mcast_dispatch(mcast_context, NULL) >= 0);
 
 	mcast_shutdown(mcast_context);
-	libvirt_shutdown(libvirt_context);
+	p->cleanup(libvirt_context);
 
 	return 0;
 }

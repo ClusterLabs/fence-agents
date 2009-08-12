@@ -57,6 +57,9 @@
 #include "debug.h"
 
 
+#define NAME "libvirt"
+#define VERSION "0.1"
+
 static inline int
 wait_domain(const char *vm_name, virConnectPtr vp, int timeout)
 {
@@ -273,7 +276,7 @@ libvirt_reboot(const char *vm_name, void *priv)
 	return ret;
 }
 
-int
+static int
 libvirt_init(srv_context_t *c)
 {
 	virConnectPtr vp;
@@ -286,14 +289,14 @@ libvirt_init(srv_context_t *c)
 }
 
 
-int
+static int
 libvirt_shutdown(srv_context_t c)
 {
 	return virConnectClose((virConnectPtr)c);
 }
 
 
-fence_callbacks_t libvirt_callbacks = {
+static fence_callbacks_t libvirt_callbacks = {
 	.null = libvirt_null,
 	.off = libvirt_off,
 	.on = libvirt_on,
@@ -301,3 +304,26 @@ fence_callbacks_t libvirt_callbacks = {
 	.status = libvirt_status,
 	.devstatus = libvirt_devstatus
 };
+
+#ifdef _MODULE
+fence_callbacks_t *
+plugin_callbacks(void)
+{
+	return &libvirt_callbacks;
+}
+#else
+
+static plugin_t libvirt_plugin = {
+	.name = NAME,
+	.version = VERSION,
+	.callbacks = &libvirt_callbacks,
+	.init = libvirt_init,
+	.cleanup = libvirt_shutdown,
+};
+
+static void __attribute__((constructor))
+initialize_plugin(void)
+{
+	plugin_register(&libvirt_plugin);
+}
+#endif
