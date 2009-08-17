@@ -22,6 +22,11 @@ main(int argc, char **argv)
 
 	dset(99);
 
+#ifdef _MODULE
+	if (plugin_load("./libvirt.so") < 0) {
+		printf("Doom\n");
+	}
+#endif
 	plugin_dump();
 
 	p = plugin_find(plugin_name);

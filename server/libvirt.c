@@ -305,14 +305,6 @@ static fence_callbacks_t libvirt_callbacks = {
 	.devstatus = libvirt_devstatus
 };
 
-#ifdef _MODULE
-fence_callbacks_t *
-plugin_callbacks(void)
-{
-	return &libvirt_callbacks;
-}
-#else
-
 static plugin_t libvirt_plugin = {
 	.name = NAME,
 	.version = VERSION,
@@ -321,8 +313,22 @@ static plugin_t libvirt_plugin = {
 	.cleanup = libvirt_shutdown,
 };
 
+
+#ifdef _MODULE
+double
+BACKEND_VER_SYM(void)
+{
+	return PLUGIN_VERSION_BACKEND;
+}
+
+const plugin_t *
+BACKEND_INFO_SYM(void)
+{
+	return &libvirt_plugin;
+}
+#else
 static void __attribute__((constructor))
-initialize_plugin(void)
+libvirt_register_plugin(void)
 {
 	plugin_register(&libvirt_plugin);
 }

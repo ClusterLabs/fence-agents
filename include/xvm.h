@@ -43,7 +43,7 @@ typedef enum {
 	AUTH_NONE = 0x0,	/* Plain TCP */
 	AUTH_SHA1 = 0x1,	/* Challenge-response (SHA1) */
   	AUTH_SHA256 = 0x2,      /* Challenge-response (SHA256) */
-	AUTH_SHA512 = 0x3,      /* Challenge-response (SHA512) */
+	AUTH_SHA512 = 0x3       /* Challenge-response (SHA512) */
      /* AUTH_SSL_X509 = 0x10        SSL X509 certificates */
 } fence_auth_type_t;
 

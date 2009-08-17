@@ -33,7 +33,7 @@ typedef enum {
 
 typedef enum {
 	MODE_MULTICAST  = 0,
-	//MODE_BROADCAST  = 1,
+	/*MODE_BROADCAST  = 1,*/
 	MODE_SERIAL     = 2,
 	MODE_VMCHANNEL  = 3
 } client_mode_t;

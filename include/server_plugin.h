@@ -1,7 +1,20 @@
-
 /*  */
-
 #include <uuid/uuid.h>
+
+#define PLUGIN_VERSION_FRONTEND ((double)0.1)
+#define PLUGIN_VERSION_BACKEND  ((double)0.1)
+
+#define FRONTEND_VER_SYM frontend_plugin_version
+#define BACKEND_VER_SYM backend_plugin_version
+#define FRONTEND_INFO_SYM frontend_plugin_info
+#define BACKEND_INFO_SYM backend_plugin_info
+#define FRONTEND_VER_STR "frontend_plugin_version"
+#define BACKEND_VER_STR "backend_plugin_version"
+#define FRONTEND_INFO_STR "frontend_plugin_info"
+#define BACKEND_INFO_STR "backend_plugin_info"
+
+
+
 
 typedef void * srv_context_t;
 
@@ -56,10 +69,11 @@ typedef struct _backend_plugin {
 	fence_cleanup_callback cleanup;
 } plugin_t;
 
-#ifndef _USE_MODULES
-void plugin_register(const plugin_t *plugin);
+int plugin_register(const plugin_t *plugin);
 const plugin_t *plugin_find(const char *name);
 void plugin_dump(void);
+#ifdef _MODULE
+int plugin_load(const char *libpath);
 #endif
 
 

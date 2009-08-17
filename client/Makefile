@@ -10,6 +10,7 @@
 ###############################################################################
 ###############################################################################
 
+include=../Makefile.top
 
 TARGETS=fence_virt fence_xvm
 
@@ -21,8 +22,7 @@ INCLUDES=-I../include\
 	-I../../../cman/lib -I../../../ccs/lib -I/usr/include/libxml2 \
 	-I/usr/include/libvirt
 
-CFLAGS+=-DFENCE_RELEASE_NAME=\"devel\" \
-	-Wall -Werror -Wstrict-prototypes -Wshadow -ggdb -D_GNU_SOURCE
+CFLAGS+=-DFENCE_RELEASE_NAME=\"devel\"
 
 LIBS+=-L../../../cman/lib -L../../../ccs/lib -L${libdir}/openais \
       -L../../../dlm/lib -lnss3 -lxml2

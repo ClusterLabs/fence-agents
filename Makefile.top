@@ -1,0 +1,1 @@
+CFLAGS=-fPIC -Wall -Wstrict-prototypes -Werror -ggdb -D_GNU_SOURCE

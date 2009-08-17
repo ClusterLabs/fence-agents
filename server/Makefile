@@ -10,10 +10,14 @@
 ###############################################################################
 ###############################################################################
 
+include ../Makefile.top
 
-TARGETS=fence_virtd
 
-fence_virtd_SOURCES = mcast.c libvirt.c main.c plugin.c
+TARGETS=fence_virtd libvirt.so
+
+fence_virtd_SOURCES = mcast.c main.c plugin.c
+
+libvirt_so_SOURCES = libvirt.c
 
 INCLUDES=-I../include\
 	-I/usr/include/openais -I/usr/include/libvirt \
@@ -21,8 +25,7 @@ INCLUDES=-I../include\
 	-I../../../cman/lib -I../../../ccs/lib -I/usr/include/libxml2 \
 	-I/usr/include/libvirt
 
-CFLAGS+=-DFENCE_RELEASE_NAME=\"devel\" \
-	-Wall -Werror -Wstrict-prototypes -Wshadow -ggdb -D_GNU_SOURCE
+CFLAGS+=-DFENCE_RELEASE_NAME=\"devel\" -D_MODULE
 
 LIBS+=-L/usr/lib64/openais -lnss3 -lxml2 -lSaCkpt -lccs -lvirt -lcman \
       -L../common -lfence_virt
@@ -31,6 +34,9 @@ all: ${TARGETS}
 
 fence_virtd: ${fence_virtd_SOURCES:.c=.o}
 	gcc -o $@ $^ $(LIBS) -L../common -lfence_virt
+
+libvirt.so: ${libvirt_so_SOURCES:.c=.o}
+	gcc -o $@ $^ $(LIBS) -shared -L../common -lvirt
 
 %.o: %.c
 	gcc $(CFLAGS) -c -o $@ $^ $(INCLUDES)
