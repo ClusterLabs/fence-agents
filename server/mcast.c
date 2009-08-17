@@ -42,6 +42,7 @@
 #include <pthread.h>
 #include <nss.h>
 #include <libgen.h>
+#include <simpleconfig.h>
 #include <server_plugin.h>
 
 /* Local includes */

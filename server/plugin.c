@@ -29,6 +29,7 @@
 #include <unistd.h>
 
 #include <list.h>
+#include <simpleconfig.h>
 #include <server_plugin.h>
 #include <malloc.h>
 #include <string.h>
@@ -82,9 +83,9 @@ plugin_find(const char *name)
 
 
 int
-plugin_init(const plugin_t *p, srv_context_t *c)
+plugin_init(const plugin_t *p, srv_context_t *c, config_object_t *config)
 {
-	return p->init(c);
+	return p->init(c, config);
 }
 
 

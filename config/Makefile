@@ -12,42 +12,38 @@
 
 include ../Makefile.top
 
+TARGETS=libsimpleconfig.a
 
-TARGETS=fence_virtd libvirt.so
+libsimpleconfig_a_SOURCE= config.tab.c \
+			  config.c simpleconfig.c
 
-fence_virtd_SOURCES = mcast.c main.c plugin.c
-
-libvirt_so_SOURCES = libvirt.c
-
-INCLUDES=-I../include\
+INCLUDES=-I../include \
 	-I/usr/include/openais -I/usr/include/libvirt \
 	-I/usr/include/nss3 -I/usr/include/nspr4 \
 	-I../../../cman/lib -I../../../ccs/lib -I/usr/include/libxml2 \
 	-I/usr/include/libvirt
 
-CFLAGS+=-DFENCE_RELEASE_NAME=\"devel\" -D_MODULE
+CFLAGS+=-DFENCE_RELEASE_NAME=\"devel\" -Wno-unused
 
-LIBS+=-L/usr/lib64/openais -lnss3 -lxml2 -lSaCkpt -lccs -lvirt -lcman \
-      -L../common -lfence_virt
-      
-MAIN_LIBS=-L../config -lsimpleconfig
+LIBS+=-L../../../cman/lib -L../../../ccs/lib -L${libdir}/openais \
+      -L../../../dlm/lib -lnss3 -lxml2
 
 all: ${TARGETS}
 
-fence_virtd: ${fence_virtd_SOURCES:.c=.o}
-	gcc -o $@ $^ $(LIBS) $(MAIN_LIBS)
+libsimpleconfig.a: ${libsimpleconfig_a_SOURCE:.c=.o}
+	ar rc $@ $^
 
-libvirt.so: ${libvirt_so_SOURCES:.c=.o}
-	gcc -o $@ $^ $(LIBS) -shared
+config.tab.c config.tab.h: config.y
+	bison -d $^
+
+config.c: config.tab.h config.l
+	flex -oconfig.c config.l
 
 %.o: %.c
 	gcc $(CFLAGS) -c -o $@ $^ $(INCLUDES)
 
-install: all
-	if [ ! -d ${sbindir} ]; then \
-		install -d ${sbindir}; \
-	fi
-	install -m755 ${TARGETS} ${sbindir}
-
 clean:
-	rm -f ${TARGETS} *.o *.d *~
+	rm -f ${TARGETS} *~ *.o testprog config.tab.c config.tab.h config.c
+
+install:
+

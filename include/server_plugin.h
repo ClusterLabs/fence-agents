@@ -49,7 +49,7 @@ typedef int (*fence_status_callback)(const char *vm_name,
    is responding to requests. */
 typedef int (*fence_devstatus_callback)(void *priv);
 
-typedef int (*fence_init_callback)(srv_context_t *c);
+typedef int (*fence_init_callback)(srv_context_t *c, config_object_t *config);
 typedef int (*fence_cleanup_callback)(srv_context_t c);
 
 typedef struct _fence_callbacks {

@@ -44,6 +44,7 @@
 #include <nss.h>
 #include <libgen.h>
 //#include <uuid/uuid.h>
+#include <simpleconfig.h>
 #include <server_plugin.h>
 
 /* Local includes */
@@ -277,11 +278,18 @@ libvirt_reboot(const char *vm_name, void *priv)
 }
 
 static int
-libvirt_init(srv_context_t *c)
+libvirt_init(srv_context_t *c, config_object_t *config)
 {
 	virConnectPtr vp;
+	char value[256];
+	char *uri = NULL;
 
-	vp = virConnectOpen(NULL);
+	if (sc_get(config, "backends/libvirt/@uri", value, sizeof(value)) == 0) {
+		uri = value;
+		printf("Using %s\n", uri);
+	}
+
+	vp = virConnectOpen(uri);
 	if (!vp)
 		return -1;
 	*c = (void *)vp;
