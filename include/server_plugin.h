@@ -83,7 +83,7 @@ typedef void serial_options;
    .. whatever you think you need...  */
 
 int serial_init(srv_context_t *, fence_callbacks_t *,
-		serial_options *, void *priv);
+		config_object_t *, void *priv);
 
 /* NULL = no timeout; wait forever */
 int serial_dispatch(srv_context_t, struct timeval *timeout);
