@@ -398,7 +398,7 @@ read_key_file(char *file, char *key, size_t max_len)
 		}
 
 		if (nread == 0) {
-			dbg_printf(3, "Stopped reading @ %d bytes",
+			dbg_printf(3, "Stopped reading @ %d bytes\n",
 				(int)max_len-remain);
 			break;
 		}
@@ -408,7 +408,7 @@ read_key_file(char *file, char *key, size_t max_len)
 	}
 
 	close(fd);	
-	dbg_printf(3, "Actual key length = %d bytes", (int)max_len-remain);
+	dbg_printf(3, "Actual key length = %d bytes\n", (int)max_len-remain);
 	
 	return (int)(max_len - remain);
 }
