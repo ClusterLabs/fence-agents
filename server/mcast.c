@@ -61,11 +61,21 @@ do {\
 		return -EINVAL;\
 } while(0)
 
+typedef struct _mcast_options {
+	char *addr;
+	char *key_file;
+	int ifindex;
+	int family;
+	unsigned int port;
+	unsigned int hash;
+	unsigned int auth;
+} mcast_options;
+
 typedef struct _mcast_info {
 	uint64_t magic;
 	void *priv;
 	char key[MAX_KEY_LEN];
-	mcast_options *args;
+	mcast_options args;
 	const fence_callbacks_t *cb;
 	ssize_t key_len;
 	int mc_sock;
@@ -141,7 +151,7 @@ do_fence_request_tcp(fence_req_t *req, mcast_info *info)
 	int fd = -1;
 	char response = 1;
 
-	fd = connect_tcp(req, info->args->auth, info->key, info->key_len);
+	fd = connect_tcp(req, info->args.auth, info->key, info->key_len);
 	if (fd < 0) {
 		dbg_printf(2, "Could call back for fence request: %s\n", 
 			strerror(errno));
@@ -240,7 +250,7 @@ mcast_dispatch(srv_context_t c, struct timeval *timeout)
 		return len;
 	}
 
-	if (!verify_request(&data, info->args->hash, info->key,
+	if (!verify_request(&data, info->args.hash, info->key,
 			    info->key_len)) {
 		printf("Key mismatch; dropping packet\n");
 		return 0;
@@ -264,7 +274,7 @@ mcast_dispatch(srv_context_t c, struct timeval *timeout)
 
 	printf("Request %d domain %s\n", data.request, data.domain);
 		
-	switch(info->args->auth) {
+	switch(info->args.auth) {
 	case AUTH_NONE:
 	case AUTH_SHA1:
 	case AUTH_SHA256:
@@ -280,12 +290,122 @@ mcast_dispatch(srv_context_t c, struct timeval *timeout)
 }
 
 
+
+static int
+mcast_config(config_object_t *config, mcast_options *args)
+{
+	char value[1024];
+	int errors = 0;
+
+	if (sc_get(config, "listeners/multicast/@key_file",
+		   value, sizeof(value)-1) == 0) {
+		dbg_printf(1, "Got %s for key_file\n", value);
+		args->key_file = strdup(value);
+	} else {
+		args->key_file = strdup(DEFAULT_KEY_FILE);
+		if (!args->key_file) {
+			dbg_printf(1, "Failed to allocate memory\n");
+			return -1;
+		}
+	}
+
+	args->hash = DEFAULT_HASH;
+	if (sc_get(config, "listeners/multicast/@hash",
+		   value, sizeof(value)-1) == 0) {
+		dbg_printf(1, "Got %s for hash\n", value);
+		if (!strcasecmp(value, "none")) {
+			args->hash = HASH_NONE;
+		} else if (!strcasecmp(value, "sha1")) {
+			args->hash = HASH_SHA1;
+		} else if (!strcasecmp(value, "sha256")) {
+			args->hash = HASH_SHA256;
+		} else if (!strcasecmp(value, "sha512")) {
+			args->hash = HASH_SHA512;
+		} else {
+			dbg_printf(1, "Unsupported hash: %s\n", value);
+			++errors;
+		}
+	}
+	
+	args->auth = DEFAULT_AUTH;
+	if (sc_get(config, "listeners/multicast/@auth",
+		   value, sizeof(value)-1) == 0) {
+		dbg_printf(1, "Got %s for auth\n", value);
+		if (!strcasecmp(value, "none")) {
+			args->hash = AUTH_NONE;
+		} else if (!strcasecmp(value, "sha1")) {
+			args->hash = AUTH_SHA1;
+		} else if (!strcasecmp(value, "sha256")) {
+			args->hash = AUTH_SHA256;
+		} else if (!strcasecmp(value, "sha512")) {
+			args->hash = AUTH_SHA512;
+		} else {
+			dbg_printf(1, "Unsupported auth: %s\n", value);
+			++errors;
+		}
+	}
+	
+	args->family = PF_INET;
+	if (sc_get(config, "listeners/multicast/@family",
+		   value, sizeof(value)-1) == 0) {
+		dbg_printf(1, "Got %s for family\n", value);
+		if (!strcasecmp(value, "ipv4")) {
+			args->family = PF_INET;
+		} else if (!strcasecmp(value, "ipv6")) {
+			args->family = PF_INET6;
+		} else {
+			dbg_printf(1, "Unsupported family: %s\n", value);
+			++errors;
+		}
+	}
+
+	if (sc_get(config, "listeners/multicast/@address",
+		   value, sizeof(value)-1) == 0) {
+		dbg_printf(1, "Got %s for address\n", value);
+		args->addr = strdup(value);
+	} else {
+		if (args->family == PF_INET) {
+			args->addr = strdup(IPV4_MCAST_DEFAULT);
+		} else {
+			args->addr = strdup(IPV6_MCAST_DEFAULT);
+		}
+	}
+	if (!args->addr) {
+		return -1;
+	}
+
+	args->auth = DEFAULT_AUTH;
+	if (sc_get(config, "listeners/multicast/@port",
+		   value, sizeof(value)-1) == 0) {
+		dbg_printf(1, "Got %s for port\n", value);
+		args->port = atoi(value);
+		if (args->port <= 0) {
+			dbg_printf(1, "Invalid port: %s\n", value);
+			++errors;
+		}
+	}
+
+	args->ifindex = 0;
+	if (sc_get(config, "listeners/multicast/@interface",
+		   value, sizeof(value)-1) == 0) {
+		dbg_printf(1, "Got %s for interface\n", value);
+		args->ifindex = if_nametoindex(value);
+		if (args->ifindex < 0) {
+			dbg_printf(1, "Invalid interface: %s\n", value);
+			++errors;
+		}
+	}
+
+	return errors;
+}
+
+
 int
 mcast_init(srv_context_t *c, const fence_callbacks_t *cb,
-	   mcast_options *args, void *priv)
+	   config_object_t *config, void *priv)
 {
 	mcast_info *info;
-	int mc_sock;
+	int mc_sock, ret;
 
 	/* Initialize NSS; required to do hashing, as silly as that
 	   sounds... */
@@ -299,47 +419,37 @@ mcast_init(srv_context_t *c, const fence_callbacks_t *cb,
 		return -1;
 	memset(info, 0, sizeof(*info));
 
-	info->args = args;
 	info->priv = priv;
 	info->cb = cb;
 
-	if (!info->args) {
-		info->args = malloc(sizeof(*info->args));
-		if (!info->args) {
-			free(info);
-			return -ENOMEM;
-		}
-		info->need_kill = 1;
-		info->args->key_file = strdup(DEFAULT_KEY_FILE);
-		info->args->hash = DEFAULT_HASH;
-		info->args->auth = DEFAULT_AUTH;
-		info->args->addr = strdup(IPV4_MCAST_DEFAULT);
-		info->args->port = 1229;
-		info->args->ifindex = if_nametoindex("eth0");
-		info->args->family = PF_INET;
+	ret = mcast_config(config, &info->args);
+	if (ret < 0) {
+		perror("mcast_config");
+		return -1;
+	} else if (ret > 0) {
+		printf("%d errors found during configuration\n",ret);
+		return -1;
 	}
 
-	dbg_printf(6, "info->args->ifindex = %d\n", info->args->ifindex);
-
-	if (info->args->auth != AUTH_NONE || info->args->hash != HASH_NONE) {
-		info->key_len = read_key_file(info->args->key_file,
+	if (info->args.auth != AUTH_NONE || info->args.hash != HASH_NONE) {
+		info->key_len = read_key_file(info->args.key_file,
 					info->key, sizeof(info->key));
 		if (info->key_len < 0) {
 			printf("Could not read %s; operating without "
-			       "authentication\n", info->args->key_file);
-			info->args->auth = AUTH_NONE;
-			info->args->hash = HASH_NONE;
+			       "authentication\n", info->args.key_file);
+			info->args.auth = AUTH_NONE;
+			info->args.hash = HASH_NONE;
 		}
 	}
 
-	if (info->args->family == PF_INET)
-		mc_sock = ipv4_recv_sk(info->args->addr,
-				       info->args->port,
-				       info->args->ifindex);
+	if (info->args.family == PF_INET)
+		mc_sock = ipv4_recv_sk(info->args.addr,
+				       info->args.port,
+				       info->args.ifindex);
 	else
-		mc_sock = ipv6_recv_sk(info->args->addr,
-				       info->args->port,
-				       info->args->ifindex);
+		mc_sock = ipv6_recv_sk(info->args.addr,
+				       info->args.port,
+				       info->args.ifindex);
 	if (mc_sock < 0) {
 		printf("Could not set up multicast listen socket\n");
 		free(info);
@@ -360,11 +470,8 @@ mcast_shutdown(srv_context_t c)
 
 	VALIDATE(info);
 	info->magic = 0;
-	if (info->need_kill) {
-		free(info->args->key_file);
-		free(info->args->addr);
-		free(info->args);
-	}
+	free(info->args.key_file);
+	free(info->args.addr);
 	close(info->mc_sock);
 	free(info);
 

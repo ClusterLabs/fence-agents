@@ -89,18 +89,8 @@ int serial_init(srv_context_t *, fence_callbacks_t *,
 int serial_dispatch(srv_context_t, struct timeval *timeout);
 int serial_shutdown(srv_context_t);
 
-typedef struct {
-	char *addr;
-	char *key_file;
-	int ifindex;
-	int family;
-	unsigned int port;
-	unsigned int hash;
-	unsigned int auth;
-} mcast_options;
-
 int mcast_init(srv_context_t *, const fence_callbacks_t *,
-	       mcast_options *, void *priv);
+	       config_object_t *, void *priv);
 int mcast_dispatch(srv_context_t, struct timeval *timeout);
 int mcast_shutdown(srv_context_t);
 

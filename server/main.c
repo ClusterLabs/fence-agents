@@ -79,7 +79,7 @@ main(int argc, char **argv)
 	}
 
 	/* only client we have now is mcast (fence_xvm behavior) */
-	if (mcast_init(&mcast_context, p->callbacks, NULL,
+	if (mcast_init(&mcast_context, p->callbacks, config,
 		       libvirt_context) < 0) {
 		printf("Failed initialization!\n");
 		return 1;
