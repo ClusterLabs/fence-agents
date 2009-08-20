@@ -2,4 +2,7 @@ High Priority / Blockers:
 
 * serial server-side listener/dispatcher
 
-* make server configurable
+* checkpoint/cman backend
+
+* libccs configuration plugin
+
