@@ -83,9 +83,6 @@ typedef struct _mcast_info {
 } mcast_info;
 
 
-int cleanup_xml(char *xmldesc, char **ret, size_t *retsz);
-
-
 static int
 connect_tcp(fence_req_t *req, fence_auth_type_t auth,
 	    void *key, size_t key_len)
