@@ -39,10 +39,11 @@ fence_virt: ${fence_virt_SOURCES:.c=.o}
 	gcc $(CFLAGS) -c -o $@ $^ $(INCLUDES)
 
 install: all
-	if [ ! -d ${sbindir} ]; then \
-		install -d ${sbindir}; \
+	# XXX hardcoded sbin
+	if [ ! -d /usr/sbin; then \
+		install -d /usr/sbin; \
 	fi
-	install -m755 ${TARGETS} ${sbindir}
+	install -m755 ${TARGETS} /usr/sbin
 
 clean:
 	rm -f ${TARGETS} *.o *.d *~

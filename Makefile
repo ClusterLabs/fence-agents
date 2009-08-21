@@ -17,6 +17,11 @@ all:
 	make -C client
 	make -C server
 
+install:
+	make -C config install
+	make -C client install
+	make -C server install
+
 clean:
 	make -C config clean
 	make -C common clean

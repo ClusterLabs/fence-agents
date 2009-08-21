@@ -13,7 +13,9 @@
 include ../Makefile.top
 
 
-TARGETS=fence_virtd libvirt.so checkpoint.so
+TARGETS=fence_virtd
+
+MODULES=libvirt.so checkpoint.so
 
 fence_virtd_SOURCES = mcast.c main.c plugin.c
 
@@ -34,7 +36,7 @@ LIBS+=-L/usr/lib64/openais -lnss3 -lxml2 -lSaCkpt -lccs -lvirt -lcman \
       
 MAIN_LIBS=-L../config -lsimpleconfig
 
-all: ${TARGETS}
+all: ${TARGETS} ${MODULES}
 
 fence_virtd: ${fence_virtd_SOURCES:.c=.o}
 	gcc -o $@ $^ $(LIBS) $(MAIN_LIBS)
@@ -49,10 +51,11 @@ checkpoint.so: ${checkpoint_so_SOURCES:.c=.o}
 	gcc $(CFLAGS) -c -o $@ $^ $(INCLUDES)
 
 install: all
-	if [ ! -d ${sbindir} ]; then \
-		install -d ${sbindir}; \
+	# XXX hardcoded sbin
+	if [ ! -d /usr/sbin ]; then \
+		install -d /usr/sbin; \
 	fi
-	install -m755 ${TARGETS} ${sbindir}
+	install -m755 ${TARGETS} /usr/sbin
 
 clean:
 	rm -f ${TARGETS} *.o *.d *~
