@@ -80,7 +80,17 @@ node:
 		free(c);
 	}
 	|
-	T_ID T_OBRACE T_CBRACE /* Empty config block */
+	T_ID T_OBRACE T_CBRACE {
+		struct parser_context *c = NULL;
+
+		c = context_stack;
+		node_add($1, val_list, node_list, &c->node_list);
+		val_list = c->val_list;
+		node_list = c->node_list;
+        	context_stack = c->next;
+
+		free(c);
+	}
 	;
 
 stuff:
