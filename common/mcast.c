@@ -53,6 +53,9 @@ ipv4_recv_sk(char *addr, int port, unsigned int ifindex)
 	struct ip_mreqn mreq;
 	struct sockaddr_in sin;
 
+	memset(&mreq, 0, sizeof(mreq));
+	memset(&sin, 0, sizeof(sin));
+
 	/* Store multicast address */
 	if (inet_pton(PF_INET, addr,
 		      (void *)&mreq.imr_multiaddr.s_addr) < 0) {
@@ -90,7 +93,11 @@ ipv4_recv_sk(char *addr, int port, unsigned int ifindex)
 	 * Join multicast group
 	 */
 	/* mreq.imr_multiaddr.s_addr is set above */
-	mreq.imr_ifindex = ifindex;
+	if (ifindex == 0) {
+		mreq.imr_address.s_addr = htonl(INADDR_ANY);
+	} else {
+		mreq.imr_ifindex = ifindex;
+	}
 	dbg_printf(4, "Joining multicast group\n");
 	if (setsockopt(sock, IPPROTO_IP, IP_ADD_MEMBERSHIP,
 		       &mreq, sizeof(mreq)) == -1) {
