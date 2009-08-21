@@ -46,6 +46,6 @@ clean:
 	rm -f ${TARGETS} *~ *.o testprog config.tab.c config.tab.h config.c
 
 install:
-	install -m 0644 example.conf /etc/fence_virtd.conf
+	install -m 0644 example.conf /etc/fence_virt.conf
 
 
