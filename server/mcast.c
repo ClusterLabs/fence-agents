@@ -69,6 +69,7 @@ typedef struct _mcast_options {
 	unsigned int port;
 	unsigned int hash;
 	unsigned int auth;
+	unsigned int flags;
 } mcast_options;
 
 typedef struct _mcast_info {
@@ -205,29 +206,6 @@ mcast_dispatch(srv_context_t c, struct timeval *timeout)
 	FD_ZERO(&rfds);
 	FD_SET(info->mc_sock, &rfds);
 
-#if 0
-	if (reload_key) {
-		char temp_key[MAX_KEY_LEN];
-		int ret;
-
-		reload_key = 0;
-
-			ret = read_key_file(args->key_file, temp_key, sizeof(temp_key));
-			if (ret < 0) {
-				printf("Could not read %s; not updating key",
-					args->key_file);
-			} else {
-				memcpy(key, temp_key, MAX_KEY_LEN);
-				key_len = (size_t) ret;
-
-				if (args->auth == AUTH_NONE)
-					args->auth = AUTH_SHA256;
-				if (args->hash == HASH_NONE)
-					args->hash = HASH_SHA256;
-			}
-		}
-#endif
-		
 	n = select((info->mc_sock)+1, &rfds, NULL, NULL, timeout);
 	if (n < 0)
 		return n;
@@ -253,21 +231,19 @@ mcast_dispatch(srv_context_t c, struct timeval *timeout)
 		return 0;
 	}
 
-#if 0
-	if ((args->flags & F_USE_UUID) &&
+	if ((info->args.flags & F_USE_UUID) &&
 	    !(data.flags & RF_UUID)) {
-			printf("Dropping packet: Request to fence by "
-			       "name while using UUIDs\n");
-			continue;
-		}
+		printf("Dropping packet: Request to fence by "
+		       "name while using UUIDs\n");
+		return 0;
+	}
 
-		if (!(args->flags & F_USE_UUID) &&
-		    (data.flags & RF_UUID)) {
-			printf("Dropping packet: Request to fence by "
-			       "UUID while using names\n");
-			continue;
-		}
-#endif
+	if (!(info->args.flags & F_USE_UUID) &&
+	    (data.flags & RF_UUID)) {
+		printf("Dropping packet: Request to fence by "
+		       "UUID while using names\n");
+		return 0;
+	}
 
 	printf("Request %d domain %s\n", data.request, data.domain);
 		
@@ -303,6 +279,20 @@ mcast_config(config_object_t *config, mcast_options *args)
 		if (!args->key_file) {
 			dbg_printf(1, "Failed to allocate memory\n");
 			return -1;
+		}
+	}
+
+	args->flags = 0;
+	if (sc_get(config, "listeners/multicast/@name_mode",
+		   value, sizeof(value)-1) == 0) {
+		dbg_printf(1, "Got %s for name_mode\n", value);
+		if (!strcasecmp(value, "uuid")) {
+			args->flags |= RF_UUID;
+		} else if (!strcasecmp(value, "name")) {
+			args->family &= ~RF_UUID;
+		} else {
+			dbg_printf(1, "Unsupported name_mode: %s\n", value);
+			++errors;
 		}
 	}
 
