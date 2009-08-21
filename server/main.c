@@ -6,6 +6,7 @@
 #include <sys/types.h>
 
 /* Local includes */
+#include <fence_virt.h>
 #include <simpleconfig.h>
 #include <server_plugin.h>
 #include <debug.h>
@@ -16,6 +17,7 @@ int
 main(int argc, char **argv)
 {
 	char val[80];
+	const char *config_file = DEFAULT_CONFIG_FILE;
 	config_object_t *config;
 	const plugin_t *p;
 	srv_context_t mcast_context;
@@ -30,10 +32,7 @@ main(int argc, char **argv)
 		switch(opt) {
 		case 'f':
 			printf("Using %s\n", optarg);
-			if (sc_parse(config, optarg) != 0) {
-				printf("Failed to parse %s\n", optarg);
-				return -1;
-			}
+			config_file = optarg;
 			break;
 		case 'd':
 			dset(atoi(optarg));
@@ -44,6 +43,10 @@ main(int argc, char **argv)
 		}
 	}
 
+	if (sc_parse(config, config_file) != 0) {
+		printf("Failed to parse %s\n", config_file);
+		return -1;
+	}
 
 	if (!debug_set) {
 		if (sc_get(config, "fence_virtd/@debug",
