@@ -361,7 +361,7 @@ mcast_config(config_object_t *config, mcast_options *args)
 		return -1;
 	}
 
-	args->auth = DEFAULT_AUTH;
+	args->port = DEFAULT_MCAST_PORT;
 	if (sc_get(config, "listeners/multicast/@port",
 		   value, sizeof(value)-1) == 0) {
 		dbg_printf(1, "Got %s for port\n", value);

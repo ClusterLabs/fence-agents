@@ -454,7 +454,7 @@ args_init(fence_virt_args_t *args)
 	args->net.hash = DEFAULT_HASH;
 	args->net.auth = DEFAULT_AUTH;
 	args->net.addr = NULL;
-	args->net.port = 1229;
+	args->net.port = DEFAULT_MCAST_PORT;
 	args->net.ifindex = 0;
 	args->net.family = PF_INET;
 	args->serial.device = strdup(DEFAULT_SERIAL_DEVICE);

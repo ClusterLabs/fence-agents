@@ -75,6 +75,7 @@ typedef struct __attribute__ ((packed)) _fence_req {
 #define RF_UUID 0x1			   /* Flag specifying UUID */
 	uint8_t  domain[MAX_DOMAINNAME_LENGTH]; /* Domain to fence*/
 	uint8_t  address[MAX_ADDR_LEN]; /* We're this IP */
+#define DEFAULT_MCAST_PORT 1229
 	uint16_t port;			/* Port we bound to */
 	uint8_t  random[10];		/* Random Data */
 	uint32_t family;		/* Address family */
