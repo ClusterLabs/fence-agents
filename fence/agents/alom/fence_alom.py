@@ -48,15 +48,15 @@ def main():
 			"secure",  "test", "inet4_only", "inet6_only", "ipport" ]
 
 	atexit.register(atexit_handler)
-
-	options = check_input(device_opt, process_input(device_opt))
+	
+	pinput = process_input(device_opt)
+	pinput["-x"] = 1
+	options = check_input(device_opt, pinput)
 
 	# Default command is sc>
 	if (not options.has_key("-c")):
 		options["-c"] = "sc\>\ "
 
-	# Default to ssh
-	options["-x"] = 1
 	options["telnet_over_ssh"] = 1
 	
 	show_docs(options)

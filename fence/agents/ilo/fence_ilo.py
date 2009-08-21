@@ -60,9 +60,10 @@ def main():
 
 	atexit.register(atexit_handler)
 
-	options = check_input(device_opt, process_input(device_opt))
-
-	options["-z"] = 1
+	pinput = process_input(device_opt)
+	pinput["-z"] = 1
+	options = check_input(device_opt, pinput)
+	
 	LOGIN_TIMEOUT = 10
 
 	show_docs(options)

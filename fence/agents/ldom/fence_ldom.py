@@ -88,7 +88,9 @@ def main():
 
 	atexit.register(atexit_handler)
 
-	options = check_input(device_opt, process_input(device_opt))
+	pinput = process_input(device_opt)
+	pinput["-x"] = 1
+	options = check_input(device_opt, pinput)
 
 	## 
 	## Fence agent specific defaults
@@ -96,8 +98,6 @@ def main():
 	if (not options.has_key("-c")):
 		options["-c"] = "\ $"
 	
-
-	options["-x"] = 1
 	show_docs(options)
 
 	##

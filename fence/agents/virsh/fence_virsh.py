@@ -67,13 +67,13 @@ def main():
 
 	atexit.register(atexit_handler)
 
-	options = check_input(device_opt, process_input(device_opt))
+	pinput = process_input(device_opt)
+	pinput["-x"] = 1
+	options = check_input(device_opt, pinput)
 
 	## Defaults for fence agent
 	if 0 == options.has_key("-c"):
 		options["-c"] = "\[EXPECT\]#\ "
-
-	options["-x"]=1
 
 	options["ssh_options"]="-t '/bin/bash -c \"PS1=\[EXPECT\]#\  /bin/bash --noprofile --norc\"'"
 
