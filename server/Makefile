@@ -56,6 +56,11 @@ install: all
 		install -d /usr/sbin; \
 	fi
 	install -m755 ${TARGETS} /usr/sbin
+	# XXX hardcoded sbin
+	if [ ! -d /usr/lib64/fence_virt ]; then \
+		install -d /usr/lib64/fence_virt ; \
+	fi
+	install -m755 ${MODULES} /usr/lib64/fence_virt
 
 clean:
 	rm -f ${TARGETS} *.o *.d *~

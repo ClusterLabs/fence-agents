@@ -68,12 +68,16 @@ main(int argc, char **argv)
 	if (plugin_load("./libvirt.so") < 0) {
 		printf("Doom\n");
 	}
+	if (plugin_load("/usr/lib64/fence_virt/libvirt.so") < 0) {
+		printf("Doom\n");
+	}
 #endif
 	plugin_dump();
 
 	p = plugin_find(val);
 	if (!p) {
 		printf("Could not find plugin \"%s\n", val);
+		return 1;
 	}
 
 	if (p->init(&libvirt_context, config) < 0) {
