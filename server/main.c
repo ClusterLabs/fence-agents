@@ -20,7 +20,7 @@ main(int argc, char **argv)
 	const char *config_file = DEFAULT_CONFIG_FILE;
 	config_object_t *config;
 	const plugin_t *p;
-	srv_context_t mcast_context;
+	srv_context_t mcast_context = NULL;
 	srv_context_t libvirt_context; /*XXX these should be differently
 					 named context types */
 	int debug_set = 0;
