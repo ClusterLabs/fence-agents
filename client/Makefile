@@ -40,7 +40,7 @@ fence_virt: ${fence_virt_SOURCES:.c=.o}
 
 install: all
 	# XXX hardcoded sbin
-	if [ ! -d /usr/sbin; then \
+	if [ ! -d /usr/sbin]; then \
 		install -d /usr/sbin; \
 	fi
 	install -m755 ${TARGETS} /usr/sbin
