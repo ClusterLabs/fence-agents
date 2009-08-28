@@ -278,7 +278,7 @@ libvirt_reboot(const char *vm_name, void *priv)
 }
 
 static int
-libvirt_init(srv_context_t *c, config_object_t *config)
+libvirt_init(backend_context_t *c, config_object_t *config)
 {
 	virConnectPtr vp;
 	char value[256];
@@ -298,7 +298,7 @@ libvirt_init(srv_context_t *c, config_object_t *config)
 
 
 static int
-libvirt_shutdown(srv_context_t c)
+libvirt_shutdown(backend_context_t c)
 {
 	return virConnectClose((virConnectPtr)c);
 }

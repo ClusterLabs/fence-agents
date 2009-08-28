@@ -83,14 +83,14 @@ plugin_find(const char *name)
 
 
 int
-plugin_init(const plugin_t *p, srv_context_t *c, config_object_t *config)
+plugin_init(const plugin_t *p, backend_context_t *c, config_object_t *config)
 {
 	return p->init(c, config);
 }
 
 
 int
-plugin_shutdown(const plugin_t *p, srv_context_t c)
+plugin_shutdown(const plugin_t *p, backend_context_t c)
 {
 	return p->cleanup(c);
 }

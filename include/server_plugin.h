@@ -16,7 +16,8 @@
 
 
 
-typedef void * srv_context_t;
+typedef void * listener_context_t;
+typedef void * backend_context_t;
 
 /* These callbacks hand requests off to the
    appropriate backend. */
@@ -49,8 +50,9 @@ typedef int (*fence_status_callback)(const char *vm_name,
    is responding to requests. */
 typedef int (*fence_devstatus_callback)(void *priv);
 
-typedef int (*fence_init_callback)(srv_context_t *c, config_object_t *config);
-typedef int (*fence_cleanup_callback)(srv_context_t c);
+typedef int (*fence_init_callback)(backend_context_t *c,
+				   config_object_t *config);
+typedef int (*fence_cleanup_callback)(backend_context_t c);
 
 typedef struct _fence_callbacks {
 	fence_null_callback null;
@@ -82,15 +84,15 @@ typedef void serial_options;
 /* Directory path / hypervisor uri if using libvirt...
    .. whatever you think you need...  */
 
-int serial_init(srv_context_t *, fence_callbacks_t *,
+int serial_init(listener_context_t *, fence_callbacks_t *,
 		config_object_t *, void *priv);
 
 /* NULL = no timeout; wait forever */
-int serial_dispatch(srv_context_t, struct timeval *timeout);
-int serial_shutdown(srv_context_t);
+int serial_dispatch(listener_context_t, struct timeval *timeout);
+int serial_shutdown(listener_context_t);
 
-int mcast_init(srv_context_t *, const fence_callbacks_t *,
+int mcast_init(listener_context_t *, const fence_callbacks_t *,
 	       config_object_t *, void *priv);
-int mcast_dispatch(srv_context_t, struct timeval *timeout);
-int mcast_shutdown(srv_context_t);
+int mcast_dispatch(listener_context_t, struct timeval *timeout);
+int mcast_shutdown(listener_context_t);
 

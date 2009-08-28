@@ -256,7 +256,7 @@ out:
 
 
 int
-mcast_dispatch(srv_context_t c, struct timeval *timeout)
+mcast_dispatch(listener_context_t c, struct timeval *timeout)
 {
 	mcast_info *info;
 	fence_req_t data;
@@ -459,7 +459,7 @@ mcast_config(config_object_t *config, mcast_options *args)
 
 
 int
-mcast_init(srv_context_t *c, const fence_callbacks_t *cb,
+mcast_init(listener_context_t *c, const fence_callbacks_t *cb,
 	   config_object_t *config, void *priv)
 {
 	mcast_info *info;
@@ -516,13 +516,13 @@ mcast_init(srv_context_t *c, const fence_callbacks_t *cb,
 
 	info->magic = MCAST_MAGIC;
 	info->mc_sock = mc_sock;
-	*c = (srv_context_t)info;
+	*c = (listener_context_t)info;
 	return 0;
 }
 
 
 int
-mcast_shutdown(srv_context_t c)
+mcast_shutdown(listener_context_t c)
 {
 	mcast_info *info = (mcast_info *)c;
 

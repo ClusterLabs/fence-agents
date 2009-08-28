@@ -16,12 +16,13 @@ int
 main(int argc, char **argv)
 {
 	char val[80];
+	char listener_name[80];
+	char backend_name[80];
 	const char *config_file = DEFAULT_CONFIG_FILE;
 	config_object_t *config;
 	const plugin_t *p;
-	srv_context_t mcast_context = NULL;
-	srv_context_t libvirt_context; /*XXX these should be differently
-					 named context types */
+	listener_context_t listener_ctx = NULL;
+	backend_context_t backend_ctx = NULL;
 	int debug_set = 0;
 	int opt;
 
@@ -55,13 +56,21 @@ main(int argc, char **argv)
 
 	sc_dump(config, stdout);
 
-	if (sc_get(config, "fence_virtd/@backend", val, sizeof(val))) {
+	if (sc_get(config, "fence_virtd/@backend", backend_name,
+		   sizeof(backend_name))) {
 		printf("Failed to determine backend.\n");
 		printf("%s\n", val);
 		return -1;
 	}
 
-	printf("Backend plugin: %s\n", val);
+	if (sc_get(config, "fence_virtd/@listener", listener_name,
+		   sizeof(listener_name))) {
+		printf("Failed to determine backend.\n");
+		printf("%s\n", val);
+		return -1;
+	}
+
+	printf("Backend plugin: %s\n", backend_name);
 
 #ifdef _MODULE
 	if (plugin_load("./libvirt.so") < 0) {
@@ -79,22 +88,22 @@ main(int argc, char **argv)
 		return 1;
 	}
 
-	if (p->init(&libvirt_context, config) < 0) {
+	if (p->init(&backend_ctx, config) < 0) {
 		printf("%s failed to initialize\n", val);
 		return 1;
 	}
 
 	/* only client we have now is mcast (fence_xvm behavior) */
-	if (mcast_init(&mcast_context, p->callbacks, config,
-		       libvirt_context) < 0) {
+	if (mcast_init(&listener_ctx, p->callbacks, config,
+		       backend_ctx) < 0) {
 		printf("Failed initialization!\n");
 		return 1;
 	}
 
-	while (mcast_dispatch(mcast_context, NULL) >= 0);
+	while (mcast_dispatch(listener_ctx, NULL) >= 0);
 
-	mcast_shutdown(mcast_context);
-	p->cleanup(libvirt_context);
+	mcast_shutdown(listener_ctx);
+	p->cleanup(backend_ctx);
 
 	return 0;
 }
