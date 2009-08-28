@@ -11,7 +11,6 @@
 #include <server_plugin.h>
 #include <debug.h>
 
-extern fence_callbacks_t libvirt_callbacks; /* should be in a header */
 
 int
 main(int argc, char **argv)
