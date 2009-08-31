@@ -15,7 +15,7 @@ include ../Makefile.top
 TARGETS=libfence_virt.a
 
 libfence_virt_a_SOURCE=mcast.c ip_lookup.c simple_auth.c tcp.c \
-		    options.c debug.c simple_auth.c fdops.c
+		    debug.c simple_auth.c fdops.c log.c
 
 INCLUDES=-I../include \
 	-I/usr/include/openais -I/usr/include/libvirt \

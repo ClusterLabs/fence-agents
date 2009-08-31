@@ -14,7 +14,7 @@ include=../Makefile.top
 
 TARGETS=fence_virt fence_xvm
 
-fence_virt_SOURCES = mcast.c serial.c main.c
+fence_virt_SOURCES = mcast.c serial.c main.c options.c
 
 INCLUDES=-I../include\
 	-I/usr/include/openais -I/usr/include/libvirt \
