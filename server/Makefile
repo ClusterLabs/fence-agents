@@ -32,7 +32,7 @@ INCLUDES=-I../include\
 CFLAGS+=-DFENCE_RELEASE_NAME=\"devel\" -D_MODULE
 
 LIBS+=-L/usr/lib64/openais -lnss3 -lxml2 -lSaCkpt -lccs -lvirt -lcman \
-      -L../common -lfence_virt
+      -L../common -lfence_virt -Wl,-wrap,syslog,-wrap,-closelog -lpthread
       
 MAIN_LIBS=-L../config -lsimpleconfig
 
