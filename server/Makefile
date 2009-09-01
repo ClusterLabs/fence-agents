@@ -63,4 +63,4 @@ install: all
 	install -m755 ${MODULES} /usr/lib64/fence_virt
 
 clean:
-	rm -f ${TARGETS} *.o *.d *~
+	rm -f ${TARGETS} ${MODULES} *.o *.d *~
