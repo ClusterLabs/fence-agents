@@ -353,7 +353,8 @@ mcast_config(config_object_t *config, mcast_options *args)
 		}
 	}
 
-	if (sc_get(config, "@name_mode", value, sizeof(value)-1) == 0) {
+	if (sc_get(config, "fence_virtd/@name_mode",
+		   value, sizeof(value)-1) == 0) {
 		/*
 		 * This is just an optimization.  If an administrator
 		 * configured something at the top level, we can use it

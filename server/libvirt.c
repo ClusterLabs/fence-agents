@@ -336,8 +336,8 @@ libvirt_init(backend_context_t *c, config_object_t *config)
 {
 	virConnectPtr vp;
 	char value[256];
-	char *uri = NULL;
 	struct libvirt_info *info = NULL;
+	char *uri = NULL;
 	int use_uuid = 0;
 
 	info = malloc(sizeof(*info));
@@ -348,12 +348,17 @@ libvirt_init(backend_context_t *c, config_object_t *config)
 
 	if (sc_get(config, "backends/libvirt/@uri",
 		   value, sizeof(value)) == 0) {
-		uri = value;
+		uri = strdup(value);
+		if (!uri) {
+			free(info);
+			return -1;
+		}
 		printf("Using %s\n", uri);
 	}
 
 	/* Naming scheme is a top-level configuration option */
-	if ((sc_get(config, "@name_mode", value, sizeof(value)-1) == 0)) {
+	if (sc_get(config, "fence_virtd/@name_mode",
+		   value, sizeof(value)-1) == 0) {
 
 		dbg_printf(1, "Got %s for name_mode\n", value);
 		if (!strcasecmp(value, "uuid")) {
@@ -368,9 +373,11 @@ libvirt_init(backend_context_t *c, config_object_t *config)
 	/* We don't need to store the URI; we only use it once */
 	vp = virConnectOpen(uri);
 	if (!vp) {
+		free(uri);
 		free(info);
 		return -1;
 	}
+	free(uri);
 
 	info->magic = MAGIC;
 	info->vp = vp;
