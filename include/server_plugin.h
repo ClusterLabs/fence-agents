@@ -106,16 +106,3 @@ void plugin_dump(void);
 int plugin_load(const char *libpath);
 #endif
 
-
-/* TODO: make these 'plugins' instead of static uses */
-typedef void serial_options;
-/* Directory path / hypervisor uri if using libvirt...
-   .. whatever you think you need...  */
-
-int serial_init(listener_context_t *, fence_callbacks_t *,
-		config_object_t *, void *priv);
-
-/* NULL = no timeout; wait forever */
-int serial_dispatch(listener_context_t, struct timeval *timeout);
-int serial_shutdown(listener_context_t);
-
