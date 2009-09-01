@@ -37,13 +37,15 @@
 
 typedef struct _plugin_list {
 	list_head();
-	const plugin_t *plugin;
+	const listener_plugin_t *listener;
+	const backend_plugin_t *backend;
+	plugin_type_t type;
 } plugin_list_t;
 
 static plugin_list_t *server_plugins = NULL;
 
 int
-plugin_register(const plugin_t *plugin)
+plugin_reg_backend(const backend_plugin_t *plugin)
 {
 	plugin_list_t *newplug;
 
@@ -51,10 +53,30 @@ plugin_register(const plugin_t *plugin)
 	if (!newplug) 
 		return -1;
 	memset(newplug, 0, sizeof(*newplug));
-	newplug->plugin = plugin;
+	newplug->backend = plugin;
+	newplug->type = PLUGIN_BACKEND;
+
 	list_insert(&server_plugins, newplug);
 	return 0;
 }
+
+
+int
+plugin_reg_listener(const listener_plugin_t *plugin)
+{
+	plugin_list_t *newplug;
+
+	newplug = malloc(sizeof(*newplug));
+	if (!newplug) 
+		return -1;
+	memset(newplug, 0, sizeof(*newplug));
+	newplug->listener = plugin;
+	newplug->type = PLUGIN_LISTENER;
+
+	list_insert(&server_plugins, newplug);
+	return 0;
+}
+
 
 void
 plugin_dump(void)
@@ -63,54 +85,66 @@ plugin_dump(void)
 	int x;
 
 	list_for(&server_plugins, p, x) {
-		printf("%s %s\n", p->plugin->name, p->plugin->version);
+		if (p->type == PLUGIN_BACKEND) {
+			printf("backend: %s %s\n",
+			       p->backend->name, p->backend->version);
+		} else if (p->type == PLUGIN_LISTENER) {
+			printf("listener: %s %s\n",
+			       p->listener->name, p->listener->version);
+		}
 	}
 }
 
-const plugin_t *
-plugin_find(const char *name)
+const backend_plugin_t *
+plugin_find_backend(const char *name)
 {
 	plugin_list_t *p;
 	int x;
 
 	list_for(&server_plugins, p, x) {
-		if (!strcasecmp(name, p->plugin->name))
-			return p->plugin;
+		if (p->type != PLUGIN_BACKEND)
+			continue;
+		if (!strcasecmp(name, p->backend->name))
+			return p->backend;
 	}
 
 	return NULL;
 }
 
 
-int
-plugin_init(const plugin_t *p, backend_context_t *c, config_object_t *config)
+const listener_plugin_t *
+plugin_find_listener(const char *name)
 {
-	return p->init(c, config);
+	plugin_list_t *p;
+	int x;
+
+	list_for(&server_plugins, p, x) {
+		if (p->type != PLUGIN_LISTENER)
+			continue;
+		if (!strcasecmp(name, p->listener->name))
+			return p->listener;
+	}
+
+	return NULL;
 }
 
-
-int
-plugin_shutdown(const plugin_t *p, backend_context_t c)
-{
-	return p->cleanup(c);
-}
 
 /**
  * Load a cluster plugin .so file and map all the functions
- * provided to entries in a plugin_t structure.
+ * provided to entries in a backend_plugin_t structure.
  *
  * @param libpath	Path to file.
  * @return		NULL on failure, or plugin-specific
- * 			(const) plugin_t * structure on
+ * 			(const) backend_plugin_t * structure on
  * 			success.
  */
 int
 plugin_load(const char *libpath)
 {
 	void *handle = NULL;
-	const plugin_t *plug = NULL;
+	const backend_plugin_t *plug = NULL;
 	double (*modversion)(void);
-	plugin_t *(*modinfo)(void);
+	backend_plugin_t *(*modinfo)(void);
 	struct stat sb;
 
 	errno = 0;
@@ -182,7 +216,7 @@ plugin_load(const char *libpath)
 	}
 
 	plug = modinfo();
-	if (plugin_register(plug) < 0) {
+	if (plugin_reg_backend(plug) < 0) {
 		dlclose(handle);
 		errno = EINVAL;
 		return -1;

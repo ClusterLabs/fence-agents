@@ -1,16 +1,16 @@
 /*  */
 #include <uuid/uuid.h>
 
-#define PLUGIN_VERSION_FRONTEND ((double)0.1)
+#define PLUGIN_VERSION_LISTENER ((double)0.1)
 #define PLUGIN_VERSION_BACKEND  ((double)0.1)
 
-#define FRONTEND_VER_SYM frontend_plugin_version
+#define LISTENER_VER_SYM listener_plugin_version
 #define BACKEND_VER_SYM backend_plugin_version
-#define FRONTEND_INFO_SYM frontend_plugin_info
+#define LISTENER_INFO_SYM listener_plugin_info
 #define BACKEND_INFO_SYM backend_plugin_info
-#define FRONTEND_VER_STR "frontend_plugin_version"
+#define LISTENER_VER_STR "listener_plugin_version"
 #define BACKEND_VER_STR "backend_plugin_version"
-#define FRONTEND_INFO_STR "frontend_plugin_info"
+#define LISTENER_INFO_STR "listener_plugin_info"
 #define BACKEND_INFO_STR "backend_plugin_info"
 
 
@@ -50,9 +50,9 @@ typedef int (*fence_status_callback)(const char *vm_name,
    is responding to requests. */
 typedef int (*fence_devstatus_callback)(void *priv);
 
-typedef int (*fence_init_callback)(backend_context_t *c,
-				   config_object_t *config);
-typedef int (*fence_cleanup_callback)(backend_context_t c);
+typedef int (*backend_init_fn)(backend_context_t *c,
+    			       config_object_t *config);
+typedef int (*backend_cleanup_fn)(backend_context_t c);
 
 typedef struct _fence_callbacks {
 	fence_null_callback null;
@@ -63,16 +63,44 @@ typedef struct _fence_callbacks {
 	fence_devstatus_callback devstatus;
 } fence_callbacks_t;
 
-typedef struct _backend_plugin {
+typedef struct backend_plugin {
 	const char *name;
 	const char *version;
 	const fence_callbacks_t *callbacks;
-	fence_init_callback init;
-	fence_cleanup_callback cleanup;
-} plugin_t;
+	backend_init_fn init;
+	backend_cleanup_fn cleanup;
+} backend_plugin_t;
 
-int plugin_register(const plugin_t *plugin);
-const plugin_t *plugin_find(const char *name);
+
+typedef int (*listener_init_fn)(listener_context_t *c,
+				const fence_callbacks_t *cb,
+				config_object_t *config, 
+				void *priv);
+typedef int (*listener_dispatch_fn)(listener_context_t c,
+				    struct timeval *timeout);
+typedef int (*listener_cleanup_fn)(listener_context_t c);
+
+
+typedef struct listener_plugin {
+	const char *name;
+	const char *version;
+	listener_init_fn init;
+	listener_dispatch_fn dispatch;
+	listener_cleanup_fn cleanup;
+} listener_plugin_t;
+
+
+typedef enum {
+	PLUGIN_NONE = 0,
+	PLUGIN_LISTENER = 1,
+	PLUGIN_BACKEND = 2
+} plugin_type_t;
+
+int plugin_reg_backend(const backend_plugin_t *plugin);
+int plugin_reg_listener(const listener_plugin_t *plugin);
+const backend_plugin_t *plugin_find_backend(const char *name);
+const listener_plugin_t *plugin_find_listener(const char *name);
+
 void plugin_dump(void);
 #ifdef _MODULE
 int plugin_load(const char *libpath);
@@ -90,9 +118,4 @@ int serial_init(listener_context_t *, fence_callbacks_t *,
 /* NULL = no timeout; wait forever */
 int serial_dispatch(listener_context_t, struct timeval *timeout);
 int serial_shutdown(listener_context_t);
-
-int mcast_init(listener_context_t *, const fence_callbacks_t *,
-	       config_object_t *, void *priv);
-int mcast_dispatch(listener_context_t, struct timeval *timeout);
-int mcast_shutdown(listener_context_t);
 

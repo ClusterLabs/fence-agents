@@ -54,6 +54,9 @@
 #include "tcp.h"
 #include "debug.h"
 
+#define NAME "multicast"
+#define VERSION "1.0"
+
 #define MCAST_MAGIC 0xaabab1b34b911a
 
 #define VALIDATE(info) \
@@ -255,7 +258,7 @@ out:
 }
 
 
-int
+static int
 mcast_dispatch(listener_context_t c, struct timeval *timeout)
 {
 	mcast_info *info;
@@ -461,7 +464,7 @@ mcast_config(config_object_t *config, mcast_options *args)
 }
 
 
-int
+static int
 mcast_init(listener_context_t *c, const fence_callbacks_t *cb,
 	   config_object_t *config, void *priv)
 {
@@ -524,7 +527,7 @@ mcast_init(listener_context_t *c, const fence_callbacks_t *cb,
 }
 
 
-int
+static int
 mcast_shutdown(listener_context_t c)
 {
 	mcast_info *info = (mcast_info *)c;
@@ -538,3 +541,34 @@ mcast_shutdown(listener_context_t c)
 
 	return 0;
 }
+
+
+static listener_plugin_t mcast_plugin = {
+	.name = NAME,
+	.version = VERSION,
+	.init = mcast_init,
+	.dispatch = mcast_dispatch,
+	.cleanup = mcast_shutdown,
+};
+
+
+#ifdef _MODULE_FOO
+double
+LISTENER_VER_SYM(void)
+{
+	return PLUGIN_VERSION_LISTENER;
+}
+
+const listener_plugin_t *
+LISTENER_INFO_SYM(void)
+{
+	return &mcast_plugin;
+}
+#else
+static void __attribute__((constructor))
+mcast_register_plugin(void)
+{
+	plugin_reg_listener(&mcast_plugin);
+}
+#endif
+

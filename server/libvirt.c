@@ -412,7 +412,7 @@ static fence_callbacks_t libvirt_callbacks = {
 	.devstatus = libvirt_devstatus
 };
 
-static plugin_t libvirt_plugin = {
+static backend_plugin_t libvirt_plugin = {
 	.name = NAME,
 	.version = VERSION,
 	.callbacks = &libvirt_callbacks,
@@ -428,7 +428,7 @@ BACKEND_VER_SYM(void)
 	return PLUGIN_VERSION_BACKEND;
 }
 
-const plugin_t *
+const backend_plugin_t *
 BACKEND_INFO_SYM(void)
 {
 	return &libvirt_plugin;

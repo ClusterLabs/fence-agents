@@ -20,7 +20,8 @@ main(int argc, char **argv)
 	char backend_name[80];
 	const char *config_file = DEFAULT_CONFIG_FILE;
 	config_object_t *config;
-	const plugin_t *p;
+	const listener_plugin_t *lp;
+	const backend_plugin_t *p;
 	listener_context_t listener_ctx = NULL;
 	backend_context_t backend_ctx = NULL;
 	int debug_set = 0;
@@ -82,27 +83,33 @@ main(int argc, char **argv)
 #endif
 	plugin_dump();
 
-	p = plugin_find(backend_name);
+	lp = plugin_find_listener(listener_name);
+	if (!lp) {
+		printf("Could not find listener \"%s\"\n", listener_name);
+		return 1;
+	}
+
+	p = plugin_find_backend(backend_name);
 	if (!p) {
-		printf("Could not find plugin \"%s\n", val);
+		printf("Could not find backend \"%s\n", backend_name);
 		return 1;
 	}
 
 	if (p->init(&backend_ctx, config) < 0) {
-		printf("%s failed to initialize\n", val);
+		printf("%s failed to initialize\n", backend_name);
 		return 1;
 	}
 
 	/* only client we have now is mcast (fence_xvm behavior) */
-	if (mcast_init(&listener_ctx, p->callbacks, config,
+	if (lp->init(&listener_ctx, p->callbacks, config,
 		       backend_ctx) < 0) {
-		printf("Failed initialization!\n");
+		printf("%s failed to initialize\n", listener_name);
 		return 1;
 	}
 
-	while (mcast_dispatch(listener_ctx, NULL) >= 0);
+	while (lp->dispatch(listener_ctx, NULL) >= 0);
 
-	mcast_shutdown(listener_ctx);
+	lp->cleanup(listener_ctx);
 	p->cleanup(backend_ctx);
 
 	return 0;
