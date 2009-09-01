@@ -334,7 +334,6 @@ mcast_dispatch(listener_context_t c, struct timeval *timeout)
 }
 
 
-
 static int
 mcast_config(config_object_t *config, mcast_options *args)
 {
