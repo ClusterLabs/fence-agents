@@ -91,7 +91,7 @@ main(int argc, char **argv)
 
 	p = plugin_find_backend(backend_name);
 	if (!p) {
-		printf("Could not find backend \"%s\n", backend_name);
+		printf("Could not find backend \"%s\"\n", backend_name);
 		return 1;
 	}
 
