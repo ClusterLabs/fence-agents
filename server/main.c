@@ -15,7 +15,7 @@
 int
 main(int argc, char **argv)
 {
-	char val[80];
+	char val[4096];
 	char listener_name[80];
 	char backend_name[80];
 	const char *config_file = DEFAULT_CONFIG_FILE;
@@ -74,14 +74,24 @@ main(int argc, char **argv)
 	printf("Backend plugin: %s\n", backend_name);
 
 #ifdef _MODULE
-	if (plugin_load("./libvirt.so") < 0) {
-		printf("Doom\n");
+	if (sc_get(config, "fence_virtd/@module_path", val,
+		   sizeof(val))) {
+		printf("Failed to determine module path.\n");
+		return -1;
 	}
-	if (plugin_load("/usr/lib64/fence_virt/libvirt.so") < 0) {
-		printf("Doom\n");
+
+	printf("Searching %s for plugins...\n", val);
+
+	opt = plugin_search(val);
+	if (opt > 0) {
+		printf("%d plugins found\n", opt);
+	} else {
+		printf("No plugins found\n");
+		return 1;
 	}
-#endif
+
 	plugin_dump();
+#endif
 
 	lp = plugin_find_listener(listener_name);
 	if (!lp) {

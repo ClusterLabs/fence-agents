@@ -15,11 +15,13 @@ include ../Makefile.top
 
 TARGETS=fence_virtd
 
-MODULES=libvirt.so checkpoint.so
+MODULES=libvirt.so checkpoint.so multicast.so
 
-fence_virtd_SOURCES = mcast.c main.c plugin.c
+fence_virtd_SOURCES = main.c plugin.c
 
 libvirt_so_SOURCES = libvirt.c
+
+multicast_so_SOURCES = mcast.c
 
 checkpoint_so_SOURCES = virt.c vm_states.c
 
@@ -40,6 +42,9 @@ all: ${TARGETS} ${MODULES}
 
 fence_virtd: ${fence_virtd_SOURCES:.c=.o}
 	gcc -o $@ $^ $(LIBS) $(MAIN_LIBS)
+
+multicast.so: ${multicast_so_SOURCES:.c=.o}
+	gcc -o $@ $^ $(LIBS) -shared
 
 libvirt.so: ${libvirt_so_SOURCES:.c=.o}
 	gcc -o $@ $^ $(LIBS) -shared

@@ -552,7 +552,7 @@ static listener_plugin_t mcast_plugin = {
 };
 
 
-#ifdef _MODULE_FOO
+#ifdef _MODULE
 double
 LISTENER_VER_SYM(void)
 {
