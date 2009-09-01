@@ -352,19 +352,20 @@ libvirt_init(backend_context_t *c, config_object_t *config)
 		printf("Using %s\n", uri);
 	}
 
-	if (sc_get(config, "backends/libvirt/@use_uuid",
-		   value, sizeof(value)) == 0) {
-		use_uuid = atoi(value);
-		if (use_uuid == 0) {
-			if (!strcasecmp(value, "true") ||
-			    !strcasecmp(value, "yes")) {
-				use_uuid = 1;
-			}
-		} else if (use_uuid < 0) {
+	/* Naming scheme is a top-level configuration option */
+	if ((sc_get(config, "@name_mode", value, sizeof(value)-1) == 0)) {
+
+		dbg_printf(1, "Got %s for name_mode\n", value);
+		if (!strcasecmp(value, "uuid")) {
+			use_uuid = 1;
+		} else if (!strcasecmp(value, "name")) {
 			use_uuid = 0;
+		} else {
+			dbg_printf(1, "Unsupported name_mode: %s\n", value);
 		}
 	}
 
+	/* We don't need to store the URI; we only use it once */
 	vp = virConnectOpen(uri);
 	if (!vp) {
 		free(info);

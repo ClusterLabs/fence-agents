@@ -353,9 +353,12 @@ mcast_config(config_object_t *config, mcast_options *args)
 		}
 	}
 
-	args->flags = 0;
-	if (sc_get(config, "listeners/multicast/@name_mode",
-		   value, sizeof(value)-1) == 0) {
+	if (sc_get(config, "@name_mode", value, sizeof(value)-1) == 0) {
+		/*
+		 * This is just an optimization.  If an administrator
+		 * configured something at the top level, we can use it
+		 * to explicitly ignore UUID vs. name
+		 */
 		dbg_printf(1, "Got %s for name_mode\n", value);
 		if (!strcasecmp(value, "uuid")) {
 			args->flags |= RF_UUID;
