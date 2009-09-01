@@ -353,7 +353,7 @@ libvirt_init(backend_context_t *c, config_object_t *config)
 			free(info);
 			return -1;
 		}
-		printf("Using %s\n", uri);
+		dbg_printf(1, "Using %s\n", uri);
 	}
 
 	/* Naming scheme is a top-level configuration option */

@@ -10,6 +10,7 @@
 #include <simpleconfig.h>
 #include <server_plugin.h>
 #include <debug.h>
+#include <syslog.h>
 
 
 int
@@ -24,13 +25,17 @@ main(int argc, char **argv)
 	const backend_plugin_t *p;
 	listener_context_t listener_ctx = NULL;
 	backend_context_t backend_ctx = NULL;
-	int debug_set = 0;
+	int debug_set = 0, foreground = 0;
 	int opt;
 
 	config = sc_init();
 
-	while ((opt = getopt(argc, argv, "f:d:")) != EOF) {
+	while ((opt = getopt(argc, argv, "Ff:d:")) != EOF) {
 		switch(opt) {
+		case 'F':
+			printf("Background mode disabled\n");
+			foreground = 1;
+			break;
 		case 'f':
 			printf("Using %s\n", optarg);
 			config_file = optarg;
@@ -40,7 +45,7 @@ main(int argc, char **argv)
 			debug_set = 1;
 			break;
 		default: 
-			break;
+			return -1;
 		}
 	}
 
@@ -54,8 +59,14 @@ main(int argc, char **argv)
 			   val, sizeof(val)) == 0)
 			dset(atoi(val));
 	}
+	if (!foreground) {
+		if (sc_get(config, "fence_virtd/@foreground",
+			   val, sizeof(val)) == 0)
+			foreground = atoi(val);
+	}
 
-	sc_dump(config, stdout);
+	if (dget() > 3) 
+		sc_dump(config, stdout);
 
 	if (sc_get(config, "fence_virtd/@backend", backend_name,
 		   sizeof(backend_name))) {
@@ -64,6 +75,8 @@ main(int argc, char **argv)
 		return -1;
 	}
 
+	dbg_printf(1, "Backend plugin: %s\n", backend_name);
+
 	if (sc_get(config, "fence_virtd/@listener", listener_name,
 		   sizeof(listener_name))) {
 		printf("Failed to determine backend.\n");
@@ -71,7 +84,7 @@ main(int argc, char **argv)
 		return -1;
 	}
 
-	printf("Backend plugin: %s\n", backend_name);
+	dbg_printf(1, "Listener plugin: %s\n", listener_name);
 
 #ifdef _MODULE
 	if (sc_get(config, "fence_virtd/@module_path", val,
@@ -80,17 +93,18 @@ main(int argc, char **argv)
 		return -1;
 	}
 
-	printf("Searching %s for plugins...\n", val);
+	dbg_printf(1, "Searching %s for plugins...\n", val);
 
 	opt = plugin_search(val);
 	if (opt > 0) {
-		printf("%d plugins found\n", opt);
+		dbg_printf(1, "%d plugins found\n", opt);
 	} else {
 		printf("No plugins found\n");
 		return 1;
 	}
 
-	plugin_dump();
+	if (dget() > 3)
+		plugin_dump();
 #endif
 
 	lp = plugin_find_listener(listener_name);
@@ -105,15 +119,31 @@ main(int argc, char **argv)
 		return 1;
 	}
 
+	if (!foreground) {
+		daemon(0, 0);
+	}
+
 	if (p->init(&backend_ctx, config) < 0) {
-		printf("%s failed to initialize\n", backend_name);
+		if (foreground) {
+			printf("Backend plugin %s failed to initialize\n",
+			       backend_name);
+		}
+		syslog(LOG_ERR,
+		       "Backend plugin %s failed to initialize\n",
+		       backend_name);
 		return 1;
 	}
 
 	/* only client we have now is mcast (fence_xvm behavior) */
 	if (lp->init(&listener_ctx, p->callbacks, config,
 		       backend_ctx) < 0) {
-		printf("%s failed to initialize\n", listener_name);
+		if (foreground) {
+			printf("Listener plugin %s failed to initialize\n",
+			       listener_name);
+		}
+		syslog(LOG_ERR,
+		       "Listener plugin %s failed to initialize\n",
+		       listener_name);
 		return 1;
 	}
 
