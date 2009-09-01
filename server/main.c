@@ -82,7 +82,7 @@ main(int argc, char **argv)
 #endif
 	plugin_dump();
 
-	p = plugin_find(val);
+	p = plugin_find(backend_name);
 	if (!p) {
 		printf("Could not find plugin \"%s\n", val);
 		return 1;
