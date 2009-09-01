@@ -360,7 +360,7 @@ mcast_config(config_object_t *config, mcast_options *args)
 		if (!strcasecmp(value, "uuid")) {
 			args->flags |= RF_UUID;
 		} else if (!strcasecmp(value, "name")) {
-			args->family &= ~RF_UUID;
+			args->flags &= ~RF_UUID;
 		} else {
 			dbg_printf(1, "Unsupported name_mode: %s\n", value);
 			++errors;
