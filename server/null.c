@@ -26,9 +26,6 @@
 #include <malloc.h>
 #include <errno.h>
 
-/* Local includes */
-#include "debug.h"
-
 
 #define NAME "null"
 #define VERSION "0.8"

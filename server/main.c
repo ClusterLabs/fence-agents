@@ -41,8 +41,7 @@ main(int argc, char **argv)
 			config_file = optarg;
 			break;
 		case 'd':
-			dset(atoi(optarg));
-			debug_set = 1;
+			debug_set = atoi(optarg);
 			break;
 		default: 
 			return -1;
@@ -54,11 +53,16 @@ main(int argc, char **argv)
 		return -1;
 	}
 
-	if (!debug_set) {
-		if (sc_get(config, "fence_virtd/@debug",
-			   val, sizeof(val)) == 0)
-			dset(atoi(val));
+	if (debug_set) {
+		snprintf(val, sizeof(val), "%d", debug_set);
+		sc_set(config, "fence_virtd/@debug", val);
+	} else {
+		if (sc_get(config, "fence_virtd/@debug", val, sizeof(val))==0)
+			debug_set = atoi(val);
 	}
+
+	dset(debug_set);
+
 	if (!foreground) {
 		if (sc_get(config, "fence_virtd/@foreground",
 			   val, sizeof(val)) == 0)

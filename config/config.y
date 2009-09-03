@@ -8,8 +8,8 @@
 extern int yylex (void);
 int yyerror(const char *foo);
 
-static int
-value_add(char *id, char *val, struct value **list)
+int
+_sc_value_add(char *id, char *val, struct value **list)
 {
 	struct value *v;
 
@@ -31,8 +31,8 @@ value_add(char *id, char *val, struct value **list)
 }
 
 
-static int
-node_add(char *id, struct value *vallist, struct node *nodelist,
+int
+_sc_node_add(char *id, struct value *vallist, struct node *nodelist,
 	 struct node **list)
 {
 	struct node *n;
@@ -72,7 +72,7 @@ node:
 		struct parser_context *c = NULL;
 
 		c = context_stack;
-		node_add($1, val_list, node_list, &c->node_list);
+		_sc_node_add($1, val_list, node_list, &c->node_list);
 		val_list = c->val_list;
 		node_list = c->node_list;
         	context_stack = c->next;
@@ -84,7 +84,7 @@ node:
 		struct parser_context *c = NULL;
 
 		c = context_stack;
-		node_add($1, val_list, node_list, &c->node_list);
+		_sc_node_add($1, val_list, node_list, &c->node_list);
 		val_list = c->val_list;
 		node_list = c->node_list;
         	context_stack = c->next;
@@ -99,7 +99,7 @@ stuff:
 
 assign:
 	T_ID T_EQ T_VAL T_SEMI {
-		value_add($1, $3, &val_list);
+		_sc_value_add($1, $3, &val_list);
 	}
 	;
 %%

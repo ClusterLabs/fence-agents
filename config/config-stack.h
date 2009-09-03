@@ -29,4 +29,9 @@ extern struct value *val_list;
 extern struct node *node_list;
 extern struct parser_context *context_stack;
 
+int _sc_value_add(char *id, char *val, struct value **list);
+int _sc_node_add(char *id, struct value *vallist, struct node *nodelist,
+		 struct node **list);
+
+
 #endif

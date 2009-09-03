@@ -90,11 +90,15 @@ main(int argc, char *argv[])
 	c = sc_init();
 	sc_parse(c, NULL);
 	sc_dump(c, stdout);
-	if (argc >= 2) {
+	if (argc == 2) {
 		if (sc_get(c, argv[1], value, sizeof(value)) == 0)
 			printf("%s = %s\n", argv[1], value);
 		else
 			printf("Not found\n");
+	} else if (argc == 3) {
+		printf("---------\n");
+		if (sc_set(c, argv[1], argv[2]) == 0)
+			sc_dump(c, stdout);
 	}
 
 	sc_release(c);

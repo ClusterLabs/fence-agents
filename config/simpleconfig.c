@@ -180,19 +180,90 @@ _sc_get(config_info_t *config, const char *key, char *value, size_t valuesz)
 			return 1;
 	}
 
-	if (ptr[0] == '@') {
-		++ptr;
-		found = 0;
+	if (ptr[0] != '@')
+		return 1;
 
-		for (v = values; v; v = v->next) {
-			if (!strcasecmp(v->id, ptr)) {
-				snprintf(value, valuesz, "%s", v->val);
-				return 0;
-			}
+	++ptr;
+	found = 0;
+
+	for (v = values; v; v = v->next) {
+		if (!strcasecmp(v->id, ptr)) {
+			snprintf(value, valuesz, "%s", v->val);
+			return 0;
 		}
 	}
 
 	return 1;
+}
+
+
+static int
+_sc_set(config_info_t *config, const char *key, const char *value)
+{
+	char buf[1024];
+	struct node *n, **nodes = &((struct parser_context *)config)->node_list;
+	struct value *v, **values = &((struct parser_context *)config)->val_list;
+	char *ptr;
+	char *slash;
+	char *id_dup, *val_dup;
+	int found = 0;
+
+	ptr = (char *)key;
+	while ((slash = strchr(ptr, '/'))) {
+		memset(buf, 0, sizeof(buf));
+		strncpy(buf, ptr, (slash - ptr));
+		ptr = ++slash;
+		found = 0;
+
+		for (n = *nodes; n; n = n->next) {
+			if (strcasecmp(n->id, buf))
+				continue;
+
+			nodes = &n->nodes;
+			values = &n->values;
+			found = 1;
+			break;
+		}
+
+		if (!found) {
+			id_dup = strdup(buf);
+			if (!id_dup)
+				return -1;
+			_sc_node_add(id_dup, NULL, NULL, nodes);
+			n = *nodes;
+			nodes = &n->nodes;
+			values = &n->values;
+		}
+	}
+
+	if (ptr[0] != '@')
+		return 1;
+	++ptr;
+
+	for (v = *values; v; v = v->next) {
+		if (strcasecmp(v->id, ptr))
+			continue;
+
+		ptr = v->val;
+		v->val = strdup(value);
+		if (!v->val) {
+			v->val = ptr;
+			return -1;
+		}
+		free(ptr);
+
+		return 0;
+	}
+
+	id_dup = strdup(ptr);
+	if (!id_dup)
+		return -1;
+	val_dup = strdup(value);
+	if (!val_dup)
+		return -1;
+	_sc_value_add(id_dup, val_dup, values);
+
+	return 0;
 }
 
 
@@ -239,6 +310,7 @@ _sc_parse(const char *filename, config_info_t **config)
 
 static const config_object_t sc_object = {
 	.get = _sc_get,
+	.set = _sc_set,
 	.parse = _sc_parse,
 	.free = _sc_free,
 	.dump = _sc_dump,

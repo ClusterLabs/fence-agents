@@ -343,6 +343,9 @@ mcast_config(config_object_t *config, mcast_options *args)
 	char value[1024];
 	int errors = 0;
 
+	if (sc_get(config, "fence_virtd/@debug", value, sizeof(value))==0)
+		dset(atoi(value));
+
 	if (sc_get(config, "listeners/multicast/@key_file",
 		   value, sizeof(value)-1) == 0) {
 		dbg_printf(1, "Got %s for key_file\n", value);

@@ -346,7 +346,11 @@ libvirt_init(backend_context_t *c, config_object_t *config)
 	if (!info)
 		return -1;
 
+	dbg_printf(5, "[%s:%d %s]\n", __FILE__, __LINE__, __FUNCTION__);
 	memset(info, 0, sizeof(*info));
+
+	if (sc_get(config, "fence_virtd/@debug", value, sizeof(value))==0)
+		dset(atoi(value));
 
 	if (sc_get(config, "backends/libvirt/@uri",
 		   value, sizeof(value)) == 0) {

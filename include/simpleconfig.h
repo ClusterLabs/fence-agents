@@ -5,6 +5,8 @@ typedef void config_info_t;
 
 typedef int (*config_get_t)(config_info_t *config, const char *key,
 			    char *value, size_t valuesz);
+typedef int (*config_set_t)(config_info_t *config, const char *key,
+			    const char *value);
 typedef int (*config_parse_t)(const char *filename, config_info_t **config);
 typedef int (*config_free_t)(config_info_t *config);
 typedef void (*config_dump_t)(config_info_t *config, FILE *fp);
@@ -16,6 +18,7 @@ typedef void (*config_dump_t)(config_info_t *config, FILE *fp);
 
 typedef struct {
 	config_get_t get;
+	config_set_t set;
 	config_parse_t parse;
 	config_free_t free;
 	config_dump_t dump;
@@ -27,6 +30,8 @@ typedef struct {
  */
 #define sc_get(obj, key, value, valuesz) \
 	obj->get(obj->info, key, value, valuesz)
+#define sc_set(obj, key, value) \
+	obj->set(obj->info, key, value)
 #define sc_parse(obj, filename) \
 	obj->parse(filename, &obj->info)
 #define sc_free(obj) \
