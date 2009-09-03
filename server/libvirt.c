@@ -63,17 +63,19 @@
 
 #define MAGIC 0x1e19317a
 
-#define VALIDATE(arg) \
-do {\
-	errno = EINVAL;\
-		return -1; \
-} while(0)
-
 struct libvirt_info {
 	int magic;
 	int use_uuid;
 	virConnectPtr vp;
 };
+
+#define VALIDATE(arg) \
+do {\
+	if (!arg || ((struct libvirt_info *)arg)->magic != MAGIC) { \
+		errno = EINVAL;\
+		return -1; \
+	} \
+} while(0)
 
 
 static inline int
