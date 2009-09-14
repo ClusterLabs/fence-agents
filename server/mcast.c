@@ -45,6 +45,7 @@
 #include <list.h>
 #include <simpleconfig.h>
 #include <server_plugin.h>
+#include <history.h>
 
 /* Local includes */
 #include "xvm.h"
@@ -77,17 +78,10 @@ typedef struct _mcast_options {
 } mcast_options;
 
 
-typedef struct _history_node {
-	list_head();
-	fence_req_t req;
-	time_t when;
-} history_node;
-
-
 typedef struct _mcast_info {
 	uint64_t magic;
 	void *priv;
-	history_node *history;
+	history_info_t *history;
 	char key[MAX_KEY_LEN];
 	mcast_options args;
 	const fence_callbacks_t *cb;
@@ -104,45 +98,14 @@ typedef struct _mcast_info {
  * We purge our history when the entries time out.
  */
 static int
-check_history(history_node **list, fence_req_t *req)
-{
-	history_node *entry = NULL;
-	time_t now;
-	int x;
+check_history(void *a, void *b) {
+	fence_req_t *old = a, *current = b;
 
-	now = time(NULL);
-
-loop_again:
-	list_for(list, entry, x) {
-		if (entry->when < (now - 10)) {
-			list_remove(list, entry);
-			free(entry);
-			goto loop_again;
-		}
-
-		if (entry->req.request == req->request &&
-		    !strcasecmp((const char *)entry->req.domain,
-				(const char *)req->domain)) {
-			return 1;
-		}
+	if (old->request == current->request &&
+	    !strcasecmp((const char *)old->domain,
+			(const char *)current->domain)) {
+		return 1;
 	}
-	return 0;
-}
-
-
-static int
-record_history(history_node **list, fence_req_t *req)
-{
-	history_node *entry = NULL;
-
-	entry = malloc(sizeof(*entry));
-	if (!entry)
-		return -1;	/* non-fatal */
-
-	memset(entry, 0, sizeof(*entry));
-	memcpy(&entry->req, req, sizeof(*req));
-	entry->when = time(NULL);
-	list_insert(list, entry);
 	return 0;
 }
 
@@ -249,7 +212,7 @@ do_fence_request_tcp(fence_req_t *req, mcast_info *info)
 	 * acting on the same request multiple times if the first
 	 * attempt was successful.
 	 */
-	record_history(&info->history, req);
+	history_record(info->history, req);
 out:
 	if (fd != -1)
 		close(fd);
@@ -316,7 +279,7 @@ mcast_dispatch(listener_context_t c, struct timeval *timeout)
 
 	printf("Request %d domain %s\n", data.request, data.domain);
 
-	if (check_history(&info->history, &data) == 1) {
+	if (history_check(info->history, &data) == 1) {
 		printf("We just did this request; dropping packet\n");
 		return 0;
 	}
@@ -525,6 +488,7 @@ mcast_init(listener_context_t *c, const fence_callbacks_t *cb,
 
 	info->magic = MCAST_MAGIC;
 	info->mc_sock = mc_sock;
+	info->history = history_init(check_history, 10, sizeof(fence_req_t));
 	*c = (listener_context_t)info;
 	return 0;
 }

@@ -20,8 +20,8 @@ MODULES=libvirt.so checkpoint.so multicast.so null.so
 fence_virtd_SOURCES = main.c plugin.c
 libvirt_so_SOURCES = libvirt.c
 null_so_SOURCES = null.c
-multicast_so_SOURCES = mcast.c
-checkpoint_so_SOURCES = virt.c vm_states.c
+multicast_so_SOURCES = mcast.c history.c
+checkpoint_so_SOURCES = virt.c vm_states.c history.c
 
 INCLUDES=-I../include\
 	-I/usr/include/openais -I/usr/include/libvirt \
