@@ -1,0 +1,7 @@
+CC=@CC@
+
+CFLAGS=@CFLAGS@
+CFLAGS+=-fPIC -Wall -Wstrict-prototypes -Wshadow -Werror -D_GNU_SOURCE
+
+LEX=@LEX@
+YACC=@YACC@

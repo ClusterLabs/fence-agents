@@ -17,8 +17,6 @@ AC_PROG_MAKE_SET
 # Checks for libraries.
 # FIXME: Replace `main' with a function in `-lSaCkpt':
 AC_CHECK_LIB([SaCkpt], [saCkptCheckpointOpen])
-# FIXME: Replace `main' with a function in `-lccs':
-AC_CHECK_LIB([ccs], [ccs_get])
 # FIXME: Replace `main' with a function in `-lnss3':
 AC_CHECK_LIB([nss3], [NSS_NoDB_Init])
 # FIXME: Replace `main' with a function in `-lpthread':
@@ -51,7 +49,8 @@ AC_TYPE_SIGNAL
 AC_FUNC_STAT
 AC_CHECK_FUNCS([gettimeofday memmove memset select socket strcasecmp strchr strdup strerror])
 
-AC_CONFIG_FILES([Makefile
+AC_CONFIG_FILES([Makefile.top
+		 Makefile
                  client/Makefile
                  common/Makefile
                  config/Makefile
