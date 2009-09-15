@@ -40,7 +40,7 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <pthread.h>
-#include <virterror.h>
+#include <libvirt/virterror.h>
 #include <nss.h>
 #include <libgen.h>
 #include <syslog.h>

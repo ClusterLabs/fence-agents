@@ -29,7 +29,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <errno.h>
-#include <libvirt.h>
+#include <libvirt/libvirt.h>
 #ifdef HAVE_OPENAIS_CPG_H
 #include <openais/cpg.h>
 #else

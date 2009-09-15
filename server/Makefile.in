@@ -23,16 +23,15 @@ null_so_SOURCES = null.c
 multicast_so_SOURCES = mcast.c history.c
 checkpoint_so_SOURCES = virt.c vm_states.c history.c checkpoint.c
 
-INCLUDES=-I../include -I/usr/include/openais -I/usr/include/libvirt \
-	-I/usr/include/nss3 -I/usr/include/nspr4
+INCLUDES=-I../include `nss-config --cflags` `nspr-config --cflags`
 
 CFLAGS+=-DFENCE_RELEASE_NAME=\"devel\" -D_MODULE -DSYSCONFDIR=\"@sysconfdir@\"
 
 LIBS+=-L../common -lfence_virt -Wl,-wrap,syslog,-wrap,closelog -lpthread
       
 MAIN_LIBS=-L../config -lsimpleconfig -ldl
-AIS_LIBS=-L/usr/lib64/openais -lSaCkpt		# XXX FIXME
-COROSYNC_LIBS=-L/usr/lib64/corosync -lcpg	
+AIS_LIBS=-L@libdir@/openais -lSaCkpt
+COROSYNC_LIBS=-L@libdir@/corosync -lcpg	
 VIRT_LIBS=-lvirt
 NSS_LIBS=-lnss3
 
