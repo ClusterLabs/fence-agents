@@ -19,6 +19,7 @@
 /*
  * Author: Lon Hohberger <lhh at redhat.com>
  */
+#include <config.h>
 #include <stdio.h>
 #include <simpleconfig.h>
 #include <sys/types.h>
@@ -29,10 +30,12 @@
 #include <malloc.h>
 #include <errno.h>
 #include <libvirt.h>
-#ifdef OPENAIS
+#ifdef HAVE_OPENAIS_CPG_H
 #include <openais/cpg.h>
 #else
+#ifdef HAVE_COROSYNC_CPG_H
 #include <corosync/cpg.h>
+#endif
 #endif
 
 

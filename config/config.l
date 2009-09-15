@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <assert.h>
 #include "config-stack.h"
-#include "config.tab.h"
+#include "y.tab.h"
 #include "simpleconfig.h"
 
 struct value *val_list = NULL;

@@ -9,12 +9,14 @@
 ##
 ###############################################################################
 ###############################################################################
-
 include ../Makefile.top
+
+LEX=@LEX@
+YACC=@YACC@
 
 TARGETS=libsimpleconfig.a
 
-libsimpleconfig_a_SOURCE= config.tab.c \
+libsimpleconfig_a_SOURCE= y.tab.c \
 			  config.c simpleconfig.c
 
 INCLUDES=-I../include \
@@ -33,11 +35,11 @@ all: ${TARGETS}
 libsimpleconfig.a: ${libsimpleconfig_a_SOURCE:.c=.o}
 	ar rc $@ $^
 
-config.tab.c config.tab.h: config.y
-	bison -d $^
+y.tab.c y.tab.h: config.y
+	$(YACC) -d $^
 
-config.c: config.tab.h config.l
-	flex -oconfig.c config.l
+config.c: y.tab.h config.l
+	$(LEX) -oconfig.c config.l
 
 %.o: %.c
 	gcc $(CFLAGS) -c -o $@ $^ $(INCLUDES)
