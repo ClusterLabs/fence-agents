@@ -48,6 +48,57 @@ AC_TYPE_SIGNAL
 AC_FUNC_STAT
 AC_CHECK_FUNCS([gettimeofday memmove memset select socket strcasecmp strchr strdup strerror])
 
+
+
+#
+# Modular build for fence_virtd to split up dependencies
+# (default)
+#
+AC_ARG_ENABLE(modules,
+[AS_HELP_STRING([--disable-modules],
+		[Disable modular build])],
+[ modules=$enableval ], [ modules=yes ])
+AC_SUBST(modules)
+
+### The following options only are used when $modules="yes" ###
+
+# Null plugin: Disabled by default
+AC_ARG_ENABLE(null-plugin,
+[AS_HELP_STRING([--enable-null-plugin],
+		[Enable null (no-op) backend plugin])],
+[ mod_null=$enableval ], [ mod_null=no ])
+AC_SUBST(mod_null)
+
+# libvirt plugin: Enabled by default
+AC_ARG_ENABLE(libvirt-plugin,
+[AS_HELP_STRING([--disable-libvirt-plugin],
+		[Disable local-mode libvirt backend plugin])],
+[ mod_libvirt=$enableval ], [ mod_libvirt=yes ])
+AC_SUBST(mod_libvirt)
+
+# checkpoint plugin: Enabled by default
+AC_ARG_ENABLE(checkpoint-plugin,
+[AS_HELP_STRING([--disable-checkpoint-plugin],
+		[Disable cluster checkpoint backend plugin])],
+[ --enable-checkpoint-plugin  Do not include cluster checkpoint plugin.],
+[ mod_checkpoint=$enableval ], [ mod_checkpoint=yes ])
+AC_SUBST(mod_checkpoint)
+
+# multicast plugin: Enabled by default
+AC_ARG_ENABLE(multicast-plugin,
+[AS_HELP_STRING([--disable-multicast-plugin],
+		[Disable multicast listener plugin])],
+[ mod_multicast=$enableval ], [ mod_multicast=yes ])
+AC_SUBST(mod_multicast)
+
+# serial/libvirt plugin: Disabled by default
+AC_ARG_ENABLE(serial-plugin,
+[AS_HELP_STRING([--disable-serial-plugin],
+		[Enable serial listener plugin])],
+[ mod_serial=$enableval ], [ mod_serial=no ])
+AC_SUBST(mod_serial)
+
+
 AC_CONFIG_FILES([Makefile.top
 		 Makefile
                  client/Makefile

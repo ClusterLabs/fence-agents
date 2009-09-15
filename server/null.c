@@ -192,6 +192,6 @@ BACKEND_INFO_SYM(void)
 static void __attribute__((constructor))
 null_register_plugin(void)
 {
-	plugin_register(&null_plugin);
+	plugin_reg_backend(&null_plugin);
 }
 #endif

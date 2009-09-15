@@ -349,8 +349,10 @@ libvirt_init(backend_context_t *c, config_object_t *config)
 	dbg_printf(5, "[%s:%d %s]\n", __FILE__, __LINE__, __FUNCTION__);
 	memset(info, 0, sizeof(*info));
 
+#ifdef _MODULE
 	if (sc_get(config, "fence_virtd/@debug", value, sizeof(value))==0)
 		dset(atoi(value));
+#endif
 
 	if (sc_get(config, "backends/libvirt/@uri",
 		   value, sizeof(value)) == 0) {
@@ -443,6 +445,6 @@ BACKEND_INFO_SYM(void)
 static void __attribute__((constructor))
 libvirt_register_plugin(void)
 {
-	plugin_register(&libvirt_plugin);
+	plugin_reg_backend(&libvirt_plugin);
 }
 #endif

@@ -186,6 +186,6 @@ BACKEND_INFO_SYM(void)
 static void __attribute__((constructor))
 ckpt_register_plugin(void)
 {
-	plugin_register(&ckpt_plugin);
+	plugin_reg_backend(&ckpt_plugin);
 }
 #endif

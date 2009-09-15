@@ -10,37 +10,36 @@
 ###############################################################################
 ###############################################################################
 
-include=../Makefile.top
+include ../Makefile.top
 
-TARGETS=fence_virt fence_xvm
+TARGET=fence_virt
+LINK=fence_xvm
 
 fence_virt_SOURCES = mcast.c serial.c main.c options.c
 
-INCLUDES=-I../include -I/usr/include/nss3 -I/usr/include/nspr4 \
-	 -I/usr/include/libxml2
+INCLUDES=-I../include `nss-config --cflags` `nspr-config --cflags` \
+	 `xml2-config --cflags`
 
-CFLAGS+=-DFENCE_RELEASE_NAME=\"devel\"
+# nss sucks in way too much stuff
+LIBS+=-lnss3 `xml2-config --libs`
 
-LIBS+=-lnss3 -lxml2
+all: ${TARGET} ${LINK}
 
-all: ${TARGETS}
-
-fence_xvm: fence_virt
-	ln -snf fence_virt fence_xvm
+fence_xvm: ${TARGET}
+	ln -snf $^ $@
 
 fence_virt: ${fence_virt_SOURCES:.c=.o}
-	gcc -o $@ $^ $(LIBS) -L../common -lfence_virt
+	$(CC) -o $@ $^ $(LIBS) -L../common -lfence_virt
 
 %.o: %.c
-	gcc $(CFLAGS) -c -o $@ $^ $(INCLUDES)
+	$(CC) $(CFLAGS) -c -o $@ $^ $(INCLUDES)
 
 install: all
-	# XXX hardcoded sbin
-	if [ ! -d /usr/sbin]; then \
-		install -d /usr/sbin; \
+	if [ ! -d ${sbindir} ]; then \
+		install -d ${sbindir} ; \
 	fi
-	install -m755 ${TARGETS} /usr/sbin
+	install -m755 ${TARGET} ${sbindir}
+	ln -snf ${sbindir}/${TARGET} ${sbindir}/${LINK}
 
 clean:
-	rm -f ${TARGETS} *.o *.d *~
-
+	rm -f ${TARGET} ${LINK} *.o *.d *~

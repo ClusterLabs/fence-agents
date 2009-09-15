@@ -12,22 +12,12 @@
 
 include ../Makefile.top
 
+#
+# Modular information
+#
+with_modules=@modules@
 
 TARGETS=fence_virtd
-
-MODULES=libvirt.so checkpoint.so multicast.so null.so
-
-fence_virtd_SOURCES = main.c plugin.c
-libvirt_so_SOURCES = libvirt.c
-null_so_SOURCES = null.c
-multicast_so_SOURCES = mcast.c history.c
-checkpoint_so_SOURCES = virt.c vm_states.c history.c checkpoint.c
-
-INCLUDES=-I../include `nss-config --cflags` `nspr-config --cflags`
-
-CFLAGS+=-DFENCE_RELEASE_NAME=\"devel\" -D_MODULE -DSYSCONFDIR=\"@sysconfdir@\"
-
-LIBS+=-L../common -lfence_virt -Wl,-wrap,syslog,-wrap,closelog -lpthread
       
 MAIN_LIBS=-L../config -lsimpleconfig -ldl
 AIS_LIBS=-L@libdir@/openais -lSaCkpt
@@ -35,37 +25,106 @@ COROSYNC_LIBS=-L@libdir@/corosync -lcpg
 VIRT_LIBS=-lvirt
 NSS_LIBS=-lnss3
 
+INCLUDES=-I../include `nss-config --cflags` `nspr-config --cflags`
+
+LIBS+=-L../common -lfence_virt -Wl,-wrap,syslog,-wrap,closelog -lpthread
+
+MODULE_PATH=${libdir}/${PACKAGE_NAME}
+
+#
+# Module sources
+#
+fence_virtd_SOURCES = main.c plugin.c
+libvirt_so_SOURCES = libvirt.c
+null_so_SOURCES = null.c
+multicast_so_SOURCES = mcast.c history.c
+checkpoint_so_SOURCES = virt.c vm_states.c history.c checkpoint.c
+
+
+################################
+ifeq ($(with_modules),yes)
+
+mod_null=@mod_null@
+mod_libvirt=@mod_libvirt@
+mod_checkpoint=@mod_checkpoint@
+mod_multicast=@mod_multicast@
+mod_serial=@mod_serial@			# XXX Not done yet
+
+#################
+# Modular build #
+#################
+CFLAGS+=-D_MODULE -DMODULE_PATH=\"${MODULE_PATH}\"
+MODULES=
+ifneq ($(mod_libvirt),no)
+MODULES+=libvirt.so
+endif
+ifneq ($(mod_checkpoint),no)
+MODULES+=checkpoint.so
+endif
+ifneq ($(mod_multicast),no)
+MODULES+=multicast.so
+endif
+ifneq ($(mod_null),no)
+MODULES+=null.so
+endif
+
+
+else
+
+####################
+# Monolithic build #
+####################
+ifneq ($(mod_libvirt),no)
+fence_virtd_SOURCES+=${libvirt_so_SOURCES}
+LIBS+=$(VIRT_LIBS)
+endif
+ifneq ($(mod_checkpoint),no)
+fence_virtd_SOURCES+=${checkpoint_so_SOURCES}
+LIBS+=$(AIS_LIBS) $(COROSYNC_LIBS)
+endif
+ifneq ($(mod_multicast),no)
+fence_virtd_SOURCES+=${multicast_so_SOURCES}
+LIBS+=$(AIS_LIBS) $(NSS_LIBS)
+endif
+ifneq ($(mod_null),no)
+fence_virtd_SOURCES+=${null_so_SOURCES}
+endif
+
+endif
+
+CFLAGS+=-DSYSCONFDIR=\"@sysconfdir@\"
+
 all: ${TARGETS} ${MODULES}
 
 fence_virtd: ${fence_virtd_SOURCES:.c=.o}
-	gcc -o $@ $^ $(LIBS) $(MAIN_LIBS)
+	$(CC) -o $@ $^ $(LIBS) $(MAIN_LIBS)
 
 multicast.so: ${multicast_so_SOURCES:.c=.o}
-	gcc -o $@ $^ $(LIBS) -shared $(NSS_LIBS)
+	$(CC) -o $@ $^ $(LIBS) -shared $(NSS_LIBS)
 
 libvirt.so: ${libvirt_so_SOURCES:.c=.o}
-	gcc -o $@ $^ $(LIBS) -shared $(VIRT_LIBS)
+	$(CC) -o $@ $^ $(LIBS) -shared $(VIRT_LIBS)
 
 null.so: ${null_so_SOURCES:.c=.o}
-	gcc -o $@ $^ $(LIBS) -shared
+	$(CC) -o $@ $^ $(LIBS) -shared
 
 checkpoint.so: ${checkpoint_so_SOURCES:.c=.o}
-	gcc -o $@ $^ $(LIBS) -shared $(AIS_LIBS) $(VIRT_LIBS) $(COROSYNC_LIBS)
+	$(CC) -o $@ $^ $(LIBS) -shared $(AIS_LIBS) $(VIRT_LIBS) $(COROSYNC_LIBS)
 
 %.o: %.c
-	gcc $(CFLAGS) -c -o $@ $^ $(INCLUDES)
+	$(CC) $(CFLAGS) -c -o $@ $^ $(INCLUDES)
 
 install: all
-	# XXX hardcoded sbin
-	if [ ! -d /usr/sbin ]; then \
-		install -d /usr/sbin; \
+	if [ ! -d ${sbindir} ]; then \
+		install -d ${sbindir} ; \
 	fi
-	install -m755 ${TARGETS} /usr/sbin
-	# XXX hardcoded sbin
-	if [ ! -d /usr/lib64/fence_virt ]; then \
-		install -d /usr/lib64/fence_virt ; \
+	install -m755 ${TARGETS} ${sbindir}
+ifeq ($(with_modules),yes)
+	if [ ! -d ${MODULE_PATH} ]; then \
+		install -d ${MODULE_PATH} ; \
 	fi
-	install -m755 ${MODULES} /usr/lib64/fence_virt
+	install -m755 ${MODULES} ${MODULE_PATH}
+endif
 
 clean:
 	rm -f ${TARGETS} ${MODULES} *.o *.d *~

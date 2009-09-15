@@ -5,3 +5,10 @@ CFLAGS+=-fPIC -Wall -Wstrict-prototypes -Wshadow -Werror -D_GNU_SOURCE
 
 LEX=@LEX@
 YACC=@YACC@
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+sbindir=@sbindir@
+libdir=@libdir@
+
+PACKAGE_NAME=@PACKAGE_NAME@
