@@ -27,6 +27,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <stdint.h>
 #include <list.h>
 #include <simpleconfig.h>
 #include <server_plugin.h>

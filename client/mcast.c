@@ -133,8 +133,8 @@ tcp_exchange(int fd, fence_auth_type_t auth, void *key,
 
 
 static int
-send_multicast_packets(ip_list_t *ipl, fence_virt_args_t *args, void *key,
-		       size_t key_len)
+send_multicast_packets(ip_list_t *ipl, fence_virt_args_t *args,
+		       uint32_t seqno, void *key, size_t key_len)
 {
 	fence_req_t freq;
 	int mc_sock;
@@ -180,6 +180,7 @@ send_multicast_packets(ip_list_t *ipl, fence_virt_args_t *args, void *key,
 			sizeof(freq.domain));
 		freq.request = args->op;
 		freq.hashtype = args->net.hash;
+		freq.seqno = seqno;
 
 		/* Store source address */
 		if (ipa->ipa_family == PF_INET) {
@@ -218,8 +219,10 @@ mcast_fence_virt(fence_virt_args_t *args)
 {
 	ip_list_t ipl;
 	char key[MAX_KEY_LEN];
+	struct timeval tv;
 	int lfd, key_len = 0, fd;
 	int attempts = 0;
+	uint32_t seqno;
 	
 	/* Initialize NSS; required to do hashing, as silly as that
 	   sounds... */
@@ -268,8 +271,12 @@ mcast_fence_virt(fence_virt_args_t *args)
 
 	attempts = args->timeout * 10 / args->retr_time;
 
+	gettimeofday(&tv, NULL);
+	seqno = (uint32_t)tv.tv_usec;
+
 	do {
-		if (send_multicast_packets(&ipl, args, key, key_len)) {
+		if (send_multicast_packets(&ipl, args, seqno,
+					   key, key_len)) {
 			return -1;
 		}
 

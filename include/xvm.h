@@ -77,7 +77,8 @@ typedef struct __attribute__ ((packed)) _fence_req {
 	uint8_t  address[MAX_ADDR_LEN]; /* We're this IP */
 #define DEFAULT_MCAST_PORT 1229
 	uint16_t port;			/* Port we bound to */
-	uint8_t  random[10];		/* Random Data */
+	uint8_t  random[6];		/* Random Data */
+	uint32_t seqno;			/* Request identifier; can be random */
 	uint32_t family;		/* Address family */
 	uint8_t  hash[MAX_HASH_LENGTH];	/* Binary hash */
 } fence_req_t;
@@ -92,6 +93,7 @@ typedef struct __attribute__((packed)) _serial_fence_req {
 	uint8_t request;
 	uint8_t flags;
 	uint8_t domain[MAX_DOMAINNAME_LENGTH];
+	uint32_t seqno;
 } serial_req_t;
 
 typedef struct __attribute__((packed)) _serial_fense_resp {

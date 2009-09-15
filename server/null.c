@@ -21,6 +21,9 @@
  */
 #include <stdio.h>
 #include <simpleconfig.h>
+#include <sys/types.h>
+#include <stdint.h>
+#include <time.h>
 #include <server_plugin.h>
 #include <string.h>
 #include <malloc.h>
@@ -58,7 +61,7 @@ null_null(const char *vm_name, void *priv)
 
 
 static int
-null_off(const char *vm_name, void *priv)
+null_off(const char *vm_name, uint32_t seqno, void *priv)
 {
 	VALIDATE(priv);
 	printf("[Null] OFF operation on %s\n", vm_name);
@@ -68,7 +71,7 @@ null_off(const char *vm_name, void *priv)
 
 
 static int
-null_on(const char *vm_name, void *priv)
+null_on(const char *vm_name, uint32_t seqno, void *priv)
 {
 	VALIDATE(priv);
 	printf("[Null] ON operation on %s\n", vm_name);
@@ -100,7 +103,7 @@ null_status(const char *vm_name, void *priv)
 
 
 static int
-null_reboot(const char *vm_name, void *priv)
+null_reboot(const char *vm_name, uint32_t seqno, void *priv)
 {
 	VALIDATE(priv);
 	printf("[Null] REBOOT operation on %s\n", vm_name);

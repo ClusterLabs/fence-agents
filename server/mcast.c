@@ -102,6 +102,7 @@ check_history(void *a, void *b) {
 	fence_req_t *old = a, *current = b;
 
 	if (old->request == current->request &&
+	    old->seqno == current->seqno &&
 	    !strcasecmp((const char *)old->domain,
 			(const char *)current->domain)) {
 		return 1;
@@ -187,13 +188,16 @@ do_fence_request_tcp(fence_req_t *req, mcast_info *info)
 		response = info->cb->null((char *)req->domain, info->priv);
 		break;
 	case FENCE_ON:
-		response = info->cb->on((char *)req->domain, info->priv);
+		response = info->cb->on((char *)req->domain, req->seqno,
+					info->priv);
 		break;
 	case FENCE_OFF:
-		response = info->cb->off((char *)req->domain, info->priv);
+		response = info->cb->off((char *)req->domain, req->seqno,
+					 info->priv);
 		break;
 	case FENCE_REBOOT:
-		response = info->cb->reboot((char *)req->domain, info->priv);
+		response = info->cb->reboot((char *)req->domain, req->seqno,
+					    info->priv);
 		break;
 	case FENCE_STATUS:
 		response = info->cb->status((char *)req->domain, info->priv);
@@ -277,7 +281,8 @@ mcast_dispatch(listener_context_t c, struct timeval *timeout)
 		return 0;
 	}
 
-	printf("Request %d domain %s\n", data.request, data.domain);
+	printf("Request %d seqno %d domain %s\n", data.request, data.seqno,
+	       data.domain);
 
 	if (history_check(info->history, &data) == 1) {
 		printf("We just did this request; dropping packet\n");

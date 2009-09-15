@@ -6,6 +6,7 @@
 #include <sys/types.h>
 
 /* Local includes */
+#include <stdint.h>
 #include <fence_virt.h>
 #include <simpleconfig.h>
 #include <server_plugin.h>
