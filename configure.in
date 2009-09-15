@@ -6,6 +6,8 @@ AC_INIT(fence_virt, 0.1, lon@metamorphism.com)
 AC_CONFIG_SRCDIR([server/main.c])
 AC_CONFIG_HEADER([include/config.h])
 
+AC_CANONICAL_SYSTEM
+
 # Checks for programs.
 AC_PROG_YACC
 AC_PROG_CC
@@ -25,6 +27,7 @@ AC_CHECK_LIB([pthread], [pthread_create])
 AC_CHECK_LIB([virt], [virConnectOpen])
 # FIXME: Replace `main' with a function in `-lxml2':
 AC_CHECK_LIB([xml2], [main])
+
 
 # Checks for header files.
 AC_HEADER_DIRENT

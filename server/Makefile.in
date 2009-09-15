@@ -23,18 +23,17 @@ null_so_SOURCES = null.c
 multicast_so_SOURCES = mcast.c history.c
 checkpoint_so_SOURCES = virt.c vm_states.c history.c checkpoint.c
 
-INCLUDES=-I../include\
-	-I/usr/include/openais -I/usr/include/libvirt \
-	-I/usr/include/nss3 -I/usr/include/nspr4 \
-	-I../../../cman/lib -I../../../ccs/lib -I/usr/include/libxml2 \
-	-I/usr/include/libvirt
+INCLUDES=-I../include -I/usr/include/openais -I/usr/include/libvirt \
+	-I/usr/include/nss3 -I/usr/include/nspr4
 
-CFLAGS+=-DFENCE_RELEASE_NAME=\"devel\" -D_MODULE
+CFLAGS+=-DFENCE_RELEASE_NAME=\"devel\" -D_MODULE -DSYSCONFDIR=\"@sysconfdir@\"
 
-LIBS+=-L/usr/lib64/openais -lnss3 -lxml2 -lSaCkpt -lvirt \
-      -L../common -lfence_virt -Wl,-wrap,syslog,-wrap,closelog -lpthread
+LIBS+=-L../common -lfence_virt -Wl,-wrap,syslog,-wrap,closelog -lpthread
       
-MAIN_LIBS=-L../config -lsimpleconfig
+MAIN_LIBS=-L../config -lsimpleconfig -ldl
+AIS_LIBS=-L@libdir@/openais -lSaCkpt
+VIRT_LIBS=-lvirt
+NSS_LIBS=-lnss3
 
 all: ${TARGETS} ${MODULES}
 
@@ -42,16 +41,16 @@ fence_virtd: ${fence_virtd_SOURCES:.c=.o}
 	gcc -o $@ $^ $(LIBS) $(MAIN_LIBS)
 
 multicast.so: ${multicast_so_SOURCES:.c=.o}
-	gcc -o $@ $^ $(LIBS) -shared
+	gcc -o $@ $^ $(LIBS) -shared $(NSS_LIBS)
 
 libvirt.so: ${libvirt_so_SOURCES:.c=.o}
-	gcc -o $@ $^ $(LIBS) -shared
+	gcc -o $@ $^ $(LIBS) -shared $(VIRT_LIBS)
 
 null.so: ${null_so_SOURCES:.c=.o}
 	gcc -o $@ $^ $(LIBS) -shared
 
 checkpoint.so: ${checkpoint_so_SOURCES:.c=.o}
-	gcc -o $@ $^ $(LIBS) -shared
+	gcc -o $@ $^ $(LIBS) -shared $(AIS_LIBS) $(VIRT_LIBS)
 
 %.o: %.c
 	gcc $(CFLAGS) -c -o $@ $^ $(INCLUDES)
