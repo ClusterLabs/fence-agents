@@ -182,6 +182,8 @@ assign_op(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
 	if (!strcasecmp(value, "null")) {
 		args->op = FENCE_NULL;
+	} else if (!strcasecmp(value, "on")) {
+		args->op = FENCE_ON;
 	} else if (!strcasecmp(value, "off")) {
 		args->op = FENCE_OFF;
 	} else if (!strcasecmp(value, "reboot")) {

@@ -197,9 +197,50 @@ libvirt_off(const char *vm_name, uint32_t seqno, void *priv)
 static int
 libvirt_on(const char *vm_name, uint32_t seqno, void *priv)
 {
-	dbg_printf(5, "%s %s\n", __FUNCTION__, vm_name);
+	struct libvirt_info *info = (struct libvirt_info *)priv;
+	virDomainPtr vdp;
+	virDomainInfo vdi;
+	int ret = -1;
 
-	return -ENOSYS;
+	dbg_printf(5, "%s %s\n", __FUNCTION__, vm_name);
+	VALIDATE(info);
+
+	if (info->use_uuid) {
+		vdp = virDomainLookupByUUID(info->vp,
+					    (const unsigned char *)vm_name);
+	} else {
+		vdp = virDomainLookupByName(info->vp, vm_name);
+	}
+
+	if (vdp &&
+	    ((virDomainGetInfo(vdp, &vdi) == 0) &&
+	     (vdi.state != VIR_DOMAIN_SHUTOFF))) {
+		dbg_printf(2, "Nothing to do - domain is running\n");
+
+		if (vdp)
+			virDomainFree(vdp);
+		return 0;
+	}
+
+	syslog(LOG_NOTICE, "Starting domain %s\n", vm_name);
+	dbg_printf(2, "[ON] Calling virDomainCreate\n");
+	ret = virDomainCreate(vdp);
+	if (ret < 0) {
+		syslog(LOG_NOTICE, "Failed to start domain: %d\n", ret);
+		printf("virDomainCreate() failed: %d\n", ret);
+		return 1;
+	}
+
+	if (ret) {
+		syslog(LOG_NOTICE,
+		       "Domain %s did not start\n",
+		       vm_name);
+		printf("Domain %s did not start\n", vm_name);
+		return 1;
+	}
+	syslog(LOG_NOTICE, "Domain %s started\n", vm_name);
+
+	return 0;
 }
 
 
