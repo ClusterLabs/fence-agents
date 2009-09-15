@@ -17,15 +17,11 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
 # Checks for libraries.
-# FIXME: Replace `main' with a function in `-lSaCkpt':
 AC_CHECK_LIB([SaCkpt], [saCkptCheckpointOpen])
-# FIXME: Replace `main' with a function in `-lnss3':
+AC_CHECK_LIB([cpg], [cpg_finalize])
 AC_CHECK_LIB([nss3], [NSS_NoDB_Init])
-# FIXME: Replace `main' with a function in `-lpthread':
 AC_CHECK_LIB([pthread], [pthread_create])
-# FIXME: Replace `main' with a function in `-lvirt':
 AC_CHECK_LIB([virt], [virConnectOpen])
-# FIXME: Replace `main' with a function in `-lxml2':
 AC_CHECK_LIB([xml2], [main])
 
 

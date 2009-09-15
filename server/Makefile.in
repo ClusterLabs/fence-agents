@@ -31,7 +31,8 @@ CFLAGS+=-DFENCE_RELEASE_NAME=\"devel\" -D_MODULE -DSYSCONFDIR=\"@sysconfdir@\"
 LIBS+=-L../common -lfence_virt -Wl,-wrap,syslog,-wrap,closelog -lpthread
       
 MAIN_LIBS=-L../config -lsimpleconfig -ldl
-AIS_LIBS=-L@libdir@/openais -lSaCkpt
+AIS_LIBS=-L/usr/lib64/openais -lSaCkpt		# XXX FIXME
+COROSYNC_LIBS=-L/usr/lib64/corosync -lcpg	
 VIRT_LIBS=-lvirt
 NSS_LIBS=-lnss3
 
@@ -50,7 +51,7 @@ null.so: ${null_so_SOURCES:.c=.o}
 	gcc -o $@ $^ $(LIBS) -shared
 
 checkpoint.so: ${checkpoint_so_SOURCES:.c=.o}
-	gcc -o $@ $^ $(LIBS) -shared $(AIS_LIBS) $(VIRT_LIBS)
+	gcc -o $@ $^ $(LIBS) -shared $(AIS_LIBS) $(VIRT_LIBS) $(COROSYNC_LIBS)
 
 %.o: %.c
 	gcc $(CFLAGS) -c -o $@ $^ $(INCLUDES)
