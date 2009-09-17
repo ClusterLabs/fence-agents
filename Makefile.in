@@ -28,3 +28,6 @@ clean:
 	make -C client clean
 	make -C server clean
 
+maintainer-clean:
+	make clean
+	git clean -df
