@@ -2,8 +2,12 @@ High Priority / Blockers:
 
 * serial server-side listener/dispatcher
 
-* checkpoint/cman backend
+* pacemaker backend
+
+Future Stuff:
+
+* oVirt backend
+
+* libvirt-qpid backend
 
 * libccs configuration plugin
-
-* Convert to automake
