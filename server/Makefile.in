@@ -115,15 +115,15 @@ checkpoint.so: ${checkpoint_so_SOURCES:.c=.o}
 	$(CC) $(CFLAGS) -c -o $@ $^ $(INCLUDES)
 
 install: all
-	if [ ! -d ${sbindir} ]; then \
-		install -d ${sbindir} ; \
+	if [ ! -d ${DESTDIR}/${sbindir} ]; then \
+		install -d ${DESTDIR}/${sbindir} ; \
 	fi
-	install -m755 ${TARGETS} ${sbindir}
+	install -m755 ${TARGETS} ${DESTDIR}/${sbindir}
 ifeq ($(with_modules),yes)
-	if [ ! -d ${MODULE_PATH} ]; then \
-		install -d ${MODULE_PATH} ; \
+	if [ ! -d ${DESTDIR}/${MODULE_PATH} ]; then \
+		install -d ${DESTDIR}/${MODULE_PATH} ; \
 	fi
-	install -m755 ${MODULES} ${MODULE_PATH}
+	install -m755 ${MODULES} ${DESTDIR}/${MODULE_PATH}
 endif
 
 clean:
