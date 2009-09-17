@@ -65,15 +65,15 @@ int vl_cmp(virt_list_t *left, virt_list_t *right);
 
 void vl_print(virt_list_t *vl);
 void vl_free(virt_list_t *old);
-virt_state_t * vl_find_uuid(virt_list_t *vl, char *name);
-virt_state_t * vl_find_name(virt_list_t *vl, char *name);
+virt_state_t * vl_find_uuid(virt_list_t *vl, const char *name);
+virt_state_t * vl_find_name(virt_list_t *vl, const char *name);
 
 
 typedef void ckpt_handle;
-int ckpt_read(void *hp, char *secid, void *buf, size_t maxlen);
+int ckpt_read(void *hp, const char *secid, void *buf, size_t maxlen);
 int ckpt_finish(void *hp);
-int ckpt_write(void *hp, char *secid, void *buf, size_t maxlen);
-void *ckpt_init(char *ckpt_name, int maxlen, int maxsec, int maxseclen,
+int ckpt_write(void *hp, const char *secid, void *buf, size_t maxlen);
+void *ckpt_init(const char *ckpt_name, int maxlen, int maxsec, int maxseclen,
 		int timeout);
 
 

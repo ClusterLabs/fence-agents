@@ -245,8 +245,9 @@ ckpt_init(char *ckpt_name, int maxlen, int maxsec,
 	if (err != SA_AIS_OK) {
 		free(h);
 		return NULL;
-	} else
+	} else {
 		h->ck_ready = READY_MAGIC;
+	}
 
 	if (ckpt_open(h, ckpt_name, maxlen, maxsec, maxseclen,
 		      timeout) < 0) {
@@ -262,7 +263,7 @@ ckpt_init(char *ckpt_name, int maxlen, int maxsec,
 
 
 int
-ckpt_write(void *hp, char *secid, void *buf, size_t maxlen)
+ckpt_write(void *hp, const char *secid, void *buf, size_t maxlen)
 {
 	ckpt_handle *h = (ckpt_handle *)hp;
 	SaCkptIOVectorElementT iov = {SA_CKPT_DEFAULT_SECTION_ID,
@@ -302,7 +303,7 @@ ckpt_write(void *hp, char *secid, void *buf, size_t maxlen)
 
 
 int
-ckpt_read(void *hp, char *secid, void *buf, size_t maxlen)
+ckpt_read(void *hp, const char *secid, void *buf, size_t maxlen)
 {
 	ckpt_handle *h = (ckpt_handle *)hp;
 	SaCkptIOVectorElementT iov = {SA_CKPT_DEFAULT_SECTION_ID,

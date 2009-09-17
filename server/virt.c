@@ -177,7 +177,7 @@ vl_print(virt_list_t *vl)
 
 
 virt_state_t *
-vl_find_name(virt_list_t *vl, char *name)
+vl_find_name(virt_list_t *vl, const char *name)
 {
 	int x;
 
@@ -194,7 +194,7 @@ vl_find_name(virt_list_t *vl, char *name)
 
 
 virt_state_t *
-vl_find_uuid(virt_list_t *vl, char *uuid)
+vl_find_uuid(virt_list_t *vl, const char *uuid)
 {
 	int x;
 
