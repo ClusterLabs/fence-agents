@@ -1,8 +1,15 @@
-High Priority / Blockers:
+High Priority / Blockers for v1.0;
 
-* serial server-side listener/dispatcher
+* serial server-side listener/dispatcher.  This will allows the
+  source VM name to be known and passed as part of the fencing
+  request to the appropriate backend.
 
 * pacemaker backend
+
+* ability to pass the hostname, VM name, or VM UUID of the requesting
+  node to the backend.  This will allow better controls of who can
+  fence who (for example, "vm1 vm2 vm3" can all fence each other, while
+  none may fence "vm4 vm5 vm6" since they are in a different cluster).
 
 Future Stuff:
 

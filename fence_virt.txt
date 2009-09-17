@@ -14,10 +14,12 @@ Requirements
 3. Nonrequirement of host clustering software.  Multiple layers of
    configuration sucks.  While I fundamentally disagree with the general
    idea that running CMAN on the host constitutes a "heavyweight
-   cluster", customer perception is important.
+   cluster", perception is important.
 
-4. Support for RHEV-M.  Be able to send fencing requests up to RHEV-M
-   for execution.  This is beneficial from a security standpoint.
+4. Ability to support RHEV-M, oVirt server, and other virtual machine
+   management technologies.  This is beneficial from a security standpoint
+   since it is assumed the management server will be aware of what VMs
+   are allowed to fence what other VMs.
 
 5. Upgrade compatibility with fence_xvm from a configuration standpoint.
    This may be provided by a symlink over fence_xvm.  If this feature
@@ -107,6 +109,7 @@ We propose at 5 plugins in this case:
  * RHEV-M.  The request is forwarded to the RHEV-M node, which is
    responsible for taking the appropriate action and responding to
    the request.
+
 
 These plugins have no requirements on which guest to host communication
 plugin is used (you could, if you wanted, use 'direct serial' with
