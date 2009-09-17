@@ -293,7 +293,7 @@ plugin_load(const char *libpath)
 #ifdef DEBUG
 	printf("Loading plugin from %s\n", libpath);
 #endif
-	handle = dlopen(libpath, RTLD_LAZY);
+	handle = dlopen(libpath, RTLD_NOW);
 	if (!handle) {
 		errno = ELIBACC;
 		return -1;
