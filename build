@@ -9,3 +9,5 @@ else
 fi
 
 ./configure --prefix=/ --libdir=$LIBDIR $*
+
+make clean all
