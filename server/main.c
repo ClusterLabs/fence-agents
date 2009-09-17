@@ -129,7 +129,10 @@ main(int argc, char **argv)
 	}
 
 	if (!foreground) {
-		daemon(0, 0);
+		if (daemon(0, 0) < 0) {
+			printf("Failed to daemonize!\n");
+			return -1;
+		}
 	}
 
 	if (p->init(&backend_ctx, config) < 0) {
