@@ -11,3 +11,5 @@ Future Stuff:
 * libvirt-qpid backend
 
 * libccs configuration plugin
+
+* clean up development bits so third parties can develop plugins
