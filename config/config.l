@@ -7,6 +7,9 @@
 #include "y.tab.h"
 #include "simpleconfig.h"
 
+/* Some distributions can't use the output from flex without help */
+#define ECHO if(fwrite( yytext, yyleng, 1, yyout ))
+
 struct value *val_list = NULL;
 struct node *node_list = NULL;
 struct parser_context *context_stack = NULL;

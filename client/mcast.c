@@ -90,9 +90,9 @@ static int
 tcp_exchange(int fd, fence_auth_type_t auth, void *key,
 	      size_t key_len, int timeout)
 {
-	char ret;
 	fd_set rfds;
 	struct timeval tv;
+	char ret = 1;
 
 	/* Ok, we're connected */
 	dbg_printf(3, "Issuing TCP challenge\n");
@@ -122,8 +122,10 @@ tcp_exchange(int fd, fence_auth_type_t auth, void *key,
 		return -1;
 
 	/* Read return code */
-	read(fd, &ret, 1);
+	if (read(fd, &ret, 1) < 0)
+		ret = 1;
 	close(fd);
+
 	if (ret == 0)
 		printf("Remote: Operation was successful\n");
 	else
