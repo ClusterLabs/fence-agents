@@ -1,18 +1,21 @@
 ###############################################################################
 ###############################################################################
 ##
-##  Copyright (C) 2006 Red Hat, Inc.
+##  Copyright (C) 2009 Red Hat, Inc.
 ##  
 ##  This copyrighted material is made available to anyone wishing to use,
 ##  modify, copy, or redistribute it subject to the terms and conditions
-##  of the GNU General Public License v.2.
+##  of the GNU General Public License v.2
 ##
 ###############################################################################
 ###############################################################################
 
 include ../Makefile.top
 
+# Serial mode
 TARGET=fence_virt
+
+# XVM/Multicast mode compatibility link
 LINK=fence_xvm
 
 fence_virt_SOURCES = mcast.c serial.c main.c options.c
@@ -23,7 +26,15 @@ INCLUDES=-I../include `nss-config --cflags` `nspr-config --cflags` \
 # nss sucks in way too much stuff
 LIBS+=-lnss3 `xml2-config --libs`
 
-all: ${TARGET} ${LINK}
+TARGETS=${TARGET}
+
+# From configure script
+xvm_compat=@xvm_compat@
+ifeq ($(xvm_compat),yes)
+TARGETS+=${LINK}
+endif
+
+all: ${TARGETS}
 
 fence_xvm: ${TARGET}
 	ln -snf $^ $@
@@ -39,7 +50,9 @@ install: all
 		install -d ${DESTDIR}/${sbindir} ; \
 	fi
 	install -m755 ${TARGET} ${DESTDIR}/${sbindir}
+ifeq ($(xvm_compat),yes)
 	cp -a ${LINK} ${DESTDIR}/${sbindir}
+endif
 
 clean:
 	rm -f ${TARGET} ${LINK} *.o *.d *~
