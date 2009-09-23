@@ -1,8 +1,8 @@
 MAINTAINERCLEANFILES	= Makefile.in
 
-TARGET			= fence_drac
+TARGET			= fence_drac5
 
-EXTRA_DIST		= fence_drac.pl
+EXTRA_DIST		= fence_drac5.py
 
 sbin_SCRIPTS		= $(TARGET)
 

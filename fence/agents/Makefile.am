@@ -10,6 +10,7 @@ SUBDIRS 		= alom \
 			  cisco_mds \
 			  cpint \
 			  drac \
+			  drac5 \
 			  egenera \
 			  eps \
 			  ibmblade \
