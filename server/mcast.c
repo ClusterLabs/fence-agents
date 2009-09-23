@@ -58,7 +58,7 @@
 #define NAME "multicast"
 #define VERSION "1.0"
 
-#define MCAST_MAGIC 0xaabab1b34b911a
+#define MCAST_MAGIC 0xabb911a3
 
 #define VALIDATE(info) \
 do {\
