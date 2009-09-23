@@ -70,7 +70,7 @@ def get_power_status(conn, options):
 		while True:
 			exp_result = conn.log_expect(options, [ options["-c"],  "Press <ENTER>" ], SHELL_TIMEOUT)
 			lines = conn.before.split("\n");
-			show_re = re.compile('^\s*(\d+)- (.*?)\s+(ON|OFF)\s*$')
+			show_re = re.compile('^\s*(\d+)- (.*?)\s+(ON|OFF)\s*')
 			for x in lines:
 				res = show_re.search(x)
 				if (res != None):
