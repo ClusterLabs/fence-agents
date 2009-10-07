@@ -965,6 +965,14 @@ main(int argc, char **argv)
 		}
 	}
 
+	if (!strcasecmp(op, "metadata")) {
+	  print_xml_metadata(pname);
+	  translated_ret = ERR_OK;
+	  ret=0;
+	  print_final_status=0;
+	  goto metaout;
+	}
+
 	/*
 	   Validate the operating parameters
 	 */
@@ -1073,11 +1081,6 @@ main(int argc, char **argv)
 	  ret=0;
 	  translated_ret = ERR_OK;
 	  print_final_status=0;
-	} else if (!strcasecmp(op, "metadata")) {
-	  print_xml_metadata(pname);
-	  ret=0;
-	  translated_ret = ERR_OK;
-	  print_final_status=0;
 	}
 
 
@@ -1085,6 +1088,7 @@ out:
 	ipmi_destroy(i);
 	free(i);
 
+metaout:
 	if (print_final_status) {
 	  if (ret == 0)
 	    printf("Done\n");
