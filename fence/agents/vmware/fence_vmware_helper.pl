@@ -74,7 +74,7 @@ my %opts = (
 eval "use VMware::VIRuntime;";
 
 if ($@) {
-  show_error "Please install VI Perl API package to use this tool!\n";
+  show_error "Please install VI Perl API package to use this tool!\nPerl error: $@";
   exit 1;
 }
 

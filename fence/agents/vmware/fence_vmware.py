@@ -3,15 +3,23 @@
 #
 # The Following agent has been tested on:
 # vmrun 2.0.0 build-116503 (from VMware Server 2.0) against:
-# 	VMware ESX 3.5 (works correctly)
-# 	VMware Server 2.0.0 (works correctly)
-#	VMware ESXi 3.5 update 2 (works correctly)
+#	VMware ESX 4.0.0
+#	VMware vCenter 4.0.0
+# 	VMware ESX 3.5
+# 	VMware Server 2.0.0
+#	VMware ESXi 3.5 update 2
 # 	VMware Server 1.0.7 (works but list/status show only running VMs)
 #
 # VI Perl API 1.6 against:
+# 	VMware ESX 4.0.0
+#	VMware vCenter 4.0.0
 # 	VMware ESX 3.5
 #	VMware ESXi 3.5 update 2
 # 	VMware Virtual Center 2.5
+#
+# VMware vSphere SDK for Perl 4.0.0 against:
+# 	VMware ESX 4.0.0
+#	VMware vCenter 4.0.0
 #
 
 import sys, re, pexpect, exceptions
@@ -211,7 +219,7 @@ def get_power_status(conn,options):
 	if (vmware_internal_type==VMWARE_TYPE_ESX):
 		outlets=vmware_get_outlets_vi(conn,options,True)
 	else:
-		outlets=get_outlets_status(conn,options,False)
+		outlets=get_outlets_status(conn,options)
 
 	if ((vmware_internal_type==VMWARE_TYPE_SERVER2) or (vmware_internal_type==VMWARE_TYPE_ESX)):
 		if (not (options["-n"] in outlets)):
