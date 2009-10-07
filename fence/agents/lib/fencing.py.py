@@ -78,6 +78,14 @@ all_opt = {
 		"shortdesc" : "Fencing Action",
 		"default" : "reboot",
 		"order" : 1 },
+	"io_fencing" : {
+		"getopt" : "o:",
+		"longopt" : "action",
+		"help" : "-o, --action=<action>          Action: status, enable or disable",
+		"required" : "1",
+		"shortdesc" : "Fencing Action",
+		"default" : "disable",
+		"order" : 1 },
 	"ipaddr" : {
 		"getopt" : "a:",
 		"longopt" : "ip",
@@ -504,6 +512,8 @@ def process_input(avail_opt):
 				name = "ipaddr"
 			elif name == "modulename":
 				name = "module_name"
+			elif name == "action" and 1 == avail_opt.count("io_fencing"):
+				name = "io_fencing"
 
 			##
 			######
@@ -554,9 +564,13 @@ def check_input(device_opt, opt):
 	else:
 		options["log"] = LOG_MODE_QUIET
 
-	if 0 == ["on", "off", "reboot", "status", "list", "monitor"].count(options["-o"].lower()):
-		fail_usage("Failed: Unrecognised action '" + options["-o"] + "'")
-
+	if 0 == device_opt.count("io_fencing"):
+		if 0 == ["on", "off", "reboot", "status", "list", "monitor"].count(options["-o"].lower()):
+			fail_usage("Failed: Unrecognised action '" + options["-o"] + "'")
+	else:
+		if 0 == ["enable", "disable", "status", "list", "monitor"].count(options["-o"].lower()):
+			fail_usage("Failed: Unrecognised action '" + options["-o"] + "'")
+		
 	if (0 == options.has_key("-l")) and device_opt.count("login") and (device_opt.count("no_login") == 0):
 		fail_usage("Failed: You have to set login name")
 
@@ -662,6 +676,12 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 
 	if status != "on" and status != "off":  
 		fail(EC_STATUS)
+
+	
+	if options["-o"] == "enable":
+		options["-o"] = "on"
+	if options["-o"] == "disable":
+		options["-o"] = "off"
 
 	if options["-o"] == "on":
 		if status == "on":
