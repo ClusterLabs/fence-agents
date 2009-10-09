@@ -24,7 +24,7 @@ BUILD_DATE="March, 2008"
 def get_power_status(conn, options):
 	try:
 		conn.send("/S"+"\r\n")
-		conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
@@ -66,7 +66,7 @@ def set_power_status(conn, options):
 
 	try:
 		conn.send(action + " " + options["-n"] + ",y\r\n")
-		conn.log_expect(options, options["-c"], POWER_TIMEOUT)
+		conn.log_expect(options, options["-c"], int(options["-g"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
@@ -76,7 +76,8 @@ def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
 			"cmd_prompt", "secure", "port", "no_login", "no_password",
-			"test", "separator", "inet4_only", "inet6_only", "ipport" ]
+			"test", "separator", "inet4_only", "inet6_only", "ipport",
+			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
 	atexit.register(atexit_handler)
 
@@ -108,18 +109,18 @@ def main():
 			re_login = re.compile("(login: )|(Login Name:  )|(username: )|(User Name :)", re.IGNORECASE)
 			re_prompt = re.compile("|".join(map (lambda x: "(" + x + ")", options["-c"])), re.IGNORECASE)
 
-			result = conn.log_expect(options, [ re_login, "Password: ", re_prompt ], SHELL_TIMEOUT)
+			result = conn.log_expect(options, [ re_login, "Password: ", re_prompt ], int(options["-Y"]))
 			if result == 0:
 				if options.has_key("-l"):
 					conn.send(options["-l"]+"\r\n")
-					result = conn.log_expect(options, [ re_login, "Password: ", re_prompt ], SHELL_TIMEOUT)
+					result = conn.log_expect(options, [ re_login, "Password: ", re_prompt ], int(options["-Y"]))
 				else:
 					fail_usage("Failed: You have to set login name")
 		
 			if result == 1:
 				if options.has_key("-p"):
 					conn.send(options["-p"]+"\r\n")
-					conn.log_expect(options, options["-c"], SHELL_TIMEOUT)	
+					conn.log_expect(options, options["-c"], int(options["-Y"]))	
 				else:
 					fail_usage("Failed: You have to enter password or password script")
 		except pexpect.EOF:

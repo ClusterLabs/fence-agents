@@ -18,7 +18,7 @@ BUILD_DATE=""
 def get_outlets_status(conn, options):
 	try:
 		conn.sendline("virsh list --all")
-		conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
@@ -51,7 +51,7 @@ def set_power_status(conn, options):
 	try:
 		conn.sendline("virsh %s "%(options["-o"] == "on" and "start" or "destroy")+options["-n"])
 
-		conn.log_expect(options, options["-c"], POWER_TIMEOUT)
+		conn.log_expect(options, options["-c"], int(options["-g"]))
                 time.sleep(1)
 
 	except pexpect.EOF:
@@ -63,7 +63,8 @@ def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
 			"secure", "identity_file", "test", "port", "separator",
-			"inet4_only", "inet6_only", "ipport" ]
+			"inet4_only", "inet6_only", "ipport",
+			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
 	atexit.register(atexit_handler)
 

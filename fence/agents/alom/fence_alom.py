@@ -19,7 +19,7 @@ def get_power_status(conn, options):
 	result = ""
 	try:
 		conn.sendline("showplatform")
-                conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+                conn.log_expect(options, options["-c"], int(options["-Y"]))
 		status = re.search("standby",conn.before.lower())
 		result=(status!=None and "off" or "on")
 	except pexpect.EOF:
@@ -33,9 +33,9 @@ def set_power_status(conn, options):
 	try:
 		cmd_line=(options["-o"]=="on" and "poweron" or "poweroff -f -y")
 		conn.sendline(cmd_line)
-		conn.log_expect(options, options["-c"],POWER_TIMEOUT)
+		conn.log_expect(options, options["-c"],int(options["-g"]))
 		#Get the machine some time between poweron and poweroff
-		time.sleep(POWER_TIMEOUT)
+		time.sleep(int(options["-g"]))
 		
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
@@ -45,7 +45,8 @@ def set_power_status(conn, options):
 def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
-			"secure",  "test", "inet4_only", "inet6_only", "ipport" ]
+			"secure",  "test", "inet4_only", "inet6_only", "ipport",
+			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
 	atexit.register(atexit_handler)
 	

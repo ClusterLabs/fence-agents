@@ -23,11 +23,11 @@ COMMAND_PROMPT_NEW="[PEXPECT]"
 # Start comunicating after login. Prepare good environment.
 def start_communication(conn, options):
 	conn.sendline ("PS1='"+COMMAND_PROMPT_NEW+"'")
-	res=conn.expect([pexpect.TIMEOUT, COMMAND_PROMPT_REG],SHELL_TIMEOUT)
+	res=conn.expect([pexpect.TIMEOUT, COMMAND_PROMPT_REG],int(options["-Y"]))
 	if res==0:
 		#CSH stuff
 		conn.sendline("set prompt='"+COMMAND_PROMPT_NEW+"'")
-		conn.log_expect(options, COMMAND_PROMPT_REG,SHELL_TIMEOUT)
+		conn.log_expect(options, COMMAND_PROMPT_REG,int(options["-Y"]))
 	
 
 def get_power_status(conn, options):
@@ -36,7 +36,7 @@ def get_power_status(conn, options):
 		
 		conn.sendline("ldm ls")
 		    
-		conn.log_expect(options,COMMAND_PROMPT_REG,SHELL_TIMEOUT)
+		conn.log_expect(options,COMMAND_PROMPT_REG,int(options["-Y"]))
 
 		result={}
 
@@ -73,7 +73,7 @@ def set_power_status(conn, options):
             	
 		conn.sendline(cmd_line)
 		    
-		conn.log_expect(options,COMMAND_PROMPT_REG,POWER_TIMEOUT)
+		conn.log_expect(options,COMMAND_PROMPT_REG,int(options["-g"]))
 		
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
@@ -84,7 +84,8 @@ def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
 			"secure",  "identity_file", "test" , "port", "cmd_prompt",
-			"separator", "inet4_only", "inet6_only", "ipport" ]
+			"separator", "inet4_only", "inet6_only", "ipport",
+			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
 	atexit.register(atexit_handler)
 

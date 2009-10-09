@@ -148,7 +148,7 @@ def vmware_run_command(options,add_login_params,additional_params,additional_tim
 	try:
 		vmware_log(options,command)
 
-		(res_output,res_code)=pexpect.run(command,SHELL_TIMEOUT+LOGIN_TIMEOUT+additional_timeout,True)
+		(res_output,res_code)=pexpect.run(command,int(options["-Y"])+int(options["-y"])+additional_timeout,True)
 
 		if (res_code==None):
 			fail(EC_TIMED_OUT)
@@ -171,7 +171,7 @@ def vmware_get_outlets_vi(conn, options, add_vm_name):
 	if (add_vm_name):
 		all_machines=vmware_run_command(options,True,("--operation status --vmname '%s'"%(quote_for_run(options["-n"]))),0)
 	else:
-		all_machines=vmware_run_command(options,True,"--operation list",POWER_TIMEOUT)
+		all_machines=vmware_run_command(options,True,"--operation list",int(options["-g"]))
 
 	all_machines_array=all_machines.splitlines()
 
@@ -237,7 +237,7 @@ def set_power_status(conn, options):
 		if (options["-o"]=="off"):
 			additional_params+=" hard"
 
-	vmware_run_command(options,True,additional_params,POWER_TIMEOUT)
+	vmware_run_command(options,True,additional_params,int(options["-g"]))
 
 # Returns True, if user uses supported vmrun version (currently >=2.0.0) otherwise False.
 def vmware_is_supported_vmrun_version(options):
@@ -287,7 +287,8 @@ def main():
 	device_opt = [ "help", "version", "agent", "quiet", "verbose", "debug",
 		       "action", "ipaddr", "login", "passwd", "passwd_script",
 		       "test", "port", "separator", "exec", "vmware_type",
-		       "vmware_datacenter", "secure" ]
+		       "vmware_datacenter", "secure",
+		       "power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
 	atexit.register(atexit_handler)
 

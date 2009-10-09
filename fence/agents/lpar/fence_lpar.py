@@ -24,7 +24,7 @@ def get_power_status(conn, options):
 	if options["-H"] == "3":
 		try:
 			conn.send("lssyscfg -r lpar -m " + options["-s"] + " -n " + options["-n"] + " -F name,state\n")
-			conn.log_expect(options, options["-c"], POWER_TIMEOUT)
+			conn.log_expect(options, options["-c"], int(options["-g"]))
 		except pexpect.EOF:
 			fail(EC_CONNECTION_LOST)
 		except pexpect.TIMEOUT:
@@ -37,7 +37,7 @@ def get_power_status(conn, options):
 	elif options["-H"] == "4":
 		try:
 			conn.send("lssyscfg -r lpar -m "+ options["-s"] +" --filter 'lpar_names=" + options["-n"] + "'\n")
-			conn.log_expect(options, options["-c"], POWER_TIMEOUT)
+			conn.log_expect(options, options["-c"], int(options["-g"]))
 		except pexpect.EOF:
 			fail(EC_CONNECTION_LOST)
 		except pexpect.TIMEOUT:
@@ -62,7 +62,7 @@ def set_power_status(conn, options):
 		try:
 			conn.send("chsysstate -o " + options["-o"] + " -r lpar -m " + options["-s"]
 				+ " -n " + options["-n"] + "\n")
-			conn.log_expect(options, options["-c"], POWER_TIMEOUT)
+			conn.log_expect(options, options["-c"], int(options["-g"]))
 		except pexpect.EOF:
 			fail(EC_CONNECTION_LOST)
 		except pexpect.TIMEOUT:
@@ -78,7 +78,7 @@ def set_power_status(conn, options):
 			else:
 				conn.send("chsysstate -o shutdown -r lpar --immed" +
 					" -m " + options["-s"] + " -n " + options["-n"] + "\n")		
-			conn.log_expect(options, options["-c"], POWER_TIMEOUT)
+			conn.log_expect(options, options["-c"], int(options["-g"]))
 		except pexpect.EOF:
 			fail(EC_CONNECTION_LOST)
 		except pexpect.TIMEOUT:
@@ -89,7 +89,7 @@ def get_lpar_list(conn, options):
 	if options["-H"] == "3":
 		try:
 			conn.send("query_partition_names -m " + options["-s"] + "\n")
-			conn.log_expect(options, options["-c"], POWER_TIMEOUT)
+			conn.log_expect(options, options["-c"], int(options["-g"]))
 
 			## We have to remove first 3 lines (command + header) and last line (part of new prompt)
 			####
@@ -109,7 +109,7 @@ def get_lpar_list(conn, options):
 		try:
 			conn.send("lssyscfg -r lpar -m " + options["-s"] + 
 				" -F name:state\n")
-			conn.log_expect(options, options["-c"], POWER_TIMEOUT)
+			conn.log_expect(options, options["-c"], int(options["-g"]))
 
 			## We have to remove first line (command) and last line (part of new prompt)
 			####
@@ -133,7 +133,8 @@ def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
 			"secure", "partition", "managed", "hmc_version", "cmd_prompt",
-			"separator", "inet4_only", "inet6_only", "ipport" ]
+			"separator", "inet4_only", "inet6_only", "ipport",
+			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
 	atexit.register(atexit_handler)
 

@@ -27,7 +27,7 @@ def get_power_status(conn, options):
 		" PASSWORD = \"" + options["-p"] + "\">\r\n")
 	conn.send("<SERVER_INFO MODE = \"read\"><GET_HOST_POWER_STATUS/>\r\n")
 	conn.send("</SERVER_INFO></LOGIN>\r\n")
-	conn.log_expect(options, "HOST_POWER=\"(.*?)\"", POWER_TIMEOUT)
+	conn.log_expect(options, "HOST_POWER=\"(.*?)\"", int(options["-g"]))
 
 	status = conn.match.group(1)
 	return status.lower().strip()
@@ -56,9 +56,12 @@ def set_power_status(conn, options):
 def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
-			"ssl", "ribcl", "inet4_only", "inet6_only", "ipport" ]
+			"ssl", "ribcl", "inet4_only", "inet6_only", "ipport",
+			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
 	atexit.register(atexit_handler)
+
+	all_opt["login_timeout"]["default"] = "10"
 
 	pinput = process_input(device_opt)
 	pinput["-z"] = 1
@@ -74,7 +77,7 @@ def main():
 	conn = fence_login(options)
 	try:
 		conn.send("<?xml version=\"1.0\"?>\r\n")
-		conn.log_expect(options, [ "</RIBCL>", "<END_RIBCL/>" ], LOGIN_TIMEOUT)
+		conn.log_expect(options, [ "</RIBCL>", "<END_RIBCL/>" ], int(options["-y"]))
 		version = re.compile("<RIBCL VERSION=\"(.*?)\"", re.IGNORECASE).search(conn.before).group(1)
 		if options.has_key("-r") == 0:
 			options["-r"] = float(version)
@@ -89,8 +92,8 @@ def main():
 		if options["-r"] >= 2:
 			conn.send("<RIB_INFO MODE=\"read\"><GET_FW_VERSION />\r\n")
 			conn.send("</RIB_INFO>\r\n")
-			conn.log_expect(options, "<GET_FW_VERSION\s*\n", SHELL_TIMEOUT)
-			conn.log_expect(options, "/>", SHELL_TIMEOUT)
+			conn.log_expect(options, "<GET_FW_VERSION\s*\n", int(options["-Y"]))
+			conn.log_expect(options, "/>", int(options["-Y"]))
 			options["fw_version"] = float(re.compile("FIRMWARE_VERSION\s*=\s*\"(.*?)\"", re.IGNORECASE).search(conn.before).group(1))
 			options["fw_processor"] = re.compile("MANAGEMENT_PROCESSOR\s*=\s*\"(.*?)\"", re.IGNORECASE).search(conn.before).group(1)
 		conn.send("</LOGIN>\r\n")

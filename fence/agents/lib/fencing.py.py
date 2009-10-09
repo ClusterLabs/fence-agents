@@ -12,10 +12,6 @@ REDHAT_COPYRIGHT = ""
 BUILD_DATE = "March, 2008"
 #END_VERSION_GENERATION
 
-POWER_TIMEOUT = 20
-SHELL_TIMEOUT = 3
-LOGIN_TIMEOUT = 5
-
 LOG_MODE_VERBOSE = 100
 LOG_MODE_QUIET = 0
 
@@ -322,7 +318,31 @@ all_opt = {
 		"default" : ",", 
 		"required" : "0",
 		"shortdesc" : "Separator for CSV created by operation list",
-		"order" : 100 }
+		"order" : 100 },
+	"login_timeout" : {
+		"getopt" : "y:",
+		"longopt" : "login-timeout",
+		"help" : "--login-timeout <seconds>      Wait X seconds for cmd prompt after login",
+		"default" : "5", 
+		"order" : 200 },
+	"shell_timeout" : {
+		"getopt" : "Y:",
+		"longopt" : "shell-timeout",
+		"help" : "--shell-timeout <seconds>      Wait X seconds for cmd prompt after issuing command",
+		"default" : "3", 
+		"order" : 200 },
+	"power_timeout" : {
+		"getopt" : "g:",
+		"longopt" : "power-timeout",
+		"help" : "--power-timeout <seconds>      Test X seconds for status change after ON/OFF",
+		"default" : "20", 
+		"order" : 200 },
+	"power_wait" : {
+		"getopt" : "G:",
+		"longopt" : "power-wait",
+		"help" : "--power-wait <seconds>         Wait X seconds after issuing ON/OFF",
+		"default" : "0", 
+		"order" : 200 }
 }
 
 class fspawn(pexpect.spawn):
@@ -621,7 +641,7 @@ def check_input(device_opt, opt):
 	return options
 	
 def wait_power_status(tn, options, get_power_fn):
-	for dummy in xrange(POWER_TIMEOUT):
+	for dummy in xrange(int(options["-g"])):
 		if get_power_fn(tn, options) != options["-o"]:
 			time.sleep(1)
 		else:
@@ -688,6 +708,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 			print "Success: Already ON"
 		else:
 			set_power_fn(tn, options)
+			time.sleep(int(options["-G"]))
 			if wait_power_status(tn, options, get_power_fn):
 				print "Success: Powered ON"
 			else:
@@ -697,6 +718,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 			print "Success: Already OFF"
 		else:
 			set_power_fn(tn, options)
+			time.sleep(int(options["-G"]))
 			if wait_power_status(tn, options, get_power_fn):
 				print "Success: Powered OFF"
 			else:
@@ -705,10 +727,12 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 		if status != "off":
 			options["-o"] = "off"
 			set_power_fn(tn, options)
+			time.sleep(int(options["-G"]))
 			if wait_power_status(tn, options, get_power_fn) == 0:
 				fail(EC_WAITING_OFF)
 		options["-o"] = "on"
 		set_power_fn(tn, options)
+		time.sleep(int(options["-G"]))
 		if wait_power_status(tn, options, get_power_fn) == 0:
 			sys.stderr.write('Timed out waiting to power ON\n')
 		print "Success: Rebooted"
@@ -757,21 +781,21 @@ def fence_login(options):
 				
 			if options.has_key("telnet_over_ssh"):
 				#This is for stupid ssh servers (like ALOM) which behave more like telnet (ignore name and display login prompt)
-				result = conn.log_expect(options, [ re_login, "Are you sure you want to continue connecting (yes/no)?" ], LOGIN_TIMEOUT)
+				result = conn.log_expect(options, [ re_login, "Are you sure you want to continue connecting (yes/no)?" ], int(options["-y"]))
 				if result == 1:
 					conn.sendline("yes") # Host identity confirm
-					conn.log_expect(options, re_login, LOGIN_TIMEOUT)
+					conn.log_expect(options, re_login, int(options["-y"]))
 
 				conn.sendline(options["-l"])
-				conn.log_expect(options, re_pass, LOGIN_TIMEOUT)
+				conn.log_expect(options, re_pass, int(options["-y"]))
 			else:
-				result = conn.log_expect(options, [ "ssword:", "Are you sure you want to continue connecting (yes/no)?" ], LOGIN_TIMEOUT)
+				result = conn.log_expect(options, [ "ssword:", "Are you sure you want to continue connecting (yes/no)?" ], int(options["-y"]))
 				if result == 1:
 					conn.sendline("yes")
-					conn.log_expect(options, "ssword:", LOGIN_TIMEOUT)
+					conn.log_expect(options, "ssword:", int(options["-y"]))
 
 			conn.sendline(options["-p"])
-			conn.log_expect(options, options["-c"], LOGIN_TIMEOUT)
+			conn.log_expect(options, options["-c"], int(options["-y"]))
 		elif options.has_key("-x") and 1 == options.has_key("-k"):
 			command = '%s %s %s@%s -i %s -p %s' % (SSH_PATH, force_ipvx, options["-l"], options["-a"], options["-k"], options["-u"])
 			if options.has_key("ssh_options"):
@@ -784,14 +808,14 @@ def fence_login(options):
 				"are not in the spec file and must be installed separately." + "\n")
 				sys.exit(EC_GENERIC_ERROR)
 
-			result = conn.log_expect(options, [ options["-c"], "Are you sure you want to continue connecting (yes/no)?", "Enter passphrase for key '"+options["-k"]+"':" ], LOGIN_TIMEOUT)
+			result = conn.log_expect(options, [ options["-c"], "Are you sure you want to continue connecting (yes/no)?", "Enter passphrase for key '"+options["-k"]+"':" ], int(options["-y"]))
 			if result == 1:
 				conn.sendline("yes")
-				conn.log_expect(options, [ options["-c"], "Enter passphrase for key '"+options["-k"]+"':"] , LOGIN_TIMEOUT)
+				conn.log_expect(options, [ options["-c"], "Enter passphrase for key '"+options["-k"]+"':"] , int(options["-y"]))
 			if result != 0:
 				if options.has_key("-p"):
 					conn.sendline(options["-p"])
-					conn.log_expect(options, options["-c"], LOGIN_TIMEOUT)
+					conn.log_expect(options, options["-c"], int(options["-y"]))
 				else:
 					fail_usage("Failed: You have to enter passphrase (-p) for identity file")
 		else:
@@ -805,11 +829,11 @@ def fence_login(options):
 				"are not in the spec file and must be installed separately." + "\n")
 				sys.exit(EC_GENERIC_ERROR)
 
-			conn.log_expect(options, re_login, LOGIN_TIMEOUT)
+			conn.log_expect(options, re_login, int(options["-y"]))
 			conn.send(options["-l"] + login_eol)
-			conn.log_expect(options, re_pass, SHELL_TIMEOUT)
+			conn.log_expect(options, re_pass, int(options["-Y"]))
 			conn.send(options["-p"] + login_eol)
-			conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+			conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_LOGIN_DENIED) 
 	except pexpect.TIMEOUT:

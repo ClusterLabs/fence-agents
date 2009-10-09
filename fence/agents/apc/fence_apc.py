@@ -29,7 +29,7 @@ def get_power_status(conn, options):
 	outlets = {}
 	try:
 		conn.send("1\r\n")
-		conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 
 		version = 0
 		admin = 0
@@ -62,13 +62,13 @@ def get_power_status(conn, options):
 					conn.send("3\r\n")
 			else:
 				conn.send("2\r\n")
-				conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+				conn.log_expect(options, options["-c"], int(options["-Y"]))
 				conn.send("1\r\n")
 		else:
 			conn.send(options["-s"]+"\r\n")
 			
 		while True:
-			exp_result = conn.log_expect(options, [ options["-c"],  "Press <ENTER>" ], SHELL_TIMEOUT)
+			exp_result = conn.log_expect(options, [ options["-c"],  "Press <ENTER>" ], int(options["-Y"]))
 			lines = conn.before.split("\n");
 			show_re = re.compile('^\s*(\d+)- (.*?)\s+(ON|OFF)\s*')
 			for x in lines:
@@ -79,8 +79,8 @@ def get_power_status(conn, options):
 			if exp_result == 0:
 				break
 		conn.send(chr(03))		
-		conn.log_expect(options, "- Logout", SHELL_TIMEOUT)
-		conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+		conn.log_expect(options, "- Logout", int(options["-Y"]))
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
@@ -103,7 +103,7 @@ def set_power_status(conn, options):
 
 	try:
 		conn.send("1\r\n")
-		conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 
 		version = 0
 		admin2 = 0
@@ -142,7 +142,7 @@ def set_power_status(conn, options):
 					conn.send("3\r\n")
 			else:
 				conn.send("2\r\n")
-				conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+				conn.log_expect(options, options["-c"], int(options["-Y"]))
 				if (None == re.compile('.*2- Outlet Restriction.*', re.IGNORECASE | re.S).match(conn.before)):
 					admin3 = 0
 				else:
@@ -151,31 +151,31 @@ def set_power_status(conn, options):
 		else:
 			conn.send(options["-s"] + "\r\n")
 
-		while 1 == conn.log_expect(options, [ options["-c"],  "Press <ENTER>" ], SHELL_TIMEOUT):
+		while 1 == conn.log_expect(options, [ options["-c"],  "Press <ENTER>" ], int(options["-Y"])):
 			conn.send("\r\n")
 		conn.send(options["-n"]+"\r\n")
-		conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 
 		if switch == 0:
 			if admin2 == 1:
 				conn.send("1\r\n")
-				conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+				conn.log_expect(options, options["-c"], int(options["-Y"]))
 			if admin3 == 1:
 				conn.send("1\r\n")
-				conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+				conn.log_expect(options, options["-c"], int(options["-Y"]))
 		else:
 			conn.send("1\r\n")
-			conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+			conn.log_expect(options, options["-c"], int(options["-Y"]))
 			
 		conn.send(action+"\r\n")
-		conn.log_expect(options, "Enter 'YES' to continue or <ENTER> to cancel :", SHELL_TIMEOUT)
+		conn.log_expect(options, "Enter 'YES' to continue or <ENTER> to cancel :", int(options["-Y"]))
 		conn.send("YES\r\n")
-		conn.log_expect(options, "Press <ENTER> to continue...", SHELL_TIMEOUT)
+		conn.log_expect(options, "Press <ENTER> to continue...", int(options["-Y"]))
 		conn.send("\r\n")
-		conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 		conn.send(chr(03))
-		conn.log_expect(options, "- Logout", SHELL_TIMEOUT)
-		conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+		conn.log_expect(options, "- Logout", int(options["-Y"]))
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
@@ -185,7 +185,8 @@ def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
 			"secure", "port", "switch", "test", "separator",
-			"inet4_only", "inet6_only", "ipport" ]
+			"inet4_only", "inet6_only", "ipport",
+			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
 	atexit.register(atexit_handler)
 

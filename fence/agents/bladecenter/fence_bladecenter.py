@@ -27,15 +27,15 @@ def get_power_status(conn, options):
 		node_cmd = "system:blade\[" + options["-n"] + "\]>"
 
 		conn.send("env -T system:blade[" + options["-n"] + "]\r\n")
-		i = conn.log_expect(options, [ node_cmd, "system>" ] , SHELL_TIMEOUT)
+		i = conn.log_expect(options, [ node_cmd, "system>" ] , int(options["-Y"]))
 		if i == 1:
 			## Given blade number does not exist
 			fail(EC_STATUS)
 		conn.send("power -state\r\n")
-		conn.log_expect(options, node_cmd, SHELL_TIMEOUT)
+		conn.log_expect(options, node_cmd, int(options["-Y"]))
 		status = conn.before.splitlines()[-1]
 		conn.send("env -T system\r\n")
-		conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
@@ -53,11 +53,11 @@ def set_power_status(conn, options):
 		node_cmd = "system:blade\[" + options["-n"] + "\]>"
 
 		conn.send("env -T system:blade[" + options["-n"] + "]\r\n")
-		conn.log_expect(options, node_cmd, SHELL_TIMEOUT)
+		conn.log_expect(options, node_cmd, int(options["-Y"]))
 		conn.send("power -"+options["-o"]+"\r\n")
-		conn.log_expect(options, node_cmd, SHELL_TIMEOUT)
+		conn.log_expect(options, node_cmd, int(options["-Y"]))
 		conn.send("env -T system\r\n")
-		conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
@@ -69,9 +69,9 @@ def get_blades_list(conn, options):
 		node_cmd = "system>"
 
 		conn.send("env -T system\r\n")
-		conn.log_expect(options, node_cmd, SHELL_TIMEOUT)
+		conn.log_expect(options, node_cmd, int(options["-Y"]))
 		conn.send("list -l 2\r\n")
-		conn.log_expect(options, node_cmd, SHELL_TIMEOUT)
+		conn.log_expect(options, node_cmd, int(options["-Y"]))
 
 		lines = conn.before.split("\r\n")
 		filter_re = re.compile("^\s*blade\[(\d+)\]\s+(.*?)\s*$")
@@ -91,17 +91,15 @@ def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
 			"cmd_prompt", "secure", "port", "identity_file", "separator",
-			"inet4_only", "inet6_only", "ipport" ]
+			"inet4_only", "inet6_only", "ipport",
+			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
 	atexit.register(atexit_handler)
 
-	options = check_input(device_opt, process_input(device_opt))
+	all_opt["power_wait"]["default"] = "5"
+	all_opt["cmd_prompt"]["default"] = "system>"
 
-	## 
-	## Fence agent specific defaults
-	#####
-	if 0 == options.has_key("-c"):
-		options["-c"] = "system>"
+	options = check_input(device_opt, process_input(device_opt))
 
 	show_docs(options)
 	

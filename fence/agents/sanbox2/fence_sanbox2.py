@@ -25,7 +25,7 @@ def get_power_status(conn, options):
 	}
 	try:
 		conn.send("show port " + options["-n"] + "\n")
-		conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
@@ -52,7 +52,7 @@ def set_power_status(conn, options):
 
         try:
         	conn.send("set port " + options["-n"] + " state " + action + "\n")
-		conn.log_expect(options, options["-c"], POWER_TIMEOUT)
+		conn.log_expect(options, options["-c"], int(options["-g"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
@@ -66,7 +66,7 @@ def set_power_status(conn, options):
 
 	try:
 		conn.send("set port " + options["-n"] + " state " + action + "\n")
-		conn.log_expect(options, options["-c"], POWER_TIMEOUT)
+		conn.log_expect(options, options["-c"], int(options["-g"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
@@ -83,7 +83,7 @@ def get_list_devices(conn, options):
 
 	try:
 		conn.send("show port" + "\n")
-		conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 
 		list_re = re.compile("^\s+(\d+?)\s+(Online|Offline)\s+", re.IGNORECASE)
 		for line in conn.before.splitlines():
@@ -110,7 +110,8 @@ def get_list_devices(conn, options):
 def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"io_fencing", "ipaddr", "login", "passwd", "passwd_script",
-			"cmd_prompt", "port", "ipport", "login_eol_lf", "separator" ]
+			"cmd_prompt", "port", "ipport", "login_eol_lf", "separator",
+			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
 	atexit.register(atexit_handler)
 
@@ -130,7 +131,7 @@ def main():
 	conn = fence_login(options)
 
 	conn.send("admin start\n")
-	conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+	conn.log_expect(options, options["-c"], int(options["-Y"]))
 
 	if (re.search("\(admin\)", conn.before, re.MULTILINE) == None):
 		## Someone else is in admin section, we can't enable/disable

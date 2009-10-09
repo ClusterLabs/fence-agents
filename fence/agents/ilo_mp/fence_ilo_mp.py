@@ -12,7 +12,7 @@ BUILD_DATE=""
 
 def get_power_status(conn, options):
 	conn.send("show /system1\n")
-	conn.log_expect(options, "EnabledState=(.*)", POWER_TIMEOUT)
+	conn.log_expect(options, "EnabledState=(.*)", int(options["-Y"]))
 
 	status = conn.match.group(1)
 
@@ -32,7 +32,8 @@ def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
 			"secure", "cmd_prompt", "ipport", "login_eol_lf",
-			"separator", "inet4_only", "inet6_only" ]
+			"separator", "inet4_only", "inet6_only",
+			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
 	atexit.register(atexit_handler)
 	

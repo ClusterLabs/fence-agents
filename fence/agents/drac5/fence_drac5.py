@@ -29,7 +29,7 @@ def get_power_status(conn, options):
 		elif options["model"] == "DRAC 5":
 			conn.sendline("racadm serveraction powerstatus")
 		
-		conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
@@ -52,7 +52,7 @@ def set_power_status(conn, options):
 			conn.sendline("racadm serveraction " + action + " -m " + options["-m"])
 		elif options["model"] == "DRAC 5":
 			conn.sendline("racadm serveraction " + action)
-		conn.log_expect(options, options["-c"], POWER_TIMEOUT)
+		conn.log_expect(options, options["-c"], int(options["-g"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
@@ -69,7 +69,7 @@ def get_list_devices(conn, options):
 			for line in conn.before.splitlines():
 				if (list_re.search(line)):
 					outlets[list_re.search(line).group(1)] = ("", list_re.search(line).group(2))
-			conn.log_expect(options, options["-c"], POWER_TIMEOUT)
+			conn.log_expect(options, options["-c"], int(options["-g"]))
 		elif options["model"] == "DRAC 5":
 			## DRAC 5 can be used only for one computer
 			pass
@@ -84,7 +84,8 @@ def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
 			"cmd_prompt", "secure", "drac_version", "module_name",
-			"separator", "inet4_only", "inet6_only", "ipport" ]
+			"separator", "inet4_only", "inet6_only", "ipport",
+			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
 	atexit.register(atexit_handler)
 
