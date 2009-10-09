@@ -29,6 +29,12 @@ def get_power_status(conn, options):
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
+		try:
+			conn.send("admin end\n")
+			conn.send("exit\n")
+			conn.close()
+		except:
+			pass
 		fail(EC_TIMED_OUT)
 	
 	status = re.compile(".*AdminState\s+(online|offline)\s+", re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
@@ -50,6 +56,12 @@ def set_power_status(conn, options):
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
+		try:
+			conn.send("admin end\n")
+			conn.send("exit\n")
+			conn.close()
+		except:
+			pass
 		fail(EC_TIMED_OUT)                                                                         	
 
 	try:
@@ -58,12 +70,46 @@ def set_power_status(conn, options):
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
+		try:
+			conn.send("admin end\n")
+			conn.send("exit\n")
+			conn.close()
+		except:
 		fail(EC_TIMED_OUT)
+
+def get_list_devices(conn, options):
+	outlets = { }
+
+	try:
+		conn.send("show port" + "\n")
+		conn.log_expect(options, options["-c"], SHELL_TIMEOUT)
+
+		list_re = re.compile("^\s+(\d+?)\s+(Online|Offline)\s+", re.IGNORECASE)
+		for line in conn.before.splitlines():
+			if (list_re.search(line)):
+				status = {
+					'online' : "ON",
+					'offline' : "OFF"
+				}[list_re.search(line).group(2).lower()]
+				outlets[list_re.search(line).group(1)] = ("", status)
+
+	except pexpect.EOF:
+		fail(EC_CONNECTION_LOST)
+	except pexpect.TIMEOUT:
+		try:
+			conn.send("admin end\n")
+			conn.send("exit\n")
+			conn.close()
+		except:
+			pass
+		fail(EC_TIMED_OUT)
+		
+	return outlets
 
 def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"io_fencing", "ipaddr", "login", "passwd", "passwd_script",
-			"cmd_prompt", "port", "ipport", "login_eol_lf" ]
+			"cmd_prompt", "port", "ipport", "login_eol_lf", "separator" ]
 
 	atexit.register(atexit_handler)
 
@@ -91,7 +137,7 @@ def main():
 		sys.stderr.write("Failed: Unable to switch to admin section\n")
 		sys.exit(EC_GENERIC_ERROR)
 
-	fence_action(conn, options, set_power_status, get_power_status)
+	fence_action(conn, options, set_power_status, get_power_status, get_list_devices)
 
 	##
 	## Logout from system
