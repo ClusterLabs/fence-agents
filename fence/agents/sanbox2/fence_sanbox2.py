@@ -75,6 +75,7 @@ def set_power_status(conn, options):
 			conn.send("exit\n")
 			conn.close()
 		except:
+			pass
 		fail(EC_TIMED_OUT)
 
 def get_list_devices(conn, options):
