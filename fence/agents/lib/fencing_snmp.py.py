@@ -12,6 +12,11 @@ REDHAT_COPYRIGHT = ""
 BUILD_DATE = ""
 #END_VERSION_GENERATION
 
+# Fix for RHBZ#527844
+def snmp_define_defaults ():
+	all_opt["udpport"]["default"]="161"
+	all_opt["ipport"]["default"]="161"
+
 class FencingSnmp:
 	def __init__(self,options):
 		self.options=options
@@ -68,7 +73,7 @@ class FencingSnmp:
 			force_ipvx="udp:"
 
 		cmd+=" '%s%s%s'"%(force_ipvx, self.quote_for_run(self.options["-a"]),
-				self.options.has_key("-u") and self.quote_for_run(":"+self.options["-u"]) or "")
+				self.options.has_key("-u") and self.quote_for_run(":" + str (self.options["-u"])) or "")
 		return cmd
 
 	def run_command(self,command,additional_timemout=0):

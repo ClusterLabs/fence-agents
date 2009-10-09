@@ -65,6 +65,7 @@ def main():
 
 	atexit.register(atexit_handler)
 
+	snmp_define_defaults ()
 	ibmblade_define_defaults()
 
 	options=check_input(device_opt,process_input(device_opt))

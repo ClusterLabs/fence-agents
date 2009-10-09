@@ -90,6 +90,7 @@ def main():
 
 	atexit.register(atexit_handler)
 
+	snmp_define_defaults ()
 	options=process_input(device_opt)
 
 	# Emulate enable/disable functionality
