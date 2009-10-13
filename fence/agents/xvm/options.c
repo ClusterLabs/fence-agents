@@ -319,7 +319,7 @@ static struct arg_info _arg_info[] = {
 	  "IP port (default=1229)",
 	  assign_port },
 
-	{ 'I', "-I <interface>", "multicast_address",
+	{ 'I', "-I <interface>", "interface",
 	  "Network interface name to listen on",
 	  assign_interface },
 
