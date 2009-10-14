@@ -11,22 +11,37 @@ BUILD_DATE=""
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):
-	conn.send("show /system1\n")
-	conn.log_expect(options, "EnabledState=(.*)", int(options["-Y"]))
+	try:
+		conn.send("show /system1\r\n")
+	
+		re_state = re.compile('EnabledState=(.*)', re.IGNORECASE)
+		conn.log_expect(options, re_state, int(options["-Y"]))
 
-	status = conn.match.group(1)
+		status = conn.match.group(1).lower()
 
-	if status.startswith("Enabled"):
-		return "on"
-	else:
-		return "off"
+		if status.startswith("enabled"):
+			return "on"
+		else:
+			return "off"
+	except pexpect.EOF:
+		fail(EC_CONNECTION_LOST)
+	except pexpect.TIMEOUT:
+		fail(EC_TIMED_OUT)
 
 def set_power_status(conn, options):
-	if options["-o"] == "on":
-		conn.send("start /system1\n")
-	else:
-		conn.send("stop -f /system1\n")
-	return
+	try:
+		if options["-o"] == "on":
+			conn.send("start /system1\r\n")
+		else:
+			conn.send("stop -f /system1\r\n")
+
+		conn.log_expect(options, options["-c"], int(options["-g"]))
+
+		return
+	except pexpect.EOF:
+		fail(EC_CONNECTION_LOST)
+	except pexpect.TIMEOUT:
+		fail(EC_TIMED_OUT)
 
 def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
@@ -37,14 +52,15 @@ def main():
 
 	atexit.register(atexit_handler)
 	
+	all_opt["cmd_prompt"]["default"] = [ "MP>", "hpiLO->" ]
+	all_opt["power_wait"]["default"] = 5
+	
 	options = check_input(device_opt, process_input(device_opt))
-	if 0 == options.has_key("-c"):
-		options["-c"] = "MP>"
 		
 	show_docs(options)
 	
 	conn = fence_login(options)
-	conn.send("SMCLP\n")
+	conn.send("SMCLP\r\n")
 
 	##
 	## Fence operations
@@ -52,7 +68,7 @@ def main():
 	fence_action(conn, options, set_power_status, get_power_status)
 
 	try:
-		conn.send("exit\n")
+		conn.send("exit\r\n")
 	except exceptions.OSError:
 		pass
 	except pexpect.ExceptionPexpect:
