@@ -30,7 +30,10 @@ def get_power_status(conn, options):
 		i = conn.log_expect(options, [ node_cmd, "system>" ] , int(options["-Y"]))
 		if i == 1:
 			## Given blade number does not exist
-			fail(EC_STATUS)
+			if options.has_key("-M"):
+				return "off"
+			else:
+				fail(EC_STATUS)
 		conn.send("power -state\r\n")
 		conn.log_expect(options, node_cmd, int(options["-Y"]))
 		status = conn.before.splitlines()[-1]
@@ -92,7 +95,7 @@ def main():
 			"action", "ipaddr", "login", "passwd", "passwd_script",
 			"cmd_prompt", "secure", "port", "identity_file", "separator",
 			"inet4_only", "inet6_only", "ipport",
-			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
+			"power_timeout", "shell_timeout", "login_timeout", "power_wait", "missing_as_off" ]
 
 	atexit.register(atexit_handler)
 

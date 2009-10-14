@@ -342,7 +342,12 @@ all_opt = {
 		"longopt" : "power-wait",
 		"help" : "--power-wait <seconds>         Wait X seconds after issuing ON/OFF",
 		"default" : "0", 
-		"order" : 200 }
+		"order" : 200 },
+	"missing_as_off" : {
+		"getopt" : "M",
+		"longopt" : "missing-as-off",
+		"help" : "--missing-as-off               Missing port returns OFF instead of failure",
+		"order" : 200}
 }
 
 class fspawn(pexpect.spawn):
