@@ -560,11 +560,6 @@ sub get_options_stdin
 		{
 			$cmd_prompt = $val;
 		} 
-		# Excess name/vals will fail
-		else 
-		{
-			fail "parse error: unknown option \"$opt\"";
-		}
 	}
 }
 

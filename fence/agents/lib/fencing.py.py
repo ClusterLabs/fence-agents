@@ -543,7 +543,8 @@ def process_input(avail_opt):
 			##
 			######
 			if avail_opt.count(name) == 0:
-				fail_usage("Parse error: Unknown option '"+line+"'")
+				sys.stderr.write("Parse error: Ignoring unknown option '"+line+"'\n")
+				continue
 
 			if all_opt[name]["getopt"].endswith(":"):
 				opt["-"+all_opt[name]["getopt"].rstrip(":")] = value
