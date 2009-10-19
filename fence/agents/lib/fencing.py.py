@@ -463,7 +463,7 @@ def metadata(avail_opt, options, docs):
 	print "\t<action name=\"status\" />"
 	print "\t<action name=\"list\" />"
 	print "\t<action name=\"monitor\" />"
-	print "\t<action name=\"meta-data\" />"	
+	print "\t<action name=\"metadata\" />"	
 	print "</actions>"
 	print "</resource-agent>"
 
