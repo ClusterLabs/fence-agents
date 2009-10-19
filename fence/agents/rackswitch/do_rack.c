@@ -239,9 +239,13 @@ static void get_options(int argc, char **argv)
       }
       *value = 0;
       if( (value = strchr(arg, '=')) == NULL){
+        /* in this agent we can ignore options without value
+         * as we don't need any of them, here. But we should
+         * accept and ignore them.
+         */
         fprintf(stderr, "invalid input: '%s'\n", arg);
-	exit(DID_FAILURE); 
-      }   
+        continue;
+      }
       *value = 0;
       value++;
     /*  bahfuck. "agent" is not passed to us anyway
