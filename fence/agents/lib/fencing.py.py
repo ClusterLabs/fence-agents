@@ -419,7 +419,7 @@ def metadata(avail_opt, options, docs):
 	sorted_list.sort(lambda x, y: cmp(x[1]["order"], y[1]["order"]))
 
 	print "<?xml version=\"1.0\" ?>"
-	print "<resource-agent name=\"" + os.path.basename(sys.argv[0])[:-3] + "\" shortdesc=\"" + docs["shortdesc"] + "\" >"
+	print "<resource-agent name=\"" + os.path.basename(sys.argv[0]) + "\" shortdesc=\"" + docs["shortdesc"] + "\" >"
 	print "<longdesc>" + docs["longdesc"] + "</longdesc>"
 	print "<parameters>"
 	for option, value in sorted_list:
