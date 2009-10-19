@@ -150,21 +150,26 @@ static struct Etoken power_status[] = {
 /* Structure describing one xml metadata value*/
 struct xml_parameter_s {
   const char *name;
+  const char *getopt;
+  const int required;
+  const char *content_type;
+  const char *default_value;
   const char *description;
 };
 
 /* Array of xml metadatas*/
 struct xml_parameter_s xml_parameters[]={
-  {"auth","IPMI Lan Auth type (md5, password, or none)"},
-  {"ipaddr","IPMI Lan IP to talk to"},
-  {"passwd","Password (if required) to control power on IPMI device"},
-  {"passwd_script","Script to retrieve password (if required)"},
-  {"lanplus","Use Lanplus"},
-  {"login","Username/Login (if required) to control power on IPMI device"},
-  {"action","Operation to perform. Valid operations: on, off, reboot, status, list, monitor or metadata"},
-  {"timeout","Timeout (sec) for IPMI operation"},
-  {"cipher","Ciphersuite to use (same as ipmitool -C parameter)"},
-  {"verbose","Verbose mode"}};
+  {"auth","-A",0,"string",NULL,"IPMI Lan Auth type (md5, password, or none)"},
+  {"ipaddr","-a",1,"string",NULL,"IPMI Lan IP to talk to"},
+  {"passwd","-p",0,"string",NULL,"Password (if required) to control power on IPMI device"},
+  {"passwd_script","-S",0,"string",NULL,"Script to retrieve password (if required)"},
+  {"lanplus","-P",0,"boolean",NULL,"Use Lanplus"},
+  {"login","-l",0,"string",NULL,"Username/Login (if required) to control power on IPMI device"},
+  {"action","-o",0,"string","reboot","Operation to perform. Valid operations: on, off, reboot, status, list, monitor or metadata"},
+  {"timeout","-t",0,"string",NULL,"Timeout (sec) for IPMI operation"},
+  {"cipher","-C",0,"string",NULL,"Ciphersuite to use (same as ipmitool -C parameter)"},
+  {"method","-M",0,"string",DEFAULT_METHOD,"Method to fence (onoff or cycle)"},
+  {"verbose","-v",0,"boolean",NULL,"Verbose mode"}};
 
 /*
    Search for ipmitool
@@ -823,18 +828,38 @@ static void print_xml_metadata(char *pname) {
   int i;
 
   printf("%s\n","<?xml version=\"1.0\" ?>");
-  printf("%s%s%s\n","<resource-agent name=\"",pname,"\" >");
+  printf("%s%s%s\n","<resource-agent name=\"",pname,"\" shortdesc=\"\">");
+  printf("<longdesc>\n");
+  printf("</longdesc>\n");
   printf("%s\n","<parameters>");
 
   for (i=0;i<(sizeof(xml_parameters)/sizeof(struct xml_parameter_s));i++) {
     printf("\t<parameter name=\"%s\" unique=\"1\">\n",xml_parameters[i].name);
 
-    printf("\t\t<shortdesc lang=\"C\">");
+    printf("\t\t<getopt mixed=\"%s\" />\n",xml_parameters[i].getopt);
+    if (xml_parameters[i].default_value == NULL) {
+      printf("\t\t<content type=\"%s\" />\n",xml_parameters[i].content_type);
+    } else {
+      printf("\t\t<content type=\"%s\" default=\"%s\"/>\n", \
+          xml_parameters[i].content_type, \
+          xml_parameters[i].default_value );
+    }
+
+    printf("\t\t<shortdesc lang=\"en\">");
     printf("%s",xml_parameters[i].description);
     printf("</shortdesc>\n");
     printf("\t</parameter>\n");
   }
   printf("%s\n","</parameters>");
+  printf("%s\n","<actions>");
+  printf("\t<action name=\"%s\" />\n", "on");
+  printf("\t<action name=\"%s\" />\n", "off");
+  printf("\t<action name=\"%s\" />\n", "reboot");
+  printf("\t<action name=\"%s\" />\n", "status");
+  printf("\t<action name=\"%s\" />\n", "list");
+  printf("\t<action name=\"%s\" />\n", "monitor");
+  printf("\t<action name=\"%s\" />\n", "metadata");
+  printf("%s\n","</actions>");
   printf("%s\n","</resource-agent>");
 }
 
