@@ -2,7 +2,7 @@ MAINTAINERCLEANFILES	= Makefile.in
 
 TARGET			= fence_sanbox2
 
-EXTRA_DIST		= $(TARGET).pl
+EXTRA_DIST		= $(TARGET).py
 
 sbin_SCRIPTS		= $(TARGET)
 
