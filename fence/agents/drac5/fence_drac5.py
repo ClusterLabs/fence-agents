@@ -99,7 +99,11 @@ def main():
 
 	docs = { }           
 	docs["shortdesc"] = "Fence agent for Dell DRAC CMC/5" 
-	docs["longdesc"] = ""
+	docs["longdesc"] = "fence_drac5 is an I/O Fencing agent \
+which can be used with the Dell Remote Access Card v5 or CMC (DRAC). \
+This device provides remote access to controlling  power to a server. \
+It logs into the DRAC through the telnet/ssh interface of the card. \
+By default, the telnet interface is not  enabled."
 	show_docs(options, docs)
 
 	##

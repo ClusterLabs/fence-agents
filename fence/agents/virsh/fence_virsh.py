@@ -80,7 +80,13 @@ def main():
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for virsh"
-	docs["longdesc"] = ""
+	docs["longdesc"] = "fence_virsh is an I/O Fencing agent \
+which can be used with the virtual machines managed by libvirt. \
+It logs via ssh to a dom0 and there run virsh command, which does \
+all work. \
+\n.P\n\
+By default, virsh needs root account to do properly work. So you \
+must allow ssh login in your sshd_config."
 	show_docs(options, docs)
 
 	## Operate the fencing device

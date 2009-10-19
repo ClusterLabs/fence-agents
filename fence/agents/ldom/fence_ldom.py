@@ -101,7 +101,18 @@ def main():
 	
 	docs = { }
 	docs["shortdesc"] = "Fence agent for Sun LDOM"
-	docs["longdesc"] = ""
+	docs["longdesc"] = "fence_ldom is an I/O Fencing agent \
+which can be used with LDoms virtual machines. This agent works \
+so, that run ldm command on host machine. So ldm must be directly \
+runnable.\
+\n.P\n\
+Very useful parameter is -c (or cmd_prompt in stdin mode). This \
+must be set to something, what is displayed after successful login \
+to host machine. Default string is space on end of string (default \
+for root in bash). But (for example) csh use ], so in that case you \
+must use parameter -c with argument ]. Very similar situation is, \
+if you use bash and login to host machine with other user than \
+root. Than prompt is $, so again, you must use parameter -c."
 	show_docs(options, docs)
 
 	##

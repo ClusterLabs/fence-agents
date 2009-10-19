@@ -62,7 +62,8 @@ def main():
 	
 	docs = { }
 	docs["shortdesc"] = "Fence agent for Sun ALOM"
-	docs["longdesc"] = ""
+	docs["longdesc"] = "fence_alom is an I/O Fencing \
+agent which can be used with ALOM connected machines."
 	show_docs(options, docs)
 		
 	# Operate the fencing device

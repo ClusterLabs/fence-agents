@@ -301,7 +301,27 @@ def main():
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for VMWare"
-	docs["longdesc"] = ""
+	docs["longdesc"] = "fence_vmware is an I/O Fencing agent \
+which can be used with the VMware ESX, VMware ESXi or VMware Server \
+to fence virtual machines.\
+\n.P\n\
+Before you can use this agent, it must be installed VI Perl Toolkit or \
+vmrun command on every node you want to make fencing.\
+\n.P\n\
+VI Perl Toolkit is preferred for VMware ESX/ESXi and Virtual Center. Vmrun \
+command is only solution for VMware Server 1/2 (this command will works against \
+ESX/ESXi 3.5 up2 and VC up2 too, but not cluster aware!) and is available as part \
+of VMware VIX API SDK package. VI Perl and VIX API SDK are both available from \
+VMware web pages (not int RHEL repository!). \
+\n.P\n\
+You can specify type of VMware you are connecting to with \\fB-d\\fP switch \
+(or \\fIvmware_type\\fR for stdin). Possible values are esx, server2 and server1.\
+Default value is esx, which will use VI Perl. With server1 and server2, vmrun \
+command is used.\
+\n.P\n\
+After you have successfully installed VI Perl Toolkit or VIX API, you should \
+be able to run fence_vmware_helper (part of this agent) or vmrun command. \
+This agent supports only vmrun from version 2.0.0 (VIX API 1.6.0)."
 	show_docs(options, docs)
 
 	# Check vmware type and set path

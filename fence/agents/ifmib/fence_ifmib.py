@@ -130,7 +130,13 @@ def main():
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for IF MIB"
-	docs["longdesc"] = ""
+	docs["longdesc"] = "fence_ifmib is an I/O Fencing agent \
+which can be used with any SNMP IF-MIB capable device. \
+\n.P\n\
+It was written with managed ethernet switches in mind, in order to \
+fence iSCSI SAN connections. However, there are many devices that \
+support the IF-MIB interface. The agent uses IF-MIB::ifAdminStatus \
+to control the state of an interface."
 	show_docs(options, docs)
 
 	# Operate the fencing device

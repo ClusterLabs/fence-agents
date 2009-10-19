@@ -79,7 +79,14 @@ def main():
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for Intel Modular"
-	docs["longdesc"] = ""
+	docs["longdesc"] = "fence_intelmodular is an I/O Fencing agent \
+which can be used with Intel Modular device (tested on Intel MFSYS25, should \
+work with MFSYS35 as well). \
+\n.P\n\
+Note: Since firmware update version 2.7, SNMP v2 write support is \
+removed, and replaced by SNMP v3 support. So agent now has default \
+SNMP version 3. If you are using older firmware, please supply -d \
+for command line and snmp_version option for your cluster.conf."
 	show_docs(options, docs)
 
 	# Operate the fencing device

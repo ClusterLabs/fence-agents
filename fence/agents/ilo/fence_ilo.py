@@ -71,7 +71,11 @@ def main():
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for HP iLO"
-	docs["longdesc"] = ""
+	docs["longdesc"] = "fence_ilo is an I/O Fencing agent \
+used for HP servers with the Integrated Light Out (iLO) PCI card.\
+The agent opens an SSL connection to the iLO card. Once the SSL \
+connection is established, the agent is able to communicate with \
+the iLO card through an XML stream."
 	show_docs(options, docs)
 
 	##

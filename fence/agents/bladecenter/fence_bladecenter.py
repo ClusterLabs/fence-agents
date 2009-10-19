@@ -106,7 +106,10 @@ def main():
 
 	docs = { }        
 	docs["shortdesc"] = "Fence agent for IBM BladeCenter"
-	docs["longdesc"] = ""
+	docs["longdesc"] = "fence_bladecenter is an I/O Fencing agent \
+which can be used with IBM Bladecenters with recent enough firmware that \
+includes telnet support. It logs into a Brocade chasis via telnet or ssh \
+and uses the command line interface to power on and off blades."
 	show_docs(options, docs)
 	
 	##

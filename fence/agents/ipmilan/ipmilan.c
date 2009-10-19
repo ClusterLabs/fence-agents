@@ -830,6 +830,9 @@ static void print_xml_metadata(char *pname) {
   printf("%s\n","<?xml version=\"1.0\" ?>");
   printf("%s%s%s\n","<resource-agent name=\"",pname,"\" shortdesc=\"Fence agent for IPMI over LAN\">");
   printf("<longdesc>\n");
+  printf("fence_ipmilan is an I/O Fencing agent which can be used with "
+         "machines controlled by IPMI. This agent calls support software "
+         "using ipmitool (http://ipmitool.sf.net/).");
   printf("</longdesc>\n");
   printf("%s\n","<parameters>");
 

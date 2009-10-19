@@ -191,7 +191,10 @@ def main():
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for APC over SNMP"
-	docs["longdesc"] = ""
+	docs["longdesc"] = "fence_apc_snmp is an I/O Fencing agent \
+which can be used with the APC network power switch. It logs \
+into a device via SNMP and reboots a specified outlet. It supports \
+SNMP v1 and v3 with all combinations of  authenticity/privacy settings."
 	show_docs(options, docs)
 
 	# Operate the fencing device

@@ -59,7 +59,12 @@ def main():
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for IBM RSA"
-	docs["longdesc"] = ""
+	docs["longdesc"] = "fence_rsa is an I/O Fencing agent \
+which can be used with the IBM RSA II management interface. It \
+logs into an RSA II device via telnet and reboots the associated \
+machine. Lengthy telnet connections to the RSA II device should \
+be avoided while a GFS cluster is running because the connection \
+will block any necessary fencing actions."
 	show_docs(options, docs)
 	
 	##

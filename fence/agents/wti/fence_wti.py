@@ -91,7 +91,11 @@ def main():
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for WTI"
-	docs["longdesc"] = ""
+	docs["longdesc"] = "fence_wti is an I/O Fencing agent \
+which can be used with the WTI Network Power Switch (NPS). It logs \
+into an NPS via telnet or ssh and boots a specified plug. \
+Lengthy telnet connections to the NPS should be avoided while a GFS cluster \
+is running because the connection will block any necessary fencing actions."
 	show_docs(options, docs)
 	
 	##
