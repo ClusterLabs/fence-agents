@@ -57,7 +57,10 @@ def main():
 	# This device will not allow us to login even with LANG=C
 	options["ssh_options"] = "-F /dev/null"
 
-	show_docs(options)
+	docs = { }
+	docs["shortdesc"] = "Fence agent for IBM RSA"
+	docs["longdesc"] = ""
+	show_docs(options, docs)
 	
 	##
 	## Operate the fencing device

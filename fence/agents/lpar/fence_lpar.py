@@ -149,7 +149,10 @@ def main():
 	if 0 == options.has_key("-c"):
 		options["-c"] = [ ":~>", "]\$", "\$ " ]
 
-	show_docs(options)
+	docs = { }
+	docs["shortdesc"] = "Fence agent for IBM LPAR"
+	docs["longdesc"] = ""
+	show_docs(options, docs)
 
 	if 0 == options.has_key("-s"):
 		fail_usage("Failed: You have to enter name of managed system")

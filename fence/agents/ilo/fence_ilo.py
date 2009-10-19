@@ -69,7 +69,10 @@ def main():
 	
 	LOGIN_TIMEOUT = 10
 
-	show_docs(options)
+	docs = { }
+	docs["shortdesc"] = "Fence agent for HP iLO"
+	docs["longdesc"] = ""
+	show_docs(options, docs)
 
 	##
 	## Login and get version number

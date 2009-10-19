@@ -97,7 +97,10 @@ def main():
 	if 0 == options.has_key("-c"):
 		options["-c"] = "\$"
 
-	show_docs(options)
+	docs = { }           
+	docs["shortdesc"] = "Fence agent for Dell DRAC CMC/5" 
+	docs["longdesc"] = ""
+	show_docs(options, docs)
 
 	##
 	## Operate the fencing device

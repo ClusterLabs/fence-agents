@@ -89,7 +89,10 @@ def main():
 	if 0 == options.has_key("-c"):
 		options["-c"] = [ "RSM>", "MPC>", "IPS>", "TPS>", "NBB>", "NPS>" ]
 
-	show_docs(options)
+	docs = { }
+	docs["shortdesc"] = "Fence agent for WTI"
+	docs["longdesc"] = ""
+	show_docs(options, docs)
 	
 	##
 	## Operate the fencing device

@@ -104,7 +104,10 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	show_docs(options)
+	docs = { }        
+	docs["shortdesc"] = "Fence agent for IBM BladeCenter"
+	docs["longdesc"] = ""
+	show_docs(options, docs)
 	
 	##
 	## Operate the fencing device

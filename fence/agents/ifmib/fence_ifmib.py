@@ -128,7 +128,10 @@ def main():
 
 	options = check_input(device_opt, options)
 
-	show_docs(options)
+	docs = { }
+	docs["shortdesc"] = "Fence agent for IF MIB"
+	docs["longdesc"] = ""
+	show_docs(options, docs)
 
 	# Operate the fencing device
 	result = fence_action(FencingSnmp(options), options, set_power_status, get_power_status, get_outlets_status)

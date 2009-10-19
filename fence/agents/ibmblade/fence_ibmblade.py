@@ -71,7 +71,10 @@ def main():
 
 	options=check_input(device_opt,process_input(device_opt))
 
-	show_docs(options)
+	docs = { }
+	docs["shortdesc"] = "Fence agent for IBM BladeCenter over SNMP"
+	docs["longdesc"] = ""
+	show_docs(options, docs)
 
 	# Operate the fencing device
 	result = fence_action(FencingSnmp(options), options, set_power_status, get_power_status, get_outlets_status)

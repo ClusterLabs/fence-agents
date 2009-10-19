@@ -78,7 +78,10 @@ def main():
 
 	options["ssh_options"]="-t '/bin/bash -c \"PS1=\[EXPECT\]#\  /bin/bash --noprofile --norc\"'"
 
-	show_docs(options)
+	docs = { }
+	docs["shortdesc"] = "Fence agent for virsh"
+	docs["longdesc"] = ""
+	show_docs(options, docs)
 
 	## Operate the fencing device
 	conn = fence_login(options)

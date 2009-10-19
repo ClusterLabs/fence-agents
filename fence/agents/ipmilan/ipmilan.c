@@ -828,7 +828,7 @@ static void print_xml_metadata(char *pname) {
   int i;
 
   printf("%s\n","<?xml version=\"1.0\" ?>");
-  printf("%s%s%s\n","<resource-agent name=\"",pname,"\" shortdesc=\"\">");
+  printf("%s%s%s\n","<resource-agent name=\"",pname,"\" shortdesc=\"Fence agent for IPMI over LAN\">");
   printf("<longdesc>\n");
   printf("</longdesc>\n");
   printf("%s\n","<parameters>");

@@ -107,7 +107,10 @@ def main():
 
 	options = check_input(device_opt, options)
 
-	show_docs(options)
+	docs = { }           
+	docs["shortdesc"] = "Fence agent for Cisco MDS"
+	docs["longdesc"] = ""
+	show_docs(options, docs)
 
 	if (not (options["-o"] in ["list","monitor"])):
 		port_oid=cisco_port2oid(options["-n"])

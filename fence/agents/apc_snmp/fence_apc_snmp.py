@@ -189,7 +189,10 @@ def main():
 	if (not (options.has_key("-s"))):
 		options["-s"]="1"
 
-	show_docs(options)
+	docs = { }
+	docs["shortdesc"] = "Fence agent for APC over SNMP"
+	docs["longdesc"] = ""
+	show_docs(options, docs)
 
 	# Operate the fencing device
 	result = fence_action(FencingSnmp(options), options, set_power_status, get_power_status, get_outlets_status)

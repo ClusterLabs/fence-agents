@@ -299,7 +299,10 @@ def main():
 	# Default is secure connection
 	options["-x"] = 1
 
-	show_docs(options)
+	docs = { }
+	docs["shortdesc"] = "Fence agent for VMWare"
+	docs["longdesc"] = ""
+	show_docs(options, docs)
 
 	# Check vmware type and set path
 	vmware_check_vmware_type(options)

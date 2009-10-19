@@ -57,7 +57,10 @@ def main():
 	
 	options = check_input(device_opt, process_input(device_opt))
 		
-	show_docs(options)
+	docs = { }
+	docs["shortdesc"] = "Fence agent for HP iLO MP"
+	docs["longdesc"] = ""
+	show_docs(options, docs)
 	
 	conn = fence_login(options)
 	conn.send("SMCLP\r\n")

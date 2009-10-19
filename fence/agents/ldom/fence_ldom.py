@@ -99,7 +99,10 @@ def main():
 	if (not options.has_key("-c")):
 		options["-c"] = "\ $"
 	
-	show_docs(options)
+	docs = { }
+	docs["shortdesc"] = "Fence agent for Sun LDOM"
+	docs["longdesc"] = ""
+	show_docs(options, docs)
 
 	##
 	## Operate the fencing device

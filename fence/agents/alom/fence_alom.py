@@ -60,7 +60,10 @@ def main():
 
 	options["telnet_over_ssh"] = 1
 	
-	show_docs(options)
+	docs = { }
+	docs["shortdesc"] = "Fence agent for Sun ALOM"
+	docs["longdesc"] = ""
+	show_docs(options, docs)
 		
 	# Operate the fencing device
 	conn = fence_login(options)
