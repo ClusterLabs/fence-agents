@@ -570,7 +570,13 @@ elsif ($action =~ /status/i)
 {
 	print "Outlet '$bt_name' is $bt_state and is ".
 		(($bt_locked eq "")?"not ":"")."Locked\n";
-	$exit=0;
+
+	if ($bt_state =~ /on/i)
+	{
+		$exit=0;
+	} else {
+		$exit=2;
+	}
 }
 elsif ($bt_locked ne "")
 {

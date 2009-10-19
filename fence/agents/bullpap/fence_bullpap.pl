@@ -297,6 +297,7 @@ elsif (/^status$/i) { $action = "status"; }
 #
 $success=0;
 $_ = $action;
+my $exit_code=0;
 if (/(on|off)/)
 {
 	my $timeout = 120; # 120 = max of (60, 120).  Max timeout for "on"
@@ -341,6 +342,9 @@ elsif (/status/)
 	get_power_state $host,$domain,$login,$passwd;
 	$state=$_;
 	$success = 1 if defined $state;
+	if ($state eq "OFF") {
+		$exit_code = 2;
+	}
 }
 else
 {
@@ -351,7 +355,7 @@ if ($success)
 {
 	print "success: domain $domain $action". ((defined $state) ? ": $state":"")
 		."\n" unless defined $quiet;
-	exit 0;
+	exit $exit_code;
 }
 else
 {

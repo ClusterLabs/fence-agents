@@ -363,7 +363,7 @@ def atexit_handler():
 		os.close(1)
 	except IOError:
 		sys.stderr.write("%s failed to close standard output\n"%(sys.argv[0]))
-		sys.exit(1)
+		sys.exit(EC_GENERIC_ERROR)
 
 def version(command, release, build_date, copyright_notice):
 	print command, " ", release, " ", build_date
@@ -374,7 +374,7 @@ def fail_usage(message = ""):
 	if len(message) > 0:
 		sys.stderr.write(message+"\n")
 	sys.stderr.write("Please use '-h' for usage\n")
-	sys.exit(EC_BAD_ARGS)
+	sys.exit(EC_GENERIC_ERROR)
 
 def fail(error_code):
 	message = {
@@ -387,7 +387,7 @@ def fail(error_code):
 		EC_STATUS_HMC : "Failed: Either unable to obtaion correct plug status, partition is not available or incorrect HMC version used"
 	}[error_code] + "\n"
 	sys.stderr.write(message)
-	sys.exit(error_code)
+	sys.exit(EC_GENERIC_ERROR)
 
 def usage(avail_opt):
 	global all_opt
@@ -678,6 +678,8 @@ def show_docs(options, docs = None):
 		sys.exit(0)
 
 def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None):
+	result = 0
+	
 	## Process options that manipulate fencing device
 	#####
 	if (options["-o"] == "list") and (0 == options["device_opt"].count("port")) and (0 == options["device_opt"].count("partition")):
@@ -744,8 +746,12 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 		print "Success: Rebooted"
 	elif options["-o"] == "status":
 		print "Status: " + status.upper()
+		if status.upper() == "OFF":
+			result = 2
 	elif options["-o"] == "monitor":
 		1
+	
+	return result
 
 def fence_login(options):
 	force_ipvx=""

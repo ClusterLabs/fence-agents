@@ -34,6 +34,19 @@
 
 #define DEFAULT_METHOD "onoff"
 
+/* We should follow FenceAgentsAPI standard*/
+#define ERR_OFF_SUCCESSFUL 0
+#define ERR_OFF_FAIL       1
+
+#define ERR_ON_SUCCESSFUL 0
+#define ERR_ON_FAIL       1
+
+#define ERR_STATUS_ON     0
+#define ERR_STATUS_FAIL   1
+#define ERR_STATUS_OFF    2
+
+#define ERR_OK            0
+
 #define log(lvl, fmt, args...) fprintf(stderr, fmt, ##args)
 #include <libgen.h>
 #include "copyright.cf"
@@ -844,6 +857,7 @@ main(int argc, char **argv)
 	int timeout=DEFAULT_TIMEOUT;
 	int cipher=-1;
 	int print_final_status=1;
+	int translated_ret = -1;
 
 	memset(ip, 0, sizeof(ip));
 	memset(authtype, 0, sizeof(authtype));
@@ -1013,19 +1027,22 @@ main(int argc, char **argv)
 		} else {
 			/* Original onoff method */
 			ret = ipmi_off(i);
-			if (ret != 0)
+			translated_ret = (ret==0?ERR_OFF_SUCCESSFUL:ERR_OFF_FAIL);
+			if (ret != 0) {
 				goto out;
+			}
 			ret = ipmi_on(i);
 		}
 	} else if (!strcasecmp(op, "on")) {
 		printf("Powering on machine @ IPMI:%s...", ip);
 		fflush(stdout);
 		ret = ipmi_on(i);
-
+		translated_ret = (ret==0?ERR_ON_SUCCESSFUL:ERR_ON_FAIL);
 	} else if (!strcasecmp(op, "off")) {
 		printf("Powering off machine @ IPMI:%s...", ip);
 		fflush(stdout);
 		ret = ipmi_off(i);
+		translated_ret = (ret==0?ERR_ON_SUCCESSFUL:ERR_ON_FAIL);
 	} else if (!strcasecmp(op, "status") || !strcasecmp(op, "monitor")) {
 		printf("Getting status of IPMI:%s...",ip);
 		fflush(stdout);
@@ -1034,26 +1051,31 @@ main(int argc, char **argv)
 		case STATE_ON:
 		  if (!strcasecmp(op, "status"))
 			    printf("Chassis power = On\n");
+			translated_ret = ERR_STATUS_ON;
 			ret = 0;
 			break;
 		case STATE_OFF:
 		  if (!strcasecmp(op, "status"))
 			    printf("Chassis power = Off\n");
+			translated_ret = ERR_STATUS_OFF;
 			ret = 0;
 			break;
 		default:
 		  if (!strcasecmp(op, "status"))
 			    printf("Chassis power = Unknown\n");
+			translated_ret = ERR_STATUS_FAIL;
 			ret = 1;
 			break;
 		}
 	} else if (!strcasecmp(op, "list")) {
 	  printf("%s\n","N/A");
 	  ret=0;
+	  translated_ret = ERR_OK;
 	  print_final_status=0;
 	} else if (!strcasecmp(op, "metadata")) {
 	  print_xml_metadata(pname);
 	  ret=0;
+	  translated_ret = ERR_OK;
 	  print_final_status=0;
 	}
 
@@ -1068,5 +1090,5 @@ out:
 	  else
 	    printf("Failed\n");
 	}
-	return ret;
+	return translated_ret;
 }

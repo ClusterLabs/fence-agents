@@ -64,7 +64,7 @@ def main():
 		
 	# Operate the fencing device
 	conn = fence_login(options)
-	fence_action(conn, options, set_power_status, get_power_status,None)
+	result = fence_action(conn, options, set_power_status, get_power_status,None)
 
 	# Logout from system
 	try:
@@ -74,6 +74,8 @@ def main():
 		pass
 	except pexpect.ExceptionPexpect:
 		pass	                                         
+
+	sys.exit(result)
 
 if __name__ == "__main__":
 	main()

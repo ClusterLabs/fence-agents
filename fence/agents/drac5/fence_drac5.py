@@ -115,7 +115,7 @@ def main():
 		## Assume this is DRAC 5 by default as we don't want to break anything
 		options["model"]="DRAC 5"
 
-	fence_action(conn, options, set_power_status, get_power_status, get_list_devices)
+	result = fence_action(conn, options, set_power_status, get_power_status, get_list_devices)
 
 	##
 	## Logout from system
@@ -127,6 +127,8 @@ def main():
 		pass
 	except pexpect.ExceptionPexpect:
 		pass
+	
+	sys.exit(result)
 
 if __name__ == "__main__":
 	main()

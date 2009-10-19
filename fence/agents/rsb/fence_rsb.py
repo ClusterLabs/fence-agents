@@ -56,6 +56,9 @@ def main():
   POWER_STATUS = 2
   POWER_REBOOT = 3
 
+  STATUS_ON = 0
+  STATUS_OFF = 2
+
   power_command_issued = 0 
 
   address = ""
@@ -68,6 +71,8 @@ def main():
   power_state = None
 
   standard_err = 2
+
+  result = 0
 
   #set up regex list
   USERNAME = 0
@@ -368,8 +373,10 @@ def main():
           print "Determining power state..."
         if power_state == 1:
           print "Server is On"
+          result = STATUS_ON
         elif power_state == 0:
           print "Server is Off"
+          result = STATUS_OFF
         else:
           os.write(standard_err, ("FENCE: Cannot determine power state: %s" % buf))
           sys.exit(1)
@@ -382,6 +389,7 @@ def main():
       sock.write("\r")
 
   sock.close()
+  sys.exit(result)
 
 if __name__ == "__main__":
   main()

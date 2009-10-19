@@ -139,7 +139,7 @@ def main():
 		sys.stderr.write("Failed: Unable to switch to admin section\n")
 		sys.exit(EC_GENERIC_ERROR)
 
-	fence_action(conn, options, set_power_status, get_power_status, get_list_devices)
+	result = fence_action(conn, options, set_power_status, get_power_status, get_list_devices)
 
 	##
 	## Logout from system
@@ -152,6 +152,8 @@ def main():
 		pass
 	except pexpect.ExceptionPexpect:
 		pass
+
+	sys.exit(result)
 
 if __name__ == "__main__":
 	main()

@@ -110,7 +110,9 @@ def main():
 	show_docs(options)
 
 	#Run fence action. Conn is None, beacause we always need open new http connection
-	fence_action(None, options, set_power_status, get_power_status,get_power_status)
+	result = fence_action(None, options, set_power_status, get_power_status,get_power_status)
+
+	sys.exit(result)
 
 if __name__ == "__main__":
 	main()

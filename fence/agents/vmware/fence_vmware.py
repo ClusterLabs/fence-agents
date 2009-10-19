@@ -310,7 +310,9 @@ def main():
 			fail_usage("Unsupported version of vmrun command! You must use at least version %d!"%(VMRUN_MINIMUM_REQUIRED_VERSION))
 
 	# Operate the fencing device
-	fence_action(None, options, set_power_status, get_power_status, get_outlets_status)
+	result = fence_action(None, options, set_power_status, get_power_status, get_outlets_status)
+	
+	sys.exit(result)
 
 if __name__ == "__main__":
 	main()

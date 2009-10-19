@@ -445,7 +445,7 @@ sub do_action
 		if ($status =~ /^on$/i)
 		{
 			msg "success: already on";
-			return;
+			return 0;
 		}
 			
 		set_power_status on;
@@ -458,7 +458,7 @@ sub do_action
 		if ($status =~ /^off$/i)
 		{
 			msg "success: already off";
-			return;
+			return 0;
 		}
 
 		set_power_status off;
@@ -482,12 +482,19 @@ sub do_action
 	elsif ($action =~ /^status$/i)
 	{
 		msg "status: $status";
-		return;
+		if ($status =~ /on/i)
+		{
+			return 0;
+		} else {
+			return 2;
+		}
 	}
 	else 
 	{
 		fail "failed: unrecognised action: '$action'";
 	}
+
+	return 0;
 }
 
 #
@@ -651,10 +658,10 @@ elsif ($drac_version eq $DRAC_VERSION_MC)
 		unless  defined $modulename;
 }
 
-do_action;
+my $res = do_action;
 
 logout;
 
-exit 0;
+exit $res;
 
 
