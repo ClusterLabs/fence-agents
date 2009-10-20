@@ -123,7 +123,14 @@ def main():
 	if 0 == options.has_key("-c"):
 		options["-c"] = [ " #> " ]
 
-	show_docs(options)
+	docs = { }
+	docs["shortdesc"] = "Fence agent for QLogic SANBox2 FC switches"
+	docs["longdesc"] = "fence_sanbox2 is an I/O Fencing agent which can be used with \
+QLogic SANBox2 FC switches.  It logs into a SANBox2 switch via telnet and disables a specified \
+port. Disabling  the port which a machine is connected to effectively fences that machine. \
+Lengthy telnet connections to the switch should be avoided while a GFS cluster is running \
+because the connection will block any necessary fencing actions."
+	show_docs(options, docs)
 
 	##
 	## Operate the fencing device
