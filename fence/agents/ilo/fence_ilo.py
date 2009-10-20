@@ -14,7 +14,6 @@
 import sys, re, pexpect, socket
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from OpenSSL import SSL
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New ILO Agent - test release on steroids"
