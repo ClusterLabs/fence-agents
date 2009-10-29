@@ -80,7 +80,7 @@ class FencingSnmp:
 		try:
 			self.log_command(command)
 
-			(res_output,res_code)=pexpect.run(command,int(options["-Y"])+int(options["-y"])+additional_timemout,True)
+			(res_output,res_code)=pexpect.run(command,int(self.options["-Y"])+int(self.options["-y"])+additional_timemout,True)
 
 			if (res_code==None):
 				fail(EC_TIMED_OUT)
