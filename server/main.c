@@ -14,6 +14,16 @@
 #include <syslog.h>
 
 
+void
+usage(void)
+{
+	printf("Usage: fence_virtd [options]\n");
+	printf("  -F               Do not daemonize.\n");
+	printf("  -f <file>        Use <file> as configuration file.\n");
+	printf("  -d <level>       Set debugging level to <level>.\n");
+}
+
+
 int
 main(int argc, char **argv)
 {
@@ -44,6 +54,10 @@ main(int argc, char **argv)
 		case 'd':
 			debug_set = atoi(optarg);
 			break;
+		case 'h':
+		case '?':
+			usage();
+			return 0;
 		default: 
 			return -1;
 		}
