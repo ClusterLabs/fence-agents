@@ -139,4 +139,4 @@ ifeq ($(with_modules),yes)
 endif
 
 clean:
-	rm -f ${TARGETS} ${MODULES} *.o *.d *~
+	rm -f ${TARGETS} ${MODULES} *.o *.d *~ *.opp
