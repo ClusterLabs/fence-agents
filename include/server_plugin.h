@@ -94,6 +94,10 @@ typedef enum {
 	PLUGIN_BACKEND = 2
 } plugin_type_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int plugin_reg_backend(const backend_plugin_t *plugin);
 int plugin_reg_listener(const listener_plugin_t *plugin);
 const backend_plugin_t *plugin_find_backend(const char *name);
@@ -105,3 +109,6 @@ int plugin_load(const char *filename);
 int plugin_search(const char *pathname);
 #endif
 
+#ifdef __cplusplus
+}
+#endif
