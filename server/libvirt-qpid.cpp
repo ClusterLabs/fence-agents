@@ -147,7 +147,6 @@ do_lq_request(const char *vm_name, const char *action)
 }
 
 
-
 static int
 lq_null(const char *vm_name, void *priv)
 {
@@ -201,10 +200,25 @@ lq_status(const char *vm_name, void *priv)
 
 
 static int
+lq_on(const char *vm_name, uint32_t seqno, void *priv)
+{
+	VALIDATE(priv);
+	printf("[libvirt-qpid] ON operation on %s\n", vm_name);
+
+	return do_lq_request(vm_name, "create");
+}
+
+
+static int
 lq_reboot(const char *vm_name, uint32_t seqno, void *priv)
 {
 	VALIDATE(priv);
 	printf("[libvirt-qpid] REBOOT operation on %s\n", vm_name);
+	
+	if (lq_off(vm_name, seqno, priv) != 0)
+		return 1;
+	sleep(1);
+	lq_on(vm_name, seqno, priv);
 
 	return 1;
 }
