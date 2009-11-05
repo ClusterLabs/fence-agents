@@ -124,7 +124,7 @@ checkpoint.so: ${checkpoint_so_SOURCES:.c=.o}
 	$(CC) $(CFLAGS) -c -o $@ $^ $(INCLUDES)
 
 %.opp: %.cpp
-	$(CPP) $(CFLAGS) -c -o $@ $^ $(INCLUDES)
+	$(CXX) $(CFLAGS) -c -o $@ $^ $(INCLUDES)
 
 install: all
 	if [ ! -d ${DESTDIR}/${sbindir} ]; then \
