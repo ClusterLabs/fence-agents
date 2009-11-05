@@ -34,6 +34,7 @@
 #include <malloc.h>
 #include <string.h>
 #include <dirent.h>
+#include <debug.h>
 
 typedef struct _plugin_list {
 	list_head();
@@ -150,28 +151,22 @@ backend_plugin_load(void *handle, const char *libpath)
 
 	modversion = dlsym(handle, BACKEND_VER_STR);
 	if (!modversion) {
-#ifdef DEBUG
-		printf("Failed to map %s\n", BACKEND_VER_STR);
-#endif
+		dbg_printf(1, "Failed to map %s\n", BACKEND_VER_STR);
 		errno = EINVAL;
 		return -1;
 	}
 
 	if (modversion() != PLUGIN_VERSION_BACKEND) {
-#ifdef DEBUG
-		printf("API version mismatch in %s: \n"
-		       "       %f expected; %f received.\n", libpath,
-		       PLUGIN_VERSION_BACKEND, modversion());
-#endif
+		dbg_printf(1, "API version mismatch in %s: \n"
+			   "       %f expected; %f received.\n", libpath,
+			   PLUGIN_VERSION_BACKEND, modversion());
 		errno = EINVAL;
 		return -1;
 	}
 
 	modinfo = dlsym(handle, BACKEND_INFO_STR);
 	if (!modinfo) {
-#ifdef DEBUG
-		printf("Failed to map %s\n", BACKEND_INFO_STR);
-#endif
+		dbg_printf(1, "Failed to map %s\n", BACKEND_INFO_STR);
 		errno = EINVAL;
 		return -1;
 	}
@@ -180,13 +175,10 @@ backend_plugin_load(void *handle, const char *libpath)
 	if (plugin_reg_backend(plug) < 0) {
 		errno = EINVAL;
 		return -1;
+	} else {
+		dbg_printf(1, "Registered backend plugin %s %s\n",
+			   plug->name, plug->version);
 	}
-#ifdef DEBUG
-       	else {
-		printf("Registered backend plugin %s %s\n",
-		       plug->name, plug->version);
-	}
-#endif
 
 	return 0;
 }
@@ -201,19 +193,15 @@ listener_plugin_load(void *handle, const char *libpath)
 
 	modversion = dlsym(handle, LISTENER_VER_STR);
 	if (!modversion) {
-#ifdef DEBUG
-		printf("Failed to map %s\n", LISTENER_VER_STR);
-#endif
+		dbg_printf(1, "Failed to map %s\n", LISTENER_VER_STR);
 		errno = EINVAL;
 		return -1;
 	}
 
 	if (modversion() != PLUGIN_VERSION_LISTENER) {
-#ifdef DEBUG
-		printf("API version mismatch in %s: \n"
-		       "       %f expected; %f received.\n", libpath,
-		       PLUGIN_VERSION_LISTENER, modversion());
-#endif
+		dbg_printf(1, "API version mismatch in %s: \n"
+		       	   "       %f expected; %f received.\n", libpath,
+			   PLUGIN_VERSION_LISTENER, modversion());
 		dlclose(handle);
 		errno = EINVAL;
 		return -1;
@@ -221,9 +209,7 @@ listener_plugin_load(void *handle, const char *libpath)
 
 	modinfo = dlsym(handle, LISTENER_INFO_STR);
 	if (!modinfo) {
-#ifdef DEBUG
-		printf("Failed to map %s\n", LISTENER_INFO_STR);
-#endif
+		dbg_printf(1, "Failed to map %s\n", LISTENER_INFO_STR);
 		errno = EINVAL;
 		return -1;
 	}
@@ -232,13 +218,10 @@ listener_plugin_load(void *handle, const char *libpath)
 	if (plugin_reg_listener(plug) < 0) {
 		errno = EINVAL;
 		return -1;
+	} else {
+		dbg_printf(1, "Registered listener plugin %s %s\n",
+			   plug->name, plug->version);
 	}
-#ifdef DEBUG
-       	else {
-		printf("Registered listener plugin %s %s\n",
-		       plug->name, plug->version);
-	}
-#endif
 
 	return 0;
 }
@@ -282,17 +265,13 @@ plugin_load(const char *libpath)
 	}
 
 	if (!(sb.st_mode & S_IRUSR)) {
-#ifdef DEBUG
-		printf("Ignoring %s (User-readable bit not set)\n",
-		       libpath);
-#endif
+		dbg_printf(1, "Ignoring %s (User-readable bit not set)\n",
+			   libpath);
 		errno = EPERM;
 		return -1;
 	}
 
-#ifdef DEBUG
-	printf("Loading plugin from %s\n", libpath);
-#endif
+	dbg_printf(3, "Loading plugin from %s\n", libpath);
 	handle = dlopen(libpath, RTLD_NOW);
 	if (!handle) {
 		errno = ELIBACC;
@@ -401,9 +380,7 @@ plugin_search(const char *pathname)
 	int fcount = 0;
 	char **filenames;
 
-#ifdef DEBUG
-	printf("Trying plugins in %s\n", pathname);
-#endif
+	dbg_printf(1, "Searching for plugins in %s\n", pathname);
 	if (read_dirnames_sorted(pathname, &filenames) != 0) {
 		return -1;
 	}
@@ -416,9 +393,7 @@ plugin_search(const char *pathname)
 
 	free_dirnames(filenames);
 	if (!found) {
-#ifdef DEBUG
-		printf("No usable plugins found.\n");
-#endif
+		dbg_printf(1, "No usable plugins found.\n");
 		errno = ELIBACC;
 		return -1;
 	}

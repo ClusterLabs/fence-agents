@@ -112,7 +112,7 @@ libvirt.so: ${libvirt_so_SOURCES:.c=.o}
 	$(CC) -o $@ $^ $(LIBS) -shared $(VIRT_LIBS)
 
 libvirt-qpid.so: ${libvirt_qpid_so_SOURCES:.cpp=.opp}
-	$(CC) -o $@ $^ $(LIBS) -shared $(QPID_LIBS)
+	$(CC) -o $@ $^ $(LIBS) -shared $(VIRT_QPID)
 
 null.so: ${null_so_SOURCES:.c=.o}
 	$(CC) -o $@ $^ $(LIBS) -shared
