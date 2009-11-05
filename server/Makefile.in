@@ -23,6 +23,7 @@ MAIN_LIBS=-L../config -lsimpleconfig -ldl
 AIS_LIBS=-L@libdir@/openais -lSaCkpt
 COROSYNC_LIBS=-L@libdir@/corosync -lcpg	
 VIRT_LIBS=-lvirt
+VIRT_QPID=-lqpidclient
 NSS_LIBS=-lnss3
 
 INCLUDES=-I../include `nss-config --cflags` `nspr-config --cflags`
@@ -37,6 +38,7 @@ MODULE_PATH=${libdir}/${PACKAGE_NAME}
 fence_virtd_SOURCES = main.c plugin.c
 libvirt_so_SOURCES = libvirt.c
 null_so_SOURCES = null.c
+libvirt_qpid_so_SOURCES = libvirt-qpid.cpp
 multicast_so_SOURCES = mcast.c history.c
 checkpoint_so_SOURCES = virt.c vm_states.c history.c checkpoint.c cpg.c
 
@@ -47,6 +49,7 @@ ifeq ($(with_modules),yes)
 mod_null=@mod_null@
 mod_libvirt=@mod_libvirt@
 mod_checkpoint=@mod_checkpoint@
+mod_libvirt_qpid=@mod_libvirt_qpid@
 mod_multicast=@mod_multicast@
 mod_serial=@mod_serial@			# XXX Not done yet
 
@@ -60,6 +63,9 @@ MODULES+=libvirt.so
 endif
 ifneq ($(mod_checkpoint),no)
 MODULES+=checkpoint.so
+endif
+ifneq ($(mod_libvirt_qpid),no)
+MODULES+=libvirt-qpid.so
 endif
 ifneq ($(mod_multicast),no)
 MODULES+=multicast.so
@@ -105,6 +111,9 @@ multicast.so: ${multicast_so_SOURCES:.c=.o}
 libvirt.so: ${libvirt_so_SOURCES:.c=.o}
 	$(CC) -o $@ $^ $(LIBS) -shared $(VIRT_LIBS)
 
+libvirt-qpid.so: ${libvirt_qpid_so_SOURCES:.cpp=.opp}
+	$(CC) -o $@ $^ $(LIBS) -shared $(QPID_LIBS)
+
 null.so: ${null_so_SOURCES:.c=.o}
 	$(CC) -o $@ $^ $(LIBS) -shared
 
@@ -113,6 +122,9 @@ checkpoint.so: ${checkpoint_so_SOURCES:.c=.o}
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $^ $(INCLUDES)
+
+%.opp: %.cpp
+	$(CPP) $(CFLAGS) -c -o $@ $^ $(INCLUDES)
 
 install: all
 	if [ ! -d ${DESTDIR}/${sbindir} ]; then \
