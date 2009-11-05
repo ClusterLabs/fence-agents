@@ -65,7 +65,7 @@ do_lq_request(const char *vm_name, const char *action)
 	SessionManager::NameVector names;
 	Object::Vector domains;
 	Object *domain = NULL;
-	unsigned i, tries, found;
+	unsigned i, tries = 0, found = 0;
 
 	cs.host = "127.0.0.1";
 	cs.port = 5672;
