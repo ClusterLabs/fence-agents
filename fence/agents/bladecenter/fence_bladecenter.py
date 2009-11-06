@@ -99,7 +99,7 @@ def main():
 
 	atexit.register(atexit_handler)
 
-	all_opt["power_wait"]["default"] = "5"
+	all_opt["power_wait"]["default"] = "10"
 	all_opt["cmd_prompt"]["default"] = "system>"
 
 	options = check_input(device_opt, process_input(device_opt))
