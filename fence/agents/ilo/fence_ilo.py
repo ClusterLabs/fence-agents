@@ -57,11 +57,13 @@ def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
 			"ssl", "ribcl", "inet4_only", "inet6_only", "ipport",
-			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
+			"power_timeout", "shell_timeout", "login_timeout", "power_wait",
+			"retry_on" ]
 
 	atexit.register(atexit_handler)
 
 	all_opt["login_timeout"]["default"] = "10"
+	all_opt["retry_on"]["default"] = "3"
 
 	pinput = process_input(device_opt)
 	pinput["-z"] = 1

@@ -347,7 +347,13 @@ all_opt = {
 		"getopt" : "M",
 		"longopt" : "missing-as-off",
 		"help" : "--missing-as-off               Missing port returns OFF instead of failure",
-		"order" : 200}
+		"order" : 200 },
+	"retry_on" : {
+		"getopt" : "r:",
+		"longopt" : "retry-on",
+		"help" : "--retry-on <attempts>          Count of attempts to retry power on",
+		"default" : "1",
+		"order" : 200 }
 }
 
 class fspawn(pexpect.spawn):
@@ -715,9 +721,15 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 		if status == "on":
 			print "Success: Already ON"
 		else:
-			set_power_fn(tn, options)
-			time.sleep(int(options["-G"]))
-			if wait_power_status(tn, options, get_power_fn):
+			power_on = False
+			for i in range(1,int(options["-r"])):
+				set_power_fn(tn, options)
+				time.sleep(int(options["-G"]))
+				if wait_power_status(tn, options, get_power_fn):
+					power_on = True
+					break
+
+			if power_on:
 				print "Success: Powered ON"
 			else:
 				fail(EC_WAITING_ON)
@@ -739,10 +751,19 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 			if wait_power_status(tn, options, get_power_fn) == 0:
 				fail(EC_WAITING_OFF)
 		options["-o"] = "on"
-		set_power_fn(tn, options)
-		time.sleep(int(options["-G"]))
-		if wait_power_status(tn, options, get_power_fn) == 0:
+
+		power_on = False
+		for i in range(1,int(options["-r"])):
+			set_power_fn(tn, options)
+			time.sleep(int(options["-G"]))
+			if wait_power_status(tn, options, get_power_fn) == 1:
+				power_on = True
+				break
+
+		if power_on == False:
+			# this should not fail as not was fenced succesfully
 			sys.stderr.write('Timed out waiting to power ON\n')
+
 		print "Success: Rebooted"
 	elif options["-o"] == "status":
 		print "Status: " + status.upper()
