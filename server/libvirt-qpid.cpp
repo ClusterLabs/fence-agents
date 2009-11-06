@@ -27,6 +27,7 @@
 #include <string.h>
 #include <malloc.h>
 #include <errno.h>
+#include "uuid-test.h"
 
 #include <qpid/console/SessionManager.h>
 
@@ -45,7 +46,6 @@ struct lq_info {
 	int pad;
 	char *host;
 	uint16_t port;
-
 };
 
 #define VALIDATE(arg) \
@@ -65,7 +65,12 @@ do_lq_request(const char *vm_name, const char *action)
 	SessionManager::NameVector names;
 	Object::Vector domains;
 	Object *domain = NULL;
+	const char *property = "name";
 	unsigned i, tries = 0, found = 0;
+
+	if (is_uuid(vm_name) == 1) {
+		property = "uuid";
+	}
 
 	cs.host = "127.0.0.1";
 	cs.port = 5672;
@@ -105,7 +110,7 @@ do_lq_request(const char *vm_name, const char *action)
 			c = domains[i].getSchema();
 #endif
 
-			if (strcmp(domains[i].attrString("name").c_str(),
+			if (strcmp(domains[i].attrString(property).c_str(),
 				   vm_name)) {
 				continue;
 			}
@@ -134,7 +139,7 @@ do_lq_request(const char *vm_name, const char *action)
 	Object::AttributeMap attrs;
 	MethodResponse result;
 
-	std::cout << domain->attrString("name") << " "
+	std::cout << domain->attrString(property) << " "
 		  << domain->attrString("state") << std::endl;
 
 	domain->invokeMethod(action, attrs, result);

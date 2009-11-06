@@ -11,11 +11,12 @@ High Priority / Blockers for v1.0;
   fence who (for example, "vm1 vm2 vm3" can all fence each other, while
   none may fence "vm4 vm5 vm6" since they are in a different cluster).
 
+* libvirt-qpid security model: mirror what is done in libvirt-qpid
+  for authentication.
+
 Future Stuff:
 
 * oVirt backend
-
-* libvirt-qpid backend
 
 * libccs configuration plugin
 

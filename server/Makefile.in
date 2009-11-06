@@ -39,6 +39,7 @@ MODULE_PATH=${libdir}/${PACKAGE_NAME}
 fence_virtd_SOURCES = main.c plugin.c
 libvirt_so_SOURCES = libvirt.c
 null_so_SOURCES = null.c
+libvirt_qpid_so_SOURCES = uuid-test.c
 libvirt_qpid_cxx_so_SOURCES = libvirt-qpid.cpp
 multicast_so_SOURCES = mcast.c history.c
 checkpoint_so_SOURCES = virt.c vm_states.c history.c checkpoint.c cpg.c
@@ -90,6 +91,7 @@ fence_virtd_SOURCES+=${checkpoint_so_SOURCES}
 LIBS+=$(AIS_LIBS) $(COROSYNC_LIBS) $(CMAN_LIBS)
 endif
 ifneq ($(mod_libvirt_qpid),no)
+fence_virtd_SOURCES+=${libvirt_qpid_so_SOURCES}
 fence_virtd_cxx_SOURCES+=${libvirt_qpid_cxx_so_SOURCES}
 LIBS+=$(VIRT_QPID)
 endif
@@ -116,7 +118,7 @@ multicast.so: ${multicast_so_SOURCES:.c=.o}
 libvirt.so: ${libvirt_so_SOURCES:.c=.o}
 	$(CC) -o $@ $^ $(LIBS) -shared $(VIRT_LIBS)
 
-libvirt-qpid.so: ${libvirt_qpid_cxx_so_SOURCES:.cpp=.opp}
+libvirt-qpid.so: ${libvirt_qpid_so_SOURCES:.c=.o} ${libvirt_qpid_cxx_so_SOURCES:.cpp=.opp}
 	$(CXX) -o $@ $^ $(LIBS) -shared $(VIRT_QPID)
 
 null.so: ${null_so_SOURCES:.c=.o}
