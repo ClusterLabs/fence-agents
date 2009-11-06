@@ -737,7 +737,11 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 			print "Success: Already ON"
 		else:
 			power_on = False
+<<<<<<< HEAD
 			for i in range(1,1 + int(options["-F"])):
+=======
+			for i in range(1,int(options["-r"])):
+>>>>>>> 45ed9fd... fencing: New option --retry-on <N>
 				set_power_fn(tn, options)
 				time.sleep(int(options["-G"]))
 				if wait_power_status(tn, options, get_power_fn):
@@ -768,7 +772,11 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 		options["-o"] = "on"
 
 		power_on = False
+<<<<<<< HEAD
 		for i in range(1,1 + int(options["-F"])):
+=======
+		for i in range(1,int(options["-r"])):
+>>>>>>> 45ed9fd... fencing: New option --retry-on <N>
 			set_power_fn(tn, options)
 			time.sleep(int(options["-G"]))
 			if wait_power_status(tn, options, get_power_fn) == 1:
