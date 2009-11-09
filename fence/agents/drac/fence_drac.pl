@@ -139,7 +139,7 @@ sub login
 		fail "failed: telnet failed: ". $t->errmsg."\n" ;
 
 	# Determine DRAC version
-  if (/Dell Embedded Remote Access Controller \(ERA\)\nFirmware Version/m)
+  if (/Dell Embedded Remote Access Controller \(ERA(\/O)?\)\nFirmware Version/m)
   {
     $drac_version = $DRAC_VERSION_III_XT;
   } else {
