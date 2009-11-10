@@ -864,6 +864,7 @@ main(int argc, char **argv)
 	memset(passwd, 0, sizeof(passwd));
 	memset(user, 0, sizeof(user));
 	memset(op, 0, sizeof(op));
+	memset(method, 0, sizeof(method));
 
 	if (argc > 1) {
 		/*
