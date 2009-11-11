@@ -56,8 +56,7 @@ def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
 			"ssl", "ribcl", "inet4_only", "inet6_only", "ipport",
-			"power_timeout", "shell_timeout", "login_timeout", "power_wait",
-			"retry_on" ]
+			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
 	atexit.register(atexit_handler)
 
