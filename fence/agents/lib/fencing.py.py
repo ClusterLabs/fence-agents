@@ -349,7 +349,7 @@ all_opt = {
 		"help" : "--missing-as-off               Missing port returns OFF instead of failure",
 		"order" : 200 },
 	"retry_on" : {
-		"getopt" : "r:",
+		"getopt" : "F:",
 		"longopt" : "retry-on",
 		"help" : "--retry-on <attempts>          Count of attempts to retry power on",
 		"default" : "1",
@@ -566,6 +566,11 @@ def process_input(avail_opt):
 def check_input(device_opt, opt):
 	global all_opt
 
+	##
+	## Add options which are available for every fence agent
+	#####
+	device_opt.append("retry_on")
+	
 	options = dict(opt)
 	options["device_opt"] = device_opt
 
@@ -722,7 +727,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 			print "Success: Already ON"
 		else:
 			power_on = False
-			for i in range(1,int(options["-r"])):
+			for i in range(1,int(options["-F"])):
 				set_power_fn(tn, options)
 				time.sleep(int(options["-G"]))
 				if wait_power_status(tn, options, get_power_fn):
@@ -753,7 +758,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 		options["-o"] = "on"
 
 		power_on = False
-		for i in range(1,int(options["-r"])):
+		for i in range(1,int(options["-F"])):
 			set_power_fn(tn, options)
 			time.sleep(int(options["-G"]))
 			if wait_power_status(tn, options, get_power_fn) == 1:
