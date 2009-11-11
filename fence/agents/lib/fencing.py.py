@@ -356,6 +356,8 @@ all_opt = {
 		"order" : 200 }
 }
 
+common_opt = [ "retry_on" ]
+
 class fspawn(pexpect.spawn):
 	def log_expect(self, options, pattern, timeout):
 		result = self.expect(pattern, timeout)
@@ -466,6 +468,12 @@ def metadata(avail_opt, options, docs):
 
 def process_input(avail_opt):
 	global all_opt
+	global common_opt
+
+	##
+	## Add options which are available for every fence agent
+	#####
+	avail_opt.extend(common_opt)
 
 	##
 	## Set standard environment
@@ -565,11 +573,12 @@ def process_input(avail_opt):
 ######
 def check_input(device_opt, opt):
 	global all_opt
+	global common_opt
 
 	##
 	## Add options which are available for every fence agent
 	#####
-	device_opt.append("retry_on")
+	device_opt.extend(common_opt)
 	
 	options = dict(opt)
 	options["device_opt"] = device_opt
@@ -727,7 +736,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 			print "Success: Already ON"
 		else:
 			power_on = False
-			for i in range(1,int(options["-F"])):
+			for i in range(1,1 + int(options["-F"])):
 				set_power_fn(tn, options)
 				time.sleep(int(options["-G"]))
 				if wait_power_status(tn, options, get_power_fn):
@@ -758,7 +767,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 		options["-o"] = "on"
 
 		power_on = False
-		for i in range(1,int(options["-F"])):
+		for i in range(1,1 + int(options["-F"])):
 			set_power_fn(tn, options)
 			time.sleep(int(options["-G"]))
 			if wait_power_status(tn, options, get_power_fn) == 1:
