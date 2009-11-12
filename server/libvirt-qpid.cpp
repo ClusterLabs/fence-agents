@@ -273,13 +273,13 @@ static backend_plugin_t lq_plugin = {
 
 
 #ifdef _MODULE
-double
+extern "C" double
 BACKEND_VER_SYM(void)
 {
 	return PLUGIN_VERSION_BACKEND;
 }
 
-const backend_plugin_t *
+extern "C" const backend_plugin_t *
 BACKEND_INFO_SYM(void)
 {
 	return &lq_plugin;
