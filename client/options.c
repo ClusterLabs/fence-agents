@@ -364,12 +364,17 @@ static struct arg_info _arg_info[] = {
 	  "Serial Parameters (default=" DEFAULT_SERIAL_SPEED ")",
 	  assign_params },
 
-	{ 'o', "-o <operation>", "option",
-	  "Fencing operation (null, off, [reboot], status, devstatus)",
+	{ '\xff', NULL, "option",
+	  /* Deprecated */
+	  "Fencing option (null, off, [reboot], status, devstatus)",
+	  assign_op },
+
+	{ 'o', "-o <operation>", "action",
+	  "Fencing action (null, off, [reboot], status, devstatus)",
 	  assign_op },
 
 	{ 'H', "-H <domain>", "domain",
-	  "Xen host (domain name) to fence",
+	  "Virtual Machine (domain name) to fence",
 	  assign_domain },
 
 	{ 'u', "-u", "use_uuid",
