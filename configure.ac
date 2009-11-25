@@ -1,10 +1,10 @@
 
 # Process this file with autoconf to produce a configure script.
 
-AC_PREREQ([2.63b])
+AC_PREREQ([2.63])
 AC_INIT([fence-agents], [master], [linux-cluster@redhat.com])
 AM_INIT_AUTOMAKE([-Wno-portability])
-LT_PREREQ([2.2.7])
+LT_PREREQ([2.2.6])
 LT_INIT
 
 AC_CONFIG_MACRO_DIR([m4])
