@@ -335,11 +335,11 @@ mcast_config(config_object_t *config, mcast_options *args)
 		 * configured something at the top level, we can use it
 		 * to explicitly ignore UUID vs. name
 		 */
-		dbg_printf(1, "Got %s for name_mode\n", value);
+		dbg_printf(1, "Got %s for name_mode (mcast)\n", value);
 		if (!strcasecmp(value, "uuid")) {
-			args->flags |= RF_UUID;
+			args->flags |= F_USE_UUID;
 		} else if (!strcasecmp(value, "name")) {
-			args->flags &= ~RF_UUID;
+			args->flags &= ~F_USE_UUID;
 		} else {
 			dbg_printf(1, "Unsupported name_mode: %s\n", value);
 			++errors;

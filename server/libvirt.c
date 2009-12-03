@@ -88,7 +88,7 @@ wait_domain(const char *vm_name, virConnectPtr vp,
 	virDomainInfo vdi;
 
 	if (use_uuid) {
-		vdp = virDomainLookupByUUID(vp, (const unsigned char *)vm_name);
+		vdp = virDomainLookupByUUIDString(vp, (const char *)vm_name);
 	} else {
 		vdp = virDomainLookupByName(vp, vm_name);
 	}
@@ -103,8 +103,8 @@ wait_domain(const char *vm_name, virConnectPtr vp,
 	do {
 		sleep(1);
 		if (use_uuid) {
-			vdp = virDomainLookupByUUID(vp,
-					(const unsigned char *)vm_name);
+			vdp = virDomainLookupByUUIDString(vp,
+					(const char *)vm_name);
 		} else {
 			vdp = virDomainLookupByName(vp, vm_name);
 		}
@@ -157,8 +157,8 @@ libvirt_off(const char *vm_name, uint32_t seqno, void *priv)
 	VALIDATE(info);
 
 	if (info->use_uuid) {
-		vdp = virDomainLookupByUUID(info->vp,
-					    (const unsigned char *)vm_name);
+		vdp = virDomainLookupByUUIDString(info->vp,
+					    (const char *)vm_name);
 	} else {
 		vdp = virDomainLookupByName(info->vp, vm_name);
 	}
@@ -206,8 +206,8 @@ libvirt_on(const char *vm_name, uint32_t seqno, void *priv)
 	VALIDATE(info);
 
 	if (info->use_uuid) {
-		vdp = virDomainLookupByUUID(info->vp,
-					    (const unsigned char *)vm_name);
+		vdp = virDomainLookupByUUIDString(info->vp,
+					    (const char *)vm_name);
 	} else {
 		vdp = virDomainLookupByName(info->vp, vm_name);
 	}
@@ -267,8 +267,8 @@ libvirt_status(const char *vm_name, void *priv)
 	VALIDATE(info);
 
 	if (info->use_uuid) {
-		vdp = virDomainLookupByUUID(info->vp,
-					    (const unsigned char *)vm_name);
+		vdp = virDomainLookupByUUIDString(info->vp,
+					    (const char *)vm_name);
 	} else {
 		vdp = virDomainLookupByName(info->vp, vm_name);
 	}
@@ -298,8 +298,8 @@ libvirt_reboot(const char *vm_name, uint32_t seqno, void *priv)
 	VALIDATE(info);
 	
 	if (info->use_uuid) {
-		vdp = virDomainLookupByUUID(info->vp,
-					    (const unsigned char *)vm_name);
+		vdp = virDomainLookupByUUIDString(info->vp,
+					    (const char *)vm_name);
 	} else {
 		vdp = virDomainLookupByName(info->vp, vm_name);
 	}
