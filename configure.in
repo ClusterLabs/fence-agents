@@ -120,6 +120,7 @@ AC_SUBST(xvm_compat)
 
 AC_CONFIG_FILES([Makefile.top
 		 Makefile
+                 man/Makefile
                  client/Makefile
                  common/Makefile
                  config/Makefile

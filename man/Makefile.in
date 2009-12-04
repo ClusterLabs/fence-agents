@@ -10,25 +10,16 @@
 ###############################################################################
 ###############################################################################
 
+include ../Makefile.top
 
-all:
-	make -C config
-	make -C common
-	make -C client
-	make -C server
+TARGETS=fence_virt.8 fence_xvm.8
 
-install:
-	make -C config install
-	make -C client install
-	make -C server install
-	make -C man install
+all: $(TARGETS)
+
+install: all
+	if [ ! -d ${DESTDIR}/${sbindir} ]; then \
+		install -d ${DESTDIR}/${mandir}/man8 ; \
+	fi
+	install -m755 ${TARGETS} ${DESTDIR}/${mandir}/man8
 
 clean:
-	make -C config clean
-	make -C common clean
-	make -C client clean
-	make -C server clean
-
-maintainer-clean:
-	make clean
-	git clean -df

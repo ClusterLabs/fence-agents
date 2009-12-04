@@ -12,5 +12,6 @@ exec_prefix=@exec_prefix@
 sysconfdir=@sysconfdir@
 sbindir=@sbindir@
 libdir=@libdir@
+mandir=@mandir@
 
 PACKAGE_NAME=@PACKAGE_NAME@
