@@ -17,7 +17,7 @@ TARGETS=fence_virt.8 fence_xvm.8
 all: $(TARGETS)
 
 install: all
-	if [ ! -d ${DESTDIR}/${sbindir} ]; then \
+	if [ ! -d ${DESTDIR}/${mandir}/man8 ]; then \
 		install -d ${DESTDIR}/${mandir}/man8 ; \
 	fi
 	install -m755 ${TARGETS} ${DESTDIR}/${mandir}/man8
