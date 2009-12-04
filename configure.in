@@ -112,9 +112,9 @@ AC_SUBST(mod_serial)
 # Compatibility symlink: disabled by default
 #
 AC_ARG_ENABLE(xvm-compat,
-[AS_HELP_STRING([--enable-xvm-compat],
-		[Enable serial listener plugin])],
-[ xvm_compat=$enableval ], [ xvm_compat=no ])
+[AS_HELP_STRING([--disable-xvm-compat],
+		[Disable fence_xvm symlink compatibility])],
+[ xvm_compat=$enableval ], [ xvm_compat=yes ])
 AC_SUBST(xvm_compat)
 
 
