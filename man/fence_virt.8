@@ -1,0 +1,177 @@
+
+.TH FENCE_AGENT 8 2009-12-04 "fence_virt (Fence Agent)"
+.SH NAME
+fence_virt - Fencing agent for virtual machines using VM Channel
+fence_xvm - Fencing agent for virtual machines using multicast
+.SH DESCRIPTION
+.P
+fence_virt and fence_xvm are an I/O Fencing agents which can be used with virtual machines.  Fence_xvm is backward compatible with fence_xvmd.
+
+Fence_virt and fence_xvm talk to fence_virtd, which supports multiple backend plugins, including:
+ - libvirt for single-node operation
+ - Cluster Checkpoints when using Linux-cluster release 3.0.0 or later
+ - libvirt-qpid for multi-node, non-cluster operation
+
+For compatibility, fence_xvm may talk to fence_xvmd from linux-cluster
+release 2 or later.
+
+.P
+fence_virt and fence_xvm accept options on the command line as well
+as from stdin.  The fencing daemon sends parameters through stdin
+when it execs the agent.  The agent may be run by itself with command
+line options, which is useful for testing or turning on or off virtual
+machines from scripts.
+.SH PARAMETERS
+	
+.TP
+.B -d
+. 
+Specify (CCS) / increment (command line) debug level
+	
+.TP
+.B -i
+. 
+IP Family ([auto], ipv4, ipv6) (Default Value: auto)
+	
+.TP
+.B -a
+. 
+Multicast address (default=225.0.0.12 / ff02::3:1)
+	
+.TP
+.B -p
+. 
+IP port (default=1229) (Default Value: 1229)
+	
+.TP
+.B -T
+. 
+Multicast time-to-live (in hops; default=2) (Default Value: 2)
+	
+.TP
+.B -r
+. 
+Multicast retransmit time (in 1/10sec; default=20) (Default Value: 20)
+	
+.TP
+.B -C
+. 
+Authentication (none, sha1, [sha256], sha512) (Default Value: sha256)
+	
+.TP
+.B -c
+. 
+Packet hash strength (none, sha1, [sha256], sha512) (Default Value: sha256)
+	
+.TP
+.B -k
+. 
+Shared key file (Default Value: /etc/cluster/fence_xvm.key)
+	
+.TP
+.B -H
+. 
+Virtual machine (domain name) to fence
+	
+.TP
+.B -u
+. 
+Treat 'domain' as UUID instead of domain name.
+	
+.TP
+.B -o
+. 
+Fencing action (null, off, on, [reboot], or status) (Default Value: reboot)
+	
+.TP
+.B -t
+. 
+Fencing timeout (in seconds; default=30) (Default Value: 30)
+
+.SH ACTIONS
+
+	
+.TP
+\fBoff \fP
+ Destroy or turn off virtual machine.
+	
+.TP
+\fBreboot \fP
+Reboot virtual machine.
+	
+.TP
+\fBon \fP
+Turn on a virtual machine.  Note: Turning on a virtual machine only works
+with some fence_virt backends.
+
+.TP
+\fBstatus \fP
+Query the status of a virtual machine.
+
+.SH STDIN PARAMETERS
+
+	
+.TP
+.B debug
+. 
+Specify (CCS) / increment (command line) debug level
+	
+.TP
+.B ip_family
+. 
+IP Family ([auto], ipv4, ipv6) (Default Value: auto)
+	
+.TP
+.B multicast_address
+. 
+Multicast address (default=225.0.0.12 / ff02::3:1)
+	
+.TP
+.B port
+. 
+IP port (default=1229) (Default Value: 1229)
+	
+.TP
+.B multicast_ttl
+. 
+Multicast time-to-live (in hops; default=2) (Default Value: 2)
+	
+.TP
+.B retrans
+. 
+Multicast retransmit time (in 1/10sec; default=20) (Default Value: 20)
+	
+.TP
+.B auth
+. 
+Authentication (none, sha1, [sha256], sha512) (Default Value: sha256)
+	
+.TP
+.B hash
+. 
+Packet hash strength (none, sha1, [sha256], sha512) (Default Value: sha256)
+	
+.TP
+.B key_file
+. 
+Shared key file (default=/etc/cluster/fence_xvm.key) (Default Value: /etc/cluster/fence_xvm.key)
+	
+.TP
+.B domain
+. 
+Virtual machine (domain name) to fence
+	
+.TP
+.B use_uuid
+. 
+Treat 'domain' as UUID instead of domain name
+	
+.TP
+.B action
+. 
+Fencing action (null, off, on, [reboot], or status) (Default Value: reboot)
+	
+.TP
+.B timeout
+. 
+Fencing timeout (in seconds; default=30) (Default Value: 30)
