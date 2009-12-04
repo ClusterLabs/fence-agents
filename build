@@ -8,6 +8,6 @@ else
 	LIBDIR=/usr/lib
 fi
 
-./configure --prefix=/ --libdir=$LIBDIR $*
+./configure --prefix=/ --libdir=$LIBDIR --datarootdir=/usr/share $*
 
 make clean all
