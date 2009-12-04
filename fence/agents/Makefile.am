@@ -35,5 +35,4 @@ SUBDIRS 		= alom \
 			  vmware \
 			  wti \
 			  xcat \
-			  xvm \
 			  zvm

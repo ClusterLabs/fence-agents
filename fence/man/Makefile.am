@@ -31,6 +31,4 @@ dist_man_MANS		= fence_ack_manual.8 \
 			  fence_vmware.8 \
 			  fence_wti.8 \
 			  fence_xcat.8 \
-			  fence_xvm.8 \
-			  fence_xvmd.8 \
 			  fence_zvm.8

@@ -77,21 +77,8 @@ check_lib_no_libs() {
 }
 
 # corosync libs
-PKG_CHECK_MODULES([corosync],[corosync])
-PKG_CHECK_MODULES([sackpt],[libSaCkpt])
-PKG_CHECK_MODULES([ccs],[libccs])
-PKG_CHECK_MODULES([cman],[libcman])
-PKG_CHECK_MODULES([logt],[liblogthread])
 PKG_CHECK_MODULES([nss],[nss])
 PKG_CHECK_MODULES([nspr],[nspr])
-PKG_CHECK_MODULES([virt],[libvirt])
-PKG_CHECK_MODULES([xml],[libxml-2.0])
-
-# external libs (no pkgconfig)
-check_lib_no_libs pthread pthread_mutex_lock
-check_lib_no_libs ldap ldap_initialize
-check_lib_no_libs rt clock_gettime
-check_lib_no_libs z crc32
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h libintl.h limits.h malloc.h netdb.h netinet/in.h stddef.h stdint.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h syslog.h unistd.h])
@@ -273,7 +260,6 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/vmware/Makefile
 		 fence/agents/wti/Makefile
 		 fence/agents/xcat/Makefile
-		 fence/agents/xvm/Makefile
 		 fence/agents/zvm/Makefile
 		 fence/man/Makefile
 		 doc/Makefile])
