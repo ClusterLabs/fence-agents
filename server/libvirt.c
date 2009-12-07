@@ -65,7 +65,6 @@
 
 struct libvirt_info {
 	int magic;
-	int use_uuid;
 	virConnectPtr vp;
 };
 
@@ -80,14 +79,17 @@ do {\
 
 static inline int
 wait_domain(const char *vm_name, virConnectPtr vp,
-	    int use_uuid, int timeout)
+	    int timeout)
 {
 	int tries = 0;
 	int response = 1;
 	virDomainPtr vdp;
 	virDomainInfo vdi;
+	int uuid_check;
+	
+	uuid_check = is_uuid(vm_name);
 
-	if (use_uuid) {
+	if (uuid_check) {
 		vdp = virDomainLookupByUUIDString(vp, (const char *)vm_name);
 	} else {
 		vdp = virDomainLookupByName(vp, vm_name);
@@ -102,7 +104,7 @@ wait_domain(const char *vm_name, virConnectPtr vp,
 	   be necessary */
 	do {
 		sleep(1);
-		if (use_uuid) {
+		if (uuid_check) {
 			vdp = virDomainLookupByUUIDString(vp,
 					(const char *)vm_name);
 		} else {
@@ -156,7 +158,7 @@ libvirt_off(const char *vm_name, uint32_t seqno, void *priv)
 	dbg_printf(5, "%s %s\n", __FUNCTION__, vm_name);
 	VALIDATE(info);
 
-	if (info->use_uuid) {
+	if (is_uuid(vm_name)) {
 		vdp = virDomainLookupByUUIDString(info->vp,
 					    (const char *)vm_name);
 	} else {
@@ -205,7 +207,7 @@ libvirt_on(const char *vm_name, uint32_t seqno, void *priv)
 	dbg_printf(5, "%s %s\n", __FUNCTION__, vm_name);
 	VALIDATE(info);
 
-	if (info->use_uuid) {
+	if (is_uuid(vm_name)) {
 		vdp = virDomainLookupByUUIDString(info->vp,
 					    (const char *)vm_name);
 	} else {
@@ -266,7 +268,7 @@ libvirt_status(const char *vm_name, void *priv)
 	dbg_printf(5, "%s %s\n", __FUNCTION__, vm_name);
 	VALIDATE(info);
 
-	if (info->use_uuid) {
+	if (is_uuid(vm_name)) {
 		vdp = virDomainLookupByUUIDString(info->vp,
 					    (const char *)vm_name);
 	} else {
@@ -297,7 +299,7 @@ libvirt_reboot(const char *vm_name, uint32_t seqno, void *priv)
 	dbg_printf(5, "%s %s\n", __FUNCTION__, vm_name);
 	VALIDATE(info);
 	
-	if (info->use_uuid) {
+	if (is_uuid(vm_name)) {
 		vdp = virDomainLookupByUUIDString(info->vp,
 					    (const char *)vm_name);
 	} else {
@@ -331,7 +333,7 @@ libvirt_reboot(const char *vm_name, uint32_t seqno, void *priv)
 		return 1;
 	}
 
-	ret = wait_domain(vm_name, info->vp, info->use_uuid, 15);
+	ret = wait_domain(vm_name, info->vp, 15);
 
 	if (ret) {
 		syslog(LOG_NOTICE, "Domain %s still exists; fencing failed\n",
@@ -409,7 +411,6 @@ libvirt_init(backend_context_t *c, config_object_t *config)
 	char value[256];
 	struct libvirt_info *info = NULL;
 	char *uri = NULL;
-	int use_uuid = 0;
 
 	info = malloc(sizeof(*info));
 	if (!info)
@@ -433,19 +434,7 @@ libvirt_init(backend_context_t *c, config_object_t *config)
 		dbg_printf(1, "Using %s\n", uri);
 	}
 
-	/* Naming scheme is a top-level configuration option */
-	if (sc_get(config, "fence_virtd/@name_mode",
-		   value, sizeof(value)-1) == 0) {
 
-		dbg_printf(1, "Got %s for name_mode\n", value);
-		if (!strcasecmp(value, "uuid")) {
-			use_uuid = 1;
-		} else if (!strcasecmp(value, "name")) {
-			use_uuid = 0;
-		} else {
-			dbg_printf(1, "Unsupported name_mode: %s\n", value);
-		}
-	}
 
 	/* We don't need to store the URI; we only use it once */
 	vp = virConnectOpen(uri);
@@ -458,7 +447,6 @@ libvirt_init(backend_context_t *c, config_object_t *config)
 
 	info->magic = MAGIC;
 	info->vp = vp;
-	info->use_uuid = use_uuid;
 
 	*c = (void *)info;
 	return 0;

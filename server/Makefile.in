@@ -26,7 +26,7 @@ CMAN_LIBS=-lcman
 VIRT_LIBS=-lvirt
 VIRT_QPID=-lqmfconsole
 NSS_LIBS=-lnss3
-
+UUID_LIBS=-luuid
 INCLUDES=-I../include `nss-config --cflags` `nspr-config --cflags`
 
 LIBS+=-L../common -lfence_virt -Wl,-wrap,syslog,-wrap,closelog -lpthread
@@ -37,7 +37,7 @@ MODULE_PATH=${libdir}/${PACKAGE_NAME}
 # Module sources
 #
 fence_virtd_SOURCES = main.c plugin.c
-libvirt_so_SOURCES = libvirt.c virt.c
+libvirt_so_SOURCES = libvirt.c virt.c uuid-test.c
 null_so_SOURCES = null.c
 libvirt_qpid_so_SOURCES = uuid-test.c
 libvirt_qpid_cxx_so_SOURCES = libvirt-qpid.cpp
@@ -84,7 +84,7 @@ else
 ####################
 ifneq ($(mod_libvirt),no)
 fence_virtd_SOURCES+=${libvirt_so_SOURCES}
-LIBS+=$(VIRT_LIBS)
+LIBS+=$(VIRT_LIBS) $(UUID_LIBS)
 endif
 ifneq ($(mod_checkpoint),no)
 fence_virtd_SOURCES+=${checkpoint_so_SOURCES}
@@ -116,7 +116,7 @@ multicast.so: ${multicast_so_SOURCES:.c=.o}
 	$(CC) -o $@ $^ $(LIBS) -shared $(NSS_LIBS)
 
 libvirt.so: ${libvirt_so_SOURCES:.c=.o}
-	$(CC) -o $@ $^ $(LIBS) -shared $(VIRT_LIBS)
+	$(CC) -o $@ $^ $(LIBS) -shared $(VIRT_LIBS) $(UUID_LIBS)
 
 libvirt-qpid.so: ${libvirt_qpid_so_SOURCES:.c=.o} ${libvirt_qpid_cxx_so_SOURCES:.cpp=.opp}
 	$(CXX) -o $@ $^ $(LIBS) -shared $(VIRT_QPID)

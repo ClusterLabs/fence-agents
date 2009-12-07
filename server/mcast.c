@@ -335,20 +335,6 @@ mcast_dispatch(listener_context_t c, struct timeval *timeout)
 		return 0;
 	}
 
-	if ((info->args.flags & F_USE_UUID) &&
-	    !(data.flags & RF_UUID)) {
-		printf("Dropping packet: Request to fence by "
-		       "name while using UUIDs\n");
-		return 0;
-	}
-
-	if (!(info->args.flags & F_USE_UUID) &&
-	    (data.flags & RF_UUID)) {
-		printf("Dropping packet: Request to fence by "
-		       "UUID while using names\n");
-		return 0;
-	}
-
 	printf("Request %d seqno %d domain %s\n", data.request, data.seqno,
 	       data.domain);
 
