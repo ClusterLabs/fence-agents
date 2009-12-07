@@ -192,6 +192,8 @@ assign_op(fence_virt_args_t *args, struct arg_info *arg, char *value)
 		args->op = FENCE_STATUS;
 	} else if (!strcasecmp(value, "devstatus")) {
 		args->op = FENCE_DEVSTATUS;
+	} else if (!strcasecmp(value, "hostlist")) {
+		args->op = FENCE_HOSTLIST;
 	} else {
 		printf("Unsupported operation: %s\n", value);
 		args->flags |= F_ERR;

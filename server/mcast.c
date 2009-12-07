@@ -54,6 +54,7 @@
 #include "mcast.h"
 #include "tcp.h"
 #include "debug.h"
+#include "fdops.h"
 
 #define NAME "multicast"
 #define VERSION "1.0"
@@ -89,6 +90,11 @@ typedef struct _mcast_info {
 	int mc_sock;
 	int need_kill;
 } mcast_info;
+
+
+struct mcast_hostlist_arg {
+	int fd;
+};
 
 
 /*
@@ -170,11 +176,66 @@ connect_tcp(fence_req_t *req, fence_auth_type_t auth,
 }
 
 
+static int 
+mcast_hostlist(const char *vm_name, const char *vm_uuid,
+	       int state, void *priv)
+{
+	struct mcast_hostlist_arg *arg = (struct mcast_hostlist_arg *)priv;
+	host_state_t hinfo;
+	struct timeval tv;
+	int ret;
+
+	strncpy((char *)hinfo.domain, vm_name, sizeof(hinfo.domain));
+	strncpy((char *)hinfo.uuid, vm_uuid, sizeof(hinfo.uuid));
+	hinfo.state = state;
+
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+	ret = _write_retry(arg->fd, &hinfo, sizeof(hinfo), &tv);
+	if (ret == sizeof(hinfo))
+		return 0;
+	return 1;
+}
+
+
+static int
+mcast_hostlist_begin(int fd)
+{
+	struct timeval tv;
+	char val = (char)253;
+
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+	return _write_retry(fd, &val, 1, &tv);
+}
+
+
+static int 
+mcast_hostlist_end(int fd)
+{
+	host_state_t hinfo;
+	struct timeval tv;
+	int ret;
+
+	printf("Sending terminator packet\n");
+
+	memset(&hinfo, 0, sizeof(hinfo));
+
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+	ret = _write_retry(fd, &hinfo, sizeof(hinfo), &tv);
+	if (ret == sizeof(hinfo))
+		return 0;
+	return 1;
+}
+
+
 static int
 do_fence_request_tcp(fence_req_t *req, mcast_info *info)
 {
 	int fd = -1;
 	char response = 1;
+	struct mcast_hostlist_arg arg;
 
 	fd = connect_tcp(req, info->args.auth, info->key, info->key_len);
 	if (fd < 0) {
@@ -182,6 +243,7 @@ do_fence_request_tcp(fence_req_t *req, mcast_info *info)
 			strerror(errno));
 		goto out;
 	}
+	arg.fd = fd;
 
 	switch(req->request) {
 	case FENCE_NULL:
@@ -204,6 +266,12 @@ do_fence_request_tcp(fence_req_t *req, mcast_info *info)
 		break;
 	case FENCE_DEVSTATUS:
 		response = info->cb->devstatus(info->priv);
+		break;
+	case FENCE_HOSTLIST:
+		mcast_hostlist_begin(arg.fd);
+		response = info->cb->hostlist(mcast_hostlist, &arg,
+					      info->priv);
+		mcast_hostlist_end(arg.fd);
 		break;
 	}
 

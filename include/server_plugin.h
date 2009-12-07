@@ -48,6 +48,13 @@ typedef int (*fence_status_callback)(const char *vm_name,
    is responding to requests. */
 typedef int (*fence_devstatus_callback)(void *priv);
 
+/* VMs available to fence.  Returns 0 to caller if backend
+   is responding to requests and a host list can be produced */
+typedef int (*hostlist_callback)(const char *vm_name, const char *uuid,
+				 int state, void *arg);
+typedef int (*fence_hostlist_callback)(hostlist_callback cb,
+				       void *arg, void *priv);
+
 typedef int (*backend_init_fn)(backend_context_t *c,
     			       config_object_t *config);
 typedef int (*backend_cleanup_fn)(backend_context_t c);
@@ -59,6 +66,7 @@ typedef struct _fence_callbacks {
 	fence_reboot_callback reboot;
 	fence_status_callback status;
 	fence_devstatus_callback devstatus;
+	fence_hostlist_callback hostlist;
 } fence_callbacks_t;
 
 typedef struct backend_plugin {

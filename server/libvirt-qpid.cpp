@@ -220,6 +220,79 @@ lq_reboot(const char *vm_name, uint32_t seqno, void *priv)
 
 
 static int
+lq_hostlist(hostlist_callback callback, void *arg, void *priv)
+{
+	VALIDATE(priv);
+
+	Broker *b = NULL;
+	ConnectionSettings cs;
+	SessionManager::NameVector names;
+	Object::Vector domains;
+	unsigned i, tries = 0;
+	const char *vm_name, *vm_uuid, *vm_state_str;
+	int vm_state = 0, ret = 1;
+
+	printf("[libvirt-qpid] HOSTLIST operation\n");
+
+	cs.host = "127.0.0.1";
+	cs.port = 5672;
+	
+	SessionManager::Settings s;
+
+	s.rcvObjects = true;
+	s.rcvEvents = false;
+	s.rcvHeartbeats = false;
+	s.userBindings = false;
+	s.methodTimeout = 10;
+	s.getTimeout = 10;
+
+	SessionManager sm(NULL, s);
+	// todo - authentication info! 
+
+	try {
+		b = sm.addBroker(cs);
+	}
+	catch (...) {
+		std::cout << "Error connecting.\n";
+		return 1;
+	}
+
+	while (tries < 10) {
+		sleep(1);
+
+		sm.getObjects(domains, "domain", NULL, NULL);
+
+		if (domains.size() >= 1) {
+			break;
+		}
+	}
+
+	if (domains.size() < 1)
+		goto out;
+
+	for (i = 0; i < domains.size(); i++) {
+
+		vm_name = domains[i].attrString("name").c_str();
+		vm_uuid = domains[i].attrString("uuid").c_str();
+		vm_state_str = domains[i].attrString("state").c_str();
+
+		if (!strcasecmp(vm_state_str, "shutoff"))
+			vm_state = 0;
+		else 
+			vm_state = 1;
+
+		callback(vm_name, vm_uuid, vm_state, arg);
+	}
+	ret = 0;
+
+out:
+	sm.delBroker(b);
+
+	return 0;
+}
+
+
+static int
 lq_init(backend_context_t *c, config_object_t *config)
 {
 	char value[256];
@@ -264,7 +337,8 @@ lq_shutdown(backend_context_t c)
 
 
 static fence_callbacks_t lq_callbacks = {
-	lq_null, lq_off, lq_on, lq_reboot, lq_status, lq_devstatus
+	lq_null, lq_off, lq_on, lq_reboot, lq_status, lq_devstatus,
+	lq_hostlist
 };
 
 static backend_plugin_t lq_plugin = {

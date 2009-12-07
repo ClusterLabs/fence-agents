@@ -374,6 +374,34 @@ libvirt_reboot(const char *vm_name, uint32_t seqno, void *priv)
 	return ret;
 }
 
+
+static int
+libvirt_hostlist(hostlist_callback callback, void *arg, void *priv)
+{
+	struct libvirt_info *info = (struct libvirt_info *)priv;
+	virt_list_t *vl;
+	int x;
+
+	dbg_printf(5, "%s\n", __FUNCTION__);
+	VALIDATE(info);
+
+	vl = vl_get(info->vp, 1);
+	if (!vl)
+		return 1;
+
+	for (x = 0; x < vl->vm_count; x++) {
+		printf("Sending %s\n", vl->vm_states[x].v_uuid);
+		callback(vl->vm_states[x].v_name,
+			 vl->vm_states[x].v_uuid,
+			 vl->vm_states[x].v_state.s_state, arg);
+	}
+
+	vl_free(vl);
+
+	return 0;
+}
+
+
 static int
 libvirt_init(backend_context_t *c, config_object_t *config)
 {
@@ -458,7 +486,8 @@ static fence_callbacks_t libvirt_callbacks = {
 	.on = libvirt_on,
 	.reboot = libvirt_reboot,
 	.status = libvirt_status,
-	.devstatus = libvirt_devstatus
+	.devstatus = libvirt_devstatus,
+	.hostlist = libvirt_hostlist
 };
 
 static backend_plugin_t libvirt_plugin = {

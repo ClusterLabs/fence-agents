@@ -95,7 +95,8 @@ main(int argc, char **argv)
 		args_print(&args);
 
 	/* Additional validation here */
-	if (!args.domain) {
+	if (!args.domain && (args.op != FENCE_DEVSTATUS &&
+			     args.op != FENCE_HOSTLIST)) {
 		printf("No domain specified!\n");
 		args.flags |= F_ERR;
 	}

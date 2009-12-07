@@ -54,6 +54,7 @@
 #include "tcp.h"
 #include "mcast.h"
 #include "debug.h"
+#include "fdops.h"
 
 
 static int
@@ -83,6 +84,43 @@ tcp_wait_connect(int lfd, int retry_tenths)
 		return -1;
 
 	return fd;
+}
+
+
+void
+do_read_hostlist(int fd, int timeout)
+{
+	host_state_t hinfo;
+	fd_set rfds;
+	struct timeval tv;
+	int ret;
+
+	do {
+		FD_ZERO(&rfds);
+		FD_SET(fd, &rfds);
+		tv.tv_sec = timeout;
+		tv.tv_usec = 0;
+
+		ret = _select_retry(fd+1, &rfds, NULL, NULL, &tv);
+		if (ret == 0) {
+			printf("Timed out!\n");
+			break;
+		}
+
+		ret = _read_retry(fd, &hinfo, sizeof(hinfo), &tv);
+		if (ret < sizeof(hinfo)) {
+			printf("Bad read!\n");
+			break;
+		}
+
+		if (strlen((char *)hinfo.uuid) == 0 &&
+		    strlen((char *)hinfo.domain) == 0)
+			break;
+
+		printf("%-20.20s %s %s\n", hinfo.domain, hinfo.uuid,
+		       (hinfo.state == 0) ? "off" : "on");
+
+	} while (1);
 }
 
 
@@ -118,12 +156,18 @@ tcp_exchange(int fd, fence_auth_type_t auth, void *key,
 
 	ret = 1;
 	dbg_printf(3, "Waiting for return value from XVM host\n");
-	if (select(fd + 1, &rfds, NULL, NULL, &tv) <= 0)
+	if (_select_retry(fd + 1, &rfds, NULL, NULL, &tv) <= 0)
 		return -1;
 
 	/* Read return code */
-	if (read(fd, &ret, 1) < 0)
+	if (_read_retry(fd, &ret, 1, &tv) < 0)
 		ret = 1;
+
+	if (ret == (char)253) /* hostlist */ {
+		do_read_hostlist(fd, timeout);
+		ret = 0;
+	}
+
 	close(fd);
 
 	if (ret == 0)
@@ -178,8 +222,10 @@ send_multicast_packets(ip_list_t *ipl, fence_virt_args_t *args,
 
 		/* Build our packet */
 		memset(&freq, 0, sizeof(freq));
-		strncpy((char *)freq.domain, args->domain,
-			sizeof(freq.domain));
+		if (args->domain && strlen((char *)args->domain)) {
+			strncpy((char *)freq.domain, args->domain,
+				sizeof(freq.domain));
+		}
 		freq.request = args->op;
 		freq.hashtype = args->net.hash;
 		freq.seqno = seqno;

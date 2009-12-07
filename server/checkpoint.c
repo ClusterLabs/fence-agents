@@ -652,6 +652,16 @@ checkpoint_reboot(const char *vm_name, uint32_t seqno, void *priv)
 
 
 static int
+checkpoint_hostlist(hostlist_callback callback, void *arg, void *priv)
+{
+	VALIDATE(priv);
+	printf("[CKPT] HOSTLIST operation\n");
+
+	return 1;
+}
+
+
+static int
 checkpoint_init(backend_context_t *c, config_object_t *config)
 {
 	char value[1024];
@@ -752,7 +762,8 @@ static fence_callbacks_t checkpoint_callbacks = {
 	.on = checkpoint_on,
 	.reboot = checkpoint_reboot,
 	.status = checkpoint_status,
-	.devstatus = checkpoint_devstatus
+	.devstatus = checkpoint_devstatus,
+	.hostlist = checkpoint_hostlist
 };
 
 static backend_plugin_t checkpoint_plugin = {

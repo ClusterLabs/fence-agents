@@ -85,6 +85,15 @@ typedef struct __attribute__ ((packed)) _fence_req {
 } fence_req_t;
 
 
+/* for host list */
+typedef struct __attribute__ ((packed)) _host_info {
+	uint8_t domain[MAX_DOMAINNAME_LENGTH];
+	uint8_t uuid[MAX_DOMAINNAME_LENGTH];
+	uint8_t state;
+	uint8_t pad;
+} host_state_t;
+
+
 #define DEFAULT_SERIAL_DEVICE "/dev/ttyS1"
 #define DEFAULT_SERIAL_SPEED "115200,8N1"
 #define SERIAL_MAGIC 0x61626261 /* endian doesn't matter */

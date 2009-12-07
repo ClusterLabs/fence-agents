@@ -113,6 +113,16 @@ null_reboot(const char *vm_name, uint32_t seqno, void *priv)
 
 
 static int
+null_hostlist(hostlist_callback callback, void *arg, void *priv)
+{
+	VALIDATE(priv);
+	printf("[Null] HOSTLIST operation\n");
+
+	return 1;
+}
+
+
+static int
 null_init(backend_context_t *c, config_object_t *config)
 {
 	char value[256];
@@ -164,7 +174,8 @@ static fence_callbacks_t null_callbacks = {
 	.on = null_on,
 	.reboot = null_reboot,
 	.status = null_status,
-	.devstatus = null_devstatus
+	.devstatus = null_devstatus,
+	.hostlist = null_hostlist
 };
 
 static backend_plugin_t null_plugin = {
