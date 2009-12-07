@@ -390,7 +390,7 @@ libvirt_hostlist(hostlist_callback callback, void *arg, void *priv)
 		return 1;
 
 	for (x = 0; x < vl->vm_count; x++) {
-		printf("Sending %s\n", vl->vm_states[x].v_uuid);
+		dbg_printf(10, "Sending %s\n", vl->vm_states[x].v_uuid);
 		callback(vl->vm_states[x].v_name,
 			 vl->vm_states[x].v_uuid,
 			 vl->vm_states[x].v_state.s_state, arg);

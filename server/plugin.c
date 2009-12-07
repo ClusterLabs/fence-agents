@@ -173,6 +173,8 @@ backend_plugin_load(void *handle, const char *libpath)
 
 	plug = modinfo();
 	if (plugin_reg_backend(plug) < 0) {
+		dbg_printf(1, "Failed to register %s %s\n", plug->name,
+			   plug->version);
 		errno = EINVAL;
 		return -1;
 	} else {
@@ -216,6 +218,8 @@ listener_plugin_load(void *handle, const char *libpath)
 
 	plug = modinfo();
 	if (plugin_reg_listener(plug) < 0) {
+		dbg_printf(1, "Failed to register %s %s\n", plug->name,
+			   plug->version);
 		errno = EINVAL;
 		return -1;
 	} else {
@@ -274,6 +278,7 @@ plugin_load(const char *libpath)
 	dbg_printf(3, "Loading plugin from %s\n", libpath);
 	handle = dlopen(libpath, RTLD_NOW);
 	if (!handle) {
+		dbg_printf(3, "Could not dlopen %s: %s\n", libpath, dlerror());
 		errno = ELIBACC;
 		return -1;
 	}
@@ -282,6 +287,7 @@ plugin_load(const char *libpath)
 	    !listener_plugin_load(handle, libpath))
 		return 0;
 
+	dbg_printf(3, "%s is not a valid plugin\n", libpath);
 	dlclose(handle);
 	errno = EINVAL;
 	return -1;
