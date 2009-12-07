@@ -74,6 +74,8 @@ def main():
 
   result = 0
 
+  completed_action = 0
+
   #set up regex list
   USERNAME = 0
   PASSWORD = 1
@@ -88,7 +90,7 @@ def main():
   regex_list.append("user name\s*:")
   regex_list.append("pass phrase\s*:")
   regex_list.append("[Ee]nter\s+[Ss]election[^\r\n]*:")
-  regex_list.append("[pP]ower Status:")
+  regex_list.append("[pP]ower Status\s*:")
   regex_list.append("[Ee]rror\s*:")
   regex_list.append("[Pp]ress any key to continue")
   regex_list.append("really want to")
@@ -277,7 +279,15 @@ def main():
       sock.close()
       sys.exit(1)
 
-    buf = sock.read_eager()
+    try:
+      buf = sock.read_eager()
+    except EOFError:
+      if completed_action == 1:
+      	# action was completed succesfully, connection closed is OK
+        sys.exit(result)
+      else:
+        raise
+	         
     if i == USERNAME:
       if verbose:
         print "Sending login: %s\n" % login
@@ -318,6 +328,7 @@ def main():
             if verbose:
               print "Power off was successful"
             if action == POWER_OFF:
+              completed_action = 1
               depth += 1
               sock.write("0\r")
             else:
@@ -345,6 +356,7 @@ def main():
           elif power_command_issued and power_state == 1:
             if verbose:
               print "Power on was successful"
+            completed_action = 1
             depth += 1
             sock.write("0\r")
           elif tries > 0:
@@ -381,6 +393,7 @@ def main():
           os.write(standard_err, ("FENCE: Cannot determine power state: %s" % buf))
           sys.exit(1)
         depth = 2
+        completed_action = 1
 
     elif i == DONE:
       break
