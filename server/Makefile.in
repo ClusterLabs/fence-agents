@@ -37,7 +37,7 @@ MODULE_PATH=${libdir}/${PACKAGE_NAME}
 # Module sources
 #
 fence_virtd_SOURCES = main.c plugin.c
-libvirt_so_SOURCES = libvirt.c
+libvirt_so_SOURCES = libvirt.c virt.c
 null_so_SOURCES = null.c
 libvirt_qpid_so_SOURCES = uuid-test.c
 libvirt_qpid_cxx_so_SOURCES = libvirt-qpid.cpp
