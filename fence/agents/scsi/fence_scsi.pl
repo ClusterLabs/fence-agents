@@ -1,22 +1,8 @@
 #!/usr/bin/perl
 
+use File::Basename;
 use Getopt::Std;
 use IPC::Open3;
-use POSIX;
-
-my $ME = $0;
-
-END {
-  defined fileno STDOUT or return;
-  close STDOUT and return;
-  warn "$ME: failed to close standard output: $!\n";
-  $? ||= 1;
-}
-
-$_ = $0;
-s/.*\///;
-my $pname = $_;
-my @device_list;
 
 #BEGIN_VERSION_GENERATION
 $RELEASE_VERSION="";
@@ -24,373 +10,599 @@ $REDHAT_COPYRIGHT="";
 $BUILD_DATE="";
 #END_VERSION_GENERATION
 
-sub usage
-{
-    print "Usage\n";
-    print "\n";
-    print "$pname [options]\n";
-    print "\n";
-    print "Options:\n";
-    print "  -n <node>		ip address or hostname of node to fence\n";
-    print "  -h			usage\n";
-    print "  -u			unfence\n";
-    print "  -v			verbose\n";
-    print "  -V			version\n";
+my $ME = fileparse ($0, ".pl");
 
-    exit 0;
+################################################################################
+
+sub log_debug ($)
+{
+    my ($msg) = @_;
+
+    print STDOUT "[debug]: $msg\n" unless defined ($opt_q);
 }
 
-sub version
+sub log_error ($)
 {
-    print "$pname $RELEASE_VERSION $BUILD_DATE\n";
-    print "$REDHAT_COPYRIGHT\n" if ($REDHAT_COPYRIGHT);
+    my ($msg) = @_;
+
+    print STDERR "[error]: $msg\n" unless defined ($opt_q);
 }
 
-sub fail_usage
+sub do_action_on ($@)
 {
-    ($msg) = @_;
+    (my $self = (caller(0))[3]) =~ s/^main:://;
 
-    print STDERR $msg."\n" if $msg;
-    print STDERR "Please use '-h' for usage.\n";
+    my ($node_key, @devices) = @_;
 
-    exit 1;
+    key_write ($node_key);
+
+    foreach $dev (@devices) {
+	do_register_ignore ($node_key, $dev);
+
+	if (!get_reservation_key ($dev)) {
+	    do_reserve ($node_key, $dev);
+	}
+    }
 }
 
-sub check_sg_persist
+sub do_action_off ($@)
 {
-    my ($in, $out, $err);
-    my $cmd = "sg_persist -V";
-    my $pid = open3($in, $out, $err, $cmd) or die "$!\n";
+    (my $self = (caller(0))[3]) =~ s/^main:://;
 
-    waitpid($pid, 0);
+    my ($node_key, @devices) = @_;
 
-    die "unable to execute sg_persist.\n" if ($?>>8);
+    my $host_key = key_read ();
 
-    close ($in);
-    close ($out);
-    close ($err);
+    if ($host_key eq $node_key) {
+	log_error ($self);
+	exit (1);
+    }
+
+    foreach $dev (@devices) {
+	my @keys = grep { /$node_key/ } get_registration_keys ($dev);
+
+	if (scalar (@keys) != 0) {
+	    do_preempt_abort ($host_key, $node_key, $dev);
+	}
+    }
 }
 
-sub get_cluster_id
+sub do_action_status ($@)
 {
-    my ($in, $out, $err);
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
+    my ($node_key, @devices) = @_;
+
+    my $dev_count = 0;
+    my $key_count = 0;
+
+    foreach $dev (@devices) {
+	my @keys = grep { /$node_key/ } get_registration_keys ($dev);
+
+	if (scalar (@keys) != 0) {
+	    $dev_count++;
+	}
+    }
+
+    if ($dev_count != 0) {
+	exit (0);
+    }
+    else {
+	exit (2);
+    }
+}
+
+sub do_register ($$$)
+{
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
+    my ($host_key, $node_key, $dev) = @_;
+
+    if (substr ($dev, 5) =~ /^dm/) {
+	my @slaves = get_mpath_slaves ($dev);
+
+	foreach (@slaves) {
+	    do_register ($node_key, $_);
+	}
+	return;
+    }
+
+    my $cmd = "sg_persist -n -o -G -K $host_key -S $node_key -d $dev";
+    $cmd .= " -Z" if (defined $opt_a);
+
+    my $pid = open3 (\*IN, \*OUT, \*ERR, $cmd) or die "$!\n";
+
+    die "[error]: $self\n" if ($?>>8);
+
+    close (IN);
+    close (OUT);
+    close (ERR);
+}
+
+sub do_register_ignore ($$)
+{
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
+    my ($node_key, $dev) = @_;
+
+    if (substr ($dev, 5) =~ /^dm/) {
+	my @slaves = get_mpath_slaves ($dev);
+
+	foreach (@slaves) {
+	    do_register_ignore ($node_key, $_);
+	}
+	return;
+    }
+
+    my $cmd = "sg_persist -n -o -I -S $node_key -d $dev";
+    $cmd .= " -Z" if (defined $opt_a);
+
+    my $pid = open3 (\*IN, \*OUT, \*ERR, $cmd) or die "$!\n";
+
+    waitpid ($pid, 0);
+
+    die "[error]: $self\n" if ($?>>8);
+
+    close (IN);
+    close (OUT);
+    close (ERR);
+}
+
+sub do_reserve ($$)
+{
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
+    my ($host_key, $dev) = @_;
+
+    my $cmd = "sg_persist -n -o -R -T 5 -K $host_key -d $dev";
+    my $pid = open3 (\*IN, \*OUT, \*ERR, $cmd) or die "$!\n";
+
+    waitpid ($pid, 0);
+
+    die "[error]: $self\n" if ($?>>8);
+
+    close (IN);
+    close (OUT);
+    close (ERR);
+}
+
+sub do_release ($$)
+{
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
+    my ($host_key, $dev) = @_;
+
+    my $cmd = "sg_persist -n -o -L -T 5 -K $host_key -d $dev";
+    my $pid = open3 (\*IN, \*OUT, \*ERR, $cmd) or die "$!\n";
+
+    waitpid ($pid, 0);
+
+    die "[error]: $self\n" if ($?>>8);
+
+    close (IN);
+    close (OUT);
+    close (ERR);
+}
+
+sub do_preempt ($$$)
+{
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
+    my ($host_key, $node_key, $dev) = @_;
+
+    my $cmd = "sg_persist -n -o -P -T 5 -K $host_key -S $node_key -d $dev";
+    my $pid = open3 (\*IN, \*OUT, \*ERR, $cmd) or die "$!\n";
+
+    waitpid ($pid, 0);
+
+    die "[error]: $self\n" if ($?>>8);
+
+    close (IN);
+    close (OUT);
+    close (ERR);
+}
+
+sub do_preempt_abort ($$$)
+{
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
+    my ($host_key, $node_key, $dev) = @_;
+
+    my $cmd = "sg_persist -n -o -A -T 5 -K $host_key -S $node_key -d $dev";
+    my $pid = open3 (\*IN, \*OUT, \*ERR, $cmd) or die "$!\n";
+
+    waitpid ($pid, 0);
+
+    die "[error]: $self ($dev)\n" if ($?>>8);
+
+    close (IN);
+    close (OUT);
+    close (ERR);
+}
+
+sub key_read ()
+{
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
+    open (\*FILE, "</var/lib/cluster/fence_scsi.key") or die "$!\n";
+
+    chomp (my $key = <FILE>);
+
+    close (FILE);
+
+    return ($key);
+}
+
+sub key_write ($)
+{
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
+    open (\*FILE, ">/var/lib/cluster/fence_scsi.key") or die "$!\n";
+
+    print FILE "$_[0]\n";
+
+    close (FILE);
+}
+
+sub get_key ($)
+{
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
+    my $key = sprintf ("%.4x%.4x", get_cluster_id (), get_node_id ($_[0]));
+
+    return ($key);
+}
+
+sub get_node_id ($)
+{
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
+    my $cmd = "cman_tool nodes -n $_[0] -F id";
+    my $pid = open3 (\*IN, \*OUT, \*ERR, $cmd) or die "$!\n";
+
+    waitpid ($pid, 0);
+
+    die "[error]: $self\n" if ($?>>8);
+
+    chomp (my $node_id = <OUT>);
+
+    close (IN);
+    close (OUT);
+    close (ERR);
+
+    return ($node_id);
+}
+
+sub get_cluster_id ()
+{
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
     my $cmd = "cman_tool status";
-    my $pid = open3($in, $out, $err, $cmd) or die "$!\n";
+    my $pid = open3 (\*IN, \*OUT, \*ERR, $cmd) or die "$!\n";
 
-    waitpid($pid, 0);
+    waitpid ($pid, 0);
 
-    die "unable to execute cman_tool.\n" if ($?>>8);
+    die "[error]: $self\n" if ($?>>8);
 
     my $cluster_id;
 
-    while (<$out>) {
+    while (<OUT>) {
 	chomp;
 
-	my ($name, $value) = split(/\s*:\s*/, $_);
+	my ($param, $value) = split (/\s*:\s*/, $_);
 
-	if ($name eq "Cluster Id") {
+	if ($param =~ /^cluster\s+id/i) {
 	    $cluster_id = $value;
+	}
+    }
+
+    close (IN);
+    close (OUT);
+    close (ERR);
+
+    return ($cluster_id);
+}
+
+sub get_devices_clvm ()
+{
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
+    my $cmd = "vgs --noheadings " .
+              "    --separator : " .
+              "    --sort pv_uuid " .
+              "    --options vg_attr,pv_name " .
+              "    --config 'global { locking_type = 0 } " .
+              "              devices { preferred_names = [ \"^/dev/dm\" ] }'";
+
+    my $pid = open3 (\*IN, \*OUT, \*ERR, $cmd) or die "$!\n";
+
+    waitpid ($pid, 0);
+
+    die "[error]: $self\n" if ($?>>8);
+
+    my @devices;
+
+    while (<OUT>) {
+	chomp;
+
+	my ($vg_attr, $pv_name) = split (/:/, $_);
+
+	if ($vg_attr =~ /c$/) {
+	    push (@devices, $pv_name);
+	}
+    }
+
+    close (IN);
+    close (OUT);
+    close (ERR);
+
+    return (@devices);
+}
+
+sub get_devices_scsi ()
+{
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
+    opendir (\*DIR, "/sys/block/") or die "$!\n";
+
+    my @devices = grep { /^sd/ } readdir (DIR);
+
+    closedir (DIR);
+
+    return (@devices);
+}
+
+sub get_mpath_name ($)
+{
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
+    my ($dev) = @_;
+
+    if ($dev =~ /^\/dev\//) {
+	$dev = substr ($dev, 5);
+    }
+
+    open (\*FILE, "/sys/block/$dev/dm/name") or die "$!\n";
+
+    chomp (my $name = <FILE>);
+
+    close (FILE);
+
+    return ($name);
+}
+
+sub get_mpath_uuid ($)
+{
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
+    my ($dev) = @_;
+
+    if ($dev =~ /^\/dev\//) {
+	$dev = substr ($dev, 5);
+    }
+
+    open (\*FILE, "/sys/block/$dev/dm/uuid") or die "$!\n";
+
+    chomp (my $uuid = <FILE>);
+
+    close (FILE);
+
+    return ($name);
+}
+
+sub get_mpath_slaves ($)
+{
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
+    my ($dev) = @_;
+
+    if ($dev =~ /^\/dev\//) {
+	$dev = substr ($dev, 5);
+    }
+
+    opendir (\*DIR, "/sys/block/$dev/slaves/") or die "$!\n";
+
+    my @slaves = grep { !/^\./ } readdir (DIR);
+
+    if ($slaves[0] =~ /^dm/) {
+	@slaves = get_mpath_slaves ($slaves[0]);
+    }
+    else {
+	@slaves = map { "/dev/$_" } @slaves;
+    }
+
+    closedir (DIR);
+
+    return (@slaves);
+}
+
+sub get_registration_keys ($)
+{
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
+    my ($dev) = @_;
+
+    my $cmd = "sg_persist -n -i -k -d $dev";
+    my $pid = open3 (\*IN, \*OUT, \*ERR, $cmd) or die "$!\n";
+
+    waitpid ($pid, 0);
+
+    die "[error]: $self\n" if ($?>>8);
+
+    my @keys;
+
+    while (<OUT>) {
+    	chomp;
+
+	if ($_ =~ s/^\s+0x//i) {
+	    push (@keys, $_);
+	}
+    }
+
+    close (IN);
+    close (OUT);
+    close (ERR);
+
+    return (@keys);
+}
+
+sub get_reservation_key ($)
+{
+    (my $self = (caller(0))[3]) =~ s/^main:://;
+
+    my ($dev) = @_;
+
+    my $cmd = "sg_persist -n -i -r -d $dev";
+    my $pid = open3 (\*IN, \*OUT, \*ERR, $cmd) or die "$!\n";
+
+    waitpid ($pid, 0);
+
+    die "[error]: $self\n" if ($?>>8);
+
+    my $key;
+
+    while (<OUT>) {
+    	chomp;
+
+	if ($_ =~ s/^\s+key=0x//i) {
+	    $key = $_;
 	    last;
 	}
     }
 
-    close ($in);
-    close ($out);
-    close ($err);
+    close (IN);
+    close (OUT);
+    close (ERR);
 
-    return $cluster_id;
+    return ($key);
 }
 
-sub get_node_id
+sub get_options_stdin ()
 {
-    ($node) = @_;
+    my $num = 0;
 
-    my ($in, $out, $err);
-    my $cmd = "ccs_tool query /cluster/clusternodes/clusternode[\@name=\\\"$node\\\"]/\@nodeid";
-    my $pid = open3($in, $out, $err, $cmd) or die "$!\n";
-
-    waitpid($pid, 0);
-
-    die "Unable to execute ccs_tool.\n" if ($?>>8);
-
-    while (<$out>) {
-        chomp;
-        $node_id = $_;
-    }
-
-    close ($in);
-    close ($out);
-    close ($err);
-
-    return $node_id;
-}
-
-sub get_host_name
-{
-    my ($in, $out, $err);
-    my $cmd = "cman_tool status";
-    my $pid = open3($in, $out, $err, $cmd) or die "$!\n";
-
-    waitpid($pid, 0);
-
-    die "unable to execute cman_tool.\n" if ($?>>8);
-
-    my $host_name;
-
-    while (<$out>) {
+    while (<STDIN>)
+    {
 	chomp;
 
-	my ($name, $value) = split(/\s*:\s*/, $_);
-
-	if ($name eq "Node name") {
-	    $host_name = $value;
-	    last;
-	}
-    }
-
-    close ($in);
-    close ($out);
-    close ($err);
-
-    return $host_name;
-}
-
-sub get_node_name
-{
-    return $opt_n;
-}
-
-sub get_key
-{
-    ($node) = @_;
-
-    my $cluster_id = get_cluster_id;
-    my $node_id = get_node_id($node);
-
-    if ($node_id == 0) {
-	die "unable to determine nodeid for node '$node'\n";
-    }
-
-    my $key = sprintf "%.4x%.4x", $cluster_id, $node_id;
-
-    return $key;
-}
-
-sub get_options_stdin
-{
-    my $opt;
-    my $line = 0;
-
-    while (defined($in = <>)) {
-
-	$_ = $in;
-	chomp;
-
-	## strip leading and trailing whitespace
-	##
 	s/^\s*//;
 	s/\s*$//;
 
-	## skip comments
-	##
-	next if /^#/;
+	next if (/^#/);
 
-	$line += 1;
-	$opt = $_;
+	$num++;
 
-	next unless $opt;
+	next unless ($_);
 
-	($name, $value) = split(/\s*=\s*/, $opt);
+	my ($opt, $arg) = split (/\s*=\s*/, $_);
 
-	if ($name eq "")
-	{
-	    print STDERR "parse error: illegal name in option $line\n";
-	    exit 2;
+	if ($opt eq "") {
+	    exit (1);
 	}
-	elsif ($name eq "agent")
-	{
-	    ## ignore this
+	elsif ($opt eq "aptpl") {
+	    $opt_a = $arg;
 	}
-	elsif ($name eq "node")
-	{
-	    $opt_n = $value;
+	elsif ($opt eq "devices") {
+	    $opt_d = $arg;
 	}
-	elsif ($name eq "nodename")
-	{
-	    $opt_n = $value;
+	elsif ($opt eq "logfile") {
+	    $opt_f = $arg;
 	}
-	elsif ($name eq "action")
-	{
-	    ## if "action=on", the we are performing an unfence operation.
-	    ## any other value for "action" is ignored. the default is a
-	    ## fence operation.
-	    ##
-	    if ($value eq "on") {
-		$opt_u = $value;
-	    }
+	elsif ($opt eq "key") {
+	    $opt_k = $arg;
+	}
+	elsif ($opt eq "nodename") {
+	    $opt_n = $arg;
+	}
+	elsif ($opt eq "action") {
+	    $opt_o = $arg;
 	}
     }
 }
 
-sub get_scsi_devices
+sub print_usage ()
 {
-    my ($in, $out, $err);
+    print "Usage:\n";
+    print "\n";
+    print "$ME [options]\n";
+    print "\n";
+    print "Options:\n";
+    print "  -a               Use APTPL flag\n";
+    print "  -d <devices>     Devices to be used for action\n";
+    print "  -f <logfile>     File to write debug/error output\n";
+    print "  -h               Usage\n";
+    print "  -k <key>         Key to be used for current action\n";
+    print "  -n <nodename>    Name of node to operate on\n";
+    print "  -o <action>      Action: off (default), on, or status\n";
+    print "  -q               Quiet mode\n";
+    print "  -V               Version\n";
 
-    my $cmd = "vgs --config 'global { locking_type = 0 }'" .
-              "    --noheadings --separator : -o vg_attr,pv_name 2> /dev/null";
-
-    my $pid = open3($in, $out, $err, $cmd) or die "$!\n";
-
-    waitpid($pid, 0);
-
-    die "unable to execute vgs.\n" if ($?>>8);
-
-    while (<$out>) {
-	chomp;
-
-	my ($attrs, $dev) = split(/:/, $_);
-
-	if ($attrs =~ /.*c$/) {
-	    $dev =~ s/\(.*\)//;
-	    push(@device_list, $dev);
-	}
-    }
-
-    close ($in);
-    close ($out);
-    close ($err);
+    exit (0);
 }
 
-sub create_registration
+sub print_version ()
 {
-    my ($key, $dev) = @_;
+    print "$ME $RELEASE_VERSION $BUILD_DATE\n";
+    print "$REDHAT_COPYRIGHT\n" if ( $REDHAT_COPYRIGHT );
 
-    my ($in, $out, $err);
-    my $cmd = "sg_persist -n -d $dev -o -I -S $key";
-    my $pid = open3($in, $out, $err, $cmd) or die "$!\n";
-
-    waitpid($pid, 0);
-
-    die "unable to create registration.\n" if ($?>>8);
-
-    close ($in);
-    close ($out);
-    close ($err);
+    exit (0);
 }
 
-sub create_reservation
-{
-    my ($key, $dev) = @_;
-
-    my ($in, $out, $err);
-    my $cmd = "sg_persist -n -d $dev -o -R -K $key -T 5";
-    my $pid = open3($in, $out, $err, $cmd) or die "$!\n";
-
-    waitpid($pid, 0);
-
-    die "unable to create reservation.\n" if ($?>>8);
-
-    close ($in);
-    close ($out);
-    close ($err);
-}
-
-sub fence_node
-{
-    my $host_name = get_host_name;
-    my $host_key = get_key($host_name);
-
-    my $node_name = get_node_name;
-    my $node_key = get_key($node_name);
-
-    my ($in, $out, $err);
-
-    foreach $dev (@device_list)
-    {
-	## check that the key we are attempting to remove
-	## is actually registered with the device. if the key is not
-	## registered, there is nothing to do for this device.
-	##
-	system ("sg_persist -n -d $dev -i -k | grep -qiE \"^[[:space:]]*0x$key\"");
-
-	if (($?>>8) != 0) {
-	    next;
-	}
-
-	if ($host_key eq $node_key) {
-	    ## this sg_persist command is for the case where you attempt to
-	    ## fence yourself (ie. the local node is the same at the node to
-	    ## be fence). this will not work if the node is the reservation
-	    ## holder, since you can't unregister while holding the reservation.
-	    ##
-	    my $cmd = "sg_persist -n -d $dev -o -G -K $host_key -S 0";
-	}
-	else {
-	    ## this sg_persist command will remove the registration for $host_key.
-	    ## the local node will also become the reservation holder, regardless
-	    ## of which node was holding the reservation prior to the fence operation.
-	    ##
-	    my $cmd = "sg_persist -n -d $dev -o -A -K $host_key -S $node_key -T 5";
-	}
-
-	my $pid = open3($in, $out, $err, $cmd) or die "$!\n";
-
-	waitpid($pid, 0);
-
-	die "unable to execute sg_persist.\n" if ($?>>8);
-
-	close ($in);
-	close ($out);
-	close ($err);
-    }
-}
-
-sub unfence_node
-{
-    my $host_name = get_host_name;
-    my $host_key = get_key($host_name);
-
-    foreach $dev (@device_list)
-    {
-	create_registration ($host_key, $dev);
-
-	## check to see if a reservation already exists.
-	## if no reservation exists, this node/key will become
-	## the reservation holder.
-	##
-	system ("sg_persist -n -d $dev -i -r | grep -qiE \"^[[:space:]]*Key=0x\"");
-
-	if (($?>>8) != 0) {
-	    create_reservation ($host_key, $dev);
-	}
-    }
-}
+################################################################################
 
 if (@ARGV > 0) {
+    getopts ("ad:f:hk:n:o:qV") or die "$!\n";
 
-    getopts("hn:uvV") || fail_usage;
-
-    usage if defined $opt_h;
-    version if defined $opt_V;
-
-    if (!defined $opt_u) {
-	fail_usage "No '-n' flag specified." unless defined $opt_n;
-    }
-
-} else {
-
-    get_options_stdin();
-
+    print_usage if (defined $opt_h);
+    print_version if (defined $opt_V);
+}
+else {
+    get_options_stdin ();
 }
 
-## get a list of scsi devices. this call will build a list of devices
-## (device_list) by querying clvm for a list of devices that exist in
-## volume groups that have the cluster bit set.
-##
-get_scsi_devices;
+if (defined $opt_f) {
+    open (LOG, ">$opt_f") or die "$!\n";
+    open (STDOUT, ">&LOG");
+    open (STDERR, ">&LOG");
+}
 
-if ($opt_u) {
-    unfence_node;
-} else {
-    fence_node;
+if ((!defined $opt_n) && (!defined $opt_k)) {
+    log_error ("No '-n' or '-k' flag specified.");
+    exit (1);
+}
+
+if (defined $opt_k) {
+    $key = $opt_k;
+}
+else {
+    $key = get_key ($opt_n);
+}
+
+if (defined $opt_d) {
+    @devices = split (/\s*,\s*/, $opt_d);
+}
+else {
+    @devices = get_devices_clvm ();
+}
+
+if (!defined $opt_o) {
+    $opt_o = "off";
+}
+
+if ($opt_o =~ /^on$/i) {
+    do_action_on ($key, @devices);
+}
+elsif ($opt_o =~ /^off$/i) {
+    do_action_off ($key, @devices);
+}
+elsif ($opt_o =~ /^status/i) {
+    do_action_status ($key, @devices);
+}
+else {
+    log_error ("unknown action '$opt_o'");
+    exit (1);
+}
+
+if (defined $opt_f) {
+    close (LOG);
 }
