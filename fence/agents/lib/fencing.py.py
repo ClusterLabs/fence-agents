@@ -4,6 +4,7 @@ import sys, getopt, time, os
 import pexpect, re
 import telnetlib
 import atexit
+import __main__
 
 ## do not add code here.
 #BEGIN_VERSION_GENERATION
@@ -693,8 +694,8 @@ def show_docs(options, docs = None):
 		sys.exit(0)
 
 	if options.has_key("-V"):
-		print RELEASE_VERSION, BUILD_DATE
-		print REDHAT_COPYRIGHT
+		print __main__.RELEASE_VERSION, __main__.BUILD_DATE
+		print __main__.REDHAT_COPYRIGHT
 		sys.exit(0)
 
 def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None):
