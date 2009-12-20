@@ -30,7 +30,7 @@
 #define ST_GENERIC_RESET 3
 #define ST_CYCLE 4
 
-#define DEFAULT_TIMEOUT 10
+#define DEFAULT_TIMEOUT 20
 
 #define DEFAULT_METHOD "onoff"
 
