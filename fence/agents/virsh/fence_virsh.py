@@ -36,7 +36,7 @@ def get_outlets_status(conn, options):
 			if ((fa_status==0) and (domain.group(1).lower()=="id") and (domain.group(2).lower()=="name")):
 				fa_status=1
 			elif (fa_status==1):
-				result[domain.group(2)]=("",(domain.group(3).lower() in ["running","blocked"] and "on" or "off"))
+				result[domain.group(2)]=("",(domain.group(3).lower() in ["running","blocked","idle","no state","paused"] and "on" or "off"))
 	return result
 
 def get_power_status(conn, options):
