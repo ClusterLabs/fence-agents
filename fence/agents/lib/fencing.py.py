@@ -804,7 +804,7 @@ def fence_login(options):
 		login_eol = "\r\n"
 
 	try:
-		re_login = re.compile("(login: )|(Login Name:  )|(username: )|(User Name :)", re.IGNORECASE)
+		re_login = re.compile("(login\s*: )|(Login Name:  )|(username: )|(User Name :)", re.IGNORECASE)
 		re_pass  = re.compile("password", re.IGNORECASE)
 
 		if options.has_key("-z"):

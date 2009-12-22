@@ -45,6 +45,7 @@ def main():
 
 	atexit.register(atexit_handler)
 
+	all_opt["login_timeout"]["default"] = 10
 	options = check_input(device_opt, process_input(device_opt))
 
 	## 
