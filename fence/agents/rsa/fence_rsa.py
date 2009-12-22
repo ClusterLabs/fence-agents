@@ -40,7 +40,7 @@ def set_power_status(conn, options):
 def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
-			"cmd_prompt", "secure", "ipport",
+			"cmd_prompt", "secure", "identity_file", "ipport",
 			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
 	atexit.register(atexit_handler)

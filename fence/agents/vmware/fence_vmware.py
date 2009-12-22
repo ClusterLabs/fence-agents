@@ -287,7 +287,7 @@ def main():
 	device_opt = [ "help", "version", "agent", "quiet", "verbose", "debug",
 		       "action", "ipaddr", "login", "passwd", "passwd_script",
 		       "test", "port", "separator", "exec", "vmware_type",
-		       "vmware_datacenter", "secure",
+		       "vmware_datacenter", "secure", "identity_file",
 		       "power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
 	atexit.register(atexit_handler)

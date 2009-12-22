@@ -184,7 +184,7 @@ def set_power_status(conn, options):
 def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
-			"secure", "port", "switch", "test", "separator",
+			"secure", "port", "identity_file", "switch", "test", "separator",
 			"inet4_only", "inet6_only", "ipport",
 			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
