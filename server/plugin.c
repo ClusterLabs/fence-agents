@@ -94,28 +94,14 @@ void
 plugin_dump(void)
 {
 	plugin_list_t *p;
-	int x, y;
+	int x;
 
-	y = 0;
 	list_for(&server_plugins, p, x) {
 		if (p->type == PLUGIN_BACKEND) {
-			if (!y) {
-				y = 1;
-				printf("Available backends:\n");
-			}
-			printf("    %s %s\n",
+			printf("backend: %s %s\n",
 			       p->backend->name, p->backend->version);
-		}
-	}
-
-	y = 0;
-	list_for(&server_plugins, p, x) {
-		if (p->type == PLUGIN_LISTENER) {
-			if (!y) {
-				y = 1;
-				printf("Available listeners:\n");
-			}
-			printf("    %s %s\n",
+		} else if (p->type == PLUGIN_LISTENER) {
+			printf("listener: %s %s\n",
 			       p->listener->name, p->listener->version);
 		}
 	}
