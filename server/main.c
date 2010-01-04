@@ -13,6 +13,9 @@
 #include <debug.h>
 #include <syslog.h>
 
+/* configure.c */
+int do_configure(config_object_t *config, const char *filename);
+
 
 void
 usage(void)
@@ -21,6 +24,7 @@ usage(void)
 	printf("  -F               Do not daemonize.\n");
 	printf("  -f <file>        Use <file> as configuration file.\n");
 	printf("  -d <level>       Set debugging level to <level>.\n");
+	printf("  -c               Configuration mode.\n");
 }
 
 
@@ -37,11 +41,11 @@ main(int argc, char **argv)
 	listener_context_t listener_ctx = NULL;
 	backend_context_t backend_ctx = NULL;
 	int debug_set = 0, foreground = 0;
-	int opt;
+	int opt, configure = 0;
 
 	config = sc_init();
 
-	while ((opt = getopt(argc, argv, "Ff:d:")) != EOF) {
+	while ((opt = getopt(argc, argv, "Ff:d:c")) != EOF) {
 		switch(opt) {
 		case 'F':
 			printf("Background mode disabled\n");
@@ -54,6 +58,9 @@ main(int argc, char **argv)
 		case 'd':
 			debug_set = atoi(optarg);
 			break;
+		case 'c':
+			configure = 1;
+			break;
 		case 'h':
 		case '?':
 			usage();
@@ -61,6 +68,10 @@ main(int argc, char **argv)
 		default: 
 			return -1;
 		}
+	}
+
+	if (configure) {
+		return do_configure(config, config_file);
 	}
 
 	if (sc_parse(config, config_file) != 0) {
