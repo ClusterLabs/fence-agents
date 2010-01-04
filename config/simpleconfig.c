@@ -159,6 +159,9 @@ _sc_get(config_info_t *config, const char *key, char *value, size_t valuesz)
 	char *slash;
 	int found;
 
+	if (!config)
+		return 1;
+
 	ptr = (char *)key;
 	while ((slash = strchr(ptr, '/'))) {
 		memset(buf, 0, sizeof(buf));
@@ -281,23 +284,23 @@ _sc_parse(const char *filename, config_info_t **config)
 	if (filename) {
 		fp = fopen(filename, "r");
 		yyin = fp;
-		if (!fp)
-			return -1;
+		if (fp)
+			ret = yyparse();
+		else 
+			ret = 1;
+	} else {
+		ret = 1;
 	}
 
-	ret = yyparse();
-
-	if (!ret) {
-		c = malloc(sizeof(*c));
-		if (!c)
-			return -1;
-		c->node_list = node_list;
-		c->val_list = val_list;
-		c->next = NULL;
-		val_list = NULL;
-		node_list = NULL;
-		*config = (config_info_t *)c;
-	}
+	c = malloc(sizeof(*c));
+	if (!c)
+		return -1;
+	c->node_list = node_list;
+	c->val_list = val_list;
+	c->next = NULL;
+	val_list = NULL;
+	node_list = NULL;
+	*config = (config_info_t *)c;
 
 	if (fp)
 		fclose(fp);

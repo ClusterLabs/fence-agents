@@ -695,8 +695,24 @@ checkpoint_init(backend_context_t *c, config_object_t *config)
 		dbg_printf(1, "Using %s\n", uri);
 	}
 
-	/* Naming scheme is a top-level configuration option */
+	/* Naming scheme is no longer a top-level config option.
+	 * However, we retain it here for configuration compatibility with
+	 * versions 0.1.3 and previous.
+	 */
 	if (sc_get(config, "fence_virtd/@name_mode",
+		   value, sizeof(value)-1) == 0) {
+
+		dbg_printf(1, "Got %s for name_mode\n", value);
+		if (!strcasecmp(value, "uuid")) {
+			use_uuid = 1;
+		} else if (!strcasecmp(value, "name")) {
+			use_uuid = 0;
+		} else {
+			dbg_printf(1, "Unsupported name_mode: %s\n", value);
+		}
+	}
+
+	if (sc_get(config, "backends/checkpoint/@name_mode",
 		   value, sizeof(value)-1) == 0) {
 
 		dbg_printf(1, "Got %s for name_mode\n", value);
