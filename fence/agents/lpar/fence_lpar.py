@@ -138,8 +138,9 @@ def main():
 
 	atexit.register(atexit_handler)
 
-	all_opt["login_timeout"]["default"] = 15
-	all_opt["secure"]["default"] = 1
+	all_opt["login_timeout"]["default"] = "15"
+	all_opt["secure"]["default"] = "1"
+
 	options = check_input(device_opt, process_input(device_opt))
 
 	## 
