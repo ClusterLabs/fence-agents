@@ -11,6 +11,10 @@ static int
 print_value(struct value *v, int depth, FILE *fp)
 {
 	int x;
+
+	if (v->val == NULL)
+		return 0;
+
 	for (x = 0; x < depth; x++)
 		fprintf(fp, "\t");
 	fprintf(fp, "%s = \"%s\";\n", v->id, v->val);
@@ -191,6 +195,8 @@ _sc_get(config_info_t *config, const char *key, char *value, size_t valuesz)
 
 	for (v = values; v; v = v->next) {
 		if (!strcasecmp(v->id, ptr)) {
+			if (v->val == NULL)
+				return 1;
 			snprintf(value, valuesz, "%s", v->val);
 			return 0;
 		}
@@ -248,10 +254,14 @@ _sc_set(config_info_t *config, const char *key, const char *value)
 			continue;
 
 		ptr = v->val;
-		v->val = strdup(value);
-		if (!v->val) {
-			v->val = ptr;
-			return -1;
+		if (value) {
+			v->val = strdup(value);
+			if (!v->val) {
+				v->val = ptr;
+				return -1;
+			}
+		} else {
+			v->val = NULL;
 		}
 		free(ptr);
 
