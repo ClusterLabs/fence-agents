@@ -1,0 +1,161 @@
+.TH fence_virtd.conf 5
+
+.SH NAME
+fence_virtd.conf - configuration file for fence_virtd
+
+.SH DESCRIPTION
+
+The fence_virtd.conf file contains configuration information for fence_virtd,
+a fencing request routing daemon for clusters of virtual machines.
+
+The file is tree-structured.  There are parent/child relationships and sibling
+relationships between the nodes.
+
+  foo {
+    bar {
+      baz = "1";
+    }
+  }
+
+There are three primary sections of fence_virtd.conf.
+
+.SH SECTIONS
+.SS fence_virtd
+
+This section contains global information about how fence_virtd is to operate.
+The most important pieces of information are as follows:
+
+.TP
+.B listener
+.
+the listener plugin for receiving fencing requests from clients
+
+.TP
+.B backend
+.
+the plugin to be used to carry out fencing requests
+
+.SS listeners
+
+This section contains listener-specific configuration information; see the
+section about listeners below.
+
+.SS backends
+
+This section contains listener-specific configuration information; see the
+section about listeners below.
+
+.SH LISTENERS
+
+There are various listeners available for fence_virtd, each one handles
+decoding and authentication of a given fencing request.  The following 
+configuration blocks belong in the \fBlisteners\fP section of fence_virtd.conf
+
+.SS multicast
+.TP
+.B key_file
+.
+the shared key file to use (default: /etc/cluster/fence_xvm.key).
+
+.TP
+.B hash
+.
+the hashing algorithm to use for packet signing (default: sha256, but could
+be sha1, sha512, or none)
+
+.TP
+.B auth
+.
+the hashing algorithm to use for the simplistic challenge-response authentication
+(default: sha256, but could be sha1, sha512, or none)
+
+.TP
+.B family
+.
+the IP family to use (default: ipv4, but may be ipv6)
+
+.TP
+.B address
+.
+the multicast address to listen on (default: 225.0.0.12)
+
+.TP
+.B port
+.
+the multicast port to listen on (default: 1229)
+
+.TP
+.B interface
+.
+interface to listen on.  By default, fence_virtd listens on all interfaces.
+However, this causes problems in some environments where the host computer
+is used as a gateway.
+
+
+.SH BACKENDS
+
+There are various backends available for fence_virtd, each one handles
+routing a fencing request to a hypervisor or management tool.  The following 
+configuration blocks belong in the \fBbackends\fP section of fence_virtd.conf
+
+.SS libvirt
+
+The libvirt plugin is the simplest plugin.  It is used in environments where
+routing fencing requests between multiple hosts is not required, for example
+by a user running a cluster of virtual machines on a single desktop computer.
+
+.TP
+.B uri
+.
+the URI to use when connecting to libvirt.
+
+.SS libvirt-qpid
+
+The libvirt-qpid plugin acts as a QMF Console to the libvirt-qpid daemon in
+order to route fencing requests over AMQP to the appropriate computer.  There
+are currently no configuration options for libvirt-qpid.
+
+.SS checkpoint
+
+The checkpoint plugin uses CMAN, CPG, and OpenAIS checkpoints to track virtual
+machines and route fencing requests to the appropriate computer.
+
+.TP
+.B uri
+.
+the URI to use when connecting to libvirt by the checkpoint plugin.
+
+.TP
+.B name_mode
+.
+The checkpoint plugin, in order to retain compatibility with fence_xvm,
+stores virtual machines in a certain way in the OpenAIS checkpoints.  The
+default was to use 'name' when using fence_xvm and fence_xvmd, and so this
+is still the default.  However, it is strongly recommended to use 'uuid'
+instead of 'name' in all cluster environments involving more than one
+physical host in order to avoid the potential for name collisions.
+
+
+.SH EXAMPLE
+
+ fence_virtd {
+  listener = "multicast";
+  backend = "checkpoint";
+ }
+
+ # this is the listeners section
+
+ listeners {
+  multicast {
+   key_file = "/etc/cluster/fence_xvm.key";
+  }
+ }
+
+ backends {
+  libvirt { 
+   uri = "qemu:///system";
+  }
+ }
+
+.SH SEE ALSO
+fence_virtd(8)
