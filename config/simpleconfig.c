@@ -268,6 +268,9 @@ _sc_set(config_info_t *config, const char *key, const char *value)
 		return 0;
 	}
 
+	if (!value)
+		return 0;
+
 	id_dup = strdup(ptr);
 	if (!id_dup)
 		return -1;
