@@ -1,0 +1,468 @@
+#include <stdio.h>
+#include <string.h>
+#include <simpleconfig.h>
+#include <stdint.h>
+#include <sys/types.h>
+#include <sys/time.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <net/if.h>
+#include <arpa/inet.h>
+
+#include <mcast.h>
+#include <xvm.h>
+#include "server_plugin.h"
+
+
+static int
+yesno(const char *prompt, int dfl)
+{
+	char result[10];
+
+	printf("%s [%c/%c]? ", prompt, dfl?'Y':'y', dfl?'n':'N');
+	fflush(stdout);
+
+	memset(result, 0, sizeof(result));
+	if (fgets(result, 9, stdin) == NULL)
+		return dfl;
+
+	if (result[0] == 'y' || result[0] == 'Y')
+		return 1;
+	if (result[0] == 'n' || result[0] == 'N')
+		return 0;
+
+	return dfl;
+}
+
+
+static int
+text_input(const char *prompt, char *dfl, char *input, size_t len)
+{
+	printf("%s [%s]: ", prompt, dfl?dfl:"");
+	fflush(stdout);
+
+	memset(input, 0, sizeof(input));
+	if (fgets(input, len, stdin) == NULL) {
+		strncpy(input, dfl, len);
+		return 0;
+	}
+	if (input[strlen(input)-1] == '\n')
+		input[strlen(input)-1] = 0;
+
+	if (strlen(input) == 0) {
+		strncpy(input, dfl, len);
+		return 0;
+	}
+
+	return 0;
+}
+
+
+static int
+plugin_path_configure(config_object_t *config)
+{
+#ifdef _MODULE
+	char val[4096];
+	char inp[4096];
+	int done = 0;
+
+	if (sc_get(config, "fence_virtd/@module_path", val,
+	   	   sizeof(val))) {
+#ifdef MODULE_PATH
+		snprintf(val, sizeof(val), MODULE_PATH);
+#else
+		printf("Failed to determine module search path.\n");
+#endif
+	}
+
+	do {
+		text_input("Module search path", val, inp, sizeof(inp));
+
+		done = plugin_search(inp);
+		if (done > 0) {
+			plugin_dump();
+			done = 1;
+		} else {
+			done = 0;
+			printf("No modules found in %s!\n", inp);
+			if (yesno("Use this value anyway", 0) == 1)
+				done = 1;
+		}
+	} while (!done);
+
+	sc_set(config, "fence_virtd/@module_path", inp);
+
+#endif
+	return 0;
+}
+
+
+static int
+backend_config_libvirt(config_object_t *config)
+{
+	char val[4096];
+	char inp[4096];
+
+	printf("\n");
+	printf("The libvirt backend module is designed for single desktops or\n"
+	       "servers.  Do not use in environments where virtual machines\n"
+	       "may be migrated between hosts.\n\n");
+
+	/* Default backend plugin */
+	if (sc_get(config, "backends/libvirt/@uri", val,
+		   sizeof(val))) {
+		strncpy(val, "qemu:///system", sizeof(val));
+	}
+
+	text_input("Libvirt URI", val, inp, sizeof(inp));
+
+	sc_set(config, "backends/libvirt/@uri", inp);
+
+	return 0;
+}
+
+
+static int
+backend_config_checkpoint(config_object_t *config)
+{
+	char val[4096];
+	char inp[4096];
+	int done = 0;
+
+	printf("\n");
+	printf("The checkpoint backend module is designed for use in clusters\n"
+	       "running corosync, openais, and CMAN.  It utilizes the SAF \n"
+	       "checkpoint API to store virtual machine states and CPG to \n"
+	       "route fencing requests, finally utilizing libvirt to perform\n"
+	       "fencing actions.\n\n");
+
+	if (sc_get(config, "backends/checkpoint/@uri", val,
+		   sizeof(val))) {
+		strncpy(val, "qemu:///system", sizeof(val));
+	}
+
+	text_input("Libvirt URI", val, inp, sizeof(inp));
+
+	sc_set(config, "backends/checkpoint/@uri", inp);
+
+	printf("\n");
+	printf("The name mode is how the checkpoint plugin stores and \n"
+	       "references virtual machines.  Since virtual machine names\n"
+	       "are not guaranteed to be unique cluster-wide, use of UUIDs\n"
+	       "is strongly recommended.  However, for compatibility with \n"
+	       "fence_xvmd, the use of 'name' mode is also supported.\n\n");
+
+	if (sc_get(config, "backends/checkpoint/@name_mode", val,
+		   sizeof(val))) {
+		strncpy(val, "uuid", sizeof(val));
+	}
+
+	do {
+		text_input("VM naming/tracking mode (name or uuid)",
+			   val, inp, sizeof(inp));
+		if (!strcasecmp(inp, "uuid")) {
+			done = 1;
+		} else if (!strcasecmp(inp, "name")) {
+			done = 0;
+			printf("This can be dangerous if you do not take care to"
+			       "ensure that\n"
+			       "virtual machine names are unique "
+			       "cluster-wide.\n");
+			if (yesno("Use name mode anyway", 1) == 1)
+				done = 1;
+		}
+	} while (!done);
+
+	sc_set(config, "backends/checkpoint/@name_mode", inp);
+
+	return 0;
+}
+
+
+static int
+listener_config_multicast(config_object_t *config)
+{
+	char val[4096];
+	char inp[4096];
+	const char *family;
+	struct in_addr sin;
+	struct in6_addr sin6;
+	int done = 0;
+
+	printf("\n");
+	printf("The multicast listener module is designed for use environments\n"
+	       "where the guests and hosts may communicate over a network using\n"
+	       "multicast.\n\n");
+
+
+	/* MULTICAST IP ADDRESS/FAMILY */
+	printf("The multicast address is the address that a client will use to\n"
+	       "send fencing requests to fence_virtd.\n\n");
+
+	if (sc_get(config, "listeners/multicast/@address",
+		   val, sizeof(val)-1)) {
+		strncpy(val, IPV4_MCAST_DEFAULT, sizeof(val));
+	}
+
+	do {
+		text_input("Multicast IP Address", val, inp, sizeof(inp));
+
+		if (inet_pton(AF_INET, inp, &sin) == 1) {
+			printf("\nUsing ipv4 as family.\n\n");
+			family = "ipv4";
+		} else if (inet_pton(AF_INET6, inp, &sin6) == 1) {
+			printf("\nUsing ipv6 as family.\n\n");
+			family = "ipv6";
+		} else {
+			printf("'%s' is not a valid IP address!\n", inp);
+			continue;
+		}
+
+	} while (0);
+	sc_set(config, "listeners/multicast/@family", family);
+	sc_set(config, "listeners/multicast/@address", inp);
+
+
+	/* MULTICAST IP PORT */
+	if (sc_get(config, "listeners/multicast/@port",
+		   val, sizeof(val)-1)) {
+		snprintf(val, sizeof(val), "%d", DEFAULT_MCAST_PORT);
+	}
+
+	do {
+		text_input("Multicast IP Port", val, inp, sizeof(inp));
+
+		done = atoi(inp);
+		if (done <= 0 || done > 65534) {
+			printf("Port value '%s' is out of range\n", val);
+			continue;
+		}
+
+	} while (0);
+	sc_set(config, "listeners/multicast/@port", inp);
+
+
+	/* MULTICAST INTERFACE */
+	printf("Setting a preferred interface causes fence_virtd to listen only\n"
+	       "on that interface.  Normally, it listens on all interfaces.\n"
+	       "In environments where the virtual machines are using the host\n"
+	       "machine as a gateway, this *must* be set (typically to virbr0).\n"
+	       "Set to 'none' for no interface.\n\n"
+	      );
+
+	if (sc_get(config, "listeners/multicast/@interface",
+		   val, sizeof(val)-1)) {
+		strncpy(val, "none", sizeof(val));
+	}
+
+	do { 
+		text_input("Interface", val, inp, sizeof(inp));
+
+		if (!strcasecmp(inp, "none")) {
+			break;
+		}
+
+		if (strlen(inp) > 0) {
+			done = if_nametoindex(inp);
+			if (done < 0) {
+				printf("Invalid interface: %s\n", inp);
+				if (yesno("Use anyway", 1) == 1)
+					break;
+				continue;
+			}
+			break;
+		}
+	} while(0);
+
+	if (!strcasecmp(inp, "none")) {
+		sc_set(config, "listeners/multicast/@interface", NULL);
+	} else {
+		sc_set(config, "listeners/multicast/@interface", inp);
+	}
+
+
+	/* KEY FILE */
+	printf("The key file is the shared key information which is used to\n"
+	       "authenticate fencing requests.  The contents of this file must\n"
+	       "be distributed to each physical host and virtual machine within\n"
+	       "a cluster.\n\n");
+
+	if (sc_get(config, "listeners/multicast/@key_file",
+		   val, sizeof(val)-1)) {
+		strncpy(val, "none", sizeof(val));
+	}
+
+	do { 
+		text_input("Key File", val, inp, sizeof(inp));
+
+		if (!strcasecmp(inp, "none")) {
+			break;
+		}
+
+		if (strlen(inp) > 0) {
+			if (inp[0] != '/') {
+				printf("Invalid key file: %s\n", inp);
+				if (yesno("Use anyway", 1) == 1)
+					break;
+				continue;
+			}
+			break;
+		}
+	} while(0);
+	if (!strcasecmp(inp, "none")) {
+		sc_set(config, "listeners/multicast/@key_file", NULL);
+	} else {
+		sc_set(config, "listeners/multicast/@key_file", inp);
+	}
+
+	return 0;
+}
+
+
+
+static int
+backend_configure(config_object_t *config)
+{
+	char val[4096];
+	char inp[4096];
+	int done = 0;
+
+	printf("\n");
+	printf("Backend modules are responsible for routing requests to\n"
+	       "the appropriate hypervisor or management layer.\n\n");
+
+	/* Default backend plugin */
+	if (sc_get(config, "fence_virtd/@backend", val,
+		   sizeof(val))) {
+		strncpy(val, "libvirt", sizeof(val));
+	}
+
+	do {
+		text_input("Backend module", val, inp, sizeof(inp));
+		if (plugin_find_backend(inp) == NULL) {
+			printf("No backend module named %s found!\n", inp);
+			if (yesno("Use this value anyway", 0) == 1)
+				done = 1;
+		} else {
+			done = 1;
+		}
+	} while (!done);
+
+	sc_set(config, "fence_virtd/@backend", inp);
+
+	if (!strcmp(inp, "libvirt")) {
+		backend_config_libvirt(config);
+	} else if (!strcmp(inp, "checkpoint")) {
+		backend_config_checkpoint(config);
+	}
+
+	return 0;
+}
+
+
+static int
+listener_configure(config_object_t *config)
+{
+	char val[4096];
+	char inp[4096];
+	int done = 0;
+
+	printf("\n");
+	printf("Listener modules are responsible for accepting requests\n"
+	       "from fencing clients.\n\n");
+
+	/* Default backend plugin */
+	if (sc_get(config, "fence_virtd/@listener", val,
+		   sizeof(val))) {
+		strncpy(val, "multicast", sizeof(val));
+	}
+
+	do {
+		text_input("Listener module", val, inp, sizeof(inp));
+		if (plugin_find_listener(inp) == NULL) {
+			printf("No listener module named %s found!\n", inp);
+			if (yesno("Use this value anyway", 0) == 1)
+				done = 1;
+		} else {
+			done = 1;
+		}
+	} while (!done);
+
+	sc_set(config, "fence_virtd/@listener", inp);
+	if (!strcmp(inp, "multicast"))
+		listener_config_multicast(config);
+
+	return 0;
+}
+
+
+int
+do_configure(config_object_t *config, const char *config_file)
+{
+	FILE *fp = NULL;
+	char message[80];
+	char tmp_filename[4096];
+	int tmp_fd = -1;
+
+	if (sc_parse(config, config_file) != 0) {
+		printf("Parsing of %s failed.\n", config_file);
+		if (yesno("Start from scratch", 0) == 0) {
+			return 1;
+		}
+	}
+
+	plugin_path_configure(config);
+	listener_configure(config);
+	backend_configure(config);
+
+	printf("\nConfiguration complete.\n\n");
+
+	printf("=== Begin Configuration ===\n");
+	sc_dump(config, stdout);
+	printf("=== End Configuration ===\n");
+
+	snprintf(message, sizeof(message), "Replace %s with the above",
+		 config_file);
+	if (yesno(message, 0) == 0) {
+		return 1;
+	}
+
+	snprintf(tmp_filename, sizeof(tmp_filename),
+		 "%s.XXXXXX", config_file);
+	tmp_fd = mkstemp(tmp_filename);
+
+	if (tmp_fd < 0) {
+		perror("fopen");
+		printf("Failed to write configuration file!\n");
+		return 1;
+	}
+
+	fp = fdopen(tmp_fd, "w+");
+	if (fp == NULL)
+		goto out_fail;
+
+	sc_dump(config, fp);
+
+	if (rename(tmp_filename, config_file) < 0) {
+		perror("rename");
+		goto out_fail;
+	}
+
+	fclose(fp);
+	close(tmp_fd);
+
+	return 0;
+
+out_fail:
+	if (fp)
+		fclose(fp);
+	if (tmp_fd >= 0)
+		close(tmp_fd);
+	if (strlen(tmp_filename))
+		unlink(tmp_filename);
+	printf("Failed to write configuration file!\n");
+	return 1;
+}
+
+
