@@ -56,6 +56,7 @@
 #include "virt.h"
 #include "libcman.h"
 #include "debug.h"
+#include "uuid-test.h"
 
 
 #define NAME "libvirt"
