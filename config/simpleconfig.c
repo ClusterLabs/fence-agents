@@ -238,11 +238,55 @@ top:
 	}
 
 	if (ptr[0] != '@') {
-		if (node->val) {
-			strncpy(value, node->val, valuesz);
-			return 0;
+
+		strncpy(buf, ptr, sizeof(buf));
+		id = NULL;
+		bracket = strchr(buf, '[');
+		if (bracket) {
+			*bracket = 0;
+			++bracket;
+
+			id = bracket;
+
+			bracket = strchr(bracket, ']');
+			if (!bracket)
+				return 1;
+			*bracket = 0;
+
+			if (id[0] == '@') {
+				++id;
+				if (!strlen(id)) {
+					return 1;
+				}
+			} else {
+				req_index = atoi(id);
+				if (req_index <= 0)
+					return 1;
+				id = NULL;
+			}
 		}
-		return 1;
+
+		found = 0;
+		curr_index = 0;
+
+		for (n = node; n; n = n->next) {
+
+			if (strcasecmp(n->id, buf))
+				continue;
+
+			++curr_index;
+
+			if (req_index && (curr_index != req_index)) {
+				continue;
+			} else if (id && strcasecmp(n->val, id)) {
+				continue;
+			}
+			if (node->val) {
+				strncpy(value, node->val, valuesz);
+				return 0;
+			}
+			return 1;
+		}
 	}
 
 	++ptr;
