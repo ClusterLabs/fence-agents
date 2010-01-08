@@ -2,6 +2,8 @@
 #include <pthread.h>
 #include <string.h>
 #include <malloc.h>
+#include <stdlib.h>
+#include <assert.h>
 #include "simpleconfig.h"
 #include "config-stack.h"
 
@@ -37,7 +39,12 @@ _sc_dump_d(struct node *node, int depth, FILE *fp)
 
 	for (x = 0; x < depth; x++)
 		fprintf(fp, "\t");
-	fprintf(fp, "%s {\n", node->id);
+
+	if (node->val) {
+		fprintf(fp, "%s = \"%s\" {\n", node->id, node->val);
+	} else {
+		fprintf(fp, "%s {\n", node->id);
+	}
 
 	for (n = node->nodes; n; n = n->next) {
 		_sc_dump_d(n, depth+1, fp);
@@ -161,45 +168,120 @@ _sc_get(config_info_t *config, const char *key, char *value, size_t valuesz)
 	struct value *v, *values = ((struct parser_context *)config)->val_list;
 	char *ptr;
 	char *slash;
+	char *bracket;
+	char *id;
+	int req_index = 0;
+	int curr_index = 0;
 	int found;
 
 	if (!config)
-		return 1;
+		return -1;
+	assert(strlen(key) < sizeof(buf));
 
 	ptr = (char *)key;
+top:
 	while ((slash = strchr(ptr, '/'))) {
 		memset(buf, 0, sizeof(buf));
 		strncpy(buf, ptr, (slash - ptr));
 		ptr = ++slash;
 
+		id = NULL;
+		bracket = strchr(buf, '[');
+		if (bracket) {
+			*bracket = 0;
+			++bracket;
+
+			id = bracket;
+
+			bracket = strchr(bracket, ']');
+			if (!bracket)
+				return 1;
+			*bracket = 0;
+
+			if (id[0] == '@') {
+				++id;
+				if (!strlen(id)) {
+					return 1;
+				}
+			} else {
+				req_index = atoi(id);
+				if (req_index <= 0)
+					return 1;
+				id = NULL;
+			}
+		}
+
 		found = 0;
+		curr_index = 0;
 
 		for (n = node; n; n = n->next) {
-			if (!strcasecmp(n->id, buf)) {
-				node = n->nodes;
-				values = n->values;
-				found = 1;
-				break;
+
+			if (strcasecmp(n->id, buf))
+				continue;
+
+			++curr_index;
+
+			if (req_index && (curr_index != req_index)) {
+				continue;
+			} else if (id && strcasecmp(n->val, id)) {
+				continue;
 			}
+
+			node = n->nodes;
+			values = n->values;
+			found = 1;
+			break;
 		}
 
 		if (!found)
 			return 1;
 	}
 
-	if (ptr[0] != '@')
+	if (ptr[0] != '@') {
+		if (node->val) {
+			strncpy(value, node->val, valuesz);
+			return 0;
+		}
 		return 1;
+	}
 
 	++ptr;
 	found = 0;
+	id = NULL;
+
+	strncpy(buf, ptr, sizeof(buf));
+	bracket = strchr(buf, '[');
+
+	req_index = 0;
+	curr_index = 0;
+
+	if (bracket) {
+		*bracket = 0;
+		++bracket;
+
+		id = bracket;
+
+		bracket = strchr(bracket, ']');
+		if (!bracket)
+			return 1;
+		*bracket = 0;
+
+		req_index = atoi(id);
+		if (req_index <= 0)
+			return 1;
+		id = NULL;
+	}
 
 	for (v = values; v; v = v->next) {
-		if (!strcasecmp(v->id, ptr)) {
-			if (v->val == NULL)
-				return 1;
-			snprintf(value, valuesz, "%s", v->val);
-			return 0;
-		}
+
+		if (strcasecmp(v->id, buf))
+			continue;
+
+		++curr_index;
+		if (req_index && (curr_index != req_index))
+			continue;
+		snprintf(value, valuesz, "%s", v->val);
+		return 0;
 	}
 
 	return 1;
@@ -238,7 +320,7 @@ _sc_set(config_info_t *config, const char *key, const char *value)
 			id_dup = strdup(buf);
 			if (!id_dup)
 				return -1;
-			_sc_node_add(id_dup, NULL, NULL, nodes);
+			_sc_node_add(id_dup, NULL, NULL, NULL, nodes);
 			n = *nodes;
 			nodes = &n->nodes;
 			values = &n->values;

@@ -32,8 +32,8 @@ _sc_value_add(char *id, char *val, struct value **list)
 
 
 int
-_sc_node_add(char *id, struct value *vallist, struct node *nodelist,
-	 struct node **list)
+_sc_node_add(char *id, char *val, struct value *vallist,
+	     struct node *nodelist, struct node **list)
 {
 	struct node *n;
 
@@ -45,6 +45,7 @@ _sc_node_add(char *id, struct value *vallist, struct node *nodelist,
 	memset(n, 0, sizeof(*n));
 	//snprintf(n->id, sizeof(n->id), "%s", id);
 	n->id = id; /* malloc'd during parsing */
+	n->val = val; /* malloc'd during parsing */
 	n->values = vallist;
 	n->nodes = nodelist;
 	n->next = *list;
@@ -72,7 +73,19 @@ node:
 		struct parser_context *c = NULL;
 
 		c = context_stack;
-		_sc_node_add($1, val_list, node_list, &c->node_list);
+		_sc_node_add($1, NULL, val_list, node_list, &c->node_list);
+		val_list = c->val_list;
+		node_list = c->node_list;
+        	context_stack = c->next;
+
+		free(c);
+	}
+	|
+	T_ID T_EQ T_VAL T_OBRACE stuff T_CBRACE {
+		struct parser_context *c = NULL;
+
+		c = context_stack;
+		_sc_node_add($1, $3, val_list, node_list, &c->node_list);
 		val_list = c->val_list;
 		node_list = c->node_list;
         	context_stack = c->next;
@@ -84,7 +97,19 @@ node:
 		struct parser_context *c = NULL;
 
 		c = context_stack;
-		_sc_node_add($1, val_list, node_list, &c->node_list);
+		_sc_node_add($1, NULL, val_list, node_list, &c->node_list);
+		val_list = c->val_list;
+		node_list = c->node_list;
+        	context_stack = c->next;
+
+		free(c);
+	}
+	|
+	T_ID T_EQ T_VAL T_OBRACE T_CBRACE {
+		struct parser_context *c = NULL;
+
+		c = context_stack;
+		_sc_node_add($1, $3, val_list, node_list, &c->node_list);
 		val_list = c->val_list;
 		node_list = c->node_list;
         	context_stack = c->next;
