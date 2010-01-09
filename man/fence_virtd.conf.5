@@ -35,6 +35,14 @@ the listener plugin for receiving fencing requests from clients
 .
 the plugin to be used to carry out fencing requests
 
+.TP
+.B perm
+.
+the permission mode to use.  The default is "none", in which case, the 
+hypervisor or mananagement framework is expected to know which VMs may
+fence which other VMs.  Fence_virtd also supports static maps.
+
+
 .SS listeners
 
 This section contains listener-specific configuration information; see the
@@ -45,11 +53,22 @@ section about listeners below.
 This section contains listener-specific configuration information; see the
 section about listeners below.
 
+.SS groups
+
+This section contains static maps of which virtual machines may fence
+which other virtual machines; see the
+section about groups below.
+
+
 .SH LISTENERS
 
 There are various listeners available for fence_virtd, each one handles
 decoding and authentication of a given fencing request.  The following 
 configuration blocks belong in the \fBlisteners\fP section of fence_virtd.conf
+
+.SS vmchannel
+To be done.  This listener utilizes serial vmchannel tied to Unix domain
+sockets on the host in order to receive and route fencing requests.
 
 .SS multicast
 .TP
@@ -135,6 +154,26 @@ is still the default.  However, it is strongly recommended to use 'uuid'
 instead of 'name' in all cluster environments involving more than one
 physical host in order to avoid the potential for name collisions.
 
+.SH GROUPS
+
+Fence_virtd supports static maps which allow grouping of VMs.  The
+groups are arbitrary and are checked at fence time.  Any member of
+a group may fence any other member.  Hosts may be assigned to multiple
+groups if desired.
+
+Note that this mode is only useful when using the VMChannel listener, as
+as other listener plugins (e.g. multicast) have no reliable way to determine
+the originating VM of a fencing request.
+
+.SS group
+
+This defines a group.
+
+.TP
+.B member
+.
+defines a member of a group.
+
 
 .SH EXAMPLE
 
@@ -154,6 +193,13 @@ physical host in order to avoid the potential for name collisions.
  backends {
   libvirt { 
    uri = "qemu:///system";
+  }
+ }
+ 
+ groups {
+  group {
+   member = "44179d3f-6c63-474f-a212-20c8b4b25b16";
+   member = "1ce02c4b-dfa1-42cb-b5b1-f0b1091ece60";
   }
  }
 
