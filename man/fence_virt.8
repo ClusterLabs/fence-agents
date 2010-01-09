@@ -82,6 +82,17 @@ Treat 'domain' as UUID instead of domain name.
 .B -o
 . 
 Fencing action (null, off, on, [reboot], or status) (Default Value: reboot)
+
+.TP
+.B -D
+. 
+Serial device (fence_virt mode).  Default=/dev/ttyS1
+
+.TP
+.B -P
+.
+Serial parameters (fence_virt mode).  Default=115200,8N1
+	
 	
 .TP
 .B -t
@@ -174,6 +185,19 @@ Fencing action (null, off, on, [reboot], or status) (Default Value: reboot)
 .B timeout
 . 
 Fencing timeout (in seconds; default=30) (Default Value: 30)
+
+.TP
+.B serial_device
+. 
+Serial device
+
+.TP
+.B serial_params
+. 
+Serial parameters
+
+
+
 
 .SH SEE ALSO
 

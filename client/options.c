@@ -280,21 +280,6 @@ assign_version(fence_virt_args_t *args, struct arg_info *arg, char *value)
 
 
 static inline void
-assign_noccs(fence_virt_args_t *args, struct arg_info *arg, char *value)
-{
-	args->flags |= F_NOCCS;
-}
-
-
-static inline void
-assign_nocluster(fence_virt_args_t *args, struct arg_info *arg, char *value)
-{
-	args->flags |= F_NOCCS;
-	args->flags |= F_NOCLUSTER;
-}
-
-
-static inline void
 assign_uri(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
 #if 0
@@ -318,13 +303,13 @@ static struct arg_info _arg_info[] = {
 	  "Not user serviceable", 
 	  NULL },
 
+	{ '\xff', NULL, "nodename",
+	  "Not user serviceable", 
+	  NULL },
+
 	{ 'd', "-d", "debug",
 	  "Specify (CCS) / increment (command line) debug level",
 	  assign_debug },
-
-	{ 'f', "-f", NULL,
-	  "Foreground mode (do not fork)",
-	  assign_foreground },
 
 	{ 'i', "-i <family>", "ip_family",
 	  "IP Family ([auto], ipv4, ipv6)",
@@ -359,7 +344,7 @@ static struct arg_info _arg_info[] = {
 	  assign_key },
 
 	{ 'D', "-D <device>", "serial_device",
-	  "Shared key file (default=" DEFAULT_SERIAL_DEVICE  ")",
+	  "Serial device (default=" DEFAULT_SERIAL_DEVICE  ")",
 	  assign_device },
 
 	{ 'P', "-P <param>", "serial_params",
@@ -394,14 +379,6 @@ static struct arg_info _arg_info[] = {
 	{ '?', "-?", NULL,
  	  "Help (alternate)", 
 	  assign_help },
-
-	{ 'X', "-X", NULL,
- 	  "Do not connect to CCS for configuration", 
-	  assign_noccs }, 
-
-	{ 'L', "-L", NULL,
- 	  "Local mode only (no cluster; implies -X)",
-	  assign_nocluster }, 
 
 	{ 'U', "-U", "uri",
 	  "URI for Hypervisor (default: auto detect)",
@@ -516,7 +493,7 @@ args_print(fence_virt_args_t *args)
 			1 = print fence-style stdin args + description
  */
 void
-args_usage(char *progname, char *optstr, int print_stdin)
+args_usage(char *progname, const char *optstr, int print_stdin)
 {
 	int x;
 	struct arg_info *arg;
@@ -606,7 +583,7 @@ eol:
   @param args		Args structure to fill in.
  */
 void
-args_get_stdin(char *optstr, fence_virt_args_t *args)
+args_get_stdin(const char *optstr, fence_virt_args_t *args)
 {
 	char in[256];
 	int line = 0;
@@ -651,7 +628,7 @@ args_get_stdin(char *optstr, fence_virt_args_t *args)
   @param args		Args structure to fill in.
  */
 void
-args_get_getopt(int argc, char **argv, char *optstr, fence_virt_args_t *args)
+args_get_getopt(int argc, char **argv, const char *optstr, fence_virt_args_t *args)
 {
 	int opt;
 	struct arg_info *arg;

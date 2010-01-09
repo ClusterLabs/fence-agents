@@ -77,11 +77,11 @@ struct arg_info {
 void args_init(fence_virt_args_t *args);
 void args_finalize(fence_virt_args_t *args);
 
-void args_get_getopt(int argc, char **argv, char *optstr,
+void args_get_getopt(int argc, char **argv, const char *optstr,
 		     fence_virt_args_t *args);
-void args_get_stdin(char *optstr, fence_virt_args_t *args);
-void args_get_ccs(char *optstr, fence_virt_args_t *args);
-void args_usage(char *progname, char *optstr, int print_stdin);
+void args_get_stdin(const char *optstr, fence_virt_args_t *args);
+void args_get_ccs(const char *optstr, fence_virt_args_t *args);
+void args_usage(char *progname, const char *optstr, int print_stdin);
 void args_print(fence_virt_args_t *args);
 
 #endif

@@ -51,12 +51,14 @@ int
 main(int argc, char **argv)
 {
 	fence_virt_args_t args;
-	char *my_options = "di:a:p:r:C:c:k:M:H:uo:t:?hV";
+	const char *my_options;
 
 	args_init(&args);
 	if (!strcmp(basename(argv[0]), "fence_xvm")) {
+       		my_options = "di:a:p:r:C:c:k:M:H:uo:t:?hV";
 		args.mode = MODE_MULTICAST;
 	} else {
+       		my_options = "dD:P:M:H:o:t:?hV";
 		args.mode = MODE_SERIAL;
 	}
 
