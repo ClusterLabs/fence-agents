@@ -27,7 +27,7 @@ VIRT_LIBS=-lvirt
 VIRT_QPID=-lqmfconsole
 NSS_LIBS=-lnss3
 UUID_LIBS=-luuid
-INCLUDES=-I../include `nss-config --cflags` `nspr-config --cflags`
+INCLUDES=-I../include `nss-config --cflags` `nspr-config --cflags` `xml2-config --cflags`
 
 LIBS+=-L../common -lfence_virt -Wl,-wrap,syslog,-wrap,closelog -lpthread
 
@@ -43,6 +43,7 @@ libvirt_qpid_so_SOURCES = uuid-test.c
 libvirt_qpid_cxx_so_SOURCES = libvirt-qpid.cpp
 multicast_so_SOURCES = mcast.c history.c
 checkpoint_so_SOURCES = virt.c vm_states.c history.c checkpoint.c cpg.c
+serial_so_SOURCES = virt-serial.c uuid-test.c
 
 
 ################################
@@ -72,6 +73,9 @@ endif
 ifneq ($(mod_multicast),no)
 MODULES+=multicast.so
 endif
+ifneq ($(mod_serial),no)
+MODULES+=serial.so
+endif
 ifneq ($(mod_null),no)
 MODULES+=null.so
 endif
@@ -97,6 +101,10 @@ LIBS+=$(VIRT_QPID)
 endif
 ifneq ($(mod_multicast),no)
 fence_virtd_SOURCES+=${multicast_so_SOURCES}
+LIBS+=$(AIS_LIBS) $(NSS_LIBS)
+endif
+ifneq ($(mod_serial),no)
+fence_virtd_SOURCES+=${serial_so_SOURCES}
 LIBS+=$(AIS_LIBS) $(NSS_LIBS)
 endif
 ifneq ($(mod_null),no)
@@ -127,6 +135,9 @@ null.so: ${null_so_SOURCES:.c=.o}
 checkpoint.so: ${checkpoint_so_SOURCES:.c=.o}
 	$(CC) -o $@ $^ $(LIBS) -shared $(AIS_LIBS) $(VIRT_LIBS) \
 		$(COROSYNC_LIBS) $(CMAN_LIBS)
+
+serial.so: ${serial_so_SOURCES:.c=.o}
+	$(CC) -o $@ $^ $(LIBS) -shared $(VIRT_LIBS) $(UUID_LIBS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $^ $(INCLUDES)
