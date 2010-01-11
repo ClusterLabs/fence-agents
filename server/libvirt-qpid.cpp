@@ -47,6 +47,9 @@ struct lq_info {
 	char *host;
 	uint16_t port;
 };
+	
+
+static ConnectionSettings cs;
 
 #define VALIDATE(arg) \
 do {\
@@ -61,7 +64,6 @@ int
 do_lq_request(const char *vm_name, const char *action)
 {
 	Broker *b = NULL;
-	ConnectionSettings cs;
 	SessionManager::NameVector names;
 	Object::Vector domains;
 	Object *domain = NULL;
@@ -72,8 +74,6 @@ do_lq_request(const char *vm_name, const char *action)
 		property = "uuid";
 	}
 
-	cs.host = "127.0.0.1";
-	cs.port = 5672;
 	
 	SessionManager::Settings s;
 
@@ -225,7 +225,6 @@ lq_hostlist(hostlist_callback callback, void *arg, void *priv)
 	VALIDATE(priv);
 
 	Broker *b = NULL;
-	ConnectionSettings cs;
 	SessionManager::NameVector names;
 	Object::Vector domains;
 	unsigned i, tries = 0;
@@ -234,8 +233,6 @@ lq_hostlist(hostlist_callback callback, void *arg, void *priv)
 
 	printf("[libvirt-qpid] HOSTLIST operation\n");
 
-	cs.host = "127.0.0.1";
-	cs.port = 5672;
 	
 	SessionManager::Settings s;
 
@@ -305,9 +302,16 @@ lq_init(backend_context_t *c, config_object_t *config)
 
 	memset(info, 0, sizeof(*info));
 
-	if (sc_get(config, "backends/null/@message",
-		   value, sizeof(value)) != 0) {
-		snprintf(value, sizeof(value), "Hi!");
+	if(sc_get(config, "backends/libvirt-qpid/@host",
+		   value, sizeof(value))==0){
+		cs.host=value;
+		printf("\n\nHOST = %s\n\n",value);	
+	}
+
+	if(sc_get(config, "backends/libvirt-qpid/@port",
+		   value, sizeof(value)-1)==0){
+		printf("\n\nPORT = %d\n\n",atoi(value));	
+		cs.port = atoi(value);
 	}
 
 	null_message = strdup(value);
