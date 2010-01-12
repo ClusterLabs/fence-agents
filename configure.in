@@ -120,6 +120,7 @@ AC_SUBST(xvm_compat)
 
 AC_CONFIG_FILES([Makefile.top
 		 Makefile
+		 fence_virtd.init
                  man/Makefile
                  client/Makefile
                  common/Makefile
