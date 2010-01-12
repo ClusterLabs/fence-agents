@@ -13,7 +13,7 @@
 include ../Makefile.top
 
 MAN8=fence_virt.8 fence_xvm.8 fence_virtd.8
-MAN5=fence_virtd.conf.5
+MAN5=fence_virt.conf.5
 
 all: $(MAN5) $(MAN8)
 
