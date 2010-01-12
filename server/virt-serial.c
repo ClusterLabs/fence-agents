@@ -221,6 +221,7 @@ domainStarted(virDomainPtr mojaDomain)
 
 	// parseXML output
 	doc = xmlParseMemory(xml, strlen(xml));
+	xmlFree(xml);
 	cur = xmlDocGetRootElement(doc);
 
 	if (cur == NULL) {
@@ -252,17 +253,15 @@ domainStarted(virDomainPtr mojaDomain)
 			if (attr == NULL)
 				continue;
 
-			if (xmlStrcmp
-			    (attr->children->content,
-			     (const xmlChar *) "unix")) {
+			if (xmlStrcmp(attr->children->content,
+				      (const xmlChar *) "unix")) {
 				continue;
 			}
 
 			for (serial = child->xmlChildrenNode; serial != NULL;
 			     serial = serial->next) {
-				if (xmlStrcmp
-				    (serial->name,
-				     (const xmlChar *) "source")) {
+				if (xmlStrcmp(serial->name,
+					      (const xmlChar *) "source")) {
 					continue;
 				}
 
