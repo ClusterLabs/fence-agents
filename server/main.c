@@ -40,12 +40,12 @@ main(int argc, char **argv)
 	const backend_plugin_t *p;
 	listener_context_t listener_ctx = NULL;
 	backend_context_t backend_ctx = NULL;
-	int debug_set = 0, foreground = 0;
+	int debug_set = 0, foreground = 0, wait_for_backend = 0;
 	int opt, configure = 0;
 
 	config = sc_init();
 
-	while ((opt = getopt(argc, argv, "Ff:d:c")) != EOF) {
+	while ((opt = getopt(argc, argv, "Ff:d:cw")) != EOF) {
 		switch(opt) {
 		case 'F':
 			printf("Background mode disabled\n");
@@ -60,6 +60,9 @@ main(int argc, char **argv)
 			break;
 		case 'c':
 			configure = 1;
+			break;
+		case 'w':
+			wait_for_backend = 1;
 			break;
 		case 'h':
 		case '?':
@@ -93,6 +96,12 @@ main(int argc, char **argv)
 		if (sc_get(config, "fence_virtd/@foreground",
 			   val, sizeof(val)) == 0)
 			foreground = atoi(val);
+	}
+
+	if (!wait_for_backend) {
+		if (sc_get(config, "fence_virtd/@wait_for_backend",
+			   val, sizeof(val)) == 0)
+			wait_for_backend = atoi(val);
 	}
 
 	if (dget() > 3) 
@@ -160,15 +169,18 @@ main(int argc, char **argv)
 		}
 	}
 
-	if (p->init(&backend_ctx, config) < 0) {
-		if (foreground) {
-			printf("Backend plugin %s failed to initialize\n",
+	while (p->init(&backend_ctx, config) < 0) {
+		if (!wait_for_backend) {
+			if (foreground) {
+				printf("Backend plugin %s failed to initialize\n",
+				       backend_name);
+			}
+			syslog(LOG_ERR,
+			       "Backend plugin %s failed to initialize\n",
 			       backend_name);
+			return 1;
 		}
-		syslog(LOG_ERR,
-		       "Backend plugin %s failed to initialize\n",
-		       backend_name);
-		return 1;
+		sleep(5);
 	}
 
 	/* only client we have now is mcast (fence_xvm behavior) */

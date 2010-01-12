@@ -435,8 +435,6 @@ libvirt_init(backend_context_t *c, config_object_t *config)
 		dbg_printf(1, "Using %s\n", uri);
 	}
 
-
-
 	/* We don't need to store the URI; we only use it once */
 	vp = virConnectOpen(uri);
 	if (!vp) {

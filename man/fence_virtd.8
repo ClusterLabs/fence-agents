@@ -34,5 +34,15 @@ Interactively prompt user for configuration information
 . 
 Specify an alternate configuration file instead of /etc/fence_virtd.conf
 
+.TP
+.B -F
+. 
+Do not fork into background after starting (overrides any setting in fence_virtd.conf)
+
+.TP
+.B -w
+. 
+Wait for backend to be available (overrides any setting in fence_virtd.conf)
+
 .SH SEE ALSO
 fence_virt(8), fence_xvm(8), fence(8), fence_virtd.conf(5)
