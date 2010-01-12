@@ -13,7 +13,7 @@ from fencing import *
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New RSA2 Agent - test release on steroids"
 REDHAT_COPYRIGHT=""
-BUILD_DATE="March, 2009"
+BUILD_DATE=""
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):
