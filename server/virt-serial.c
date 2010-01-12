@@ -48,7 +48,6 @@ int myEventAddTimeoutFunc(int timeout,
 			  void *opaque, virFreeCallback ff);
 void myEventUpdateTimeoutFunc(int timer, int timout);
 int myEventRemoveTimeoutFunc(int timer);
-static int registerDomain(virDomainPtr mojaDomain);
 
 int myEventHandleTypeToPollEvent(virEventHandleType events);
 virEventHandleType myPollEventToEventHandleType(int events);
@@ -59,6 +58,7 @@ struct domain_info {
 	virDomainPtr dom;
 	virDomainEventType event;
 };
+
 
 int
 myDomainEventCallback1(virConnectPtr conn,
@@ -78,13 +78,6 @@ myDomainEventCallback1(virConnectPtr conn,
 	return 0;
 }
 
-static void
-myFreeFunc(void *opaque)
-{
-	char *str = opaque;
-	printf("%s: Freeing [%s]\n", __func__, str);
-	free(str);
-}
 
 /* EventImpl Functions */
 int
@@ -249,7 +242,7 @@ domainStarted(virDomainPtr mojaDomain)
 				continue;
 			}
 
-			attr = xmlHasProp(child, "type");
+			attr = xmlHasProp(child, (const xmlChar *)"type");
 			if (attr == NULL)
 				continue;
 
@@ -265,8 +258,8 @@ domainStarted(virDomainPtr mojaDomain)
 					continue;
 				}
 
-				attr_mode = xmlHasProp(serial, "mode");
-				attr_path = xmlHasProp(serial, "path");
+				attr_mode = xmlHasProp(serial, (const xmlChar *)"mode");
+				attr_path = xmlHasProp(serial, (const xmlChar *)"path");
 
 				if ((attr_path != NULL) &&
 				    (attr_mode != NULL) &&
@@ -294,14 +287,14 @@ registerExisting(virConnectPtr vp)
 
 	errno = EINVAL;
 	if (!vp)
-		return NULL;
+		return -1;
 
 	d_count = virConnectNumOfDomains(vp);
 	if (d_count <= 0) {
 		if (d_count == 0) {
 			/* Successful, but no domains running */
 			errno = 0;
-			return NULL;
+			return 0;
 		}
 		goto out_fail;
 	}
@@ -343,7 +336,6 @@ static int
 domainStopped(virDomainPtr mojaDomain)
 {
 	char dom_uuid[42];
-	char *xml;
 
 	if (!mojaDomain)
 		return -1;
@@ -366,7 +358,6 @@ main(int argc, char **argv)
 
 	int sts;
 	int callback1ret = -1;
-	int callback2ret = -1;
 
 	if (argc > 1 && STREQ(argv[1], "--help")) {
 		usage(argv[0]);
