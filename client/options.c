@@ -308,7 +308,7 @@ static struct arg_info _arg_info[] = {
 	  NULL },
 
 	{ 'd', "-d", "debug",
-	  "Specify (CCS) / increment (command line) debug level",
+	  "Specify (stdin) or increment (command line) debug level",
 	  assign_debug },
 
 	{ 'i', "-i <family>", "ip_family",
@@ -316,7 +316,7 @@ static struct arg_info _arg_info[] = {
 	  assign_family },
 
 	{ 'a', "-a <address>", "multicast_address",
-	  "Multicast address (default=225.0.0.12 / ff02::3:1)",
+	  "Multicast address (default=" IPV4_MCAST_DEFAULT " / " IPV6_MCAST_DEFAULT ")",
 	  assign_address },
 
 	{ 'p', "-p <port>", "port",
@@ -340,7 +340,7 @@ static struct arg_info _arg_info[] = {
 	  assign_auth },
 
 	{ 'k', "-k <file>", "key_file",
-	  "Shared key file (default=/etc/cluster/fence_virt.key)",
+	  "Shared key file (default=" DEFAULT_KEY_FILE ")",
 	  assign_key },
 
 	{ 'D', "-D <device>", "serial_device",
@@ -353,11 +353,11 @@ static struct arg_info _arg_info[] = {
 
 	{ '\xff', NULL, "option",
 	  /* Deprecated */
-	  "Fencing option (null, off, [reboot], status, devstatus)",
+	  "Fencing option (null, off, on, [reboot], status, hostlist, devstatus)",
 	  assign_op },
 
 	{ 'o', "-o <operation>", "action",
-	  "Fencing action (null, off, [reboot], status, devstatus)",
+	  "Fencing action (null, off, on, [reboot], status, hostlist, devstatus)",
 	  assign_op },
 
 	{ 'H', "-H <domain>", "domain",
@@ -365,7 +365,7 @@ static struct arg_info _arg_info[] = {
 	  assign_domain },
 
 	{ 'u', "-u", "use_uuid",
-	  "Treat <domain> as UUID instead of domain name",
+	  "Treat <domain> as UUID instead of domain name. This is provided for compatibility with older fence_xvmd installations.",
 	  assign_uuid_lookup },
 
 	{ 't', "-t <timeout>", "timeout",
@@ -492,6 +492,57 @@ args_print(fence_virt_args_t *args)
   @param print_stdin	0 = print command line options + description,
 			1 = print fence-style stdin args + description
  */
+static char *
+find_rev(const char *start, char *curr, char c)
+{
+
+	while (curr > start) {
+		if (*curr == c)
+			return curr;
+		--curr;
+	}
+
+	return NULL;
+}
+
+
+static void
+output_help_text(int arg_width, int help_width, const char *arg, const char *desc)
+{
+	char out_buf[4096];
+	char *p, *start;
+	const char *arg_print = arg;
+	int len;
+
+	memset(out_buf, 0, sizeof(out_buf));
+	strncpy(out_buf, desc, sizeof(out_buf));
+	start = out_buf;
+
+	do {
+		p = NULL;
+		len = strlen(start);
+		if (len > help_width) {
+			p = start + help_width;
+			p = find_rev(start, p, ' ');
+			if (p) {
+				*p = 0;
+				p++;
+			}
+		}
+		printf("  %*.*s  %*.*s\n",
+		       -arg_width, arg_width,
+		       arg_print,
+		       -help_width, help_width,
+		       start);
+		if (!p)
+			return;
+		if (arg == arg_print)
+			arg_print = " ";
+		start = p;
+	} while(1);
+}
+
+
 void
 args_usage(char *progname, const char *optstr, int print_stdin)
 {
@@ -513,11 +564,9 @@ args_usage(char *progname, const char *optstr, int print_stdin)
 
 		if (print_stdin) {
 			if (arg && arg->stdin_opt)
-				printf("  %-20.20s %-55.55s\n",
-				       arg->stdin_opt, arg->desc);
+				output_help_text(20, 55, arg->stdin_opt, arg->desc);
 		} else {
-			printf("  %-20.20s %-55.55s\n", arg->opt_desc,
-			       arg->desc);
+			output_help_text(20, 55, arg->opt_desc, arg->desc);
 		}
 	}
 
