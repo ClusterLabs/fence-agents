@@ -13,6 +13,7 @@
 
 #include <libxml/xmlreader.h>
 
+#include <simpleconfig.h>
 #include "debug.h"
 
 #define DEBUG0(fmt) dbg_printf(5,"%s:%d :: " fmt "\n", \
@@ -20,7 +21,7 @@
 #define DEBUG1(fmt, ...) dbg_printf(5, "%s:%d: " fmt "\n", \
         __func__, __LINE__, __VA_ARGS__)
 
-#include "virt-sockets.h"
+#include "serial.h"
 
 #define STREQ(a,b) (strcmp((a),(b)) == 0)
 

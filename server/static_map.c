@@ -8,6 +8,8 @@
 #include <list.h>
 #include <debug.h>
 
+#include "serial.h"
+
 struct perm_entry {
 	list_head();
 	char name[128];

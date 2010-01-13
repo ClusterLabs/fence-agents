@@ -7,8 +7,9 @@
 #include <sys/un.h>
 #include <stdlib.h>
 #include <debug.h>
+#include <simpleconfig.h>
 
-#include "virt-sockets.h"
+#include "serial.h"
 
 struct socket_list {
 	list_head();
@@ -103,6 +104,7 @@ domain_sock_close(const char *domain)
 		close(dead->socket_fd);
 		free(dead->domain_name);
 		free(dead->socket_path);
+		free(dead);
 	}
 
 	return 0;
@@ -147,5 +149,25 @@ domain_sock_name(int fd, char *outbuf, size_t buflen)
 	pthread_mutex_unlock(&sock_list_mutex);
 
 	return ret;
+}
+
+
+int
+domain_sock_cleanup(void)
+{
+	struct socket_list *dead= NULL;
+
+	pthread_mutex_lock(&sock_list_mutex);
+	while(socks) {
+		dead = socks;
+		list_remove(&socks, dead);
+		close(dead->socket_fd);
+		free(dead->domain_name);
+		free(dead->socket_path);
+		free(dead);
+	}
+	pthread_mutex_unlock(&sock_list_mutex);
+
+	return 0;
 }
 

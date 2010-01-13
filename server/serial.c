@@ -52,7 +52,7 @@
 /* Local includes */
 #include "debug.h"
 #include "fdops.h"
-#include "virt-sockets.h"
+#include "serial.h"
 
 #define NAME "serial"
 #define VERSION "0.3"
@@ -173,7 +173,8 @@ do_fence_request(int fd, const char *src, serial_req_t *req, serial_info *info)
 		response = info->cb->null((char *)req->domain, info->priv);
 		break;
 	case FENCE_ON:
-		if (static_map_check(info->maps, src, req->domain) == 0) {
+		if (static_map_check(info->maps, src,
+				     (const char *)req->domain) == 0) {
 			response = RESP_PERM;
 			break;
 		}
@@ -181,7 +182,8 @@ do_fence_request(int fd, const char *src, serial_req_t *req, serial_info *info)
 					info->priv);
 		break;
 	case FENCE_OFF:
-		if (static_map_check(info->maps, src, req->domain) == 0) {
+		if (static_map_check(info->maps, src,
+				     (const char *)req->domain) == 0) {
 			response = RESP_PERM;
 			break;
 		}
@@ -189,7 +191,8 @@ do_fence_request(int fd, const char *src, serial_req_t *req, serial_info *info)
 					 info->priv);
 		break;
 	case FENCE_REBOOT:
-		if (static_map_check(info->maps, src, req->domain) == 0) {
+		if (static_map_check(info->maps, src,
+				     (const char *)req->domain) == 0) {
 			response = RESP_PERM;
 			break;
 		}
@@ -361,6 +364,7 @@ serial_shutdown(listener_context_t c)
 	VALIDATE(info);
 	info->magic = 0;
 	stop_event_listener();
+	domain_sock_cleanup();
 	free(info->uri);
 	free(info);
 
