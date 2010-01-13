@@ -238,6 +238,9 @@ serial_fence_virt(fence_virt_args_t *args)
 	memset(&req, 0, sizeof(req));
 	req.magic = SERIAL_MAGIC;
 	req.request = (uint8_t)args->op;
+	gettimeofday(&tv, NULL);
+	req.seqno = (int)tv.tv_usec;
+
 	if (args->flags & RF_UUID)
 		req.flags |= RF_UUID;
 	if (args->domain) 

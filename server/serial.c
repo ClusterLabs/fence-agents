@@ -89,7 +89,7 @@ struct serial_hostlist_arg {
  */
 static int
 check_history(void *a, void *b) {
-	fence_req_t *old = a, *current = b;
+	serial_req_t *old = a, *current = b;
 
 	if (old->request == current->request &&
 	    old->seqno == current->seqno &&
