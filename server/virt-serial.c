@@ -5,6 +5,7 @@
 #include <string.h>
 #include <signal.h>
 #include <errno.h>
+#include <pthread.h>
 
 #include <sys/types.h>
 #include <sys/poll.h>
@@ -12,26 +13,41 @@
 
 #include <libxml/xmlreader.h>
 
+#ifdef DEBUG
+
 #define DEBUG0(fmt) printf("%s:%d :: " fmt "\n", \
         __func__, __LINE__)
-#define DEBUG(fmt, ...) printf("%s:%d: " fmt "\n", \
+#define DEBUG1(fmt, ...) printf("%s:%d: " fmt "\n", \
         __func__, __LINE__, __VA_ARGS__)
+
+#else
+
+#define DEBUG0(fmt)
+#define DEBUG1(fmt, ...)
+
+#endif
+
+
+#include "virt-sockets.h"
+
 #define STREQ(a,b) (strcmp((a),(b)) == 0)
 
 /* handle globals */
-int h_fd = 0;
-virEventHandleType h_event = 0;
-virEventHandleCallback h_cb = NULL;
-virFreeCallback h_ff = NULL;
-void *h_opaque = NULL;
+static int h_fd = -1;
+static virEventHandleType h_event = 0;
+static virEventHandleCallback h_cb = NULL;
+static virFreeCallback h_ff = NULL;
+static void *h_opaque = NULL;
 
 /* timeout globals */
 #define TIMEOUT_MS 1000
-int t_active = 0;
-int t_timeout = -1;
-virEventTimeoutCallback t_cb = NULL;
-virFreeCallback t_ff = NULL;
-void *t_opaque = NULL;
+static int t_active = 0;
+static int t_timeout = -1;
+static virEventTimeoutCallback t_cb = NULL;
+static virFreeCallback t_ff = NULL;
+static void *t_opaque = NULL;
+static pthread_t event_tid = 0;
+static int run = 0;
 
 /* Prototypes */
 const char *eventToString(int event);
@@ -116,19 +132,19 @@ myEventAddHandleFunc(int fd, int event,
 		     virEventHandleCallback cb,
 		     void *opaque, virFreeCallback ff)
 {
-	DEBUG("Add handle %d %d %p %p", fd, event, cb, opaque);
+	DEBUG1("Add handle %d %d %p %p %p", fd, event, cb, opaque, ff);
 	h_fd = fd;
 	h_event = myEventHandleTypeToPollEvent(event);
 	h_cb = cb;
-	h_ff = ff;
 	h_opaque = opaque;
+	h_ff = ff;
 	return 0;
 }
 
 void
 myEventUpdateHandleFunc(int fd, int event)
 {
-	DEBUG("Updated Handle %d %d", fd, event);
+	DEBUG1("Updated Handle %d %d", fd, event);
 	h_event = myEventHandleTypeToPollEvent(event);
 	return;
 }
@@ -136,7 +152,7 @@ myEventUpdateHandleFunc(int fd, int event)
 int
 myEventRemoveHandleFunc(int fd)
 {
-	DEBUG("Removed Handle %d", fd);
+	DEBUG1("Removed Handle %d", fd);
 	h_fd = 0;
 	if (h_ff)
 		(h_ff) (h_opaque);
@@ -148,7 +164,7 @@ myEventAddTimeoutFunc(int timeout,
 		      virEventTimeoutCallback cb,
 		      void *opaque, virFreeCallback ff)
 {
-	DEBUG("Adding Timeout %d %p %p", timeout, cb, opaque);
+	DEBUG1("Adding Timeout %d %p %p", timeout, cb, opaque);
 	t_active = 1;
 	t_timeout = timeout;
 	t_cb = cb;
@@ -160,36 +176,20 @@ myEventAddTimeoutFunc(int timeout,
 void
 myEventUpdateTimeoutFunc(int timer, int timeout)
 {
-	/*DEBUG("Timeout updated %d %d", timer, timeout); */
+	/*DEBUG1("Timeout updated %d %d", timer, timeout); */
 	t_timeout = timeout;
 }
 
 int
 myEventRemoveTimeoutFunc(int timer)
 {
-	DEBUG("Timeout removed %d", timer);
+	DEBUG1("Timeout removed %d", timer);
 	t_active = 0;
 	if (t_ff)
 		(t_ff) (t_opaque);
 	return 0;
 }
 
-/* main test functions */
-
-void
-usage(const char *pname)
-{
-	printf("%s uri\n", pname);
-}
-
-int run = 1;
-
-static void
-stop(int sig)
-{
-	printf("Exiting on signal %d\n", sig);
-	run = 0;
-}
 
 static int
 domainStarted(virDomainPtr mojaDomain)
@@ -268,6 +268,8 @@ domainStarted(virDomainPtr mojaDomain)
 					printf(">> REGISTER >> %s %s\n",
 					       dom_uuid,
 					       attr_path->children->content);
+					domain_sock_setup(dom_uuid, (const char *)
+							  attr_path->children->content);
 				}
 			}
 		}
@@ -345,24 +347,21 @@ domainStopped(virDomainPtr mojaDomain)
 	printf("UUID: %s\n", dom_uuid);
 
 	printf(">> UNREGISTER >> %s\n", dom_uuid);
+	domain_sock_close(dom_uuid);
 
 	return 0;
 }
 
-int
-main(int argc, char **argv)
+
+static void *
+event_thread(void *arg)
 {
 	virConnectPtr dconn = NULL;
 	struct domain_info dinfo;
-	struct sigaction action_stop = {.sa_handler = stop };
-
 	int sts;
 	int callback1ret = -1;
 
-	if (argc > 1 && STREQ(argv[1], "--help")) {
-		usage(argv[0]);
-		return -1;
-	}
+	printf("Event listener starting \n");
 
 	virEventRegisterImpl(myEventAddHandleFunc,
 			     myEventUpdateHandleFunc,
@@ -371,14 +370,11 @@ main(int argc, char **argv)
 			     myEventUpdateTimeoutFunc,
 			     myEventRemoveTimeoutFunc);
 
-	dconn = virConnectOpen(argv[1] ? argv[1] : NULL);
+	dconn = virConnectOpen((char *)arg);
 	if (!dconn) {
 		printf("error opening\n");
-		return -1;
+		return NULL;
 	}
-
-	sigaction(SIGTERM, &action_stop, NULL);
-	sigaction(SIGINT, &action_stop, NULL);
 
 	DEBUG0("Registering domain event cbs");
 
@@ -398,6 +394,12 @@ main(int argc, char **argv)
 				.revents = 0
 			};
 
+			sts = poll(&pfd, 1, TIMEOUT_MS);
+			/* We are assuming timeout of 0 here - so execute every time */
+			if (t_cb && t_active) {
+				t_cb(t_timeout, t_opaque);
+			}
+
 			if (dinfo.event == VIR_DOMAIN_EVENT_STARTED) {
 				domainStarted(dinfo.dom);
 				virDomainFree(dinfo.dom);
@@ -410,39 +412,31 @@ main(int argc, char **argv)
 				dinfo.event = VIR_DOMAIN_EVENT_UNDEFINED;
 			}
 
-			sts = poll(&pfd, 1, TIMEOUT_MS);
-			/* We are assuming timeout of 0 here - so execute every time */
-			if (t_cb && t_active) {
-				t_cb(t_timeout, t_opaque);
-			}
-
 			if (sts == 0) {
 				/* DEBUG0("Poll timeout"); */
 				continue;
 			}
+
 			if (sts < 0) {
 				DEBUG0("Poll failed");
 				continue;
 			}
+
 			if (pfd.revents & POLLHUP) {
 				DEBUG0("Reset by peer");
-				return -1;
+				return NULL;
 			}
 
 			if (h_cb) {
-				h_cb(0,
-				     h_fd,
-				     myPollEventToEventHandleType(pfd.
-								  revents &
+				h_cb(0, h_fd,
+				     myPollEventToEventHandleType(pfd.revents &
 								  h_event),
 				     h_opaque);
 			}
-
 		}
 
 		DEBUG0("Deregistering event handlers");
 		virConnectDomainEventDeregister(dconn, myDomainEventCallback1);
-
 	}
 
 	DEBUG0("Closing connection");
@@ -451,5 +445,38 @@ main(int argc, char **argv)
 	}
 
 	printf("done\n");
+	return NULL;
+}
+
+
+int
+start_event_listener(const char *uri)
+{
+	char *arg = NULL;
+
+	virInitialize();
+       
+	if (uri) {
+	       arg = strdup(uri);
+	       if (uri == NULL)
+		       return -1;
+	}
+
+	run = 1;
+
+	return pthread_create(&event_tid, NULL, event_thread, arg);
+}
+
+
+int
+stop_event_listener(void)
+{
+	run = 0;
+	pthread_cancel(event_tid);
+	pthread_join(event_tid, NULL);
+	event_tid = 0;
+
 	return 0;
 }
+
+

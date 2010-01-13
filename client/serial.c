@@ -176,6 +176,8 @@ hangup(int fd, int delay)
 	}
 }
 
+void do_read_hostlist(int fd, int timeout);
+
 
 int
 serial_fence_virt(fence_virt_args_t *args)
@@ -188,7 +190,7 @@ serial_fence_virt(fence_virt_args_t *args)
 
 	strncpy(speed, args->serial.speed, sizeof(speed));
 
-	printf("Port: %s Speed: %s\n", args->serial.device, speed);
+	//printf("Port: %s Speed: %s\n", args->serial.device, speed);
 
 	if ((flags = strchr(speed, ','))) {
 		*flags = 0;
@@ -208,8 +210,8 @@ serial_fence_virt(fence_virt_args_t *args)
 	req.request = (uint8_t)args->op;
 	if (args->flags & RF_UUID)
 		req.flags |= RF_UUID;
-	strncpy((char *)req.domain, args->domain, sizeof(req.domain));
-
+	if (args->domain) 
+		strncpy((char *)req.domain, args->domain, sizeof(req.domain));
 	
 	tv.tv_sec = 3;
 	tv.tv_usec = 0;
@@ -229,15 +231,12 @@ serial_fence_virt(fence_virt_args_t *args)
 
 	if (resp.magic != SERIAL_MAGIC)
 		return -1;
-	ret = (int)resp.response;
-
-	/* XXX try a response from netcat: e.g.
-	   abba1<cr> = fail; abba0<cr>=ok
-	   should be removed when we have "real" 
-	   server side handling; this was just to
-	   test communications */
-	if (ret & 0x30) 
-		ret &= (~0x30);
+	ret = resp.response;
+	if (resp.response == 253) /* hostlist */ {
+		/* ok read hostlist */
+		do_read_hostlist(fd, args->timeout);
+		ret = 0;
+	}
 
 	close(fd);
 

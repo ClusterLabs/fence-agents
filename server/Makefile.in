@@ -43,7 +43,7 @@ libvirt_qpid_so_SOURCES = uuid-test.c
 libvirt_qpid_cxx_so_SOURCES = libvirt-qpid.cpp
 multicast_so_SOURCES = mcast.c history.c
 checkpoint_so_SOURCES = virt.c vm_states.c history.c checkpoint.c cpg.c
-serial_so_SOURCES = virt-serial.c uuid-test.c
+serial_so_SOURCES = virt-serial.c uuid-test.c virt-sockets.c serial.c history.c
 
 
 ################################
