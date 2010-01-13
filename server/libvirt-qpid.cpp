@@ -46,10 +46,10 @@ struct lq_info {
 	int pad;
 	char *host;
 	uint16_t port;
+	ConnectionSettings *cs;
 };
 	
 
-static ConnectionSettings cs;
 
 #define VALIDATE(arg) \
 do {\
@@ -61,7 +61,8 @@ do {\
 
 
 int
-do_lq_request(const char *vm_name, const char *action)
+do_lq_request(struct lq_info *info, const char *vm_name,
+	      const char *action)
 {
 	Broker *b = NULL;
 	SessionManager::NameVector names;
@@ -73,7 +74,6 @@ do_lq_request(const char *vm_name, const char *action)
 	if (is_uuid(vm_name) == 1) {
 		property = "uuid";
 	}
-
 	
 	SessionManager::Settings s;
 
@@ -87,7 +87,7 @@ do_lq_request(const char *vm_name, const char *action)
 	SessionManager sm(NULL, s);
 
 	try {
-		b = sm.addBroker(cs);
+		b = sm.addBroker(*(info->cs));
 	}
 	catch (...) {
 		std::cout << "Error connecting.\n";
@@ -168,7 +168,7 @@ lq_off(const char *vm_name, uint32_t seqno, void *priv)
 	VALIDATE(priv);
 	printf("[libvirt-qpid] OFF operation on %s\n", vm_name);
 
-	return do_lq_request(vm_name, "destroy");
+	return do_lq_request((lq_info *)priv, vm_name, "destroy");
 
 	return 1;
 }
@@ -180,7 +180,7 @@ lq_on(const char *vm_name, uint32_t seqno, void *priv)
 	VALIDATE(priv);
 	printf("[libvirt-qpid] ON operation on %s\n", vm_name);
 
-	return do_lq_request(vm_name, "create");
+	return do_lq_request((lq_info *)priv, vm_name, "create");
 }
 
 
@@ -224,6 +224,8 @@ lq_hostlist(hostlist_callback callback, void *arg, void *priv)
 {
 	VALIDATE(priv);
 
+	struct lq_info *info = (struct lq_info *)priv;
+
 	Broker *b = NULL;
 	SessionManager::NameVector names;
 	Object::Vector domains;
@@ -232,7 +234,6 @@ lq_hostlist(hostlist_callback callback, void *arg, void *priv)
 	int vm_state = 0, ret = 1;
 
 	printf("[libvirt-qpid] HOSTLIST operation\n");
-
 	
 	SessionManager::Settings s;
 
@@ -247,7 +248,7 @@ lq_hostlist(hostlist_callback callback, void *arg, void *priv)
 	// todo - authentication info! 
 
 	try {
-		b = sm.addBroker(cs);
+		b = sm.addBroker(*(info->cs));
 	}
 	catch (...) {
 		std::cout << "Error connecting.\n";
@@ -267,6 +268,7 @@ lq_hostlist(hostlist_callback callback, void *arg, void *priv)
 	if (domains.size() < 1)
 		goto out;
 
+	dbg_printf("%d domains\n", domains.size());
 	for (i = 0; i < domains.size(); i++) {
 
 		vm_name = domains[i].attrString("name").c_str();
@@ -302,16 +304,18 @@ lq_init(backend_context_t *c, config_object_t *config)
 
 	memset(info, 0, sizeof(*info));
 
+	info->cs = new(ConnectionSettings);
+
 	if(sc_get(config, "backends/libvirt-qpid/@host",
 		   value, sizeof(value))==0){
-		cs.host=value;
+		info->cs->host = strdup(value);
 		printf("\n\nHOST = %s\n\n",value);	
 	}
 
 	if(sc_get(config, "backends/libvirt-qpid/@port",
 		   value, sizeof(value)-1)==0){
 		printf("\n\nPORT = %d\n\n",atoi(value));	
-		cs.port = atoi(value);
+		info->cs->port = atoi(value);
 	}
 
 	null_message = strdup(value);
@@ -334,6 +338,7 @@ lq_shutdown(backend_context_t c)
 
 	VALIDATE(info);
 	info->magic = 0;
+	delete(info->cs);
 	free(info);
 
 	return 0;
