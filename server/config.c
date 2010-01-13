@@ -14,6 +14,8 @@
 #include <xvm.h>
 #include "server_plugin.h"
 
+#include <simple_auth.h>
+
 
 static int
 yesno(const char *prompt, int dfl)
@@ -79,6 +81,7 @@ plugin_path_configure(config_object_t *config)
 	do {
 		text_input("Module search path", val, inp, sizeof(inp));
 
+		printf("\n");
 		done = plugin_search(inp);
 		if (done > 0) {
 			plugin_dump();
@@ -244,7 +247,7 @@ listener_config_multicast(config_object_t *config)
 
 
 	/* MULTICAST INTERFACE */
-	printf("Setting a preferred interface causes fence_virtd to listen only\n"
+	printf("\nSetting a preferred interface causes fence_virtd to listen only\n"
 	       "on that interface.  Normally, it listens on all interfaces.\n"
 	       "In environments where the virtual machines are using the host\n"
 	       "machine as a gateway, this *must* be set (typically to virbr0).\n"
@@ -283,14 +286,14 @@ listener_config_multicast(config_object_t *config)
 
 
 	/* KEY FILE */
-	printf("The key file is the shared key information which is used to\n"
+	printf("\nThe key file is the shared key information which is used to\n"
 	       "authenticate fencing requests.  The contents of this file must\n"
 	       "be distributed to each physical host and virtual machine within\n"
 	       "a cluster.\n\n");
 
 	if (sc_get(config, "listeners/multicast/@key_file",
 		   val, sizeof(val)-1)) {
-		strncpy(val, "none", sizeof(val));
+		strncpy(val, DEFAULT_KEY_FILE, sizeof(val));
 	}
 
 	do { 
