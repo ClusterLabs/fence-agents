@@ -602,7 +602,8 @@ checkpoint_null(const char *vm_name, void *priv)
 
 
 static int
-checkpoint_off(const char *vm_name, uint32_t seqno, void *priv)
+checkpoint_off(const char *vm_name, const char *src,
+	       uint32_t seqno, void *priv)
 {
 	VALIDATE(priv);
 	printf("[CKPT] OFF operation on %s seq %d\n", vm_name, seqno);
@@ -612,7 +613,8 @@ checkpoint_off(const char *vm_name, uint32_t seqno, void *priv)
 
 
 static int
-checkpoint_on(const char *vm_name, uint32_t seqno, void *priv)
+checkpoint_on(const char *vm_name, const char *src,
+	      uint32_t seqno, void *priv)
 {
 	VALIDATE(priv);
 	printf("[CKPT] ON operation on %s seq %d\n", vm_name, seqno);
@@ -642,7 +644,8 @@ checkpoint_status(const char *vm_name, void *priv)
 
 
 static int
-checkpoint_reboot(const char *vm_name, uint32_t seqno, void *priv)
+checkpoint_reboot(const char *vm_name, const char *src,
+		  uint32_t seqno, void *priv)
 {
 	VALIDATE(priv);
 	printf("[CKPT] REBOOT operation on %s seq %d\n", vm_name, seqno);

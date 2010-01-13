@@ -1,6 +1,6 @@
 /*  */
-#define PLUGIN_VERSION_LISTENER ((double)0.1)
-#define PLUGIN_VERSION_BACKEND  ((double)0.1)
+#define PLUGIN_VERSION_LISTENER ((double)0.2)
+#define PLUGIN_VERSION_BACKEND  ((double)0.2)
 
 #define LISTENER_VER_SYM listener_plugin_version
 #define BACKEND_VER_SYM backend_plugin_version
@@ -26,18 +26,18 @@ typedef int (*fence_null_callback)(const char *vm_name,
 
 /* Turn the VM 'off'.  Returns 0 to caller if successful or
    nonzero if unsuccessful. */
-typedef int (*fence_off_callback)(const char *vm_name, uint32_t seqno,
-				  void *priv);
+typedef int (*fence_off_callback)(const char *vm_name, const char *src,
+				  uint32_t seqno, void *priv);
 
 /* Turn the VM 'on'.  Returns 0 to caller if successful or
    nonzero if unsuccessful. */
-typedef int (*fence_on_callback)(const char *vm_name, uint32_t seqno,
-				 void *priv);
+typedef int (*fence_on_callback)(const char *vm_name, const char *src,
+				 uint32_t seqno, void *priv);
 
 /* Reboot a VM.  Returns 0 to caller if successful or
    nonzero if unsuccessful. */
-typedef int (*fence_reboot_callback)(const char *vm_name, uint32_t seqno,
-				     void *priv);
+typedef int (*fence_reboot_callback)(const char *vm_name, const char *src,
+				     uint32_t seqno, void *priv);
 
 /* Get status of a VM.  Returns 0 to caller if VM is alive or
    nonzero if VM is not alive. */

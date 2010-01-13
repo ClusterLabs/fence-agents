@@ -250,15 +250,15 @@ do_fence_request_tcp(fence_req_t *req, mcast_info *info)
 		response = info->cb->null((char *)req->domain, info->priv);
 		break;
 	case FENCE_ON:
-		response = info->cb->on((char *)req->domain, req->seqno,
+		response = info->cb->on((char *)req->domain, NULL, req->seqno,
 					info->priv);
 		break;
 	case FENCE_OFF:
-		response = info->cb->off((char *)req->domain, req->seqno,
+		response = info->cb->off((char *)req->domain, NULL, req->seqno,
 					 info->priv);
 		break;
 	case FENCE_REBOOT:
-		response = info->cb->reboot((char *)req->domain, req->seqno,
+		response = info->cb->reboot((char *)req->domain, NULL, req->seqno,
 					    info->priv);
 		break;
 	case FENCE_STATUS:

@@ -178,8 +178,8 @@ do_fence_request(int fd, const char *src, serial_req_t *req, serial_info *info)
 			response = RESP_PERM;
 			break;
 		}
-		response = info->cb->on((char *)req->domain, req->seqno,
-					info->priv);
+		response = info->cb->on((char *)req->domain, src,
+				       	req->seqno, info->priv);
 		break;
 	case FENCE_OFF:
 		if (static_map_check(info->maps, src,
@@ -187,8 +187,8 @@ do_fence_request(int fd, const char *src, serial_req_t *req, serial_info *info)
 			response = RESP_PERM;
 			break;
 		}
-		response = info->cb->off((char *)req->domain, req->seqno,
-					 info->priv);
+		response = info->cb->off((char *)req->domain, src,
+					 req->seqno, info->priv);
 		break;
 	case FENCE_REBOOT:
 		if (static_map_check(info->maps, src,
@@ -196,8 +196,8 @@ do_fence_request(int fd, const char *src, serial_req_t *req, serial_info *info)
 			response = RESP_PERM;
 			break;
 		}
-		response = info->cb->reboot((char *)req->domain, req->seqno,
-					    info->priv);
+		response = info->cb->reboot((char *)req->domain, src,
+					    req->seqno, info->priv);
 		break;
 	case FENCE_STATUS:
 		response = info->cb->status((char *)req->domain, info->priv);

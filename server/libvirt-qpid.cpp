@@ -176,7 +176,7 @@ lq_null(const char *vm_name, void *priv)
 
 
 static int
-lq_off(const char *vm_name, uint32_t seqno, void *priv)
+lq_off(const char *vm_name, const char *src, uint32_t seqno, void *priv)
 {
 	VALIDATE(priv);
 	printf("[libvirt-qpid] OFF operation on %s\n", vm_name);
@@ -188,7 +188,7 @@ lq_off(const char *vm_name, uint32_t seqno, void *priv)
 
 
 static int
-lq_on(const char *vm_name, uint32_t seqno, void *priv)
+lq_on(const char *vm_name, const char *src, uint32_t seqno, void *priv)
 {
 	VALIDATE(priv);
 	printf("[libvirt-qpid] ON operation on %s\n", vm_name);
@@ -218,15 +218,15 @@ lq_status(const char *vm_name, void *priv)
 
 
 static int
-lq_reboot(const char *vm_name, uint32_t seqno, void *priv)
+lq_reboot(const char *vm_name, const char *src, uint32_t seqno, void *priv)
 {
 	VALIDATE(priv);
 	printf("[libvirt-qpid] REBOOT operation on %s\n", vm_name);
 	
-	if (lq_off(vm_name, seqno, priv) != 0)
+	if (lq_off(vm_name, src, seqno, priv) != 0)
 		return 1;
 	sleep(1);
-	lq_on(vm_name, seqno, priv);
+	lq_on(vm_name, src, seqno, priv);
 
 	return 1;
 }

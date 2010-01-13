@@ -149,7 +149,8 @@ libvirt_null(const char *vm_name, void *priv)
 
 
 static int
-libvirt_off(const char *vm_name, uint32_t seqno, void *priv)
+libvirt_off(const char *vm_name, const char *src,
+	    uint32_t seqno, void *priv)
 {
 	struct libvirt_info *info = (struct libvirt_info *)priv;
 	virDomainPtr vdp;
@@ -198,7 +199,8 @@ libvirt_off(const char *vm_name, uint32_t seqno, void *priv)
 
 
 static int
-libvirt_on(const char *vm_name, uint32_t seqno, void *priv)
+libvirt_on(const char *vm_name, const char *src,
+	   uint32_t seqno, void *priv)
 {
 	struct libvirt_info *info = (struct libvirt_info *)priv;
 	virDomainPtr vdp;
@@ -288,7 +290,8 @@ libvirt_status(const char *vm_name, void *priv)
 
 
 static int
-libvirt_reboot(const char *vm_name, uint32_t seqno, void *priv)
+libvirt_reboot(const char *vm_name, const char *src,
+	       uint32_t seqno, void *priv)
 {
 	struct libvirt_info *info = (struct libvirt_info *)priv;
 	virDomainPtr vdp, nvdp;
