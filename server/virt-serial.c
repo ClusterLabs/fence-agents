@@ -13,20 +13,12 @@
 
 #include <libxml/xmlreader.h>
 
-#ifdef DEBUG
+#include "debug.h"
 
-#define DEBUG0(fmt) printf("%s:%d :: " fmt "\n", \
+#define DEBUG0(fmt) dbg_printf(5,"%s:%d :: " fmt "\n", \
         __func__, __LINE__)
-#define DEBUG1(fmt, ...) printf("%s:%d: " fmt "\n", \
+#define DEBUG1(fmt, ...) dbg_printf(5, "%s:%d: " fmt "\n", \
         __func__, __LINE__, __VA_ARGS__)
-
-#else
-
-#define DEBUG0(fmt)
-#define DEBUG1(fmt, ...)
-
-#endif
-
 
 #include "virt-sockets.h"
 
@@ -203,9 +195,7 @@ domainStarted(virDomainPtr mojaDomain)
 	if (!mojaDomain)
 		return -1;
 
-	printf("NAME: %s\n", virDomainGetName(mojaDomain));
 	virDomainGetUUIDString(mojaDomain, dom_uuid);
-	printf("UUID: %s\n", dom_uuid);
 
 	xml = virDomainGetXMLDesc(mojaDomain, 0);
 	// printf("%s\n", xml);
@@ -224,7 +214,7 @@ domainStarted(virDomainPtr mojaDomain)
 	}
 
 	if (xmlStrcmp(cur->name, (const xmlChar *) "domain")) {
-		printf("no domain?\n");
+		fprintf(stderr, "no domain?\n");
 		xmlFreeDoc(doc);
 		return -1;
 	}
@@ -265,9 +255,6 @@ domainStarted(virDomainPtr mojaDomain)
 				    (attr_mode != NULL) &&
 				    (!xmlStrcmp(attr_mode->children->content,
 						(const xmlChar *) "bind"))) {
-					printf(">> REGISTER >> %s %s\n",
-					       dom_uuid,
-					       attr_path->children->content);
 					domain_sock_setup(dom_uuid, (const char *)
 							  attr_path->children->content);
 				}
@@ -342,11 +329,7 @@ domainStopped(virDomainPtr mojaDomain)
 	if (!mojaDomain)
 		return -1;
 
-	printf("NAME: %s\n", virDomainGetName(mojaDomain));
 	virDomainGetUUIDString(mojaDomain, dom_uuid);
-	printf("UUID: %s\n", dom_uuid);
-
-	printf(">> UNREGISTER >> %s\n", dom_uuid);
 	domain_sock_close(dom_uuid);
 
 	return 0;
@@ -361,7 +344,7 @@ event_thread(void *arg)
 	int sts;
 	int callback1ret = -1;
 
-	printf("Event listener starting \n");
+	dbg_printf(3,"Event listener starting \n");
 
 	virEventRegisterImpl(myEventAddHandleFunc,
 			     myEventUpdateHandleFunc,
@@ -372,7 +355,7 @@ event_thread(void *arg)
 
 	dconn = virConnectOpen((char *)arg);
 	if (!dconn) {
-		printf("error opening\n");
+		dbg_printf(1, "Error connecting to libvirt\n");
 		return NULL;
 	}
 
@@ -441,10 +424,9 @@ event_thread(void *arg)
 
 	DEBUG0("Closing connection");
 	if (dconn && virConnectClose(dconn) < 0) {
-		printf("error closing\n");
+		dbg_printf(1, "error closing libvirt connection\n");
 	}
 
-	printf("done\n");
 	return NULL;
 }
 

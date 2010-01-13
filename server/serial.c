@@ -246,7 +246,6 @@ serial_dispatch(listener_context_t c, struct timeval *timeout)
 	domain_sock_fdset(&rfds, &max);
 
 	n = select(max+1, &rfds, NULL, NULL, timeout);
-	printf("n = %d max = %d\n", n, max);
 	if (n < 0) {
 		perror("select");
 		return n;
@@ -280,11 +279,11 @@ serial_dispatch(listener_context_t c, struct timeval *timeout)
 	src_domain[0] = 0;
 	domain_sock_name(x, src_domain, sizeof(src_domain));
 
-	printf("Sock %d Request %d seqno %d src %s target %s\n", x,
+	dbg_printf(2, "Sock %d Request %d seqno %d src %s target %s\n", x,
 	       data.request, data.seqno, src_domain, data.domain);
 
 	if (history_check(info->history, &data) == 1) {
-		printf("We just did this request; dropping packet\n");
+		dbg_printf(3, "We just did this request; dropping packet\n");
 		return 0;
 	}
 

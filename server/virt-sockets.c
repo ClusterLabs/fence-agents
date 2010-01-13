@@ -1,4 +1,3 @@
-
 #include <pthread.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -7,6 +6,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <stdlib.h>
+#include <debug.h>
 
 #include "virt-sockets.h"
 
@@ -63,7 +63,7 @@ domain_sock_setup(const char *domain, const char *socket_path)
 	list_insert(&socks, node);
 	pthread_mutex_unlock(&sock_list_mutex);
 
-	printf("REGISTERED %s on %d\n", domain, sock);
+	dbg_printf(3, "Registered %s on %d\n", domain, sock);
 	return 0;
 
 out_fail:
@@ -97,6 +97,9 @@ domain_sock_close(const char *domain)
 	pthread_mutex_unlock(&sock_list_mutex);
 
 	if (dead) {
+		dbg_printf(3, "Unregistered %s, fd%d\n",
+			   dead->domain_name,
+			   dead->socket_fd);
 		close(dead->socket_fd);
 		free(dead->domain_name);
 		free(dead->socket_path);
