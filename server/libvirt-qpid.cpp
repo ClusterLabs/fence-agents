@@ -43,10 +43,11 @@ using namespace qpid::client;
 
 struct lq_info {
 	int magic;
-	int pad;
+	int port;
 	char *host;
-	uint16_t port;
-	ConnectionSettings *cs;
+	char *username;
+	char *service;
+	int use_gssapi;
 };
 	
 
@@ -86,8 +87,20 @@ do_lq_request(struct lq_info *info, const char *vm_name,
 
 	SessionManager sm(NULL, s);
 
+	ConnectionSettings cs;
+	if (info->host)
+		cs.host = info->host;
+	if (info->port)
+		cs.port = info->port;
+	if (info->username)
+		cs.username = info->username;
+	if (info->service)
+		cs.service = info->service;
+	if (info->use_gssapi)
+		cs.mechanism = "GSSAPI";
+
 	try {
-		b = sm.addBroker(*(info->cs));
+		b = sm.addBroker(cs);
 	}
 	catch (...) {
 		std::cout << "Error connecting.\n";
@@ -245,10 +258,21 @@ lq_hostlist(hostlist_callback callback, void *arg, void *priv)
 	s.getTimeout = 10;
 
 	SessionManager sm(NULL, s);
-	// todo - authentication info! 
+
+	ConnectionSettings cs;
+	if (info->host)
+		cs.host = info->host;
+	if (info->port)
+		cs.port = info->port;
+	if (info->username)
+		cs.username = info->username;
+	if (info->service)
+		cs.service = info->service;
+	if (info->use_gssapi)
+		cs.mechanism = "GSSAPI";
 
 	try {
-		b = sm.addBroker(*(info->cs));
+		b = sm.addBroker(cs);
 	}
 	catch (...) {
 		std::cout << "Error connecting.\n";
@@ -268,7 +292,6 @@ lq_hostlist(hostlist_callback callback, void *arg, void *priv)
 	if (domains.size() < 1)
 		goto out;
 
-	dbg_printf("%d domains\n", domains.size());
 	for (i = 0; i < domains.size(); i++) {
 
 		vm_name = domains[i].attrString("name").c_str();
@@ -296,38 +319,70 @@ lq_init(backend_context_t *c, config_object_t *config)
 {
 	char value[256];
 	struct lq_info *info = NULL;
-	char *null_message = NULL;
 
 	info = (lq_info *)malloc(sizeof(*info));
 	if (!info)
 		return -1;
 
 	memset(info, 0, sizeof(*info));
-
-	info->cs = new(ConnectionSettings);
+	info->port = 5672;
 
 	if(sc_get(config, "backends/libvirt-qpid/@host",
 		   value, sizeof(value))==0){
-		info->cs->host = strdup(value);
 		printf("\n\nHOST = %s\n\n",value);	
+		info->host = strdup(value);
+		if (!info->host) {
+			goto out_fail;
+		}
+	} else {
+		info->host = strdup("127.0.0.1");
 	}
 
 	if(sc_get(config, "backends/libvirt-qpid/@port",
 		   value, sizeof(value)-1)==0){
 		printf("\n\nPORT = %d\n\n",atoi(value));	
-		info->cs->port = atoi(value);
+		info->port = atoi(value);
 	}
 
-	null_message = strdup(value);
-	if (!null_message) {
-		free(info);
-		return -1;
+	if(sc_get(config, "backends/libvirt-qpid/@username",
+		   value, sizeof(value))==0){
+		printf("\n\nUSERNAME = %s\n\n",value);	
+		info->username = strdup(value);
+		if (!info->username) {
+			goto out_fail;
+		}
+	}
+
+	if(sc_get(config, "backends/libvirt-qpid/@service",
+		   value, sizeof(value))==0){
+		printf("\n\nSERVICE = %s\n\n",value);	
+		info->service = strdup(value);
+		if (!info->service) {
+			goto out_fail;
+		}
+	}
+
+	if(sc_get(config, "backends/libvirt-qpid/@gssapi",
+		   value, sizeof(value)-1)==0){
+		printf("\n\nGSSAPI = %d\n\n",atoi(value));	
+		if (atoi(value) > 0) {
+			info->use_gssapi = 1;
+		}
 	}
 
 	info->magic = MAGIC;
 
 	*c = (void *)info;
 	return 0;
+
+out_fail:
+	free(info->service);
+	free(info->username);
+	free(info->host);
+
+	free(info);
+
+	return -1;
 }
 
 
@@ -338,7 +393,11 @@ lq_shutdown(backend_context_t c)
 
 	VALIDATE(info);
 	info->magic = 0;
-	delete(info->cs);
+
+	free(info->service);
+	free(info->username);
+	free(info->host);
+
 	free(info);
 
 	return 0;
