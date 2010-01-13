@@ -50,14 +50,6 @@ wait for the backend management layer to initialize rather than giving up immedi
 .
 the module path to search for plugins
 
-.TP
-.B perm
-.
-the permission mode to use.  The default is "none", in which case, the 
-hypervisor or mananagement framework is expected to know which VMs may
-fence which other VMs.  Fence_virtd also supports static maps.
-
-
 .SS listeners
 
 This section contains listener-specific configuration information; see the
@@ -125,6 +117,32 @@ interface to listen on.  By default, fence_virtd listens on all interfaces.
 However, this causes problems in some environments where the host computer
 is used as a gateway.
 
+.SS serial
+
+The serial listener plugin utilizes libvirt's serial mapping to listen
+for requests.  When using the serial listener, it is necessary to add
+a serial port (preferably pointing to /dev/ttyS1) in the libvirt domain
+description.  Note that only serial type
+.B unix
+, mode 
+.B bind
+is supported.  The socket path does not matter, and currently, fence_virt
+will only use the
+.B first specified
+virtual serial port of this type.  Example libvirt XML:
+
+.in 8
+  <serial type='unix'>
+    <source mode='bind' path='/sandbox/guests/fence_socket_molly'/>
+    <target port='1'/>
+  </serial>
+.in 0
+
+.TP
+.B uri
+.
+the URI to use when connecting to libvirt by the serial plugin.
+
 
 .SH BACKENDS
 
@@ -176,9 +194,9 @@ groups are arbitrary and are checked at fence time.  Any member of
 a group may fence any other member.  Hosts may be assigned to multiple
 groups if desired.
 
-Note that this mode is only useful when using the VMChannel listener, as
-as other listener plugins (e.g. multicast) have no reliable way to determine
-the originating VM of a fencing request.
+Note that this mode is only useful when using the serial listener, as
+as other listener plugins (e.g. multicast) have no reliable way to
+determine the originating VM of a fencing request.
 
 .SS group
 
@@ -219,4 +237,4 @@ defines a member of a group.
  }
 
 .SH SEE ALSO
-fence_virtd(8)
+fence_virtd(8), fence_virt(8), fence_xvm(8), fence(8)

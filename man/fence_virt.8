@@ -21,13 +21,33 @@ as from stdin.  The fencing daemon sends parameters through stdin
 when it execs the agent.  The agent may be run by itself with command
 line options, which is useful for testing or turning on or off virtual
 machines from scripts.
-.SH PARAMETERS
+
+.SH GENERAL PARAMETERS
 	
 .TP
 .B -d
 . 
 Specify (CCS) / increment (command line) debug level
 	
+.TP
+.B -H
+. 
+Virtual machine (domain name) to fence
+
+.TP
+.B -o
+. 
+Fencing action (null, off, on, [reboot], status, devstatus, or hostlist) (Default Value: reboot)
+
+.TP
+.B -t
+. 
+Fencing timeout (in seconds; default=30) (Default Value: 30)
+
+.SH MULTICAST PARAMETERS
+These parameters are used only when using fence_virt in multicast mode
+(e.g. by running fence_xvm).
+
 .TP
 .B -i
 . 
@@ -67,65 +87,56 @@ Packet hash strength (none, sha1, [sha256], sha512) (Default Value: sha256)
 .B -k
 . 
 Shared key file (Default Value: /etc/cluster/fence_xvm.key)
-	
-.TP
-.B -H
-. 
-Virtual machine (domain name) to fence
-	
+
 .TP
 .B -u
 . 
 Treat 'domain' as UUID instead of domain name.
 	
-.TP
-.B -o
-. 
-Fencing action (null, off, on, [reboot], or status) (Default Value: reboot)
+.SH MULTICAST PARAMETERS
+These parameters are used only when using fence_virt in multicast mode
+(e.g. by running fence_xvm).
 
 .TP
 .B -D
 . 
-Serial device (fence_virt mode).  Default=/dev/ttyS1
+Serial device (fence_virt mode).  Default=/dev/ttyS1.  On the host, the
+serial device must be mapped in each domain's configuration file.  See
+fence_virt.conf(5) for more information.
 
 .TP
 .B -P
 .
-Serial parameters (fence_virt mode).  Default=115200,8N1
-	
-	
-.TP
-.B -t
-. 
-Fencing timeout (in seconds; default=30) (Default Value: 30)
+Serial parameters.  Default=115200,8N1
 
-.SH ACTIONS
+.SH GENERAL STDIN PARAMETERS
+These parameters are passed to fence_virt via standard input if
+no command line options are present.  They are presented to
+fence_virt in the form:
 
-	
-.TP
-\fBoff \fP
- Destroy or turn off virtual machine.
-	
-.TP
-\fBreboot \fP
-Reboot virtual machine.
-	
-.TP
-\fBon \fP
-Turn on a virtual machine.  Note: Turning on a virtual machine only works
-with some fence_virt backends.
-
-.TP
-\fBstatus \fP
-Query the status of a virtual machine.
-
-.SH STDIN PARAMETERS
+  name=value
 	
 .TP
 .B debug
 . 
-Specify (CCS) / increment (command line) debug level
+Specify debugging level
+
+.TP
+.B domain
+. 
+Virtual machine (domain name) to fence
+
+.TP
+.B action
+. 
+Fencing action to perform (See FENCING ACTIONS section)
 	
+.TP
+.B timeout
+. 
+Fencing timeout (in seconds; default=30) (Default Value: 30)
+
+.SH MULTICAST STDIN PARAMETERS
 .TP
 .B ip_family
 . 
@@ -165,39 +176,53 @@ Packet hash strength (none, sha1, [sha256], sha512) (Default Value: sha256)
 .B key_file
 . 
 Shared key file (default=/etc/cluster/fence_xvm.key) (Default Value: /etc/cluster/fence_xvm.key)
-	
-.TP
-.B domain
-. 
-Virtual machine (domain name) to fence
-	
+
 .TP
 .B use_uuid
 . 
 Treat 'domain' as UUID instead of domain name
-	
-.TP
-.B action
-. 
-Fencing action (null, off, on, [reboot], or status) (Default Value: reboot)
-	
-.TP
-.B timeout
-. 
-Fencing timeout (in seconds; default=30) (Default Value: 30)
 
+.SH SERIAL STDIN PARAMETERS
 .TP
 .B serial_device
 . 
-Serial device
+Serial device.  Default=/dev/ttyS1.  On the host, the serial device must
+be mapped in each domain's configuration file.  See fence_virt.conf(5)
+for more information.
 
 .TP
 .B serial_params
 . 
-Serial parameters
+Serial parameters.  Default=115200,8N1.
 
+.SH FENCING ACTIONS
+	
+.TP
+\fBoff \fP
+ Destroy or turn off virtual machine.
+	
+.TP
+\fBreboot \fP
+Reboot virtual machine; i.e. restart the virtual machine on the same
+host where it is currently running.
+	
+.TP
+\fBon \fP
+Turn on a virtual machine.  Note: Turning on a virtual machine only works
+with some fence_virt backends.
 
+.TP
+\fBstatus \fP
+Check whether a virtual machine is running or not.
 
+.TP
+\fBdevstatus \fP
+Check the health of fence_virtd.
+
+.TP
+\fBhostlist \fP
+List virtual machines which may be fenced by fence_virtd (not supported
+on all backends).
 
 .SH SEE ALSO
-
+fence_virtd(8), fence(8), fence_virtd.conf(5)
