@@ -54,7 +54,7 @@ mod_libvirt=@mod_libvirt@
 mod_checkpoint=@mod_checkpoint@
 mod_libvirt_qpid=@mod_libvirt_qpid@
 mod_multicast=@mod_multicast@
-mod_serial=@mod_serial@				# XXX Not done yet
+mod_serial=@mod_serial@
 
 #################
 # Modular build #
