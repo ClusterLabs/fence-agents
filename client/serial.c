@@ -178,6 +178,36 @@ hangup(int fd, int delay)
 
 void do_read_hostlist(int fd, int timeout);
 
+int
+wait_for(int fd, const char *pattern, size_t size, struct timeval *tout)
+{
+	char *pos = pattern;
+	char c;
+	int n;
+	struct timeval tv;
+	size_t remain = size;
+
+	if (tout) {
+		memcpy(&tv, tout, sizeof(tv));
+		tout = &tv;
+	}
+
+	while (remain) {
+		n = _read_retry(fd, &c, 1, &tv);
+		if (n < 1)
+			return -1;
+
+		if (c == *pos) {
+			++pos;
+			--remain;
+		} else {
+			pos = pattern;
+			remain = size;
+		}
+	}
+
+	return 0;
+}
 
 int
 serial_fence_virt(fence_virt_args_t *args)
@@ -224,9 +254,12 @@ serial_fence_virt(fence_virt_args_t *args)
 
 	tv.tv_sec = args->timeout;
 	tv.tv_usec = 0;
+	resp.magic = SERIAL_MAGIC;
 	do {
-		memset(&resp, 0, sizeof(resp));
-		ret = _read_retry(fd, &resp, sizeof(resp), &tv);
+		if (wait_for(fd, (const char *)&resp.magic,
+			     sizeof(resp.magic), &tv) == 0) {
+			ret = _read_retry(fd, &resp.response, sizeof(resp.response), &tv);
+		}
 	} while(resp.magic != SERIAL_MAGIC && (tv.tv_sec || tv.tv_usec));
 
 	if (resp.magic != SERIAL_MAGIC)
