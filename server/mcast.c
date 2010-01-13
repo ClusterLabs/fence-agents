@@ -202,7 +202,7 @@ static int
 mcast_hostlist_begin(int fd)
 {
 	struct timeval tv;
-	char val = (char)253;
+	char val = (char)RESP_HOSTLIST;
 
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;

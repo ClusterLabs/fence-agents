@@ -163,17 +163,13 @@ tcp_exchange(int fd, fence_auth_type_t auth, void *key,
 	if (_read_retry(fd, &ret, 1, &tv) < 0)
 		ret = 1;
 
-	if (ret == (char)253) /* hostlist */ {
+	if (ret == (char)RESP_HOSTLIST) /* hostlist */ {
 		do_read_hostlist(fd, timeout);
 		ret = 0;
 	}
 
 	close(fd);
 
-	if (ret == 0)
-		printf("Remote: Operation was successful\n");
-	else
-		printf("Remote: Operation failed\n");
 	return ret;
 }
 

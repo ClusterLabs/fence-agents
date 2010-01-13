@@ -126,3 +126,23 @@ domain_sock_fdset(fd_set *fds, int *max)
 	return x;
 }
 
+
+int
+domain_sock_name(int fd, char *outbuf, size_t buflen)
+{
+	struct socket_list *node = NULL;
+	int ret = 1, x = 0;
+
+	pthread_mutex_lock(&sock_list_mutex);
+	list_for(&socks, node, x) {
+		if (node->socket_fd == fd) {
+			snprintf(outbuf, buflen, "%s", node->domain_name);
+			ret = 0;
+			break;
+		}
+	}
+	pthread_mutex_unlock(&sock_list_mutex);
+
+	return ret;
+}
+

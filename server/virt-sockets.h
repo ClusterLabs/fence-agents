@@ -7,4 +7,7 @@ int domain_sock_setup(const char *domain, const char *socket_path);
 int domain_sock_close(const char *domain);
 int domain_sock_fdset(fd_set *set, int *max);
 
+/* Find the domain name associated with a FD */
+int domain_sock_name(int fd, char *outbuf, size_t buflen);
+
 #endif

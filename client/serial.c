@@ -265,15 +265,13 @@ serial_fence_virt(fence_virt_args_t *args)
 	if (resp.magic != SERIAL_MAGIC)
 		return -1;
 	ret = resp.response;
-	if (resp.response == 253) /* hostlist */ {
+	if (resp.response == RESP_HOSTLIST) /* hostlist */ {
 		/* ok read hostlist */
 		do_read_hostlist(fd, args->timeout);
 		ret = 0;
 	}
 
 	close(fd);
-
-	printf("Response: %d\n", ret);
 
 	return ret;
 }

@@ -52,6 +52,7 @@ main(int argc, char **argv)
 {
 	fence_virt_args_t args;
 	const char *my_options;
+	int ret = 0;
 
 	args_init(&args);
 	if (!strcmp(basename(argv[0]), "fence_xvm")) {
@@ -110,12 +111,28 @@ main(int argc, char **argv)
 
 	switch(args.mode) {
 	case MODE_MULTICAST:
-		return mcast_fence_virt(&args);
+		ret = mcast_fence_virt(&args);
+		break;
 	case MODE_SERIAL:
-		return serial_fence_virt(&args);
+		ret = serial_fence_virt(&args);
+		break;
 	default:
+		return 1;
+	}
+
+	switch(ret) {
+	case 0:
+		break;
+	case RESP_FAIL:
+		printf("Operation failed\n");
+		break;
+	case RESP_PERM:
+		printf("Permission denied\n");
+		break;
+	default:
+		printf("Unknown response (%d)\n", ret);
 		break;
 	}
 
-	return 1;
+	return ret;
 }

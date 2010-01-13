@@ -72,6 +72,7 @@ typedef struct _serial_info {
 	void *priv;
 	char *uri;
 	history_info_t *history;
+	void *maps;
 } serial_info;
 
 
@@ -102,7 +103,7 @@ check_history(void *a, void *b) {
 
 static int 
 serial_hostlist(const char *vm_name, const char *vm_uuid,
-	       int state, void *priv)
+	 	int state, void *priv)
 {
 	struct serial_hostlist_arg *arg = (struct serial_hostlist_arg *)priv;
 	host_state_t hinfo;
@@ -116,7 +117,6 @@ serial_hostlist(const char *vm_name, const char *vm_uuid,
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
 
-	printf("%d\n", arg->fd);
 	ret = _write_retry(arg->fd, &hinfo, sizeof(hinfo), &tv);
 	if (ret == sizeof(hinfo))
 		return 0;
@@ -131,7 +131,7 @@ serial_hostlist_begin(int fd)
 	serial_resp_t resp;
 
 	resp.magic = SERIAL_MAGIC;
-	resp.response = 253;
+	resp.response = RESP_HOSTLIST;
 
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
@@ -146,7 +146,7 @@ serial_hostlist_end(int fd)
 	struct timeval tv;
 	int ret;
 
-	printf("Sending terminator packet\n");
+	//printf("Sending terminator packet\n");
 
 	memset(&hinfo, 0, sizeof(hinfo));
 
@@ -160,9 +160,9 @@ serial_hostlist_end(int fd)
 
 
 static int
-do_fence_request(int fd, serial_req_t *req, serial_info *info)
+do_fence_request(int fd, const char *src, serial_req_t *req, serial_info *info)
 {
-	char response = 1;
+	char response = RESP_FAIL;
 	struct serial_hostlist_arg arg;
 	serial_resp_t resp;
 
@@ -173,14 +173,26 @@ do_fence_request(int fd, serial_req_t *req, serial_info *info)
 		response = info->cb->null((char *)req->domain, info->priv);
 		break;
 	case FENCE_ON:
+		if (static_map_check(info->maps, src, req->domain) == 0) {
+			response = RESP_PERM;
+			break;
+		}
 		response = info->cb->on((char *)req->domain, req->seqno,
 					info->priv);
 		break;
 	case FENCE_OFF:
+		if (static_map_check(info->maps, src, req->domain) == 0) {
+			response = RESP_PERM;
+			break;
+		}
 		response = info->cb->off((char *)req->domain, req->seqno,
 					 info->priv);
 		break;
 	case FENCE_REBOOT:
+		if (static_map_check(info->maps, src, req->domain) == 0) {
+			response = RESP_PERM;
+			break;
+		}
 		response = info->cb->reboot((char *)req->domain, req->seqno,
 					    info->priv);
 		break;
@@ -219,6 +231,7 @@ do_fence_request(int fd, serial_req_t *req, serial_info *info)
 static int
 serial_dispatch(listener_context_t c, struct timeval *timeout)
 {
+	char src_domain[MAX_DOMAINNAME_LENGTH];
 	serial_info *info;
 	serial_req_t data;
 	fd_set rfds;
@@ -250,8 +263,9 @@ serial_dispatch(listener_context_t c, struct timeval *timeout)
 		if (FD_ISSET(x, &rfds)) {
 			tv.tv_sec = 1;
 			tv.tv_usec = 0;
+
 			ret = _read_retry(x, &data, sizeof(data), &tv);
-			printf("the read...%d\n",ret);
+
 			if (ret != sizeof(data)) {
 				if (--n)
 					continue;
@@ -263,15 +277,19 @@ serial_dispatch(listener_context_t c, struct timeval *timeout)
 		}
 	}
 
-	printf("Sock %d Request %d seqno %d domain %s\n", x, data.request, data.seqno,
-	       data.domain);
+	src_domain[0] = 0;
+	domain_sock_name(x, src_domain, sizeof(src_domain));
+
+	printf("Sock %d Request %d seqno %d src %s target %s\n", x,
+	       data.request, data.seqno, src_domain, data.domain);
 
 	if (history_check(info->history, &data) == 1) {
 		printf("We just did this request; dropping packet\n");
 		return 0;
 	}
 
-	do_fence_request(x, &data, info);
+	do_fence_request(x, src_domain[0] == 0 ? NULL : src_domain,
+			 &data, info);
 		
 	return 0;
 }
@@ -321,6 +339,8 @@ serial_init(listener_context_t *c, const fence_callbacks_t *cb,
 		printf("%d errors found during configuration\n",ret);
 		return -1;
 	}
+
+	static_map_init(config, &info->maps);
 
 	info->magic = SERIAL_PLUG_MAGIC;
 	info->history = history_init(check_history, 10, sizeof(fence_req_t));

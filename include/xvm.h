@@ -111,5 +111,10 @@ typedef struct __attribute__((packed)) _serial_fense_resp {
 	uint8_t response;
 } serial_resp_t;
 
+#define RESP_SUCCESS	0
+#define RESP_FAIL	1
+#define RESP_PERM	2
+#define RESP_HOSTLIST	253
+
 
 #endif

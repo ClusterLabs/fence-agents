@@ -48,6 +48,9 @@ static_map_check(void *info, const char *value1, const char *value2)
 	struct perm_entry *left, *tmp;
 	int x, y;
 
+	if (!info)
+		return 1; /* no maps == wide open */
+
 	list_for(&groups, group, x) {
 		left = NULL;
 

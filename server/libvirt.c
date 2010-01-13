@@ -278,7 +278,7 @@ libvirt_status(const char *vm_name, void *priv)
 
 	if (!vdp || ((virDomainGetInfo(vdp, &vdi) == 0) &&
 	     (vdi.state == VIR_DOMAIN_SHUTOFF))) {
-		ret = 1;
+		ret = RESP_OFF;
 	}
 
 	if (vdp)
