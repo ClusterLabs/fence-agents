@@ -382,24 +382,6 @@ mcast_config(config_object_t *config, mcast_options *args)
 		}
 	}
 
-	if (sc_get(config, "fence_virtd/@name_mode",
-		   value, sizeof(value)-1) == 0) {
-		/*
-		 * This is just an optimization.  If an administrator
-		 * configured something at the top level, we can use it
-		 * to explicitly ignore UUID vs. name
-		 */
-		dbg_printf(1, "Got %s for name_mode (mcast)\n", value);
-		if (!strcasecmp(value, "uuid")) {
-			args->flags |= F_USE_UUID;
-		} else if (!strcasecmp(value, "name")) {
-			args->flags &= ~F_USE_UUID;
-		} else {
-			dbg_printf(1, "Unsupported name_mode: %s\n", value);
-			++errors;
-		}
-	}
-
 	args->hash = DEFAULT_HASH;
 	if (sc_get(config, "listeners/multicast/@hash",
 		   value, sizeof(value)-1) == 0) {
