@@ -16,6 +16,8 @@
 
 /* configure.c */
 int do_configure(config_object_t *config, const char *filename);
+int daemon_init(const char *prog, int nofork);
+int daemon_cleanup(void);
 
 
 void
@@ -26,6 +28,14 @@ usage(void)
 	printf("  -f <file>        Use <file> as configuration file.\n");
 	printf("  -d <level>       Set debugging level to <level>.\n");
 	printf("  -c               Configuration mode.\n");
+}
+
+
+static int run = 1;
+void
+exit_handler(int sig)
+{
+	run = 0;
 }
 
 
@@ -115,7 +125,6 @@ main(int argc, char **argv)
 	if (dget() > 3) 
 		sc_dump(config, stdout);
 
-
 	if (sc_get(config, "fence_virtd/@backend", backend_name,
 		   sizeof(backend_name))) {
 		printf("Failed to determine backend.\n");
@@ -171,12 +180,10 @@ main(int argc, char **argv)
 		return 1;
 	}
 
-	if (!foreground) {
-		if (daemon(0, 0) < 0) {
-			printf("Failed to daemonize!\n");
-			return -1;
-		}
-	}
+	daemon_init(basename(argv[0]), foreground);
+	signal(SIGINT, exit_handler);
+	signal(SIGTERM, exit_handler);
+	signal(SIGQUIT, exit_handler);
 
 	while (p->init(&backend_ctx, config) < 0) {
 		if (!wait_for_backend) {
@@ -193,7 +200,7 @@ main(int argc, char **argv)
 	}
 
 	if (map_load(map, config) < 0) {
-		printf("Mapping load failed\n");
+		syslog(LOG_WARNING, "Failed to load static maps\n");
 	}
 
 	/* only client we have now is mcast (fence_xvm behavior) */
@@ -209,10 +216,15 @@ main(int argc, char **argv)
 		return 1;
 	}
 
-	while (lp->dispatch(listener_ctx, NULL) >= 0);
+	while (run && lp->dispatch(listener_ctx, NULL) >= 0);
+
+	map_release(map);
+	sc_release(config);
 
 	lp->cleanup(listener_ctx);
 	p->cleanup(backend_ctx);
+
+	daemon_cleanup();
 
 	return 0;
 }
