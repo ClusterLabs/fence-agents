@@ -325,7 +325,7 @@ domainStarted(virDomainPtr mojaDomain, const char *path, int mode)
 					      (const xmlChar *) "bind"))
 					continue;
 
-				if (!path || !is_in_directory(path, (const char *)
+				if (path && !is_in_directory(path, (const char *)
 							attr_path->children->content))
 					continue;
 
