@@ -36,8 +36,8 @@ main(int argc, char **argv)
 	char listener_name[80];
 	char backend_name[80];
 	const char *config_file = DEFAULT_CONFIG_FILE;
-	config_object_t *config;
-	map_object_t *map;
+	config_object_t *config = NULL;
+	map_object_t *map = NULL;
 	const listener_plugin_t *lp;
 	const backend_plugin_t *p;
 	listener_context_t listener_ctx = NULL;

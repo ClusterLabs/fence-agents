@@ -88,7 +88,6 @@ typedef struct _mcast_info {
 	char key[MAX_KEY_LEN];
 	mcast_options args;
 	const fence_callbacks_t *cb;
-	map_object_t *maps;
 	ssize_t key_len;
 	int mc_sock;
 	int need_kill;
@@ -260,7 +259,7 @@ do_fence_request_tcp(fence_req_t *req, mcast_info *info)
 		response = info->cb->null((char *)req->domain, info->priv);
 		break;
 	case FENCE_ON:
-		if (map_check(info->maps, ip_addr_src,
+		if (map_check(info->map, ip_addr_src,
 				     (const char *)req->domain) == 0) {
 			response = RESP_PERM;
 			break;
@@ -269,7 +268,7 @@ do_fence_request_tcp(fence_req_t *req, mcast_info *info)
 					req->seqno, info->priv);
 		break;
 	case FENCE_OFF:
-		if (map_check(info->maps, ip_addr_src,
+		if (map_check(info->map, ip_addr_src,
 				     (const char *)req->domain) == 0) {
 			response = RESP_PERM;
 			break;
@@ -278,7 +277,7 @@ do_fence_request_tcp(fence_req_t *req, mcast_info *info)
 					 req->seqno, info->priv);
 		break;
 	case FENCE_REBOOT:
-		if (map_check(info->maps, ip_addr_src,
+		if (map_check(info->map, ip_addr_src,
 				     (const char *)req->domain) == 0) {
 			response = RESP_PERM;
 			break;
