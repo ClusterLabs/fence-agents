@@ -117,7 +117,7 @@ backend_config_libvirt(config_object_t *config)
 	/* Default backend plugin */
 	if (sc_get(config, "backends/libvirt/@uri", val,
 		   sizeof(val))) {
-		strncpy(val, "qemu:///system", sizeof(val));
+		strncpy(val, DEFAULT_HYPERVISOR_URI, sizeof(val));
 	}
 
 	text_input("Libvirt URI", val, inp, sizeof(inp));
@@ -144,7 +144,7 @@ backend_config_checkpoint(config_object_t *config)
 
 	if (sc_get(config, "backends/checkpoint/@uri", val,
 		   sizeof(val))) {
-		strncpy(val, "qemu:///system", sizeof(val));
+		strncpy(val, DEFAULT_HYPERVISOR_URI, sizeof(val));
 	}
 
 	text_input("Libvirt URI", val, inp, sizeof(inp));
@@ -325,6 +325,77 @@ listener_config_multicast(config_object_t *config)
 }
 
 
+static int
+listener_config_serial(config_object_t *config)
+{
+	char val[4096];
+	char inp[4096];
+	int done = 0;
+
+	printf("\n");
+	printf("The serial plugin allows fence_virtd to communicate with\n"
+	       "guests using serial or guest-forwarding VMChannel instead\n"
+	       "of using TCP/IP networking.\n\n");
+	printf("Special configuration of virtual machines is required. See\n"
+	       "fence_virt.conf(5) for more details.\n\n");
+
+	if (sc_get(config, "listeners/serial/@uri",
+		   val, sizeof(val)-1)) {
+		strncpy(val, DEFAULT_HYPERVISOR_URI, sizeof(val));
+	}
+
+	text_input("Libvirt URI", val, inp, sizeof(inp));
+	
+	printf("\nSetting a socket path prevents fence_virtd from taking\n"
+	       "hold of all Unix domain sockets created when the guest\n"
+	       "is started.  A value like /var/run/cluster/fence might\n"
+	       "be a good value.  Don't forget to create the directory!\n\n");
+
+	if (sc_get(config, "listeners/serial/@path",
+		   val, sizeof(val)-1)) {
+		strncpy(val, "none", sizeof(val));
+	}
+
+	text_input("Socket directory", val, inp, sizeof(inp));
+	if (!strcasecmp(inp, "none")) {
+		sc_set(config, "listeners/serial/@path", NULL);
+	} else {
+		sc_set(config, "listeners/serial/@path", inp);
+	}
+
+	printf("\nThe serial plugin allows two types of guest to host\n"
+	       "configurations.  One is via a serial port; the other is\n"
+	       "utilizing the newer VMChannel.\n\n");
+
+	if (sc_get(config, "listeners/serial/@mode",
+		   val, sizeof(val)-1)) {
+		strncpy(val, "serial", sizeof(val));
+	}
+
+	if (!strcasecmp(inp, "none")) {
+		sc_set(config, "listeners/serial/@path", NULL);
+	} else {
+		sc_set(config, "listeners/serial/@path", inp);
+	}
+
+	do { 
+		text_input("Mode (serial or vmchannel)", val, inp,
+			   sizeof(inp));
+
+		if (strcasecmp(inp, "serial") &&
+		    strcasecmp(inp, "vmchannel")) {
+			printf("Invalid mode: %s\n", inp);
+			if (yesno("Use anyway", 1) == 1)
+				break;
+			continue;
+		}
+	} while(0);
+	sc_set(config, "listeners/serial/@mode", inp);
+
+	return 0;
+}
+
+
 
 static int
 backend_configure(config_object_t *config)
@@ -397,6 +468,11 @@ listener_configure(config_object_t *config)
 	sc_set(config, "fence_virtd/@listener", inp);
 	if (!strcmp(inp, "multicast"))
 		listener_config_multicast(config);
+	else if (!strcmp(inp, "serial"))
+		listener_config_serial(config);
+	else
+		printf("I don't know how to configure '%s' :(\n",
+		       inp);
 
 	return 0;
 }
