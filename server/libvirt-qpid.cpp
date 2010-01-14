@@ -72,6 +72,7 @@ do_lq_request(struct lq_info *info, const char *vm_name,
 	Object *domain = NULL;
 	const char *property = "name";
 	unsigned i, tries = 0, found = 0;
+	const char *vm_state = NULL;
 
 	if (is_uuid(vm_name) == 1) {
 		property = "uuid";
@@ -108,7 +109,7 @@ do_lq_request(struct lq_info *info, const char *vm_name,
 		return 1;
 	}
 
-	while (tries < 10 && !found) {
+	while (++tries < 10 && !found) {
 		sleep(1);
 
 		// why not com.redhat.libvirt:domain or having
@@ -153,13 +154,37 @@ do_lq_request(struct lq_info *info, const char *vm_name,
 	Object::AttributeMap attrs;
 	MethodResponse result;
 
+	vm_state = domain->attrString("state").c_str();
+
 	std::cout << domain->attrString(property) << " "
-		  << domain->attrString("state") << std::endl;
+		  << vm_state << std::endl;
+	
+	if (!strcmp( vm_state, "running" ) ||
+	    !strcmp( vm_state, "idle" ) ||
+	    !strcmp( vm_state, "paused" ) ||
+	    !strcmp( vm_state, "no state" ) ) {
+		i = 1;
+	} else {
+		i = 0;
+	}
+
+	result.code = 1;
+	if (!strcasecmp(action, "destroy") && !i) {
+		std::cout << "Domain is inactive; nothing to do" << std::endl;
+		result.code = 0;
+		goto out;
+	}
+	if (!strcasecmp(action, "create") && i) {
+		std::cout << "Domain is active; nothing to do" << std::endl;
+		result.code = 0;
+		goto out;
+	}
 
 	domain->invokeMethod(action, attrs, result);
 
 	std::cout << "Response: " << result.code << " (" << result.text << ")" << std::endl;
 
+out:
 	sm.delBroker(b);
 
 	return result.code;
@@ -229,7 +254,7 @@ lq_reboot(const char *vm_name, const char *src, uint32_t seqno, void *priv)
 	sleep(1);
 	lq_on(vm_name, src, seqno, priv);
 
-	return 1;
+	return 0;
 }
 
 
@@ -280,7 +305,7 @@ lq_hostlist(hostlist_callback callback, void *arg, void *priv)
 		return 1;
 	}
 
-	while (tries < 10) {
+	while (++tries < 10) {
 		sleep(1);
 
 		sm.getObjects(domains, "domain", NULL, NULL);
