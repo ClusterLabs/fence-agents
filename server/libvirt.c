@@ -465,9 +465,11 @@ libvirt_shutdown(backend_context_t c)
 	VALIDATE(info);
 
 	if (virConnectClose(info->vp) < 0) {
+		free(info);
 		return -errno;
 	}
 
+	free(info);
 	return 0;
 }
 

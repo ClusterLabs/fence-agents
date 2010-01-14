@@ -569,6 +569,8 @@ mcast_shutdown(listener_context_t c)
 
 	VALIDATE(info);
 	info->magic = 0;
+	history_wipe(info->history);
+	free(info->history);
 	free(info->args.key_file);
 	free(info->args.addr);
 	close(info->mc_sock);

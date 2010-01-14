@@ -46,6 +46,9 @@ domain_sock_setup(const char *domain, const char *socket_path)
 	if (connect(sock, (struct sockaddr *)sun, SUN_LEN(sun)) < 0)
 		goto out_fail;
 
+	free(sun);
+	sun = NULL;
+
 	node = malloc(sizeof(*node));
 	if (!node)
 		goto out_fail;

@@ -562,7 +562,7 @@ int
 stop_event_listener(void)
 {
 	run = 0;
-	pthread_cancel(event_tid);
+	//pthread_cancel(event_tid);
 	pthread_join(event_tid, NULL);
 	event_tid = 0;
 

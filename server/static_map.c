@@ -28,7 +28,7 @@ struct perm_group {
 static void
 static_map_cleanup(void **info)
 {
-	struct perm_group *groups = (struct perm_group *)info;
+	struct perm_group *groups = (struct perm_group *)(*info);
 	struct perm_group *group;
 	struct perm_entry *entry;
 

@@ -391,6 +391,8 @@ serial_shutdown(listener_context_t c)
 	info->magic = 0;
 	stop_event_listener();
 	domain_sock_cleanup();
+	history_wipe(info->history);
+	free(info->history);
 	free(info->uri);
 	free(info->path);
 	free(info);
