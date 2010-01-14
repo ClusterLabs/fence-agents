@@ -262,15 +262,11 @@ serial_dispatch(listener_context_t c, struct timeval *timeout)
 	if (n == 0)
 		return 0;
 
-	printf("max = %d\n", max);
-
 	/* find & read request */
 	for (x = 0; x <= max; x++) {
 		if (FD_ISSET(x, &rfds)) {
 			tv.tv_sec = 1;
 			tv.tv_usec = 0;
-
-			printf("Reading from %d\n", x);
 
 			ret = _read_retry(x, &data, sizeof(data), &tv);
 
