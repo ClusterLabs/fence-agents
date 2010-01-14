@@ -2,11 +2,6 @@ High Priority / Blockers for v1.0;
 
 * pacemaker backend
 
-* metadata function
-
-* allow use of IPs w/ multicast listener as the "source"
-  VMs for management layer permissions mappings
-
 Future Stuff:
 
 * oVirt backend

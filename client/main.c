@@ -99,7 +99,8 @@ main(int argc, char **argv)
 
 	/* Additional validation here */
 	if (!args.domain && (args.op != FENCE_DEVSTATUS &&
-			     args.op != FENCE_HOSTLIST)) {
+			     args.op != FENCE_HOSTLIST &&
+			     args.op != FENCE_METADATA)) {
 		printf("No domain specified!\n");
 		args.flags |= F_ERR;
 	}
@@ -107,6 +108,11 @@ main(int argc, char **argv)
 	if (args.flags & F_ERR) {
 		args_usage(argv[0], my_options, (argc == 1));
 		exit(1);
+	}
+
+	if (args.op == FENCE_METADATA) {
+		args_metadata(argv[0], my_options);
+		return 0;
 	}
 
 	switch(args.mode) {

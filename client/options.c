@@ -203,6 +203,8 @@ assign_op(fence_virt_args_t *args, struct arg_info *arg, char *value)
 		args->op = FENCE_DEVSTATUS;
 	} else if (!strcasecmp(value, "hostlist")) {
 		args->op = FENCE_HOSTLIST;
+	} else if (!strcasecmp(value, "metadata")) {
+		args->op = FENCE_METADATA;
 	} else {
 		printf("Unsupported operation: %s\n", value);
 		args->flags |= F_ERR;
@@ -301,108 +303,151 @@ assign_uri(fence_virt_args_t *args, struct arg_info *arg, char *value)
 }
 
 
+static void
+print_desc_xml(const char *desc)
+{
+	const char *d;
+
+	for (d = desc; *d; d++) {
+		switch (*d) {
+		case '<':
+			printf("&lt;");
+			break;
+		case '>':
+			printf("&gt;");
+			break;
+		default:
+			printf("%c", *d);
+		}
+	}
+}
+
 
 /** ALL valid command line and stdin arguments for this fencing agent */
 static struct arg_info _arg_info[] = {
 	{ '\xff', NULL, "agent",
+	  0, "string", NULL,
 	  "Not user serviceable",
 	  NULL },
 
 	{ '\xff', NULL, "self",
+	  0, "string", NULL,
 	  "Not user serviceable", 
 	  NULL },
 
 	{ '\xff', NULL, "nodename",
+	  0, "string", NULL,
 	  "Not user serviceable", 
 	  NULL },
 
 	{ 'd', "-d", "debug",
+	  0, "boolean", NULL,
 	  "Specify (stdin) or increment (command line) debug level",
 	  assign_debug },
 
 	{ 'i', "-i <family>", "ip_family",
+	  0, "string", "auto",
 	  "IP Family ([auto], ipv4, ipv6)",
 	  assign_family },
 
 	{ 'a', "-a <address>", "multicast_address",
+	  0, "string", NULL,
 	  "Multicast address (default=" IPV4_MCAST_DEFAULT " / " IPV6_MCAST_DEFAULT ")",
 	  assign_address },
 
 	{ 'A', "-A <address>", "channel_address",
+          0, "string", "10.0.2.179",
 	  "VM Channel IP address (default=" DEFAULT_CHANNEL_IP ")",
 	  assign_channel_address },
 
 	{ 'p', "-p <port>", "port",
+          0, "string", "1229",
 	  "Multicast or VMChannel IP port (default=1229)",
 	  assign_port },
 
 	{ 'I', "-I <interface>", "interface",
+	  0, "string", NULL,
 	  "Network interface name to listen on",
 	  assign_interface },
 
 	{ 'r', "-r <retrans>", "retrans", 
+	  0, "string", "20",
 	  "Multicast retransmit time (in 1/10sec; default=20)",
 	  assign_retrans },
 
 	{ 'c', "-c <hash>", "hash",
+	  0, "string", "sha256",
 	  "Packet hash strength (none, sha1, [sha256], sha512)",
 	  assign_hash },
 
 	{ 'C', "-C <auth>", "auth",
+	  0, "string", "sha256",
 	  "Authentication (none, sha1, [sha256], sha512)",
 	  assign_auth },
 
 	{ 'k', "-k <file>", "key_file",
+	  0, "string", DEFAULT_KEY_FILE, 
 	  "Shared key file (default=" DEFAULT_KEY_FILE ")",
 	  assign_key },
 
 	{ 'D', "-D <device>", "serial_device",
+	  0, "string", NULL,
 	  "Serial device (default=" DEFAULT_SERIAL_DEVICE  ")",
 	  assign_device },
 
 	{ 'P', "-P <param>", "serial_params",
+	  0, "string", DEFAULT_SERIAL_SPEED,
 	  "Serial Parameters (default=" DEFAULT_SERIAL_SPEED ")",
 	  assign_params },
 
 	{ '\xff', NULL, "option",
 	  /* Deprecated */
+	  0, "string", "reboot",
 	  "Fencing option (null, off, on, [reboot], status, hostlist, devstatus)",
 	  assign_op },
 
 	{ 'o', "-o <operation>", "action",
+	  0, "string", "reboot",
 	  "Fencing action (null, off, on, [reboot], status, hostlist, devstatus)",
 	  assign_op },
 
 	{ 'H', "-H <domain>", "domain",
+	  0, "string", NULL,
 	  "Virtual Machine (domain name) to fence",
 	  assign_domain },
 
 	{ 'u', "-u", "use_uuid",
+	  0, "string", "0",
 	  "Treat <domain> as UUID instead of domain name. This is provided for compatibility with older fence_xvmd installations.",
 	  assign_uuid_lookup },
 
 	{ 't', "-t <timeout>", "timeout",
+	  0, "string", "30",
 	  "Fencing timeout (in seconds; default=30)",
 	  assign_timeout },
 
 	{ 'h', "-h", NULL,
+	  0, "boolean", "0",
  	  "Help",
 	  assign_help },
 
 	{ '?', "-?", NULL,
+	  0, "boolean", "0",
  	  "Help (alternate)", 
 	  assign_help },
 
 	{ 'U', "-U", "uri",
+	  0, "boolean", "qemu:///system",
 	  "URI for Hypervisor (default: auto detect)",
 	  assign_uri },
 	  
 	{ 'V', "-V", NULL,
+	  0, "boolean", "0",
  	  "Display version and exit", 
 	  assign_version },
 
 	/* Terminator */
-	{ 0, NULL, NULL, NULL, NULL }
+	{ 0, NULL, NULL, 0, NULL, NULL, NULL, NULL }
 };
 
 
@@ -585,6 +630,53 @@ args_usage(char *progname, const char *optstr, int print_stdin)
 	}
 
 	printf("\n");
+}
+
+
+void
+args_metadata(char *progname, const char *optstr)
+{
+	int x;
+	struct arg_info *arg;
+
+	printf("<?xml version=\"1.0\" ?>\n");
+	printf("<resource-agent name=\"%s\" shortdesc=\"Fence agent for virtual machines\">\n", basename(progname));
+	printf("<longdesc>%s is an I/O Fencing agent which can be used with"
+	       "virtual machines.</longdesc>\n", basename(progname));
+	printf("<parameters>\n");
+
+	for (x = 0; x < strlen(optstr); x++) {
+		arg = find_arg_by_char(optstr[x]);
+		if (!arg)
+			continue;
+		if (!arg->stdin_opt)
+			continue;
+
+		printf("\t<parameter name=\"%s\">\n",arg->stdin_opt);
+                printf("\t\t<getopt mixed=\"-%c\" />\n",arg->opt);
+                if (arg->default_value) {
+                  printf("\t\t<content type=\"%s\" default=\"%s\" />\n", arg->content_type, arg->default_value);
+                } else {
+                  printf("\t\t<content type=\"%s\" />\n", arg->content_type);
+                }
+		printf("\t\t<shortdesc lang=\"en\">");
+		print_desc_xml(arg->desc);
+		printf("</shortdesc>\n");
+		printf("\t</parameter>\n");
+	}
+
+	printf("</parameters>\n");
+	printf("<actions>\n");
+	printf("\t<action name=\"null\" />\n");	
+	printf("\t<action name=\"on\" />\n");
+	printf("\t<action name=\"off\" />\n");
+	printf("\t<action name=\"reboot\" />\n");
+	printf("\t<action name=\"metadata\" />\n");	
+	printf("\t<action name=\"status\" />\n");	
+	printf("\t<action name=\"devstatus\" />\n");	
+	printf("\t<action name=\"hostlist\" />\n");	
+	printf("</actions>\n");
+	printf("</resource-agent>\n");
 }
 
 

@@ -56,7 +56,8 @@ typedef enum {
 	FENCE_ON     = 0x3,		/* Turn the VM on */
 	FENCE_STATUS = 0x4,		/* virtual machine status (off/on) */
 	FENCE_DEVSTATUS = 0x5,		/* Status of the fencing device */
-	FENCE_HOSTLIST = 0x6		/* List VMs controllable */
+	FENCE_HOSTLIST = 0x6,		/* List VMs controllable */
+	FENCE_METADATA = 0x7
 } fence_cmd_t;
 
 #define DEFAULT_TTL 4

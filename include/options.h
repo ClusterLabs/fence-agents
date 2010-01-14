@@ -69,6 +69,9 @@ struct arg_info {
 	char opt;
 	char *opt_desc;
 	char *stdin_opt;
+	int eh;
+	char *content_type;
+	char *default_value;
 	char *desc;
 	void (*assign)(fence_virt_args_t *, struct arg_info *, char *);
 };
@@ -84,5 +87,6 @@ void args_get_stdin(const char *optstr, fence_virt_args_t *args);
 void args_get_ccs(const char *optstr, fence_virt_args_t *args);
 void args_usage(char *progname, const char *optstr, int print_stdin);
 void args_print(fence_virt_args_t *args);
+void args_metadata(char *progname, const char *optstr);
 
 #endif
