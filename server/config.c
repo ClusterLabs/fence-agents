@@ -330,7 +330,6 @@ listener_config_serial(config_object_t *config)
 {
 	char val[4096];
 	char inp[4096];
-	int done = 0;
 
 	printf("\n");
 	printf("The serial plugin allows fence_virtd to communicate with\n"
