@@ -25,6 +25,7 @@
 #include <xvm.h>
 #include <options.h>
 #include <client.h>
+#include <sys/time.h>
 #include <arpa/inet.h>
 #include <tcp.h>
 
@@ -183,7 +184,7 @@ void do_read_hostlist(int fd, int timeout);
 int
 wait_for(int fd, const char *pattern, size_t size, struct timeval *tout)
 {
-	char *pos = pattern;
+	char *pos = (char *)pattern;
 	char c;
 	int n;
 	struct timeval tv;
@@ -203,7 +204,7 @@ wait_for(int fd, const char *pattern, size_t size, struct timeval *tout)
 			++pos;
 			--remain;
 		} else {
-			pos = pattern;
+			pos = (char *)pattern;
 			remain = size;
 		}
 	}
