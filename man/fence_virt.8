@@ -37,7 +37,7 @@ Virtual machine (domain name) to fence
 .TP
 .B -o
 . 
-Fencing action (null, off, on, reboot, status, devstatus, or hostlist) (Default Value: reboot)
+Fencing action (null, off, on, reboot, status, devstatus, hostlist, or metadata) (Default Value: reboot).  See the FENCING ACTIONS section.
 
 .TP
 .B -t
@@ -139,7 +139,7 @@ Virtual machine (domain name) to fence
 .TP
 .B action
 . 
-Fencing action to perform (See FENCING ACTIONS section)
+Fencing action (null, off, on, reboot, status, devstatus, hostlist, or metadata) (Default Value: reboot).  See the FENCING ACTIONS section.
 	
 .TP
 .B timeout
@@ -246,6 +246,10 @@ Check the health of fence_virtd.
 \fBhostlist \fP
 List virtual machines which may be fenced by fence_virtd (not supported
 on all backends).
+
+.TP
+\fBmetadata \fP
+Print XML metadata to standard output.
 
 .SH SEE ALSO
 fence_virtd(8), fence(8), fence_virtd.conf(5)

@@ -403,12 +403,12 @@ static struct arg_info _arg_info[] = {
 	{ '\xff', NULL, "option",
 	  /* Deprecated */
 	  0, "string", "reboot",
-	  "Fencing option (null, off, on, [reboot], status, hostlist, devstatus)",
+	  "Fencing option (null, off, on, [reboot], status, hostlist, devstatus, metadata)",
 	  assign_op },
 
 	{ 'o', "-o <operation>", "action",
 	  0, "string", "reboot",
-	  "Fencing action (null, off, on, [reboot], status, hostlist, devstatus)",
+	  "Fencing action (null, off, on, [reboot], status, hostlist, devstatus, metadata)",
 	  assign_op },
 
 	{ 'H', "-H <domain>", "domain",
