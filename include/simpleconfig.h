@@ -1,15 +1,13 @@
 #ifndef _SIMPLECONFIG_H
 #define _SIMPLECONFIG_H
 
-typedef void config_info_t;
-
-typedef int (*config_get_t)(config_info_t *config, const char *key,
+typedef int (*config_get_t)(void *config, const char *key,
 			    char *value, size_t valuesz);
-typedef int (*config_set_t)(config_info_t *config, const char *key,
+typedef int (*config_set_t)(void *config, const char *key,
 			    const char *value);
-typedef int (*config_parse_t)(const char *filename, config_info_t **config);
-typedef int (*config_free_t)(config_info_t *config);
-typedef void (*config_dump_t)(config_info_t *config, FILE *fp);
+typedef int (*config_parse_t)(const char *filename, void **config);
+typedef int (*config_free_t)(void *config);
+typedef void (*config_dump_t)(void *config, FILE *fp);
 
 /*
  * We use an abstract object here so we do not have to link loadable
@@ -22,7 +20,7 @@ typedef struct {
 	config_parse_t parse;
 	config_free_t free;
 	config_dump_t dump;
-	config_info_t *info;
+	void *info;
 } config_object_t;
 
 /*

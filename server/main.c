@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <fence_virt.h>
 #include <simpleconfig.h>
+#include <static_map.h>
 #include <server_plugin.h>
 #include <debug.h>
 #include <syslog.h>
@@ -36,6 +37,7 @@ main(int argc, char **argv)
 	char backend_name[80];
 	const char *config_file = DEFAULT_CONFIG_FILE;
 	config_object_t *config;
+	map_object_t *map;
 	const listener_plugin_t *lp;
 	const backend_plugin_t *p;
 	listener_context_t listener_ctx = NULL;
@@ -44,6 +46,12 @@ main(int argc, char **argv)
 	int opt, configure = 0;
 
 	config = sc_init();
+	map = map_init();
+
+	if (!config || !map) {
+		perror("malloc");
+		return -1;
+	}
 
 	while ((opt = getopt(argc, argv, "Ff:d:cw")) != EOF) {
 		switch(opt) {
@@ -106,6 +114,7 @@ main(int argc, char **argv)
 
 	if (dget() > 3) 
 		sc_dump(config, stdout);
+
 
 	if (sc_get(config, "fence_virtd/@backend", backend_name,
 		   sizeof(backend_name))) {
@@ -183,8 +192,12 @@ main(int argc, char **argv)
 		sleep(5);
 	}
 
+	if (map_load(map, config) < 0) {
+		printf("Mapping load failed\n");
+	}
+
 	/* only client we have now is mcast (fence_xvm behavior) */
-	if (lp->init(&listener_ctx, p->callbacks, config,
+	if (lp->init(&listener_ctx, p->callbacks, config, map,
 		       backend_ctx) < 0) {
 		if (foreground) {
 			printf("Listener plugin %s failed to initialize\n",

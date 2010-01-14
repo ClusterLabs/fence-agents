@@ -45,6 +45,8 @@
 #include <libgen.h>
 #include <syslog.h>
 #include <simpleconfig.h>
+#include <static_map.h>
+
 #include <server_plugin.h>
 
 /* Local includes */

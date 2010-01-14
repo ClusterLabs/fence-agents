@@ -44,6 +44,7 @@
 #include <libgen.h>
 #include <list.h>
 #include <simpleconfig.h>
+#include <static_map.h>
 #include <server_plugin.h>
 #include <history.h>
 
@@ -82,10 +83,12 @@ typedef struct _mcast_options {
 typedef struct _mcast_info {
 	uint64_t magic;
 	void *priv;
+	map_object_t *map;
 	history_info_t *history;
 	char key[MAX_KEY_LEN];
 	mcast_options args;
 	const fence_callbacks_t *cb;
+	map_object_t *maps;
 	ssize_t key_len;
 	int mc_sock;
 	int need_kill;
@@ -233,6 +236,7 @@ mcast_hostlist_end(int fd)
 static int
 do_fence_request_tcp(fence_req_t *req, mcast_info *info)
 {
+	char ip_addr_src[1024];
 	int fd = -1;
 	char response = 1;
 	struct mcast_hostlist_arg arg;
@@ -245,21 +249,42 @@ do_fence_request_tcp(fence_req_t *req, mcast_info *info)
 	}
 	arg.fd = fd;
 
+	inet_ntop(req->family, req->address,
+		  ip_addr_src, sizeof(ip_addr_src));
+
+	dbg_printf(2, "Request %d seqno %d src %s target %s\n", 
+		   req->request, req->seqno, ip_addr_src, req->domain);
+
 	switch(req->request) {
 	case FENCE_NULL:
 		response = info->cb->null((char *)req->domain, info->priv);
 		break;
 	case FENCE_ON:
-		response = info->cb->on((char *)req->domain, NULL, req->seqno,
-					info->priv);
+		if (map_check(info->maps, ip_addr_src,
+				     (const char *)req->domain) == 0) {
+			response = RESP_PERM;
+			break;
+		}
+		response = info->cb->on((char *)req->domain, ip_addr_src,
+					req->seqno, info->priv);
 		break;
 	case FENCE_OFF:
-		response = info->cb->off((char *)req->domain, NULL, req->seqno,
-					 info->priv);
+		if (map_check(info->maps, ip_addr_src,
+				     (const char *)req->domain) == 0) {
+			response = RESP_PERM;
+			break;
+		}
+		response = info->cb->off((char *)req->domain, ip_addr_src,
+					 req->seqno, info->priv);
 		break;
 	case FENCE_REBOOT:
-		response = info->cb->reboot((char *)req->domain, NULL, req->seqno,
-					    info->priv);
+		if (map_check(info->maps, ip_addr_src,
+				     (const char *)req->domain) == 0) {
+			response = RESP_PERM;
+			break;
+		}
+		response = info->cb->reboot((char *)req->domain, ip_addr_src,
+					    req->seqno, info->priv);
 		break;
 	case FENCE_STATUS:
 		response = info->cb->status((char *)req->domain, info->priv);
@@ -475,7 +500,7 @@ mcast_config(config_object_t *config, mcast_options *args)
 
 static int
 mcast_init(listener_context_t *c, const fence_callbacks_t *cb,
-	   config_object_t *config, void *priv)
+	   config_object_t *config, map_object_t *map, void *priv)
 {
 	mcast_info *info;
 	int mc_sock, ret;
@@ -494,6 +519,7 @@ mcast_init(listener_context_t *c, const fence_callbacks_t *cb,
 
 	info->priv = priv;
 	info->cb = cb;
+	info->map = map;
 
 	ret = mcast_config(config, &info->args);
 	if (ret < 0) {

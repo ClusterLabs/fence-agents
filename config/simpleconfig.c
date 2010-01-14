@@ -6,6 +6,8 @@
 #include <assert.h>
 #include "simpleconfig.h"
 #include "config-stack.h"
+#include <static_map.h>
+
 
 static pthread_mutex_t parser_mutex = PTHREAD_MUTEX_INITIALIZER;
 

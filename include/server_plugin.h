@@ -1,5 +1,5 @@
 /*  */
-#define PLUGIN_VERSION_LISTENER ((double)0.2)
+#define PLUGIN_VERSION_LISTENER ((double)0.3)
 #define PLUGIN_VERSION_BACKEND  ((double)0.2)
 
 #define LISTENER_VER_SYM listener_plugin_version
@@ -48,6 +48,7 @@ typedef int (*fence_status_callback)(const char *vm_name,
    is responding to requests. */
 typedef int (*fence_devstatus_callback)(void *priv);
 
+
 /* VMs available to fence.  Returns 0 to caller if backend
    is responding to requests and a host list can be produced */
 typedef int (*hostlist_callback)(const char *vm_name, const char *uuid,
@@ -81,6 +82,7 @@ typedef struct backend_plugin {
 typedef int (*listener_init_fn)(listener_context_t *c,
 				const fence_callbacks_t *cb,
 				config_object_t *config, 
+				map_object_t *map,
 				void *priv);
 typedef int (*listener_dispatch_fn)(listener_context_t c,
 				    struct timeval *timeout);

@@ -44,6 +44,7 @@
 #include <libgen.h>
 #include <list.h>
 #include <simpleconfig.h>
+#include <static_map.h>
 #include <server_plugin.h>
 #include <history.h>
 #include <xvm.h>
@@ -73,7 +74,7 @@ typedef struct _serial_info {
 	char *uri;
 	char *path;
 	history_info_t *history;
-	void *maps;
+	map_object_t *maps;
 	int mode;
 } serial_info;
 
@@ -175,7 +176,7 @@ do_fence_request(int fd, const char *src, serial_req_t *req, serial_info *info)
 		response = info->cb->null((char *)req->domain, info->priv);
 		break;
 	case FENCE_ON:
-		if (static_map_check(info->maps, src,
+		if (map_check(info->maps, src,
 				     (const char *)req->domain) == 0) {
 			response = RESP_PERM;
 			break;
@@ -184,7 +185,7 @@ do_fence_request(int fd, const char *src, serial_req_t *req, serial_info *info)
 				       	req->seqno, info->priv);
 		break;
 	case FENCE_OFF:
-		if (static_map_check(info->maps, src,
+		if (map_check(info->maps, src,
 				     (const char *)req->domain) == 0) {
 			response = RESP_PERM;
 			break;
@@ -193,7 +194,7 @@ do_fence_request(int fd, const char *src, serial_req_t *req, serial_info *info)
 					 req->seqno, info->priv);
 		break;
 	case FENCE_REBOOT:
-		if (static_map_check(info->maps, src,
+		if (map_check(info->maps, src,
 				     (const char *)req->domain) == 0) {
 			response = RESP_PERM;
 			break;
@@ -345,7 +346,7 @@ serial_config(config_object_t *config, serial_info *args)
 
 static int
 serial_init(listener_context_t *c, const fence_callbacks_t *cb,
-	   config_object_t *config, void *priv)
+	   config_object_t *config, map_object_t *map, void *priv)
 {
 	serial_info *info;
 	int ret;
@@ -367,7 +368,7 @@ serial_init(listener_context_t *c, const fence_callbacks_t *cb,
 		return -1;
 	}
 
-	static_map_init(config, &info->maps);
+	info->maps = map;
 
 	info->magic = SERIAL_PLUG_MAGIC;
 	info->history = history_init(check_history, 10, sizeof(fence_req_t));

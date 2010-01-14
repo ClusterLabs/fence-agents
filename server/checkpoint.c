@@ -22,6 +22,7 @@
 #include <config.h>
 #include <stdio.h>
 #include <simpleconfig.h>
+#include <static_map.h>
 #include <sys/types.h>
 #include <stdint.h>
 #include <time.h>

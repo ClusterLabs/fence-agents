@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <simpleconfig.h>
+#include <static_map.h>
 #include <string.h>
 #include <signal.h>
 #include <stdlib.h>
@@ -22,8 +23,8 @@ struct perm_group {
 };
 
 
-void
-static_map_cleanup(void *info)
+static void
+static_map_cleanup(void **info)
 {
 	struct perm_group *groups = (struct perm_group *)info;
 	struct perm_group *group;
@@ -39,10 +40,12 @@ static_map_cleanup(void *info)
 		}
 		free(group);
 	}
+
+	*info = NULL;
 }
 
 
-int
+static int
 static_map_check(void *info, const char *value1, const char *value2)
 {
 	struct perm_group *groups = (struct perm_group *)info;
@@ -77,9 +80,10 @@ static_map_check(void *info, const char *value1, const char *value2)
 }
 
 
-int
-static_map_init(config_object_t *config, void **perm_info)
+static int
+static_map_load(void *config_ptr, void **perm_info)
 {
+	config_object_t *config = config_ptr;
 	int group_idx = 0;
 	int entry_idx = 0;
 	int found;
@@ -140,4 +144,37 @@ static_map_init(config_object_t *config, void **perm_info)
 	*perm_info = groups;
 
 	return 0;
+}
+
+
+static const map_object_t static_map_obj = {
+	.load = static_map_load,
+	.check = static_map_check,
+	.cleanup = static_map_cleanup,
+	.info = NULL
+};
+
+
+void *
+map_init(void)
+{
+	map_object_t *o;
+
+	o = malloc(sizeof(*o));
+	if (!o)
+		return NULL;
+	memset(o, 0, sizeof(*o));
+	memcpy(o, &static_map_obj, sizeof(*o));
+
+	return (void *)o;
+}
+
+
+void
+map_release(void *c)
+{
+	map_object_t *o = (map_object_t *)c;
+
+	static_map_cleanup(&o->info);
+	free(c);
 }

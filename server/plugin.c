@@ -30,6 +30,7 @@
 #include <stdint.h>
 #include <list.h>
 #include <simpleconfig.h>
+#include <static_map.h>
 #include <server_plugin.h>
 #include <malloc.h>
 #include <string.h>
