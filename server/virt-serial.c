@@ -185,6 +185,67 @@ myEventRemoveTimeoutFunc(int timer)
 
 
 static int
+is_in_directory(const char *dir, const char *pathspec)
+{
+	char *last_slash = NULL;
+	size_t dirlen, pathlen;
+
+	if (!dir || !pathspec)
+		return 0;
+
+	dirlen = strlen(dir);
+	pathlen = strlen(pathspec);
+
+	/*
+	printf("dirlen = %d pathlen = %d\n",
+		dirlen, pathlen);
+	 */
+
+	/* chop off trailing slashes */
+	while (dirlen && dir[dirlen-1]=='/')
+		--dirlen;
+
+	/* chop off leading slashes */
+	while (dirlen && dir[0] == '/') {
+		++dir;
+		--dirlen;
+	}
+
+	/* chop off leading slashes */
+	while (pathlen && pathspec[0] == '/') {
+		++pathspec;
+		--pathlen;
+	}
+
+	if (!dirlen || !pathlen)
+		return 0;
+
+	if (pathlen <= dirlen)
+		return 0;
+
+	last_slash = strrchr(pathspec, '/');
+
+	if (!last_slash)
+		return 0;
+
+	while (*last_slash == '/' && last_slash > pathspec)
+		--last_slash;
+
+	if (last_slash == pathspec)
+		return 0;
+
+	pathlen = last_slash - pathspec + 1;
+	/*printf("real dirlen = %d  real pathlen = %d\n",
+	dirlen, pathlen);*/
+	if (pathlen != dirlen)
+		return 0;
+
+	/* todo - intelligently skip multiple slashes mid-path */
+	return !strncmp(dir, pathspec, dirlen);
+}
+
+
+static int
 domainStarted(virDomainPtr mojaDomain, const char *path, int mode)
 {
 	char dom_uuid[42];
@@ -264,15 +325,9 @@ domainStarted(virDomainPtr mojaDomain, const char *path, int mode)
 					      (const xmlChar *) "bind"))
 					continue;
 
-				if (path) {
-					if (xmlStrlen(attr_path->children->content) <
-					    path_len)
-						continue;
-					if (strncmp(attr_path->children->content,
-						    path, path_len))
-						continue;
-				}
-					   
+				if (!path || !is_in_directory(path, (const char *)
+							attr_path->children->content))
+					continue;
 
 				domain_sock_setup(dom_uuid, (const char *)
 						  attr_path->children->content);
