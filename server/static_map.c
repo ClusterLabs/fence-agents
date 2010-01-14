@@ -10,6 +10,7 @@
 #include <debug.h>
 
 #include "serial.h"
+#include "uuid-test.h"
 
 struct perm_entry {
 	list_head();
@@ -18,7 +19,8 @@ struct perm_entry {
 
 struct perm_group {
 	list_head();
-	struct perm_entry *entries;
+	struct perm_entry *uuids;
+	struct perm_entry *ips;
 	char name[128];
 };
 
@@ -33,9 +35,14 @@ static_map_cleanup(void **info)
 	while (groups) {
 		group = groups;
 		list_remove(&groups, group);
-		while (group->entries) {
-			entry = group->entries;
-			list_remove(&group->entries, entry);
+		while (group->uuids) {
+			entry = group->uuids;
+			list_remove(&group->uuids, entry);
+			free(entry);
+		}
+		while (group->ips) {
+			entry = group->ips;
+			list_remove(&group->ips, entry);
 			free(entry);
 		}
 		free(group);
@@ -51,25 +58,36 @@ static_map_check(void *info, const char *value1, const char *value2)
 	struct perm_group *groups = (struct perm_group *)info;
 	struct perm_group *group;
 	struct perm_entry *left, *tmp;
-	int x, y;
+	int x, y, uuid = 0;
 
 	if (!info)
 		return 1; /* no maps == wide open */
 
+	uuid = is_uuid(value1);
+
 	list_for(&groups, group, x) {
 		left = NULL;
 
-		list_for(&group->entries, tmp, y) {
-			if (!strcasecmp(tmp->name, value1)) {
-				left = tmp;
-				break;
+		if (uuid) {
+			list_for(&group->uuids, tmp, y) {
+				if (!strcasecmp(tmp->name, value1)) {
+					left = tmp;
+					break;
+				}
+			}
+		} else {
+			list_for(&group->ips, tmp, y) {
+				if (!strcasecmp(tmp->name, value1)) {
+					left = tmp;
+					break;
+				}
 			}
 		}
 
 		if (!left)
 			continue;
 
-		list_for(&group->entries, tmp, y) {
+		list_for(&group->uuids, tmp, y) {
 			if (!strcasecmp(tmp->name, value2)) {
 				return 1;
 			}
@@ -100,12 +118,16 @@ static_map_load(void *config_ptr, void **perm_info)
 		snprintf(buf, sizeof(buf)-1, "groups/group[%d]", ++group_idx);
 
 		if (sc_get(config, buf, value, sizeof(value)) != 0) {
-			snprintf(buf2, sizeof(buf2)-1, "%s/@member", buf);
+			snprintf(buf2, sizeof(buf2)-1, "%s/@uuid", buf);
 			if (sc_get(config, buf2, value, sizeof(value)) != 0) {
-				break;
-			} else {
-				snprintf(value, sizeof(value), "unnamed-%d", group_idx);
+				snprintf(buf2, sizeof(buf2)-1, "%s/@ip", buf);
+				if (sc_get(config, buf2, value,
+					   sizeof(value)) != 0) {
+					break;
+				}
 			}
+			snprintf(value, sizeof(value), "unnamed-%d",
+				 group_idx);
 		}
 
 		group = malloc(sizeof(*group));
@@ -114,10 +136,11 @@ static_map_load(void *config_ptr, void **perm_info)
 		strncpy(group->name, value, sizeof(group->name));
 		dbg_printf(3, "Group: %s\n", value);
 
-		entry_idx = 0;
 		found = 0;
+		entry_idx = 0;
 		do {
-			snprintf(buf2, sizeof(buf2)-1, "%s/@member[%d]", buf, ++entry_idx);
+			snprintf(buf2, sizeof(buf2)-1, "%s/@uuid[%d]",
+				 buf, ++entry_idx);
 
 			if (sc_get(config, buf2, value, sizeof(value)) != 0) {
 				break;
@@ -128,11 +151,32 @@ static_map_load(void *config_ptr, void **perm_info)
 			assert(entry);
 			memset(entry, 0, sizeof(*entry));
 			strncpy(entry->name, value, sizeof(entry->name));
-			dbg_printf(3, " - Entry: %s\n", value);
+			dbg_printf(3, " - UUID Entry: %s\n", value);
 
-			list_insert(&group->entries, entry);
+			list_insert(&group->uuids, entry);
 
 		} while (1);
+
+		entry_idx = 0;
+		do {
+			snprintf(buf2, sizeof(buf2)-1, "%s/@ip[%d]",
+				 buf, ++entry_idx);
+
+			if (sc_get(config, buf2, value, sizeof(value)) != 0) {
+				break;
+			}
+
+			++found;
+			entry = malloc(sizeof(*entry));
+			assert(entry);
+			memset(entry, 0, sizeof(*entry));
+			strncpy(entry->name, value, sizeof(entry->name));
+			dbg_printf(3, " - IP Entry: %s\n", value);
+
+			list_insert(&group->ips, entry);
+
+		} while (1);
+
 
 		if (!found)
 			free(group);

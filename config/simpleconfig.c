@@ -63,7 +63,7 @@ _sc_dump_d(struct node *node, int depth, FILE *fp)
 
 
 static void
-_sc_dump(config_info_t *config, FILE *fp)
+_sc_dump(void *config, FILE *fp)
 {
 	struct node *n, *node;
 	struct value *v, *values;
@@ -129,7 +129,7 @@ _sc_free_node(struct node *node)
 
 
 static int
-_sc_free(config_info_t *config)
+_sc_free(void *config)
 {
 	struct node *n, *nlist;
 	struct value *v, *vlist;
@@ -163,7 +163,7 @@ _sc_free(config_info_t *config)
 
 
 static int
-_sc_get(config_info_t *config, const char *key, char *value, size_t valuesz)
+_sc_get(void *config, const char *key, char *value, size_t valuesz)
 {
 	char buf[1024];
 	struct node *n, *node = ((struct parser_context *)config)->node_list;
@@ -335,7 +335,7 @@ top:
 
 
 static int
-_sc_set(config_info_t *config, const char *key, const char *value)
+_sc_set(void *config, const char *key, const char *value)
 {
 	char buf[1024];
 	struct node *n, **nodes = &((struct parser_context *)config)->node_list;
@@ -412,7 +412,7 @@ _sc_set(config_info_t *config, const char *key, const char *value)
 
 
 static int
-_sc_parse(const char *filename, config_info_t **config)
+_sc_parse(const char *filename, void **config)
 {
 	struct parser_context *c;
 	FILE *fp = NULL;
@@ -441,7 +441,7 @@ _sc_parse(const char *filename, config_info_t **config)
 	c->next = NULL;
 	val_list = NULL;
 	node_list = NULL;
-	*config = (config_info_t *)c;
+	*config = (void *)c;
 
 	if (fp)
 		fclose(fp);

@@ -62,9 +62,9 @@ section about listeners below.
 
 .SS groups
 
-This section contains static maps of which virtual machines may fence
-which other virtual machines; see the
-section about groups below.
+This section contains static maps of which virtual machines
+may fence which other virtual machines; see the section
+about groups below.
 
 
 .SH LISTENERS
@@ -231,18 +231,23 @@ groups are arbitrary and are checked at fence time.  Any member of
 a group may fence any other member.  Hosts may be assigned to multiple
 groups if desired.
 
-Note that this mode is only useful when using the serial listener, as
-as other listener plugins (e.g. multicast) have no reliable way to
-determine the originating VM of a fencing request.
-
 .SS group
 
 This defines a group.
 
 .TP
-.B member
+.B uuid
 .
-defines a member of a group.
+defines UUID as a member of a group.
+
+.TP
+.B ip
+.
+defines an IP which is allowed to send fencing requests
+for members of this group (e.g. for multicast).  It is
+highly recommended that this be used in conjunction with
+a key file.
+
 
 
 .SH EXAMPLE
@@ -268,8 +273,9 @@ defines a member of a group.
  
  groups {
   group {
-   member = "44179d3f-6c63-474f-a212-20c8b4b25b16";
-   member = "1ce02c4b-dfa1-42cb-b5b1-f0b1091ece60";
+   ip = "192.168.1.1";
+   uuid = "44179d3f-6c63-474f-a212-20c8b4b25b16";
+   uuid = "1ce02c4b-dfa1-42cb-b5b1-f0b1091ece60";
   }
  }
 
