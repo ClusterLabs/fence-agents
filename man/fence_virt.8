@@ -27,7 +27,7 @@ machines from scripts.
 .TP
 .B -d
 . 
-Specify (CCS) / increment (command line) debug level
+Increment (command line) debug level
 	
 .TP
 .B -H
@@ -37,12 +37,12 @@ Virtual machine (domain name) to fence
 .TP
 .B -o
 . 
-Fencing action (null, off, on, [reboot], status, devstatus, or hostlist) (Default Value: reboot)
+Fencing action (null, off, on, reboot, status, devstatus, or hostlist) (Default Value: reboot)
 
 .TP
 .B -t
 . 
-Fencing timeout (in seconds; default=30) (Default Value: 30)
+Fencing timeout (in seconds) (Default Value: 30)
 
 .SH MULTICAST PARAMETERS
 These parameters are used only when using fence_virt in multicast mode
@@ -51,37 +51,37 @@ These parameters are used only when using fence_virt in multicast mode
 .TP
 .B -i
 . 
-IP Family ([auto], ipv4, ipv6) (Default Value: auto)
+IP Family (auto, ipv4, ipv6) (Default Value: auto)
 	
 .TP
 .B -a
 . 
-Multicast address (default=225.0.0.12 / ff02::3:1)
+Multicast address (Default Values: 225.0.0.12 / ff02::3:1)
 	
 .TP
 .B -p
 . 
-IP port (default=1229) (Default Value: 1229)
+IP port (Default Value: 1229)
 	
 .TP
 .B -T
 . 
-Multicast time-to-live (in hops; default=2) (Default Value: 2)
+Multicast time-to-live (in hops) (Default Value: 2)
 	
 .TP
 .B -r
 . 
-Multicast retransmit time (in 1/10sec; default=20) (Default Value: 20)
+Multicast retransmit time (in 1/10sec) (Default Value: 20)
 	
 .TP
 .B -C
 . 
-Authentication (none, sha1, [sha256], sha512) (Default Value: sha256)
+Authentication (none, sha1, sha256, sha512) (Default Value: sha256)
 	
 .TP
 .B -c
 . 
-Packet hash strength (none, sha1, [sha256], sha512) (Default Value: sha256)
+Packet hash strength (none, sha1, sha256, sha512) (Default Value: sha256)
 	
 .TP
 .B -k
@@ -93,21 +93,31 @@ Shared key file (Default Value: /etc/cluster/fence_xvm.key)
 . 
 Treat 'domain' as UUID instead of domain name.
 	
-.SH MULTICAST PARAMETERS
+.SH SERIAL/VMCHANNEL PARAMETERS
 These parameters are used only when using fence_virt in multicast mode
 (e.g. by running fence_xvm).
 
 .TP
 .B -D
 . 
-Serial device (fence_virt mode).  Default=/dev/ttyS1.  On the host, the
-serial device must be mapped in each domain's configuration file.  See
-fence_virt.conf(5) for more information.
+Serial device (fence_virt mode). On the host, the serial device must
+be mapped in each domain's configuration file.  See fence_virt.conf(5)
+for more information.  Specifying a serial device causes fence_virt
+to use serial mode (as opposed to VMChannel mode).
 
 .TP
 .B -P
 .
-Serial parameters.  Default=115200,8N1
+Serial parameters. (Default Value: 115200,8N1)
+
+.TP
+.B -A
+VMChannel IP address (Default Value: 10.0.2.179)
+
+.TP
+.B -p
+.
+VMChannel IP port (Default Value: 1229)
 
 .SH GENERAL STDIN PARAMETERS
 These parameters are passed to fence_virt via standard input if
@@ -134,7 +144,7 @@ Fencing action to perform (See FENCING ACTIONS section)
 .TP
 .B timeout
 . 
-Fencing timeout (in seconds; default=30) (Default Value: 30)
+Fencing timeout (in seconds) (Default Value: 30)
 
 .SH MULTICAST STDIN PARAMETERS
 .TP
@@ -145,55 +155,68 @@ IP Family ([auto], ipv4, ipv6) (Default Value: auto)
 .TP
 .B multicast_address
 . 
-Multicast address (default=225.0.0.12 / ff02::3:1)
+Multicast address (Defaults: 225.0.0.12 / ff02::3:1)
 	
 .TP
 .B port
 . 
-IP port (default=1229) (Default Value: 1229)
+IP port (Default Value: 1229)
 	
 .TP
 .B multicast_ttl
 . 
-Multicast time-to-live (in hops; default=2) (Default Value: 2)
+Multicast time-to-live (in hops) (Default Value: 2)
 	
 .TP
 .B retrans
 . 
-Multicast retransmit time (in 1/10sec; default=20) (Default Value: 20)
+Multicast retransmit time (in 1/10sec) (Default Value: 20)
 	
 .TP
 .B auth
 . 
-Authentication (none, sha1, [sha256], sha512) (Default Value: sha256)
+Authentication (none, sha1, sha256, sha512) (Default Value: sha256)
 	
 .TP
 .B hash
 . 
-Packet hash strength (none, sha1, [sha256], sha512) (Default Value: sha256)
+Packet hash strength (none, sha1, sha256, sha512) (Default Value: sha256)
 	
 .TP
 .B key_file
 . 
-Shared key file (default=/etc/cluster/fence_xvm.key) (Default Value: /etc/cluster/fence_xvm.key)
+Shared key file (Default Value: /etc/cluster/fence_xvm.key)
 
 .TP
 .B use_uuid
 . 
 Treat 'domain' as UUID instead of domain name
 
-.SH SERIAL STDIN PARAMETERS
+.SH SERIAL/VMCHANNEL STDIN PARAMETERS
 .TP
 .B serial_device
 . 
-Serial device.  Default=/dev/ttyS1.  On the host, the serial device must
-be mapped in each domain's configuration file.  See fence_virt.conf(5)
-for more information.
+Serial device.  On the host, the serial device must be mapped in
+each domain's configuration file.  See fence_virt.conf(5)
+for more information.  If specified, causes fence_virt to operate
+in serial mode (not specifying causes fence_virt to operate in
+VM Channel mode).
 
 .TP
 .B serial_params
 . 
 Serial parameters.  Default=115200,8N1.
+
+.TP
+.B channel_ip
+. 
+Channel IP.  Default=10.0.2.179
+
+.TP
+.B port
+. 
+Channel port.  Default=1229
+
 
 .SH FENCING ACTIONS
 	

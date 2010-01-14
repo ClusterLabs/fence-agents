@@ -73,10 +73,6 @@ There are various listeners available for fence_virtd, each one handles
 decoding and authentication of a given fencing request.  The following 
 configuration blocks belong in the \fBlisteners\fP section of fence_virtd.conf
 
-.SS vmchannel
-To be done.  This listener utilizes serial vmchannel tied to Unix domain
-sockets on the host in order to receive and route fencing requests.
-
 .SS multicast
 .TP
 .B key_file
@@ -119,22 +115,24 @@ is used as a gateway.
 
 .SS serial
 
-The serial listener plugin utilizes libvirt's serial mapping to listen
-for requests.  When using the serial listener, it is necessary to add
-a serial port (preferably pointing to /dev/ttyS1) in the libvirt domain
-description.  Note that only serial type
+The serial listener plugin utilizes libvirt's serial (or VMChannel)
+mapping to listen for requests.  When using the serial listener, it is
+necessary to add a serial port (preferably pointing to /dev/ttyS1) or
+a channel (preferrably pointing to 10.0.2.179:1229) to the
+libvirt domain description.  Note that only type
 .B unix
 , mode 
 .B bind
-is supported.  The socket path does not matter, and currently, fence_virt
-will only use the
-.B first specified
-virtual serial port of this type.  Example libvirt XML:
+serial ports and channels are supported.  Example libvirt XML:
 
 .in 8
-  <serial type='unix'>
+  <\fBserial\fP type='unix'>
     <source mode='bind' path='/sandbox/guests/fence_socket_molly'/>
     <target port='1'/>
+  </serial>
+  <\fBchannel\fP type='unix'>
+    <source mode='bind' path='/sandbox/guests/fence_molly_vmchannel'/>
+    <target type='guestfwd' address='10.0.2.179' port='1229'/>
   </serial>
 .in 0
 
@@ -142,6 +140,19 @@ virtual serial port of this type.  Example libvirt XML:
 .B uri
 .
 the URI to use when connecting to libvirt by the serial plugin.
+
+.TP
+.B path
+.
+Sockets must reside in this directory in order to be considered
+valid.  This can be used to prevent fence_virtd from using the wrong
+sockets.
+
+.TP
+.B mode
+.
+This selects the type of sockets to register.  Valid values are "serial"
+(default) and "vmchannel".
 
 
 .SH BACKENDS

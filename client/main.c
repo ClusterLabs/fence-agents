@@ -59,7 +59,7 @@ main(int argc, char **argv)
        		my_options = "di:a:p:r:C:c:k:M:H:uo:t:?hV";
 		args.mode = MODE_MULTICAST;
 	} else {
-       		my_options = "dD:P:M:H:o:t:?hV";
+       		my_options = "dD:P:A:p:M:H:o:t:?hV";
 		args.mode = MODE_SERIAL;
 	}
 

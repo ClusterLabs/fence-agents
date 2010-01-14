@@ -18,7 +18,7 @@ int static_map_check(void *info, const char *value1, const char *value2);
 int static_map_init(config_object_t *config, void **perm_info);
 
 /* virt-serial.c - event thread control functions */
-int start_event_listener(const char *uri);
+int start_event_listener(const char *uri, const char *path, int mode);
 int stop_event_listener(void);
 
 

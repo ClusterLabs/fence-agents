@@ -185,13 +185,14 @@ myEventRemoveTimeoutFunc(int timer)
 
 
 static int
-domainStarted(virDomainPtr mojaDomain)
+domainStarted(virDomainPtr mojaDomain, const char *path, int mode)
 {
 	char dom_uuid[42];
 	char *xml;
 	xmlDocPtr doc;
 	xmlNodePtr cur, devices, child, serial;
 	xmlAttrPtr attr, attr_mode, attr_path;
+	size_t path_len = 0;
 
 	if (!mojaDomain)
 		return -1;
@@ -200,6 +201,8 @@ domainStarted(virDomainPtr mojaDomain)
 
 	xml = virDomainGetXMLDesc(mojaDomain, 0);
 	// printf("%s\n", xml);
+	if (path)
+		path_len = strlen(path);
 
 	// @todo: free mojaDomain       
 
@@ -229,7 +232,9 @@ domainStarted(virDomainPtr mojaDomain)
 
 		for (child = devices->xmlChildrenNode; child != NULL;
 		     child = child->next) {
-			if (xmlStrcmp(child->name, (const xmlChar *) "serial")) {
+			
+			if ((!mode && xmlStrcmp(child->name, (const xmlChar *) "serial")) ||
+			    (mode && xmlStrcmp(child->name, (const xmlChar *) "channel"))) {
 				continue;
 			}
 
@@ -252,13 +257,25 @@ domainStarted(virDomainPtr mojaDomain)
 				attr_mode = xmlHasProp(serial, (const xmlChar *)"mode");
 				attr_path = xmlHasProp(serial, (const xmlChar *)"path");
 
-				if ((attr_path != NULL) &&
-				    (attr_mode != NULL) &&
-				    (!xmlStrcmp(attr_mode->children->content,
-						(const xmlChar *) "bind"))) {
-					domain_sock_setup(dom_uuid, (const char *)
-							  attr_path->children->content);
+				if (!attr_path || !attr_mode)
+					continue;
+
+				if (xmlStrcmp(attr_mode->children->content,
+					      (const xmlChar *) "bind"))
+					continue;
+
+				if (path) {
+					if (xmlStrlen(attr_path->children->content) <
+					    path_len)
+						continue;
+					if (strncmp(attr_path->children->content,
+						    path, path_len))
+						continue;
 				}
+					   
+
+				domain_sock_setup(dom_uuid, (const char *)
+						  attr_path->children->content);
 			}
 		}
 	}
@@ -268,7 +285,7 @@ domainStarted(virDomainPtr mojaDomain)
 }
 
 static int
-registerExisting(virConnectPtr vp)
+registerExisting(virConnectPtr vp, const char *path, int mode)
 {
 	int *d_ids = NULL;
 	int d_count, x;
@@ -312,7 +329,7 @@ registerExisting(virConnectPtr vp)
 
 		if (d_info.state != VIR_DOMAIN_SHUTOFF &&
 		    d_info.state != VIR_DOMAIN_CRASHED)
-			domainStarted(dom);
+			domainStarted(dom, path, mode);
 
 		virDomainFree(dom);
 	}
@@ -337,15 +354,28 @@ domainStopped(virDomainPtr mojaDomain)
 }
 
 
+struct event_args {
+	char *uri;
+	char *path;
+	int mode;
+};
+
+
 static void *
 event_thread(void *arg)
 {
+	struct event_args *args = (struct event_args *)arg;
 	virConnectPtr dconn = NULL;
 	struct domain_info dinfo;
-	int sts;
 	int callback1ret = -1;
+	int sts;
 
-	dbg_printf(3,"Event listener starting \n");
+	dbg_printf(3, "Libvirt event listener starting\n");
+	if (args->uri)
+		dbg_printf(3," * URI: %s\n", args->uri);
+	if (args->path)
+		dbg_printf(3," * Socket path: %s\n", args->path);
+	dbg_printf(3," * Mode: %s\n", args->mode?"VMChannel":"Serial");
 
 	virEventRegisterImpl(myEventAddHandleFunc,
 			     myEventUpdateHandleFunc,
@@ -354,15 +384,15 @@ event_thread(void *arg)
 			     myEventUpdateTimeoutFunc,
 			     myEventRemoveTimeoutFunc);
 
-	dconn = virConnectOpen((char *)arg);
+	dconn = virConnectOpen(args->uri);
 	if (!dconn) {
 		dbg_printf(1, "Error connecting to libvirt\n");
-		return NULL;
+		goto out;
 	}
 
 	DEBUG0("Registering domain event cbs");
 
-	registerExisting(dconn);
+	registerExisting(dconn, args->path, args->mode);
 
 	/* Add 2 callbacks to prove this works with more than just one */
 	memset(&dinfo, 0, sizeof (dinfo));
@@ -385,7 +415,7 @@ event_thread(void *arg)
 			}
 
 			if (dinfo.event == VIR_DOMAIN_EVENT_STARTED) {
-				domainStarted(dinfo.dom);
+				domainStarted(dinfo.dom, args->path, args->mode);
 				virDomainFree(dinfo.dom);
 				dinfo.dom = NULL;
 				dinfo.event = VIR_DOMAIN_EVENT_UNDEFINED;
@@ -408,7 +438,7 @@ event_thread(void *arg)
 
 			if (pfd.revents & POLLHUP) {
 				DEBUG0("Reset by peer");
-				return NULL;
+				goto out;
 			}
 
 			if (h_cb) {
@@ -428,26 +458,48 @@ event_thread(void *arg)
 		dbg_printf(1, "error closing libvirt connection\n");
 	}
 
+out:
+	free(args->uri);
+	free(args->path);
+	free(args);
 	return NULL;
 }
 
 
 int
-start_event_listener(const char *uri)
+start_event_listener(const char *uri, const char *path, int mode)
 {
-	char *arg = NULL;
+	struct event_args *args = NULL;
 
 	virInitialize();
+
+	args = malloc(sizeof(*args));
+	if (!args)
+		return -1;
+	memset(args, 0, sizeof(*args));
        
 	if (uri) {
-	       arg = strdup(uri);
-	       if (uri == NULL)
-		       return -1;
+	       args->uri = strdup(uri);
+	       if (args->uri == NULL)
+		       goto out_fail;
 	}
 
+	if (path) {
+	       args->path = strdup(path);
+	       if (args->path == NULL)
+		       goto out_fail;
+	}
+
+	args->mode = mode;
 	run = 1;
 
-	return pthread_create(&event_tid, NULL, event_thread, arg);
+	return pthread_create(&event_tid, NULL, event_thread, args);
+
+out_fail:
+	free(args->uri);
+	free(args->path);
+	free(args);
+	return -1;
 }
 
 

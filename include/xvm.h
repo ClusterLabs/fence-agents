@@ -96,6 +96,7 @@ typedef struct __attribute__ ((packed)) _host_info {
 
 #define DEFAULT_SERIAL_DEVICE "/dev/ttyS1"
 #define DEFAULT_SERIAL_SPEED "115200,8N1"
+#define DEFAULT_CHANNEL_IP "10.0.2.179"
 #define SERIAL_MAGIC 0x61626261 /* endian doesn't matter */
 
 typedef struct __attribute__((packed)) _serial_fence_req {

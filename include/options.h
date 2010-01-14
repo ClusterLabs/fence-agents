@@ -60,6 +60,7 @@ typedef struct {
 	struct serial_args {
 		char *device;		/* Serial device */
 		char *speed;
+		char *address;		/* vmchannel IP */
 	} serial;
 } fence_virt_args_t;
 

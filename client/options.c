@@ -98,6 +98,15 @@ assign_address(fence_virt_args_t *args, struct arg_info *arg, char *value)
 
 
 static inline void
+assign_channel_address(fence_virt_args_t *args, struct arg_info *arg, char *value)
+{
+	if (args->serial.address)
+		free(args->serial.address);
+	args->serial.address = strdup(value);
+}
+
+
+static inline void
 assign_port(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
 	args->net.port = atoi(value);
@@ -319,8 +328,12 @@ static struct arg_info _arg_info[] = {
 	  "Multicast address (default=" IPV4_MCAST_DEFAULT " / " IPV6_MCAST_DEFAULT ")",
 	  assign_address },
 
+	{ 'A', "-A <address>", "channel_address",
+	  "VM Channel IP address (default=" DEFAULT_CHANNEL_IP ")",
+	  assign_channel_address },
+
 	{ 'p', "-p <port>", "port",
-	  "IP port (default=1229)",
+	  "Multicast or VMChannel IP port (default=1229)",
 	  assign_port },
 
 	{ 'I', "-I <interface>", "interface",
@@ -443,8 +456,9 @@ args_init(fence_virt_args_t *args)
 	args->net.port = DEFAULT_MCAST_PORT;
 	args->net.ifindex = 0;
 	args->net.family = PF_INET;
-	args->serial.device = strdup(DEFAULT_SERIAL_DEVICE);
+	args->serial.device = NULL;
 	args->serial.speed = strdup(DEFAULT_SERIAL_SPEED);
+	args->serial.address = strdup(DEFAULT_CHANNEL_IP);
 	args->timeout = 30;
 	args->retr_time = 20;
 	args->flags = 0;

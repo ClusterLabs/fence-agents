@@ -71,8 +71,10 @@ typedef struct _serial_info {
 	const fence_callbacks_t *cb;
 	void *priv;
 	char *uri;
+	char *path;
 	history_info_t *history;
 	void *maps;
+	int mode;
 } serial_info;
 
 
@@ -260,11 +262,15 @@ serial_dispatch(listener_context_t c, struct timeval *timeout)
 	if (n == 0)
 		return 0;
 
+	printf("max = %d\n", max);
+
 	/* find & read request */
 	for (x = 0; x <= max; x++) {
 		if (FD_ISSET(x, &rfds)) {
 			tv.tv_sec = 1;
 			tv.tv_usec = 0;
+
+			printf("Reading from %d\n", x);
 
 			ret = _read_retry(x, &data, sizeof(data), &tv);
 
@@ -314,6 +320,29 @@ serial_config(config_object_t *config, serial_info *args)
 		args->uri = strdup(value);
 	} 
 
+	if (sc_get(config, "listeners/serial/@path",
+		   value, sizeof(value)-1) == 0) {
+		dbg_printf(1, "Got %s for uri\n", value);
+		args->path = strdup(value);
+	} 
+
+	if (sc_get(config, "listeners/serial/@mode",
+		   value, sizeof(value)-1) == 0) {
+		if (!strcasecmp(value, "vmchannel")) {
+			args->mode = 1;
+		} else if (!strcasecmp(value, "serial")) {
+			args->mode = 0;
+		} else {
+			args->mode = atoi(value);
+			if (args->mode < 0)
+				args->mode = 0;
+		}
+
+		dbg_printf(1, "Got %s for mode\n",
+			   args->mode?"VMChannel":"serial");
+
+	} 
+
 	return errors;
 }
 
@@ -347,7 +376,7 @@ serial_init(listener_context_t *c, const fence_callbacks_t *cb,
 	info->magic = SERIAL_PLUG_MAGIC;
 	info->history = history_init(check_history, 10, sizeof(fence_req_t));
 	*c = (listener_context_t)info;
-	start_event_listener(info->uri);
+	start_event_listener(info->uri, info->path, info->mode);
 	sleep(1);
 
 	return 0;
@@ -366,6 +395,7 @@ serial_shutdown(listener_context_t c)
 	stop_event_listener();
 	domain_sock_cleanup();
 	free(info->uri);
+	free(info->path);
 	free(info);
 
 	return 0;

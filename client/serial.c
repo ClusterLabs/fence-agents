@@ -25,6 +25,8 @@
 #include <xvm.h>
 #include <options.h>
 #include <client.h>
+#include <arpa/inet.h>
+#include <tcp.h>
 
 
 static int
@@ -212,28 +214,46 @@ wait_for(int fd, const char *pattern, size_t size, struct timeval *tout)
 int
 serial_fence_virt(fence_virt_args_t *args)
 {
+	struct in_addr ina;
+	struct in6_addr in6a;
 	serial_req_t req;
 	int fd, ret;
 	char speed[32], *flags = NULL;
 	struct timeval tv;
 	serial_resp_t resp;
 
-	strncpy(speed, args->serial.speed, sizeof(speed));
+	if (args->serial.device) {
+		strncpy(speed, args->serial.speed, sizeof(speed));
 
-	//printf("Port: %s Speed: %s\n", args->serial.device, speed);
+		//printf("Port: %s Speed: %s\n", args->serial.device, speed);
 
-	if ((flags = strchr(speed, ','))) {
-		*flags = 0;
-		flags++;
+		if ((flags = strchr(speed, ','))) {
+			*flags = 0;
+			flags++;
+		}
+	
+		fd = open_port(args->serial.device, speed, flags);
+		if (fd == -1) {
+			perror("open_port");
+			return -1;
+		}
+
+		hangup(fd, 300000);
+	} else {
+		fd = -1;
+		if (inet_pton(PF_INET, args->serial.address, &ina)) {
+			fd = ipv4_connect(&ina, args->net.port, 3);
+		} else if (inet_pton(PF_INET6, args->serial.address, &in6a)) {
+			fd = ipv6_connect(&in6a, args->net.port, 3);
+		}
+
+		if (fd < 0) {
+			perror("vmchannel connect");
+			printf("Failed to connect to %s:%d\n", args->serial.address,
+			       args->net.port);
+		}
 	}
 
-	fd = open_port(args->serial.device, speed, flags);
-	if (fd == -1) {
-		perror("open_port");
-		return -1;
-	}
-
-	hangup(fd, 300000);
 
 	memset(&req, 0, sizeof(req));
 	req.magic = SERIAL_MAGIC;
@@ -241,8 +261,6 @@ serial_fence_virt(fence_virt_args_t *args)
 	gettimeofday(&tv, NULL);
 	req.seqno = (int)tv.tv_usec;
 
-	if (args->flags & RF_UUID)
-		req.flags |= RF_UUID;
 	if (args->domain) 
 		strncpy((char *)req.domain, args->domain, sizeof(req.domain));
 	
