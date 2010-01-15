@@ -527,7 +527,7 @@ do_real_work(void *data, size_t len, uint32_t nodeid, uint32_t seqno)
 	struct ckpt_fence_req *req = data;
 	struct ckpt_fence_req reply;
 	uint32_t owner;
-	int ret;
+	int ret = 1;
 
 	memcpy(&reply, req, sizeof(reply));
 
@@ -538,6 +538,9 @@ do_real_work(void *data, size_t len, uint32_t nodeid, uint32_t seqno)
 		ret = cluster_virt_status(req->vm_name, &owner);
 		if (ret == 2) {
 			return;
+		}
+		if (ret == 1) {
+			ret = RESP_OFF;
 		}
 		break;
 	case FENCE_OFF:
@@ -557,6 +560,8 @@ do_real_work(void *data, size_t len, uint32_t nodeid, uint32_t seqno)
 		ret = do_reboot(req->vm_name);
 		break;
 	}
+
+	reply.response = ret;
 
 	cpg_send_reply(&reply, sizeof(reply), nodeid, seqno);
 }

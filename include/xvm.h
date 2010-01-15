@@ -115,7 +115,8 @@ typedef struct __attribute__((packed)) _serial_fense_resp {
 
 #define RESP_SUCCESS	0
 #define RESP_FAIL	1
-#define RESP_PERM	2
+#define RESP_OFF	2
+#define RESP_PERM	3
 #define RESP_HOSTLIST	253
 
 

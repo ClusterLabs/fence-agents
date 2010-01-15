@@ -29,6 +29,7 @@
 #include <malloc.h>
 #include <errno.h>
 #include "uuid-test.h"
+#include <xvm.h>
 
 #include <qpid/console/SessionManager.h>
 
@@ -147,12 +148,13 @@ do_lq_request(struct lq_info *info, const char *vm_name,
 		}
 	}
 
-	if (!found) {
-		return 1;
-	}
-
 	Object::AttributeMap attrs;
 	MethodResponse result;
+
+	if (!found) {
+		result.code = 1;
+		goto out;
+	}
 
 	vm_state = domain->attrString("state").c_str();
 
@@ -163,9 +165,14 @@ do_lq_request(struct lq_info *info, const char *vm_name,
 	    !strcmp( vm_state, "idle" ) ||
 	    !strcmp( vm_state, "paused" ) ||
 	    !strcmp( vm_state, "no state" ) ) {
-		i = 1;
+		i = RESP_OFF;
 	} else {
 		i = 0;
+	}
+
+	if (!strcasecmp(action, "status")) {
+		result.code = i;
+		goto out;
 	}
 
 	result.code = 1;
@@ -239,7 +246,7 @@ lq_status(const char *vm_name, void *priv)
 	VALIDATE(priv);
 	printf("[libvirt-qpid] STATUS operation on %s\n", vm_name);
 
-	return 1;
+	return do_lq_request((lq_info *)priv, vm_name, "destroy");
 }
 
 

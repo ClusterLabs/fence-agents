@@ -127,6 +127,7 @@ main(int argc, char **argv)
 	}
 
 	switch(ret) {
+	case RESP_OFF:
 	case 0:
 		break;
 	case RESP_FAIL:
