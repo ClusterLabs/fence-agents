@@ -32,12 +32,12 @@ Increment (command line) debug level
 .TP
 .B -H
 . 
-Virtual machine (domain name) to fence
+Virtual machine (domain UUID or name) to fence
 
 .TP
 .B -o
 . 
-Fencing action (null, off, on, reboot, status, devstatus, hostlist, or metadata) (Default Value: reboot).  See the FENCING ACTIONS section.
+Fencing action (null, off, on, reboot, status, monitor, list, or metadata) (Default Value: reboot).  See the FENCING ACTIONS section.
 
 .TP
 .B -t
@@ -91,8 +91,9 @@ Shared key file (Default Value: /etc/cluster/fence_xvm.key)
 .TP
 .B -u
 . 
-Treat 'domain' as UUID instead of domain name.
-	
+Specify if using fence_virt with older fence_xvmd installations
+which are using UUIDs.  Fence_virtd ignores this parameter.
+
 .SH SERIAL/VMCHANNEL PARAMETERS
 These parameters are used only when using fence_virt in multicast mode
 (e.g. by running fence_xvm).
@@ -132,14 +133,14 @@ fence_virt in the form:
 Specify debugging level
 
 .TP
-.B domain
+.B port
 . 
-Virtual machine (domain name) to fence
+Virtual machine (domain UUID or name) to fence
 
 .TP
 .B action
 . 
-Fencing action (null, off, on, reboot, status, devstatus, hostlist, or metadata) (Default Value: reboot).  See the FENCING ACTIONS section.
+Fencing action (null, off, on, reboot, status, monitor, list, or metadata) (Default Value: reboot).  See the FENCING ACTIONS section.
 	
 .TP
 .B timeout
@@ -190,7 +191,8 @@ Shared key file (Default Value: /etc/cluster/fence_xvm.key)
 .TP
 .B use_uuid
 . 
-Treat 'domain' as UUID instead of domain name
+Specify if using fence_virt with older fence_xvmd installations
+which are using UUIDs.  Fence_virtd ignores this parameter.
 
 .SH SERIAL/VMCHANNEL STDIN PARAMETERS
 .TP
@@ -213,7 +215,7 @@ Serial parameters.  Default=115200,8N1.
 Channel IP.  Default=10.0.2.179
 
 .TP
-.B port
+.B ipport
 . 
 Channel port.  Default=1229
 
@@ -239,11 +241,11 @@ with some fence_virt backends.
 Check whether a virtual machine is running or not.
 
 .TP
-\fBdevstatus \fP
-Check the health of fence_virtd.
+\fBmonitor \fP
+Check the health of fence_virtd's backend plugin.
 
 .TP
-\fBhostlist \fP
+\fBlist \fP
 List virtual machines which may be fenced by fence_virtd (not supported
 on all backends).
 

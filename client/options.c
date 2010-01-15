@@ -200,10 +200,8 @@ assign_op(fence_virt_args_t *args, struct arg_info *arg, char *value)
 	} else if (!strcasecmp(value, "status")) {
 		args->op = FENCE_STATUS;
 	} else if (!strcasecmp(value, "monitor")) {
-		args->op = FENCE_STATUS;
-	} else if (!strcasecmp(value, "devstatus")) {
 		args->op = FENCE_DEVSTATUS;
-	} else if (!strcasecmp(value, "hostlist")) {
+	} else if (!strcasecmp(value, "list")) {
 		args->op = FENCE_HOSTLIST;
 	} else if (!strcasecmp(value, "metadata")) {
 		args->op = FENCE_METADATA;
@@ -405,12 +403,12 @@ static struct arg_info _arg_info[] = {
 	{ '\xff', NULL, "option",
 	  /* Deprecated */
 	  0, "string", "reboot",
-	  "Fencing option (null, off, on, [reboot], status, hostlist, devstatus, metadata)",
+	  "Fencing option (null, off, on, [reboot], status, list, monitor, metadata)",
 	  assign_op },
 
 	{ 'o', "-o <operation>", "action",
 	  0, "string", "reboot",
-	  "Fencing action (null, off, on, [reboot], status, hostlist, devstatus, metadata)",
+	  "Fencing action (null, off, on, [reboot], status, list, monitor, metadata)",
 	  assign_op },
 
 	{ 'H', "-H <domain>", "domain",
@@ -676,8 +674,7 @@ args_metadata(char *progname, const char *optstr)
 	printf("\t<action name=\"metadata\" />\n");	
 	printf("\t<action name=\"status\" />\n");	
 	printf("\t<action name=\"monitor\" />\n");	
-	printf("\t<action name=\"devstatus\" />\n");	
-	printf("\t<action name=\"hostlist\" />\n");	
+	printf("\t<action name=\"list\" />\n");	
 	printf("</actions>\n");
 	printf("</resource-agent>\n");
 }
