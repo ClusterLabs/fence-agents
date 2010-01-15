@@ -44,7 +44,7 @@ connect_nb(int fd, struct sockaddr *dest, socklen_t len, int timeout)
 		return -1;
 
 	if (ret == 0)
-		return 0;
+		goto done;
 
 	FD_ZERO(&rfds);
 	FD_SET(fd, &rfds);
@@ -75,6 +75,7 @@ connect_nb(int fd, struct sockaddr *dest, socklen_t len, int timeout)
 		return -1;
 	}
 
+done:
 	fcntl(fd, F_SETFL, flags);
 	return 0;
 }
