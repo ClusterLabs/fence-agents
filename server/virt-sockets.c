@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <debug.h>
 #include <simpleconfig.h>
+#include <errno.h>
+#include <fcntl.h>
 
 #include "serial.h"
 
@@ -20,6 +22,62 @@ struct socket_list {
 
 static struct socket_list *socks = NULL;
 static pthread_mutex_t sock_list_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+
+static int
+connect_nb(int fd, struct sockaddr *dest, socklen_t len, int timeout)
+{
+	int ret, flags, err;
+	unsigned l;
+	fd_set rfds, wfds;
+	struct timeval tv;
+			
+	/*
+	   Set up non-blocking connect
+	 */
+	flags = fcntl(fd, F_GETFL, 0);
+	fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+
+	ret = connect(fd, dest, len);
+
+	if ((ret < 0) && (errno != EINPROGRESS))
+		return -1;
+
+	if (ret == 0)
+		return 0;
+
+	FD_ZERO(&rfds);
+	FD_SET(fd, &rfds);
+	FD_ZERO(&wfds);
+	FD_SET(fd, &wfds);
+
+	tv.tv_sec = timeout;
+	tv.tv_usec = 0;
+		
+	if (select(fd + 1, &rfds, &wfds, NULL, &tv) == 0) {
+		errno = ETIMEDOUT;
+		return -1;
+	}
+
+	if (!FD_ISSET(fd, &rfds) && !FD_ISSET(fd, &wfds)) {
+		errno = EIO;
+		return -1;
+	}
+
+	l = sizeof(err);
+	if (getsockopt(fd, SOL_SOCKET, SO_ERROR,
+		       (void *)&err, &l) < 0) {
+		return -1;
+	}
+
+	if (err != 0) {
+		errno = err;
+		return -1;
+	}
+
+	fcntl(fd, F_SETFL, flags);
+	return 0;
+}
 
 
 int
@@ -43,7 +101,7 @@ domain_sock_setup(const char *domain, const char *socket_path)
 	if (sock < 0)
 		goto out_fail;
 
-	if (connect(sock, (struct sockaddr *)sun, SUN_LEN(sun)) < 0)
+	if (connect_nb(sock, (struct sockaddr *)sun, SUN_LEN(sun), 3) < 0)
 		goto out_fail;
 
 	free(sun);

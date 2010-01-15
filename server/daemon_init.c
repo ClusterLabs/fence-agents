@@ -216,6 +216,7 @@ daemon_init(const char *prog, int nofork)
 			prog);
 		exit(1);
 	}
+
 	if (setup_sigmask() < 0) {
 		syslog(LOG_ERR, "daemon_init: Unable to set signal mask.\n");
 		exit(1);
