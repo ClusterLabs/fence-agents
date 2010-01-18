@@ -65,6 +65,7 @@ logs into an RSA II device via telnet and reboots the associated \
 machine. Lengthy telnet connections to the RSA II device should \
 be avoided while a GFS cluster is running because the connection \
 will block any necessary fencing actions."
+	docs["vendorurl"] = "http://www.ibm.com"
 	show_docs(options, docs)
 	
 	##

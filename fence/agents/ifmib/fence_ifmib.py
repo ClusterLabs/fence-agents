@@ -137,6 +137,7 @@ It was written with managed ethernet switches in mind, in order to \
 fence iSCSI SAN connections. However, there are many devices that \
 support the IF-MIB interface. The agent uses IF-MIB::ifAdminStatus \
 to control the state of an interface."
+	docs["vendorurl"] = "http://www.ietf.org/wg/concluded/ifmib.html"
 	show_docs(options, docs)
 
 	# Operate the fencing device

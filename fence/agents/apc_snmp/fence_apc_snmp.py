@@ -195,6 +195,7 @@ def main():
 which can be used with the APC network power switch. It logs \
 into a device via SNMP and reboots a specified outlet. It supports \
 SNMP v1 and v3 with all combinations of  authenticity/privacy settings."
+	docs["vendorurl"] = "http://www.apc.com"
 	show_docs(options, docs)
 
 	# Operate the fencing device

@@ -111,6 +111,7 @@ def main():
 	docs["shortdesc"] = "Fence agent for Cisco MDS"
 	docs["longdesc"] = "fence_cisco_mds is an I/O Fencing agent \
 which can be used with any Cisco MDS 9000 series with SNMP enabled device."
+	docs["vendorurl"] = "http://www.cisco.com"
 	show_docs(options, docs)
 
 	if (not (options["-o"] in ["list","monitor"])):

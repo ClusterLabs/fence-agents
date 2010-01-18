@@ -110,6 +110,7 @@ def main():
 which can be used with IBM Bladecenters with recent enough firmware that \
 includes telnet support. It logs into a Brocade chasis via telnet or ssh \
 and uses the command line interface to power on and off blades."
+	docs["vendorurl"] = "http://www.ibm.com"
 	show_docs(options, docs)
 	
 	##

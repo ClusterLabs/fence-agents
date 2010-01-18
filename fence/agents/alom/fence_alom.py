@@ -64,6 +64,7 @@ def main():
 	docs["shortdesc"] = "Fence agent for Sun ALOM"
 	docs["longdesc"] = "fence_alom is an I/O Fencing \
 agent which can be used with ALOM connected machines."
+	docs["vendorurl"] = "http://www.sun.com"
 	show_docs(options, docs)
 		
 	# Operate the fencing device

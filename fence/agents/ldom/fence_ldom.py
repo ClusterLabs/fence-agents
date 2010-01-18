@@ -113,6 +113,7 @@ for root in bash). But (for example) csh use ], so in that case you \
 must use parameter -c with argument ]. Very similar situation is, \
 if you use bash and login to host machine with other user than \
 root. Than prompt is $, so again, you must use parameter -c."
+	docs["vendorurl"] = "http://www.sun.com"
 	show_docs(options, docs)
 
 	##

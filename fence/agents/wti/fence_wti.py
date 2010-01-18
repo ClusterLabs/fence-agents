@@ -96,6 +96,7 @@ which can be used with the WTI Network Power Switch (NPS). It logs \
 into an NPS via telnet or ssh and boots a specified plug. \
 Lengthy telnet connections to the NPS should be avoided while a GFS cluster \
 is running because the connection will block any necessary fencing actions."
+	docs["vendorurl"] = "http://www.wti.com"
 	show_docs(options, docs)
 	
 	##

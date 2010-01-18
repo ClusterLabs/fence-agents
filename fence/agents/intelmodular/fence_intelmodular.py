@@ -87,6 +87,7 @@ Note: Since firmware update version 2.7, SNMP v2 write support is \
 removed, and replaced by SNMP v3 support. So agent now has default \
 SNMP version 3. If you are using older firmware, please supply -d \
 for command line and snmp_version option for your cluster.conf."
+	docs["vendorurl"] = "http://www.intel.com"
 	show_docs(options, docs)
 
 	# Operate the fencing device

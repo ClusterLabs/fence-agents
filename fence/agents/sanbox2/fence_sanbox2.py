@@ -130,6 +130,7 @@ QLogic SANBox2 FC switches.  It logs into a SANBox2 switch via telnet and disabl
 port. Disabling  the port which a machine is connected to effectively fences that machine. \
 Lengthy telnet connections to the switch should be avoided while a GFS cluster is running \
 because the connection will block any necessary fencing actions."
+	docs["vendorurl"] = "http://www.qlogic.com"
 	show_docs(options, docs)
 
 	##

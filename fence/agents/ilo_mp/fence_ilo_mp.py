@@ -60,6 +60,7 @@ def main():
 	docs = { }
 	docs["shortdesc"] = "Fence agent for HP iLO MP"
 	docs["longdesc"] = ""
+	docs["vendorurl"] = "http://www.hp.com"
 	show_docs(options, docs)
 	
 	conn = fence_login(options)

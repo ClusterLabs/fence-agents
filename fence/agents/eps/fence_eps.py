@@ -117,6 +117,7 @@ this is only one, which has support for hidden page feature. \
 Agent basically works by connecting to hidden page and pass \
 appropriate arguments to GET request. This means, that hidden \
 page feature must be enabled and properly configured."
+	docs["vendorurl"] = "http://www.epowerswitch.com"
 	show_docs(options, docs)
 
 	#Run fence action. Conn is None, beacause we always need open new http connection

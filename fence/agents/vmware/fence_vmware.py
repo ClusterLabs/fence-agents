@@ -322,6 +322,7 @@ command is used.\
 After you have successfully installed VI Perl Toolkit or VIX API, you should \
 be able to run fence_vmware_helper (part of this agent) or vmrun command. \
 This agent supports only vmrun from version 2.0.0 (VIX API 1.6.0)."
+	docs["vendorurl"] = "http://www.vmware.com"
 	show_docs(options, docs)
 
 	# Check vmware type and set path

@@ -421,6 +421,8 @@ def metadata(avail_opt, options, docs):
 	print "<?xml version=\"1.0\" ?>"
 	print "<resource-agent name=\"" + os.path.basename(sys.argv[0]) + "\" shortdesc=\"" + docs["shortdesc"] + "\" >"
 	print "<longdesc>" + docs["longdesc"] + "</longdesc>"
+	if docs.has_key("vendorurl"):
+		print "<vendor-url>" + docs["vendorurl"] + "</vendor-url>"
 	print "<parameters>"
 	for option, value in sorted_list:
 		if all_opt[option].has_key("shortdesc"):

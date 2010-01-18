@@ -77,6 +77,7 @@ def main():
 which can be used with IBM BladeCenter chassis. It issues SNMP Set \
 request to BladeCenter chassis, rebooting, powering up or down \
 the specified Blade Server."
+	docs["vendorurl"] = "http://www.ibm.com"
 	show_docs(options, docs)
 
 	# Operate the fencing device
