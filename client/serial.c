@@ -1,7 +1,7 @@
 /* 
  * Copyright (C) 2002-2003, 2009 Red Hat, Inc.
  *
- * License: GPL.
+ * License: GPLv2+
  *
  * Written by Lon Hohberger <lhh@redhat.com>
  *
