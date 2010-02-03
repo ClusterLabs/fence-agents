@@ -360,7 +360,7 @@ static struct arg_info _arg_info[] = {
 	  "VM Channel IP address (default=" DEFAULT_CHANNEL_IP ")",
 	  assign_channel_address },
 
-	{ 'p', "-p <port>", "port",
+	{ 'p', "-p <port>", "ipport",
           0, "string", "1229",
 	  "Multicast or VMChannel IP port (default=1229)",
 	  assign_port },
@@ -411,9 +411,14 @@ static struct arg_info _arg_info[] = {
 	  "Fencing action (null, off, on, [reboot], status, list, monitor, metadata)",
 	  assign_op },
 
-	{ 'H', "-H <domain>", "domain",
+	{ 'H', "-H <domain>", "port",
 	  0, "string", NULL,
 	  "Virtual Machine (domain name) to fence",
+	  assign_domain },
+
+	{ '\xff', NULL, "domain",
+	  0, "string", NULL,
+	  "Virtual Machine (domain name) to fence (deprecated; use port)",
 	  assign_domain },
 
 	{ 'u', "-u", "use_uuid",
