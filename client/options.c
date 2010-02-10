@@ -423,7 +423,7 @@ static struct arg_info _arg_info[] = {
 
 	{ 'u', "-u", "use_uuid",
 	  0, "string", "0",
-	  "Treat <domain> as UUID instead of domain name. This is provided for compatibility with older fence_xvmd installations.",
+	  "Treat [domain] as UUID instead of domain name. This is provided for compatibility with older fence_xvmd installations.",
 	  assign_uuid_lookup },
 
 	{ 't', "-t <timeout>", "timeout",
