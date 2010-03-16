@@ -58,11 +58,19 @@ class FencingSnmp:
 		self.complete_missed_params()
 
 		#mapping from our option to snmpcmd option
-		mapping=(('d','v'), ('c','c'),('b','a'),('E','l'),('B','x'),('P','X'),('p','A'),('l','u'))
+		mapping=(('d','v'),('c','c'))
 
 		for item in mapping:
 			if (self.options.has_key("-"+item[0])):
 				cmd+=" -%s '%s'"%(item[1],self.quote_for_run(self.options["-"+item[0]]))
+
+		# Some options make sense only for v3 (and for v1/2c can cause "problems")
+		if (self.options.has_key("-d")) and (self.options["-d"] == "3"):
+			# Mapping from our options to snmpcmd options for v3
+			mapping_v3=(('b','a'),('E','l'),('B','x'),('P','X'),('p','A'),('l','u'))
+			for item in mapping_v3:
+				if (self.options.has_key("-"+item[0])):
+					cmd+=" -%s '%s'"%(item[1],self.quote_for_run(self.options["-"+item[0]]))
 
 		force_ipvx=""
 
@@ -86,7 +94,8 @@ class FencingSnmp:
 				fail(EC_TIMED_OUT)
 
 			self.log_command(res_output)
-			if (res_code!=0):
+
+			if (res_code!=0) or (re.search("^Error ", res_output, re.MULTILINE) != None):
 				fail_usage("Returned %d: %s"%(res_code,res_output))
 		except pexpect.ExceptionPexpect:
 			fail_usage("Cannot run command %s"%(command))
