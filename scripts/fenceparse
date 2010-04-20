@@ -12,7 +12,9 @@ infile="$5"
 
 definedata="$(cat $definefile | grep "^\#define $define" | sed -e 's/.*'$define' //')"
 
-realinfile="$(ls $srcdir/$infile.*)"
+realinfile="$(ls $srcdir/$infile.*{py,pl,sh} 2>/dev/null || true)"
+
+[ -z "$realinfile" ] && exit 1
 
 interpreter="$(cat $realinfile | head -n 1 | awk -F "/" '{print $NF}')"
 interpreter="$(echo $interpreter)"

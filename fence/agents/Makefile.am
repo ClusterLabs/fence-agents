@@ -1,6 +1,7 @@
 MAINTAINERCLEANFILES	= Makefile.in
 
-SUBDIRS 		= alom \
+SUBDIRS 		= lib \
+			  alom \
 			  apc \
 			  apc_snmp \
 			  baytech \
@@ -20,7 +21,6 @@ SUBDIRS 		= alom \
 			  intelmodular \
 			  ipmilan \
 			  ldom \
-			  lib \
 			  lpar \
 			  manual \
 			  mcdata \

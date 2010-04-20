@@ -261,7 +261,6 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/wti/Makefile
 		 fence/agents/xcat/Makefile
 		 fence/agents/zvm/Makefile
-		 fence/man/Makefile
 		 doc/Makefile])
 
 AC_OUTPUT

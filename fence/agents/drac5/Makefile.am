@@ -2,11 +2,14 @@ MAINTAINERCLEANFILES	= Makefile.in
 
 TARGET			= fence_drac5
 
-EXTRA_DIST		= fence_drac5.py
+EXTRA_DIST		= $(TARGET).py
 
 sbin_SCRIPTS		= $(TARGET)
 
-include $(top_srcdir)/make/fencebuild.mk
+dist_man_MANS		= $(TARGET).8
 
-clean-local:
+include $(top_srcdir)/make/fencebuild.mk
+include $(top_srcdir)/make/fenceman.mk
+
+clean-local: clean-man
 	rm -f $(TARGET)

@@ -4,7 +4,9 @@ TARGET			= fence_ack_manual
 
 sbin_SCRIPTS		= $(TARGET)
 
-EXTRA_DIST		= $(TARGET)
+EXTRA_DIST		= $(TARGET).in
+
+dist_man_MANS		= $(TARGET).8
 
 $(TARGET): $(TARGET).in
 	cat $^ | sed \
