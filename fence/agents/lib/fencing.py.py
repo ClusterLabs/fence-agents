@@ -430,7 +430,7 @@ def metadata(avail_opt, options, docs):
 
 			default = ""
 			if all_opt[option].has_key("default"):
-				default = "default=\""+all_opt[option]["default"]+"\""
+				default = "default=\""+str(all_opt[option]["default"])+"\""
 			elif options.has_key("-" + all_opt[option]["getopt"][:-1]):
 				if options["-" + all_opt[option]["getopt"][:-1]]:
 					try:
@@ -438,7 +438,7 @@ def metadata(avail_opt, options, docs):
 					except TypeError:
 						## @todo/@note: Currently there is no clean way how to handle lists
 						## we can create a string from it but we can't set it on command line
-						default = "default=\"list of values\""
+						default = "default=\"" + str(options["-" + all_opt[option]["getopt"][:-1]]) +"\""
 			elif options.has_key("-" + all_opt[option]["getopt"]):
 				default = "default=\"true\" "
 
