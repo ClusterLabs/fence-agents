@@ -13,7 +13,7 @@ BUILD_DATE=""
 def get_power_status(conn, options):
 	try:
 		conn.send("show /system1\r\n")
-	
+		
 		re_state = re.compile('EnabledState=(.*)', re.IGNORECASE)
 		conn.log_expect(options, re_state, int(options["-Y"]))
 
