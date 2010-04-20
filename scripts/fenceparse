@@ -2,6 +2,8 @@
 
 set -e
 
+export LC_ALL=C
+
 definefile="$1"
 define="$2"
 release="$3"
