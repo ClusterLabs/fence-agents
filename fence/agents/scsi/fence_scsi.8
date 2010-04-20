@@ -4,74 +4,74 @@
 fence_scsi - I/O fencing agent for SCSI persistent reservations
 
 .SH SYNOPSIS
-.B 
+.B
 fence_scsi
 [\fIOPTION\fR]...
 
 .SH DESCRIPTION
-fence_scsi is an I/O fencing agent which can be used with the SCSI
-devices that support persistent reservations (SPC-2 or greater).
+fence_scsi is an I/O fencing agent that uses SCSI-3 persistent
+reservations to control access to shared storage devices. These
+devices must support SCSI-3 persistent reservations (SPC-3 or greater)
+as well as the "preempt-and-abort" subcommand.
 
-SCSI persistent reservations work by having each node in the cluster
-register with the SCSI device. Registration is done using a unique key
-(based on the node's IP address). Each node that will perform I/O
-operations to the shared storage must register with the device. This
-is done at system startup with the scsi_reserve init script. This
-script will discover all clustered volumes as well as the underlying
-SCSI device(s). Device discovery is done via the lvs command (see
-lvs(8)) and is subject to any filtering rules defined in the lvm.conf
-file.
+The fence_scsi agent works by having each node in the cluster register
+a unique key with the SCSI devive(s). Once registered, a single node
+will become the reservation holder by creating a "write exclusive,
+registrants only" reservation on the device(s). The result is that
+only registered nodes may write to the device(s). When a node failure
+occurs, the fence_scsi agent will remove the key belonging to the
+failed node from the device(s). The failed node will no longer be able
+to write to the device(s). A manual reboot is required.
 
-After generating the node's unique key, the script will register the
-node with the SCSI device(s) that were discovered. Once the node is
-registered, the script will attempt to create a reservation. Unlike
-registrations, of which there are multiple registrants (one for each
-node in the cluster), there is only one reservation holder. If a
-reservation does not already exist for a device, the script will
-create a reservation using the node's unique key.
+Keys are either be specified manually (see -k option) or generated
+automatically (see -n option). Automatic key generation requires that
+cman be running. Keys will then be generated using the cluster ID and
+node ID such that each node has a unique key that can be determined by
+any other node in the cluster.
 
-It is important to distinguish between registrations and
-reservations. As mentioned above, each node that will perform I/O
-operations to the SCSI device must register. As a result, there will
-be multiple registrations for a given SCSI device. In contrast, there
-can only be one reservation per SCSI device. It is not important which
-node holds the reservation. The reservation simply tells the device
-how the registrants are allowed to access the device. For our
-purposes, the reservation type is "write exclusive, registrants only".
-With this reservation type, only registered nodes will be able to
-write to the device.
-
-When the cluster must fence a node, it simply revokes a node's
-registration, or "unregisters" the node. This operation also uses the
-node's unique key. By deriving the unique key based on the errant
-node's IP address, the cluster can "unregister" the key. As a
-result, the errant node will no longer be able to write to the SCSI
-device.
-
-Note that the node that holds the reservation for a device must also
-be registered with that device. When the situation arises where the
-node that is being fenced is also the reservation holder, the
-reservation must be moved. This is handled by using the
-"preempt-and-abort command" which will transfer the reservation from
-the node that is being fenced to the node that is performing the
-fencing. This operation will maintain the reservation while
-"unregistering" the node being fenced.
-
-At system shutdown, the scsi_reserve script will attempt to
-"unregister" the node from all devices. The exception is when the
-node happens to be the reservation holder. In this case, the script
-does nothing, due to the fact that there may be other nodes using the
-device and the reservation must remain intact.
-
-fence_scsi accepts options on the command line as well as from stdin.
-fenced sends parameters through stdin when it execs the agent.  fence_scsi
-can be run by itself with command line options.  This is useful for testing 
-and for turning outlets on or off from scripts.
+Devices can either be specified manually (see -d option) or discovered
+automatically. Multiple devices can be specified manually by using a
+comma-separated list. If no devices are specified, the fence_scsi
+agent will attempt to discover devices by looking for cluster volumes
+and extracting the underlying devices. Devices may be device-mapper
+multipath devices or raw devices. If using a device-mapper multipath
+device, the fence_scsi agent will find the underlying devices (paths)
+and created registrations for each path.
 
 .SH OPTIONS
 .TP
-\fB-n\fP \fInode\fR
-Name of the node to be fenced.
+\fB-o\fP \fIaction\fR
+Fencing action. This value can be "on", "off", or "status". All
+actions require either a key (see -k option) or node name (see -n
+option). For "on", the agent will attempt to register with the
+device(s) and create a reservation if none exists. The "off" action
+will attempt to remove a node's key from the device(s). The "status"
+action will report whether or not a node's key is currently register
+with one or more of the devices. The default action if "off".
+.TP
+\fB-d\fP \fIdevices\fR
+List of devices to use for current operation. Devices can be
+comma-separated list of raw device (eg. /dev/sdc) or device-mapper
+multipath devices (eg. /dev/dm-3). Each device must support SCSI-3
+persistent reservations.
+.TP
+\fB-f\fP \fIlogfile\fR
+Log output to file.
+.TP
+\fB-n\fP \fInodename\fR
+Name of the node to be fenced. The node name is used to generate the
+key value used for the current operation. This option will be ignored
+when used with the -k option.
+.TP
+\fB-k\fP \fIkey\fR
+Key to use for the current operation. This key should be unique to a
+node. For the "on" action, the key specifies the key use to register
+the local node. For the "off" action, this key specifies the key to be
+removed from the device(s).
+.TP
+\fB-a\fP
+Use the APTPL flag for registrations. This option is only used for the
+"on" action.
 .TP
 \fB-h\fP
 Print out a help message describing available options, then exit.
@@ -84,24 +84,26 @@ Print out a version message, then exit.
 
 .SH STDIN PARAMETERS
 .TP
-\fIagent = < param >\fR
+\fIagent = "param"\fR
 This option is used by fence_node(8) and is ignored by fence_scsi.
 .TP
-\fInodename = < hostname | ip >\fR
-Name of the node to be fenced.
+\fInodename = "param"\fR
+Same as -n option.
 .TP
-\fIself = < nodename >\fR
-Name of the node that will perform the fencing operation.
+\fIaction = "param" \fR
+Same as -o option.
 .TP
-\fIverbose = < param >\fR
-Verbose output.
-
-.SH LIMITATIONS
-The fence_scsi fencing agent requires a minimum of three nodes in the
-cluster to operate.  For SAN devices connected via fiber channel,
-these must be physical nodes.  SAN devices connected via iSCSI may use
-virtual or physical nodes.  In addition, fence_scsi cannot be used in
-conjunction with qdisk.
+\fIdevices = "param"\fR
+Same as -d option.
+.TP
+\fIlogfile = "param"\fR
+Same as -f option
+.TP
+\fIkey = "param"\fR
+Same as -k option.
+.TP
+\fIaptpl = "1"
+Enable the APTPL flag. Default is 0 (disable).
 
 .SH SEE ALSO
-fence(8), fence_node(8), sg_persist(8), lvs(8), lvm.conf(5)
+fence(8), fence_node(8), sg_persist(8), vgs(8), cman_tool(8), cman(5)
