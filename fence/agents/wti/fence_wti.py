@@ -87,7 +87,7 @@ def main():
 	## Fence agent specific defaults
 	#####
 	if 0 == options.has_key("-c"):
-		options["-c"] = [ "RSM>", "MPC>", "IPS>", "TPS>", "NBB>", "NPS>" ]
+		options["-c"] = [ "RSM>", "MPC>", "IPS>", "TPS>", "NBB>", "NPS>", "VMR>" ]
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for WTI"
