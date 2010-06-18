@@ -76,7 +76,7 @@ def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
 			"cmd_prompt", "secure", "identity_file", "port", "no_login", "no_password",
-			"test", "separator", "inet4_only", "inet6_only",
+			"test", "separator", "inet4_only", "inet6_only", "ipport",
 			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
 	atexit.register(atexit_handler)
@@ -107,7 +107,9 @@ is running because the connection will block any necessary fencing actions."
 	if 0 == options.has_key("-x"):
 		try:
 			try:
-				conn = fspawn('%s %s' % (TELNET_PATH, options["-a"]))
+				conn = fspawn(TELNET_PATH)
+				conn.send("set binary\n")
+				conn.send("open %s -%s\n"%(options["-a"], options["-u"]))
 			except pexpect.ExceptionPexpect, ex:
 				sys.stderr.write(str(ex) + "\n")
 				sys.stderr.write("Due to limitations, binary dependencies on fence agents "
