@@ -583,7 +583,7 @@ else {
 ## and redirect STDOUT and STDERR to the logfile.
 ##
 if (defined $opt_f) {
-    open (LOG, ">$opt_f") or die "$!\n";
+    open (LOG, >">$opt_f") or die "$!\n";
     open (STDOUT, ">&LOG");
     open (STDERR, ">&LOG");
 }
