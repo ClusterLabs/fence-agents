@@ -167,7 +167,7 @@ def main():
       if 'passwd_script' in params:
         passwd_script = params['passwd_script']
       if passwd == "" and passwd_script == "":
-        raise "missing password"
+        raise Exception, "missing password"
     except KeyError, e:
       os.write(standard_err, "FENCE: Missing passwd param for fence_rsb...exiting")
       sys.exit(1)
@@ -197,11 +197,11 @@ def main():
   if len(passwd_script):
     try:
       if not os.access(passwd_script, os.X_OK):
-        raise 'script not executable'
+        raise Exception, 'script not executable'
       p = os.popen(passwd_script, 'r', 1024)
       passwd_scr = p.readline().strip()
       if p.close() != None:
-        raise 'script failed'
+        raise Exception, 'script failed'
     except:
       sys.stderr.write('password-script "%s" failed\n' % passwd_script)
       passwd_scr = ''
