@@ -26,7 +26,12 @@ def get_power_status(conn, options):
 		" PASSWORD = \"" + options["-p"] + "\">\r\n")
 	conn.send("<SERVER_INFO MODE = \"read\"><GET_HOST_POWER_STATUS/>\r\n")
 	conn.send("</SERVER_INFO></LOGIN>\r\n")
-	conn.log_expect(options, "HOST_POWER=\"(.*?)\"", int(options["-g"]))
+	try:
+		conn.log_expect(options, "HOST_POWER=\"(.*?)\"", int(options["-g"]))
+	except pexpect.EOF, e:
+		fail(EC_STATUS)
+	except pexpect.TIMEOUT, e:
+		fail(EC_TIMED_OUT)
 
 	status = conn.match.group(1)
 	return status.lower().strip()
