@@ -63,6 +63,12 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "Write debug information to given file",
 		"order" : 52 },
+	"delay" : {
+		"getopt" : "f:",
+		"longopt" : "delay",
+		"help" : "--delay <seconds>              Wait X seconds before fencing is started",
+		"default" : "0",
+		"order" : 200 },
 	"agent"   : {
 		"getopt" : "",
 		"help" : "",
@@ -354,10 +360,10 @@ all_opt = {
 		"longopt" : "retry-on",
 		"help" : "--retry-on <attempts>          Count of attempts to retry power on",
 		"default" : "1",
-		"order" : 200 }
+		"order" : 201 }
 }
 
-common_opt = [ "retry_on" ]
+common_opt = [ "retry_on", "delay" ]
 
 class fspawn(pexpect.spawn):
 	def log_expect(self, options, pattern, timeout):
@@ -581,7 +587,7 @@ def check_input(device_opt, opt):
 	##
 	## Add options which are available for every fence agent
 	#####
-	device_opt.extend(common_opt)
+	device_opt.extend([x for x in common_opt if device_opt.count(x) == 0])
 	
 	options = dict(opt)
 	options["device_opt"] = device_opt
@@ -723,6 +729,8 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 				print o + options["-C"] + alias	
 		return
 
+	if options["-o"] in ["off", "reboot"]:
+		time.sleep(int(options["-f"]))
 	status = get_power_fn(tn, options)
 
 	if status != "on" and status != "off":  
