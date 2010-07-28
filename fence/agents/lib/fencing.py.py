@@ -333,35 +333,47 @@ all_opt = {
 		"longopt" : "login-timeout",
 		"help" : "--login-timeout <seconds>      Wait X seconds for cmd prompt after login",
 		"default" : "5", 
+		"required" : "0",
+		"shortdesc" : "Wait X seconds for cmd prompt after login",
 		"order" : 200 },
 	"shell_timeout" : {
 		"getopt" : "Y:",
 		"longopt" : "shell-timeout",
 		"help" : "--shell-timeout <seconds>      Wait X seconds for cmd prompt after issuing command",
 		"default" : "3", 
+		"required" : "0",
+		"shortdesc" : "Wait X seconds for cmd promprt after issuing command",
 		"order" : 200 },
 	"power_timeout" : {
 		"getopt" : "g:",
 		"longopt" : "power-timeout",
 		"help" : "--power-timeout <seconds>      Test X seconds for status change after ON/OFF",
 		"default" : "20", 
+		"required" : "0",
+		"shortdesc" : "Test X seconds for status change after ON/OFF",
 		"order" : 200 },
 	"power_wait" : {
 		"getopt" : "G:",
 		"longopt" : "power-wait",
 		"help" : "--power-wait <seconds>         Wait X seconds after issuing ON/OFF",
 		"default" : "0", 
+		"required" : "0",
+		"shortdesc" : "Wait X seconds after issuing ON/OFF",
 		"order" : 200 },
 	"missing_as_off" : {
 		"getopt" : "M",
 		"longopt" : "missing-as-off",
 		"help" : "--missing-as-off               Missing port returns OFF instead of failure",
+		"required" : "0",
+		"shortdesc" : "Missing port returns OFF instead of failure",
 		"order" : 200 },
 	"retry_on" : {
 		"getopt" : "F:",
 		"longopt" : "retry-on",
 		"help" : "--retry-on <attempts>          Count of attempts to retry power on",
 		"default" : "1",
+		"required" : "0",
+		"shortdesc" : "Count of attempts to retry power on",
 		"order" : 201 }
 }
 
