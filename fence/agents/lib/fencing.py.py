@@ -67,6 +67,8 @@ all_opt = {
 		"getopt" : "f:",
 		"longopt" : "delay",
 		"help" : "--delay <seconds>              Wait X seconds before fencing is started",
+		"required" : "0",
+		"shortdesc" : "Wait X seconds before fencing is started",
 		"default" : "0",
 		"order" : 200 },
 	"agent"   : {
