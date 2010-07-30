@@ -521,6 +521,11 @@ def process_input(avail_opt):
 			else:
 				longopt_list.append(all_opt[k]["longopt"])
 
+	## Compatibility layer
+	if avail_opt.count("module_name") == 1:
+		getopt_string += "n:"
+		longopt_list.append("plug=")
+	
 	##
 	## Read options from command line or standard input
 	#####
@@ -547,6 +552,8 @@ def process_input(avail_opt):
 		z = dict(opt)
 		if z.has_key("-T") == 1:
 			z["-o"] = "status"
+		if z.has_key("-n") == 1:
+			z["-m"] = z["-n"]
 
 		opt = z
 		##
@@ -576,6 +583,8 @@ def process_input(avail_opt):
 				name = "module_name"
 			elif name == "action" and 1 == avail_opt.count("io_fencing"):
 				name = "io_fencing"
+			elif name == "port" and 1 == avail_opt.count("drac_version"):
+				name = "module_name"
 
 			##
 			######
