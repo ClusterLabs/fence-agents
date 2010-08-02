@@ -169,6 +169,7 @@ struct xml_parameter_s xml_parameters[]={
   {"timeout","-t",0,"string",NULL,"Timeout (sec) for IPMI operation"},
   {"cipher","-C",0,"string",NULL,"Ciphersuite to use (same as ipmitool -C parameter)"},
   {"method","-M",0,"string",DEFAULT_METHOD,"Method to fence (onoff or cycle)"},
+  {"delay","-f",0,"string",NULL,"Wait X seconds before fencing is started"},
   {"verbose","-v",0,"boolean",NULL,"Verbose mode"}};
 
 /*
@@ -687,7 +688,8 @@ get_options_stdin(char *ip, size_t iplen,
 		  char *user, size_t userlen,
 		  char *op, size_t oplen,
 		  int *lanplus, int *verbose,int *timeout,
-	          int *cipher, char *method, int methodlen)
+	          int *cipher, char *method, int methodlen,
+	          char *delay, size_t delaylen)
 {
 	char in[256];
 	int line = 0;
@@ -767,6 +769,11 @@ get_options_stdin(char *ip, size_t iplen,
 				strncpy(op, val, oplen);
 			else
 				op[0] = 0;
+		} else if (!strcasecmp(name,"delay")) {
+			if (val)
+				strncpy(delay, val, delaylen);
+			else
+				delay[0] = 0;
 		}
 	}
 
@@ -800,6 +807,7 @@ printf("   -l <login>     Username/Login (if required) to control power\n"
 printf("   -o <op>        Operation to perform.\n");
 printf("                  Valid operations: on, off, reboot, status, list or monitor\n");
 printf("   -t <timeout>   Timeout (sec) for IPMI operation (default %d)\n",DEFAULT_TIMEOUT);
+printf("   -f <timeout>   Wait X seconds before fencing is started\n");
 printf("   -C <cipher>    Ciphersuite to use (same as ipmitool -C parameter)\n");
 printf("   -M <method>    Method to fence (onoff or cycle (default %s)\n", DEFAULT_METHOD);
 printf("   -V             Print version and exit\n");
@@ -815,6 +823,7 @@ printf("   login=<login>         Same as -u\n");
 printf("   option=<op>           Same as -o\n");
 printf("   operation=<op>        Same as -o\n");
 printf("   action=<op>           Same as -o\n");
+printf("   delay=<seconds>       Same as -f\n");
 printf("   timeout=<timeout>     Same as -t\n");
 printf("   cipher=<cipher>       Same as -C\n");
 printf("   method=<method>       Same as -M\n");
@@ -877,6 +886,7 @@ main(int argc, char **argv)
 	char user[64];
 	char op[64];
 	char method[64];
+	char delay[64];
 	char pwd_script[PATH_MAX] = { 0, };
 	int lanplus=0;
 	int verbose=0;
@@ -893,12 +903,13 @@ main(int argc, char **argv)
 	memset(user, 0, sizeof(user));
 	memset(op, 0, sizeof(op));
 	memset(method, 0, sizeof(method));
+	memset(delay, 0, sizeof(delay));
 
 	if (argc > 1) {
 		/*
 		   Parse command line options if any were specified
 		 */
-		while ((opt = getopt(argc, argv, "A:a:i:l:p:S:Po:vV?hHt:C:M:")) != EOF) {
+		while ((opt = getopt(argc, argv, "A:a:i:l:p:S:Po:vV?hHt:C:M:f:")) != EOF) {
 			switch(opt) {
 			case 'A':
 				/* Auth type */
@@ -927,6 +938,10 @@ main(int argc, char **argv)
 			case 'o':
 				/* Operation */
 				strncpy(op, optarg, sizeof(op));
+				break;
+			case 'f':
+				/* Delay */
+				strncpy(delay, optarg, sizeof(delay));
 				break;
 			case 't':
 				/* Timeout */
@@ -968,7 +983,8 @@ main(int argc, char **argv)
 					  pwd_script, sizeof(pwd_script),
 				      user, sizeof(user),
 				      op, sizeof(op), &lanplus, &verbose,&timeout,
-				      &cipher, method, sizeof(method)) != 0)
+				      &cipher, method, sizeof(method),
+				      delay, sizeof(delay)) != 0)
 			return 1;
 	}
 
@@ -1037,6 +1053,13 @@ main(int argc, char **argv)
 	if (!strcasecmp(method, "cycle") &&
 	    (!strcasecmp(op, "on") || !strcasecmp(op, "off"))) {
 		fail_exit("cycle method supports only 'reboot' operation (not 'on' or 'off').");
+	}
+
+	/* Delay fencing if requested */
+	if (delay) {
+		if (!strcasecmp(op, "reboot") || !strcasecmp(op, "off")) {
+			sleep(atoi(delay));
+		}
 	}
 
 	/* Ok, set up the IPMI struct */
