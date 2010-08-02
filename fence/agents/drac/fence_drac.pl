@@ -77,6 +77,7 @@ sub usage
 	print "  -o <string>      Action: reboot (default), off or on\n";
 	print "  -p <string>      Login password\n";
 	print "  -S <path>        Script to run to retrieve password\n";
+	print "  -f <seconds>     Wait X seconds before fencing is started\n";
 	print "  -q               quiet mode\n";
 	print "  -V               version\n";
 	print "\n";
@@ -87,6 +88,7 @@ sub usage
 	print "  login  = \"name\"        Login name\n";
 	print "  passwd = \"string\"      Login password\n";
 	print "  passwd_script = \"path\" Script to run to retrieve password\n";
+	print "  delay = \"seconds\"      Wait X seconds before fencing is started\n";
 
 	exit 0;
 }
@@ -437,6 +439,10 @@ sub telnet_error
 #
 sub do_action
 {
+	if (($action =~ /^off$/i) || ($action =~ /^reboot$/i)) {
+		sleep ($delay) if defined($delay);
+	}
+
 	get_power_status;
 	my $status = $_;
 
@@ -567,6 +573,10 @@ sub get_options_stdin
 		{
 			$cmd_prompt = $val;
 		} 
+		elsif ($name eq "delay")
+		{
+			$delay = $val;
+		}
 	}
 }
 
@@ -577,7 +587,7 @@ sub get_options_stdin
 # Check parameters
 #
 if (@ARGV > 0) {
-	getopts("a:c:d:D:hl:m:o:p:S:qVv") || fail_usage ;
+	getopts("a:c:d:D:hl:m:o:p:S:qVvf:") || fail_usage ;
 	
 	usage if defined $opt_h;
 	version if defined $opt_V;
@@ -594,6 +604,7 @@ if (@ARGV > 0) {
 	$login = $opt_l;
 
 	$modulename = $opt_m if defined $opt_m;
+	$delay = $opt_f if defined $opt_f;
 
 	if (defined $opt_S) {
 		$pwd_script_out = `$opt_S`;

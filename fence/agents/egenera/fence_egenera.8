@@ -41,6 +41,9 @@ The action required.  reboot (default), off, on or status.
 \fB-p\fP \fIpserver\fR
 the pserver to operate on
 .TP
+\fB-f\fP \fIseconds\fR
+Wait X seconds before fencing is started
+.TP
 \fB-q\fP
 quite mode.  suppress output.
 .TP
@@ -67,6 +70,9 @@ The pserver to operate on
 .TP
 \fIesh = < param >\fR
 The path to the esh command on the cserver (default is /opt/panmgr/bin/esh)
+.TP
+\fIdelay = < param >\fR
+Wait X seconds before fencing is started
 
 .SH SEE ALSO
 fence(8), fence_node(8), ssh(8)

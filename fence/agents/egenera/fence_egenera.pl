@@ -42,6 +42,7 @@ sub usage
 	print "  -o <string>      Action: reboot (default), off, on or status\n";
 	print "  -p <string>      pserver\n";
 	print "  -u <string>      username (default=root)\n";
+	print "  -f <seconds>     Wait X seconds before fencing is started\n";
 	print "  -q               quiet mode\n";
 	print "  -V               version\n";
 	
@@ -75,7 +76,7 @@ sub version
 
 if (@ARGV > 0) 
 {
-	getopts("c:hl:o:p:u:qV") || fail_usage ;
+	getopts("c:hl:o:p:u:qVf:") || fail_usage ;
 
 	usage if defined $opt_h;
 	version if defined $opt_V;
@@ -87,6 +88,7 @@ if (@ARGV > 0)
 	$pserv  = $opt_p if defined $opt_p;
 	$action = $opt_o if defined $opt_o;
 	$user   = $opt_u if defined $opt_u;
+	$delay  = $opt_f if defined $opt_f;
 } 
 else 
 {
@@ -163,6 +165,10 @@ sub get_options_stdin
 		elsif ($name eq "user" )
 		{
 			$user = $val;
+		}
+		elsif ($name eq "delay" )
+		{
+			$delay = $val;
 		}
 	}
 }
@@ -383,6 +389,7 @@ elsif (/^pblade$/i)
 }
 elsif (/^off$/i)
 {
+	sleep ($delay) if defined($delay);
 	if (pserver_shutdown==0)
 	{
 		print "success: $lpan/$pserv has been shutdown\n" 
@@ -409,6 +416,7 @@ elsif (/^on$/i)
 }
 elsif (/^reboot$/i)
 {
+	sleep ($delay) if defined($delay);
 	if (pserver_shutdown!=0)
 	{
 		fail "failed to shutdown $lpan/$pserv";
