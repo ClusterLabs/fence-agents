@@ -1,0 +1,919 @@
+#!/usr/bin/perl
+#
+# This is the function library for the Node Assassin fence agent.
+# 
+# Node Assassin - Fence Agent
+# Digimer; digimer@alteeve.com
+# Jun. 27, 2010.
+# Version: 1.1.5
+#
+
+
+# This connects to a Node Assassin and puts the handle in
+# $conf->{'system'}{handle}.
+sub connect_to_na
+{
+	my ($conf, $log)=@_;
+	$conf->{na}{handle}=new Net::Telnet(
+		Timeout	=>	10,
+		Errmode	=>	'die',
+		Port	=>	$conf->{na}{tcp_port},
+		Prompt	=>	'/EOM$/',
+		Errmode	=>	'return'
+	) or do_exit($conf, $log, 1);
+	$conf->{na}{handle}->open($conf->{na}{ipaddr});
+	if ($conf->{na}{handle}->errmsg)
+	{
+		record($conf, $log, "Connection to Node Assassin: [$conf->{na}{ipaddr}] failed.\nError was: [".$conf->{na}{handle}->errmsg."]\n", 1);
+		$conf->{na}{handle}="";
+	};
+	record($conf, $log, "na::handle: [$conf->{na}{handle}]\n") if $conf->{'system'}{debug};
+	
+	return ($conf->{na}{handle});
+}
+
+# This handles the actual execution of an action plan.
+sub do_actions
+{
+	my ($conf, $log)=@_;
+	
+	# In the next step, when a 'check' is seen, the node's power feed is
+	# checked and an exit status is stored here. Exits 0, 1 and 2 have
+	# special meaning, so I default to 9 as it has no meaning to the
+	# FenceAgentAPI.
+	my $exit_code=9;
+	
+	# Process the orders.
+	print "Processing: [$conf->{'system'}{call_order}]\n";
+	foreach my $order (split/,/, $conf->{'system'}{call_order})
+	{
+		record($conf, $log, "Calling: [$order]\n") if $conf->{'system'}{debug};
+		
+		# Handle a 'release_all' call.
+		if ($order eq "release_all")
+		{
+			set_all_state($conf, $log, 0);
+			next;
+		}
+		
+		# Handle a 'fence_all' call.
+		if ($order eq "fence_all")
+		{
+			set_all_state($conf, $log, 1);
+			next;
+		}
+		
+		# handle a sleep request. This defaults to one second when no
+		# integer was included.
+		if ($order=~/^sleep/)
+		{
+			my $time=$order=~/sleep (\d+)/ ? $1 : 1;
+			record ($conf, $log, "Sleeping: $time, ");
+			if ($time == 1)
+			{
+				sleep 1;
+				record ($conf, $log, "Done.\n");
+			}
+			else
+			{
+				while ($time)
+				{
+					$time--;
+					sleep 1;
+					record ($conf, $log, "$time, ") if $time > 1;
+					record ($conf, $log, "$time. Done.\n") if $time == 1;
+				}
+			}
+			next;
+		}
+		
+		# Handle a status check via Node Assassin.
+		record($conf, $log, "order: [$order]\n") if $conf->{'system'}{debug};
+		if ($order=~/(\d\d):(\D+)/)
+		{
+			my $node=$1;
+			my $check=$2;
+			
+			# Verify the state of the port.
+			record($conf, $log, "Status check on node: [$node] -> [$check]\n") if $conf->{'system'}{debug};
+			
+			# Get the state.
+			my $states=get_states($conf, $log);
+			if ($states == 1)
+			{
+				# I had a connection problem. Exit with error
+				# code '1' as per:
+				# http://sources.redhat.com/cluster/wiki/FenceAgentAPI
+				do_exit($conf, $log, 1);
+			}
+			
+			# Make the states a bit easier to type.
+			my $power_state=$states->{$node}{power_state};
+			my $reset_state=$states->{$node}{reset_state};
+			my $feed_state=$states->{$node}{feed_state};
+			
+			# Return the status of the requested node.
+			record($conf, $log, "Node Assassin: [#$conf->{'system'}{na_id}/$conf->{na}{na_name}], Node: [$node] Power/Reset/Feed states: [$power_state/$reset_state/$feed_state]\n") if $conf->{'system'}{debug};
+			if ($check eq "check")
+			{
+				# Return '2' if the node is off and '0' if it
+				# is on.
+				$exit_code=$feed_state ? 0 : 2;
+			}
+			elsif ($check eq "off")
+			{
+				# 'off' was called, make sure the node is now
+				# off. This may be called by 'reboot' in which
+				# case 'exit_code' will simply be over-written
+				# when the final 'reboot' state check is called.
+				$exit_code=$feed_state ? 1 : 0;
+			}
+			elsif ($check eq "on")
+			{
+				# 'on' was called, make sure the node is now
+				# off.
+				$exit_code=$feed_state ? 0 : 1;
+			}
+			elsif ($check eq "reboot")
+			{
+				# Make sure that 'exit_code' was set to '0' by
+				# the earlier call. We checked again to make
+				# sure the node came back up, and will log an
+				# error if it didn't, but we return '0' just
+				# the same, as per the API.
+				if (not $exit_code)
+				{
+					# The power off portion worked. Check if the
+					# node booted properly and record an error if
+					# not.
+					if (not $feed_state)
+					{
+						record($conf, $log, "\nWARNING: Node: [$node] failed to boot after a successful power off during a\n", 1);
+						record($conf, $log, "WARNING: reboot action. This is a non-critical error as the node was fenced\n", 1);
+						record($conf, $log, "WARNING: successfully but may indicate a hardware failure with the node or\n", 1);
+						record($conf, $log, "WARNING: with Node Assassin itself.\n\n", 1);
+					}
+				}
+				else
+				{
+					# The power off portion failed, exit with '1'.
+					$exit_code=1;
+				}
+				$exit_code=$feed_state ? 0 : 1;
+			}
+			next;
+		}
+		
+		# Handle a fence call.
+		my @set_state=$conf->{na}{handle}->cmd("$order");
+		foreach my $line (@set_state)
+		{
+			chomp $line;
+			next if not $line;
+			record($conf, $log, "$line\n");
+		}
+		record($conf, $log, "Call complete.\n") if $conf->{'system'}{debug};
+	}
+	
+	return ($exit_code);
+}
+
+# This cleanly exits the agent.
+sub do_exit
+{
+	($conf, $log, $exit_status)=@_;
+	$exit_status=9 if not defined $exit_status;
+	
+	# Close the Node Assassin and log file handle, if they exist.
+	$conf->{na}{handle}->close() if $conf->{na}{handle};
+	$log->close() if $log;
+	
+	exit ($exit_status);
+}
+
+# This gets the states for the active node and returns the states in a hash
+# reference.
+sub get_states
+{
+	my ($conf, $log)=@_;
+	
+	# Create the hash reference to store the states in.
+	my $states={};
+	
+	# Call '00:0' to get the states. If it fails, return 1 as per
+	# FenceAgentAPI requirements.
+	my @check_state=$conf->{na}{handle}->cmd("00:0") or return(1);
+	
+	# Loop through the output.
+	foreach my $line (@check_state)
+	{
+		# Chomp the newline off and then pull the port and state out.
+		chomp $line;
+		my ($this_node, $power_state, $reset_state, $feed_state)=($line=~/^- Node (\d+): P(\d+), R(\d+), F(\d+)$/);
+		# Skip if this isn't a status line.
+		next if not $this_node;
+		# Convert the state to a simple on/off.
+		# Store the state.
+		$states->{$this_node}{power_state}=$power_state;
+		$states->{$this_node}{reset_state}=$reset_state;
+		$states->{$this_node}{feed_state}=$feed_state;
+		record($conf, $log, "Node: [$this_node], Power State: [$states->{$this_node}{power_state}], Reset State: [$states->{$this_node}{reset_state}], Feed State: [$states->{$this_node}{feed_state}].\n") if $conf->{'system'}{debug};
+	}
+	
+	# Return the hash reference.
+	return ($states);
+}
+
+# This returns the 'help' message.
+sub help
+{
+	my ($conf, $log)=@_;
+	
+	# Point the user at the man page.
+	print "See 'man fence_na' for instructions on using the Node Assassin Fence Agent.\n";
+	
+	do_exit($conf, $log, 0);
+}
+
+# This error message is printed when there was a connection problem with a
+# given Node Assassin.
+sub no_connection_error
+{
+	my ($conf, $log, $na_id)=@_;
+	record ($conf, $log, "\nERROR: Unable to query Node Assassin: [$conf->{na}{$na_id}{na_name}]!\n", 1);
+	record ($conf, $log, "ERROR: Please check that it is connected, that the information in\n", 1);
+	record ($conf, $log, "ERROR: '/etc/na/fence_na.conf' is accurate and that the proper configuration\n", 1);
+	record ($conf, $log, "ERROR: has be uploaded to the device.\n\n", 1);
+	return (0);
+}
+
+# This handles the actual actions.
+sub process_action
+{
+	my ($conf, $log)=@_;
+	record($conf, $log, "In the 'process_action' function.\n") if $conf->{'system'}{debug};
+	
+	# Make this more readable.
+	my $na_id=$conf->{'system'}{na_id};
+	my $action=$conf->{na}{action};
+	my $node=$conf->{na}{port};
+	record($conf, $log, "na_id: [$na_id], action: [$action], port: [$node]\n") if $conf->{'system'}{debug};
+	
+	# The following actions require a port. Error if I don't have one.
+	if ($node eq "00")
+	{
+		# These are the incompatible calls.
+		if (($action eq "on") || ($action eq "off") || ($action eq "reboot") || ($action eq "status"))
+		{
+			record($conf, $log, "\nERROR! Action request: [$action] requires a port number!\n", 1) if $conf->{'system'}{debug};
+			record($conf, $log, "ERROR: I got: [$node] which does not seem to be valid.\n\n", 1);
+			do_exit($conf, $log, 9);
+		}
+	}
+	
+	# Make sure my call order is clear.
+	$conf->{'system'}{call_order}="";
+	if ($action eq "on")
+	{
+		# Release the fence, if fenced, and boot the node.
+		$states=get_states($conf, $log);
+		my $power_state=$states->{$node}{power_state};
+		my $reset_state=$states->{$node}{reset_state};
+		my $feed_state=$states->{$node}{feed_state};
+		if ($feed_state)
+		{
+			# Node is already running.
+			record($conf, $log, "Asked to turn on node: [$node], but it's already running.\n");
+			do_exit($conf, $log, 0);
+		}
+		elsif (($power_state) || ($reset_state))
+		{
+			# Node was fenced, release it first.
+			$conf->{'system'}{call_order}="$node:0,sleep,";
+		}
+		$conf->{'system'}{call_order}.="$node:2,sleep,$node:on";
+	}
+	elsif ($action eq "off")
+	{
+		# Fence the node.
+		$conf->{'system'}{call_order}="$node:1,sleep,$node:off";
+	}
+	elsif ($action eq "reboot")
+	{
+		# I don't do this gracefully because the API says this should
+		# be an 'off' -> 'on' process, and 'off' is fence...
+		$conf->{'system'}{call_order}="$node:1,sleep,$node:0,sleep,$node:off,$node:2,sleep,$node:on";
+	}
+	elsif ($action eq "status")
+	{
+		# This checks the node's power feed.
+		$conf->{'system'}{call_order}="$node:check";
+	}
+	### ALL ACTIONS BELOW HERE ARE OUTSIDE OF THE FenceAgentAPI!
+	elsif ($action eq "release")
+	{
+		# Release the given node without booting it.
+		$conf->{'system'}{call_order}="$node:0";
+	}
+	elsif ($action eq "release_all")
+	{
+		# Release all ports.
+		$conf->{'system'}{call_order}="release_all";
+	}
+	elsif ($action eq "fence_all")
+	{
+		# Fence all ports.
+		$conf->{'system'}{call_order}="fence_all";
+	}
+	elsif ($action eq "boot")
+	{
+		# Boot the specific node if it is off.
+		$states=get_states($conf, $log);
+		
+		# Decide how, or if, to proceed based on the current state of
+		# each node.
+		$node=sprintf("%02d", $node);
+		my $power_state=$states->{$node}{power_state};
+		my $reset_state=$states->{$node}{reset_state};
+		my $feed_state=$states->{$node}{feed_state};
+		if (($power_state) || ($reset_state))
+		{
+			# Node was fenced, release first.
+			$conf->{'system'}{call_order}.="$node:0,sleep,";
+		}
+		if (not $feed_state)
+		{
+			# Boot the node.
+			$conf->{'system'}{call_order}.="$node:2,sleep,";
+		}
+		else
+		{
+			record($conf, $log, "WARNING: Node: [$node] seems to be already on, taking no action.\n", 1);
+		}
+		$conf->{'system'}{call_order}=~s/,$//;
+	}
+	elsif ($action eq "boot_all")
+	{
+		# Boot all nodes that are off.
+		$states=get_states($conf, $log);
+		
+		# Decide how, or if, to proceed based on the current state of
+		# each node.
+		foreach my $node (1..$conf->{na}{max_nodes})
+		{
+			$node=sprintf("%02d", $node);
+			my $power_state=$states->{$node}{power_state};
+			my $reset_state=$states->{$node}{reset_state};
+			my $feed_state=$states->{$node}{feed_state};
+			if (($power_state) || ($reset_state))
+			{
+				# Node was fenced, release first.
+				$conf->{'system'}{call_order}.="$node:0,sleep,";
+			}
+			if (not $feed_state)
+			{
+				# Boot the node.
+				$conf->{'system'}{call_order}.="$node:2,sleep,";
+			}
+		}
+		$conf->{'system'}{call_order}=~s/,$//;
+	}
+	elsif ($action eq "shutdown")
+	{
+		# Shutdown a specific node that is on cleanly via ACPI.
+		$states=get_states($conf, $log);
+		$node=sprintf("%02d", $node);
+		my $feed_state=$states->{$node}{feed_state};
+		if ($feed_state)
+		{
+			# shutdown the node.
+			$conf->{'system'}{call_order}.="$node:2";
+		}
+		else
+		{
+			record($conf, $log, "WARNING: Node: [$node] seems to be already off, taking no action. Is the cable connected?\n", 1);
+		}
+		$conf->{'system'}{call_order}=~s/,$//;
+	}
+	elsif ($action eq "shutdown_all")
+	{
+		# Shutdown all nodes that are on cleanly via ACPI.
+		$states=get_states($conf, $log);
+		
+		# Decide how, or if, to proceed based on the current state of
+		# each node.
+		foreach my $node (1..$conf->{na}{max_nodes})
+		{
+			$node=sprintf("%02d", $node);
+			my $power_state=$states->{$node}{power_state};
+			my $reset_state=$states->{$node}{reset_state};
+			my $feed_state=$states->{$node}{feed_state};
+			if ($feed_state)
+			{
+				# Shutdown the node.
+				$conf->{'system'}{call_order}.="$node:2,sleep,";
+			}
+		}
+		$conf->{'system'}{call_order}=~s/,$//;
+	}
+	elsif ($action eq "forcedown_all")
+	{
+		# Shutdown all nodes that are on by holding the power button
+		# until they go down.
+		$states=get_states($conf, $log);
+		
+		# Decide how, or if, to proceed based on the current state of
+		# each node.
+		foreach my $node (1..$conf->{na}{max_nodes})
+		{
+			$node=sprintf("%02d", $node);
+			my $power_state=$states->{$node}{power_state};
+			my $reset_state=$states->{$node}{reset_state};
+			my $feed_state=$states->{$node}{feed_state};
+			if ($feed_state)
+			{
+				# Boot the node.
+				$conf->{'system'}{call_order}.="$node:3,sleep,";
+			}
+		}
+		$conf->{'system'}{call_order}=~s/,$//;
+	}
+	else
+	{
+		record($conf, $log, "\nERROR: Unknown action request: [$action]!\n\n", 1);
+		do_exit($conf, $log, 9);
+	}
+}
+
+# Read in the config file.
+sub read_conf
+{
+	my ($conf)=@_;
+	$conf={} if not $conf;
+	
+	# I can't call the 'record' method here because I've not read in the
+	# log file and thus don't know where to write the log to yet. Comment
+	# out or delete 'print' statements before release.
+	my $read=IO::Handle->new();
+	my $shell_call="$conf->{'system'}{conf_file}";
+	record($conf, $log, "Shell call: [$shell_call]\n") if $conf->{'system'}{debug};
+	open ($read, "<$shell_call") or die "Failed to read: [$shell_call], error was: $!\n";
+	while (<$read>)
+	{
+		chomp;
+		my $line=$_;
+		next if not $line;
+		next if $line !~ /=/;
+		$line=~s/^\s+//;
+		$line=~s/\s+$//;
+		next if $line =~ /^#/;
+		next if not $line;
+		my ($var, $val)=(split/=/, $line, 2);
+		$var=~s/^\s+//;
+		$var=~s/\s+$//;
+		$val=~s/^\s+//;
+		$val=~s/\s+$//;
+		next if (not $var);
+		record($conf, $log, "Storing: [$var] = [$val]\n") if $conf->{'system'}{debug};
+		_make_hash_reference($conf, $var, $val);
+	}
+	$read->close();
+	
+	return (0);
+}
+
+# Read in command line arguments
+sub read_cla
+{
+	my ($conf, $log, $bad)=@_;
+	
+	# Loop through the passed arguments, if any.
+	record($conf, $log, "Got args:\n") if $conf->{'system'}{debug};
+	my $set_next="";
+	foreach my $arg (@ARGV)
+	{
+		record($conf, $log, "[$arg]\n") if $conf->{'system'}{debug};
+		$conf->{'system'}{got_cla}=1;
+		
+		# If 'set_next' has a value, push this argument into the 'conf'
+		# hash.
+		if ($set_next)
+		{
+			# It's set, use it's contents as the hash key.
+			$conf->{na}{$set_next}=$arg;
+			record($conf, $log, "Setting: 'na::$set_next': [$conf->{na}{$set_next}]\n") if $conf->{'system'}{debug};
+			
+			# Clear it now for the next go-round.
+			$set_next="";
+			next;
+		}
+		if ($arg=~/-h/)
+		{
+			# Print the help message and then exit.
+			help($conf, $log);
+		}
+		elsif ($arg=~/-v/)
+		{
+			# Print the version information and then exit.
+			$conf->{'system'}{version}=1;
+			record($conf,$log,"Setting version\n") if $conf->{'system'}{debug};
+		}
+		elsif ($arg=~/-q/)
+		{
+			# Suppress all non-critical messages from STDOUT.
+			$conf->{'system'}{quiet}=1;
+		}
+		elsif ($arg=~/-d/)
+		{
+			# Enable debug mode.
+			$conf->{'system'}{debug}=1;
+		}
+		elsif ($arg=~/^-/)
+		{
+			$arg=~s/^-//;
+			
+			### These are the switches set by Red Hat.
+			if ($arg eq "a")
+			{
+				# This is the IP address or hostname of the
+				# Node Assassin to call.
+				$set_next="ipaddr";
+				record ($conf, $log, "Next argument will be stored in: [$set_next]\n") if $conf->{'system'}{debug};
+			}
+			elsif ($arg eq "l")
+			{
+				# This is the login name.
+				$set_next="login";
+				record ($conf, $log, "Next argument will be stored in: [$set_next]\n") if $conf->{'system'}{debug};
+			}
+			elsif ($arg eq "p")
+			{
+				# This is the password. If it starts with '/'
+				# it is interpreted to be a file containing the
+				# password which will be read in and it's
+				# contents will replace# this value.
+				$set_next="passwd";
+				record ($conf, $log, "Next argument will be stored in: [$set_next]\n") if $conf->{'system'}{debug};
+			}
+			elsif ($arg eq "n")
+			{
+				# This is the node to work on.
+				$set_next="port";
+				record ($conf, $log, "Next argument will be stored in: [$set_next]\n") if $conf->{'system'}{debug};
+			}
+			elsif ($arg eq "o")
+			{
+				# This is the action to take.
+				$set_next="action";
+				record ($conf, $log, "Next argument will be stored in: [$set_next]\n") if $conf->{'system'}{debug};
+			}
+			elsif ($arg eq "S")
+			{
+				# This is the script to run to retrieve the
+				# password when it is not stored in
+				# 'cluster.conf'. This script should echo/print
+				# the password to STDOUT.
+				$set_next="passwd_script";
+				record ($conf, $log, "Next argument will be stored in: [$set_next]\n") if $conf->{'system'}{debug};
+			}
+		}
+		else
+		{
+			### MADI: I might want to pick up arguments via multiple lines.
+			# Bad argument.
+			record($conf, $log, "\nERROR: Argument: [$arg] is not valid!\n");
+			record($conf, $log, "ERROR: Please run: [man fence_na] to see a list of valid arguments.\n\n");
+			$bad=1;
+		}
+	}
+}
+
+# Read arguments from STDIN. This is adapted from the 'fence_brocade' agent.
+sub read_stdin
+{
+	my ($conf, $log, $bad)=@_;
+	
+	return (0) if $conf->{'system'}{got_cla};
+	
+	my $option;
+	my $line_count=0;
+	while(defined (my $option=<>))
+	{
+		# Get rid of newlines.
+		chomp $option;
+		
+		# Record the line for now, but comment this out before release.
+		record ($conf, $log, "Processing option line: [$option]\n") if $conf->{'system'}{debug};
+		
+		# strip leading and trailing whitespace
+		$option=~s/^\s*//;
+		$option=~s/\s*$//;
+		
+		# skip comments
+		next if ($option=~ /^#/);
+		
+		# Increment my option line count.
+		$line_count++;
+		
+		# Go to the next line if the option line is empty.
+		next if not $option;
+		
+		# Split the option up into the name and the value.
+		($name,$value)=split /\s*=\s*/, $option;
+		
+		# Record the line for now, but comment this out before release.
+		record ($conf, $log, "Name: [$name], value: [$value].\n") if $conf->{'system'}{debug};
+		
+		# Set my variables depending on the veriable name.
+		if ($name eq "agent")
+		{
+			# This is only used by 'fenced', but I record it for
+			# potential debugging.
+			$conf->{na}{agent}=$value;
+		}
+		elsif ($name eq "fm")
+		{
+			# This is a deprecated argument that should no longer
+			# be used. Now 'port' should be used.
+			if (not $conf->{na}{port})
+			{
+				# Port isn't set yet, use this value which may
+				# be replaced if 'port' is set later.
+				(undef, $value) = split /\s+/,$value;
+				$conf->{na}{port}=$value;
+				record($conf, $log, "Warning! The argument 'fm' is deprecated, use 'port' instead.\n", 1);
+				record($conf, $log, "Warning! Value: [$value] set for 'port'\n", 1);
+			}
+			else
+			{
+				# Port was already set, so simply ignore this.
+				record($conf, $log, "Warning! The argument 'fm' is deprecated, use 'port' instead.\n", 1);
+				record($conf, $log, "Warning! Value: [$value] ignored.\n", 1);
+			}
+		}
+		elsif ($name eq "ipaddr") 
+		{
+			# Record the IP Address or name of the Node Assassin to
+			# use.
+			$conf->{na}{ipaddr}=$value;
+		} 
+		elsif ($name eq "login")
+		{
+			# Record the login name that was passed.
+			$conf->{na}{login}=$value;
+		} 
+		elsif ($name eq "name")
+		{
+			# Depricated argument used formerly for login name.
+			if (not $conf->{na}{login})
+			{
+				# Login isn't set yet, use this value which may
+				# be replaced if 'login' is seen later.
+				$conf->{na}{login}=$value;
+				record($conf, $log, "Warning! The argument 'name' is deprecated, use 'login' instead.\n", 1);
+				record($conf, $log, "Warning! Value: [$value] set for 'login'.\n", 1);
+			}
+			else
+			{
+				# I've already seen the 'login' value so I will
+				# ignore this value.
+				record($conf, $log, "Warning! The argument 'name' is deprecated, use 'login' instead.\n", 1);
+				record($conf, $log, "Warning! Value: [$value] ignored.\n", 1);
+			}
+		}
+		elsif (($name eq "action") or ($name eq "option"))
+		{
+			# 'option' is deprecated.
+			record($conf, $log, "Please use 'action', not 'option', as the later is deprecated.\n", 1) if $name eq "option";
+			$conf->{na}{action}=$value;
+		}
+		elsif ($name eq "passwd")
+		{
+			# This is the login password.
+			$conf->{na}{passwd}=$value;
+		} 
+		elsif ($name eq "passwd_script")
+		{
+			# This is the path to the script that will return the
+			# password to the agent. At this time, this is not
+			# implemented.
+			$conf->{na}{passwd_script}=$value;
+		}
+		elsif ($name eq "port")
+		{
+			# This sets the port number to act on.
+			$conf->{na}{port}=$value;
+		}
+		elsif ($name eq "nodename")
+		{
+			# This is passed by 'fenced' via 'cluster.conf' as of
+			# cluster version 3, but it's not yet documented.
+			$conf->{'system'}{nodename}=$value;
+		}
+		elsif ($name eq "quiet")
+		{
+			# This is passed by 'fenced' via 'cluster.conf' as a
+			# custom argument to supress output to STDOUT.
+			$conf->{'system'}{quiet}=1;
+		}
+		else
+		{
+			record($conf, $log, "\nERROR: Illegal name in option: [$option] at line: [$line_count]\n\n", 1);
+			# 'rohara' from #linux-cluster suggested it's better to
+			# simply ignore unknown input, as that is the behaviour
+			# the fenced authors expect.
+			#$bad=1;
+		}
+	}
+	return ($bad);
+}
+
+# This function simply prints messages to both the log and to stdout.
+sub record
+{
+	my ($conf, $log, $msg, $critical)=@_;
+	$critical=0 if not $critical;
+	
+	# The log file gets everything.
+	print $log $msg;
+	print $msg if not $conf->{'system'}{quiet};
+	
+	# Critical messages have to print, so this ensure that it gets out
+	# when 'quiet' is in use.
+	print $msg if (($critical) && ($conf->{'system'}{quiet}));
+	
+	return(0);
+}
+
+# This sets all ports of a given Node Assassin to the requested state.
+sub set_all_state
+{
+	my ($conf, $log, $state)=@_;
+	$state=0 if not defined $state;
+
+	my $max_port=$conf->{na}{max_nodes};
+	foreach my $node (1..$max_port)
+	{
+		$node=sprintf("%02d", $node).":$state";
+		record ($conf, $log, "Calling: [$node]\n") if $conf->{'system'}{debug};
+		my @set_state=$conf->{na}{handle}->cmd("$node");
+		foreach my $line (@set_state)
+		{
+			chomp $line;
+			next if not $line;
+			record($conf, $log, "$line\n");
+		}
+	}
+	
+	return (9);
+}
+
+# When asked to 'monitor' or 'list', show a CSV of all nodes and their aliases,
+# when found in the config file.
+sub show_list
+{
+	my ($conf, $log)=@_;
+	record($conf, $log, "In 'show_list' function.\n") if $conf->{'system'}{debug};
+	
+	# Get an up to date list of the ports.
+	my $na_id=$conf->{'system'}{na_id};
+	record($conf, $log, "na_id: [$na_id], max_node: [$conf->{na}{max_nodes}]\n") if $conf->{'system'}{debug};
+	
+	for (1..$conf->{na}{max_nodes})
+	{
+		my $node=$_;
+		my $alias=$conf->{na}{$na_id}{alias}{$node} ? $conf->{na}{$na_id}{alias}{$node} : "--";
+		record ($conf, $log, "$node,$alias\n", 1);
+	}
+	
+	do_exit($conf, $log, 0);
+}
+
+# This prints the version information of this fence agent and of any configured
+# fence devices.
+sub version
+{
+	my ($conf, $log)=@_;
+	
+	# Print the Fence Agent version first.
+	record ($conf, $log, "Fence Agent: ..... Node Assassin ver. $conf->{'system'}{agent_version}\n", 1);
+	record ($conf, $log, "Node Assassins: .. $conf->{'system'}{na_num}\n", 1);
+	for my $na_id (1..$conf->{'system'}{na_num})
+	{
+		$conf->{'system'}{na_id}=$na_id;
+		$conf->{na}{ipaddr}=     $conf->{na}{$na_id}{ipaddr};
+		$conf->{na}{tcp_port}=   $conf->{na}{$na_id}{tcp_port};
+		$conf->{na}{na_name}=    $conf->{na}{$na_id}{na_name};
+		my $build_date="";
+		my $serial_number="";
+		my $firmware_ver="";
+		connect_to_na($conf, $log);
+		if ($conf->{na}{handle})
+		{
+			# Get the NAOS version and serial numbers.
+			my @details=$conf->{na}{handle}->cmd("00:1");
+			foreach my $line (sort {$a cmp $b} @details)
+			{
+				chomp $line;
+				($build_date)=($line=~/\s(\S+)$/) if ($line =~ /Build Date/i );
+				($serial_number)=($line=~/\s(\S+)$/) if ($line =~ /Serial Number/i );
+				($firmware_ver)=($line=~/\s(\S+)$/) if ($line =~ /NAOS Version/i );
+				record($conf, $log, "line: [$line]\n") if $conf->{'system'}{debug};
+			}
+		}
+		else
+		{
+			$build_date="??";
+			$serial_number="??";
+			$firmware_ver="??";
+		}
+		record ($conf, $log, " - Node Assassin:  #$na_id\n", 1);
+		record ($conf, $log, "   - Name: ....... $conf->{na}{$na_id}{na_name}\n", 1);
+		record ($conf, $log, "   - IP Address: . $conf->{na}{$na_id}{ipaddr}\n", 1);
+		record ($conf, $log, "   - TCP Port: ... $conf->{na}{$na_id}{tcp_port}\n", 1);
+		record ($conf, $log, "   - MAC Address:  $conf->{na}{$na_id}{mac}\n", 1);
+		record ($conf, $log, "   - Netmask: .... $conf->{na}{$na_id}{netmask}\n", 1);
+		record ($conf, $log, "   - Gateway: .... $conf->{na}{$na_id}{gateway}\n", 1);
+		record ($conf, $log, "   - Serial #: ... $serial_number\n", 1);
+		record ($conf, $log, "   - Firmware: ... $firmware_ver\n", 1);
+		record ($conf, $log, "   - Build Date: . $build_date (yyyy-mm-dd)\n", 1);
+		record ($conf, $log, "   - Max Nodes: .. $conf->{na}{$na_id}{max_nodes}\n", 1);
+		
+		# Get the node states.
+		$states=get_states($conf, $log);
+		for (1..$conf->{na}{$na_id}{max_nodes})
+		{
+			my $node=sprintf("%02d", $_);
+			my $power_state=$states->{$node}{power_state};
+			my $reset_state=$states->{$node}{reset_state};
+			my $feed_state=$states->{$node}{feed_state};
+			record ($conf, $log, "     - Node $node: .. p[$power_state], r[$reset_state], f[$feed_state]\n", 1);
+		}
+		
+		# Close the handle for the next loop.
+		if ($conf->{na}{handle})
+		{
+			show_list($conf, $log, "version", 1);
+			$conf->{na}{tcp_port}->close();
+		}
+		else
+		{
+			no_connection_error($conf, $log, $na_id);
+		}
+	}
+	do_exit($conf, $log, 0);
+}
+
+
+###############################################################################
+# Private functions below here.                                               #
+###############################################################################
+
+### Contributed by Shaun Fryer and Viktor Pavlenko by way of TPM.
+# This is a helper to the above '_add_href' method. It is called each time a
+# new string is to be created as a new hash key in the passed hash reference.
+sub _add_hash_reference
+{
+	my $href1=shift;
+	my $href2=shift;
+	
+	for my $key (keys %$href2)
+	{
+		if (ref $href1->{$key} eq 'HASH')
+		{
+			_add_hash_reference($href1->{$key}, $href2->{$key});
+		}
+		else
+		{
+			$href1->{$key}=$href2->{$key};
+		}
+	}
+}
+
+### Contributed by Shaun Fryer and Viktor Pavlenko by way of TPM.
+# This takes a string with double-colon seperators and divides on those
+# double-colons to create a hash reference where each element is a hash key.
+sub _make_hash_reference
+{
+	my $href=shift;
+	my $key_string=shift;
+	my $value=shift;
+# 	print "variable: [$key_string], value: [$value]\n";
+	
+	my $chomp_root=0;
+	if ($chomp_root) { $key_string=~s/\w+:://; }
+	
+	my @keys = split /::/, $key_string;
+	my $last_key = pop @keys;
+	my $_href = {};
+	$_href->{$last_key}=$value;
+	while (my $key = pop @keys)
+	{
+		my $elem = {};
+		$elem->{$key} = $_href;
+		$_href = $elem;
+	}
+	_add_hash_reference($href, $_href);
+}
+
+1;

@@ -1,0 +1,188 @@
+=pod
+ 
+=encoding utf8
+ 
+=head1 NAME
+ 
+B<fence_na>
+ 
+This is the fence agent for the Node Assassin fence device.
+ 
+=head1 SYNOPSIS
+ 
+  fence_na -a motoko.alteeve.com -n 2 -l motoko -p secret -o off
+
+=head1 DESCRIPTION
+ 
+This fence agent takes argument from the command line or from the 'fenced' program and interprets them into calls to send to the Node Assassin fence device. It analyzes the returned information and exits with an appropriate exit code as dictated by the FenceAgentAPI.
+ 
+=head1 USAGE
+
+Arguments are read from STDIN as 'variable=value' pairs, one pair per new line. This is the method used by 'fenced'.
+
+For testing or manual control, arguments may be passed as command line arguments.
+
+=head1 OVERVIEW
+
+This takes arguments that defined which Node Assassin to call, what node to work on and what action should be taken. These arguments are defined by the FenceAgentAPI. These actions are then translated into a set of Node Assassin states which then get passed to the device.
+
+=head1 NODE ASSASSIN "PORTS"
+
+The FenceAgentAPI refers to "ports" while the Node Assassin refers to "nodes". These two terms are thus used interchangably. The reason for the difference is that, internally, Node Assassin maps each node to three "ports"; The node's power and reset buttons plus the node's power feed.
+
+Each node in the Node Assassin can be set to one of four states described in the next section. 
+
+=head1 NODE ASSASSIN STATES
+
+Each Node Assassin port can be set to one of four states. They are:
+
+=head2 C<0>
+
+This will release the fence on the specified NA node's power and reset ports.
+
+=head2 C<1>
+
+This state will fence the node specified by the "port" argument. The fence will remain active until released. Further, the fence will "lock out" the node's front-panel buttons until the fence is released.
+
+=head2 C<2>
+
+This will fence the node for one second. This is meant to provide a mechanism to boot or initiate a clean shut down of a node.
+
+=head2 C<3>
+
+This state will fence the node for five seconds to 30 seconds, depending on how long it takes for the power feed to drop low. This is meant to provide a way to force crashed nodes to power off without the front-panel lock.
+
+=head1 OPTIONS
+
+Which options are valid depends on how the arguments are passed in. The "main" method of passing arguments is via STDIN as a series of 'varible=value' pairs, one per line. All arguments accepted this way have command-line arguments passed in via single-dashes switches. Each option below shows either calling method's arguments, where available.
+
+=head2 C<-h>
+
+Prints this help message.
+
+=head2 C<-v>, C<-V>
+
+Prints the version of this fence agent and then the version of any configured, reachable Node Assassins.
+
+=head2 C<-q>
+
+Tells this fence agent to only print critical messages.
+
+=head2 C<-d>
+
+Tells this fence agent to print debug messages.
+
+=head2 C<-a address>, C<ipaddr=address>
+
+Tells the fence agent which Node Assassin to use. 
+
+I<NOTE!> The name or IP addresses *MUST* match a name or IP address defined in C</etc/na/fence_na.conf>! Specifically, it must match one of the C<node::X::ipaddr> entries where C<X> is the ID of the Node Assassin.
+
+=head2 C<-l name>, C<login=name>
+
+This is the login name used to connect to this fence agent. It must match the value C<system::username> in C</etc/na/fence_na.conf>.
+
+=head2 C<-p secret>, C<passwd=secret>
+
+This is the login password used to connect to this fence agent. It must match the value C<system::password> in C</etc/na/fence_na.conf>.
+
+=head2 C<-n #>, C<port=#>
+
+This tells the fence agent which node to act on. 
+
+I<NOTE!> Please do not confuse this with the Node Assassin's internal concept of a port.
+
+=head2 C<-o val>, C<action=val>
+
+This is the C<action> (formerly C<option>) to perform on the selected node. Valid actions and how Node Assassin implements them are:
+
+=head3 C<off>
+
+This set's the node to state 1; Fenced. Internally, it will hit the reset switch for one second to immediately disable the node. Then it will release the reset switch for another second before pressing and holding the power switch. After five seconds, Node Assassin will check the node's power feed. If it is still on, it will wait another 25 seconds and check again. If the node is still on, an error will be generated. If the node turns off successfully, the fence is declared a success. reboot
+
+=head3 C<on>
+
+This sets the node to state '0'; Unfenced. Both the power and reset switches are opened, the Node Assassin will pause for one second and then the power switch will be closed for one second to boot the node (that is, the node is set to "state 2").
+
+=head3 C<reboot>
+
+I<Note>: This will do a hard reboot! Do not use when a normal restart would suffice.
+
+This essetially just calls an C<off> and then an C<on>. However, the B<fence_na> agent will return a success (exit C<0>) even if the C<on> stage succeeded. As per the FenceAgentAPI, a reboot does not need to successfully boot the node to be concidered a success, it only needs to shut it down.
+
+=head3 C<status>
+
+This checks the power feed for the requested node is checked. If the node is on, the agent will exit with code C<0>. If the node is off (or disconnected), it will exit with code C<1>. If an error occurred calling the Node Assassin, this will exit with code C<2>.
+
+Note that this argument is designed to be used by the fence agent and will not print any output to C<STDOUT>.
+
+=head3 C<monitor>, C<list>
+
+=head2 Node Assassin Specific Actions
+
+I<NOTE>: The following states are supported by Node Assassin only. These states are not used by the C<fenced> daemon and are provided here as a convenience for the user.
+
+Any commands named C<*_all> ignore the node value, if set.
+
+=head2 C<release>
+
+If the node is fenced, the fence will be released. The difference from C<on> being that this will not boot the node after the fence is released.
+
+=head2 C<release_all>
+
+This does a C<release> on all fenced nodes.
+
+=head2 C<fence_all>
+
+All nodes are fenced. See the C<off> state above.
+
+=head2 C<boot>
+
+The power feed of the specific node on the Node Assassin is checked. If it is found to be off, it will be set to state C<2> to initiate boot.
+
+=head2 C<boot_all>
+
+The power feeds of all nodes on the Node Assassin are checked. Any found to be off are set to state C<2> to initiate boot.
+
+=head2 C<shutdown>
+
+The power feed of the specific node on the Node Assassin is checked. If it is found to be on, it will be set to state C<2> to initiate an ACPI-induced soft shutdown.
+
+=head2 C<shutdown_all>
+
+The power feeds of all nodes on the Node Assassin are checked. Any found to be on are set to state C<2> to initiate an ACPI-induced soft shutdown.
+
+=head2 C<forcedown_all>
+
+The power feeds of all nodes on the Node Assassin are checked. Any found to be on are set to state C<3>. This state is similar to state C<1> (see "C<off>" above), except that the node's front-panel switches are not disabled after the fence completes.
+
+=head1 EXAMPLES
+
+To simulate how 'fenced' calls the script, create a text file called C<args.txt> containing:
+
+  # Test file used as input for the NA fence agent.
+  ipaddr=ariel.alteeve.com
+  port=02
+  login=motoko
+  passwd=secret
+  action=off
+
+Now use C<cat> to pipe the contents into the fence agent:
+
+  cat args.txt | fence_na
+
+This will call the C<off> function against node #02 connected to the Node Assassin at C<motoko.alteeve.com>, fencing it. Change the C<action> line to C<action=on> and re-run the script to release the fence and boot the node.
+
+To duplicate the same call using command line arguments:
+
+  fence_na -a motoko.alteeve.com -n 2 -l motoko -p secret -o off
+
+=head1 SEE ALSO
+
+http://nodeassassin.org
+
+=head1 UPDATED
+
+Jun. 26, 2010
+
+Digimer (digimer@alteeve.com)
