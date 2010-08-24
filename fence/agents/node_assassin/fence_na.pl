@@ -24,11 +24,11 @@ use Net::Telnet;
 # These are the default values and will be over-written by the config file's
 # variables which in turn can, in some cases, be over-written by command line
 # arguments.
-# Please see '/etc/na/fence_na.conf' for details on each option.
+# Please see '@NACONFFILE@' for details on each option.
 my $conf={
 	'system'	=>	{
 		max_valid_state	=>	3,
-		conf_file	=>	"/etc/fence_na/fence_na.conf",
+		conf_file	=>	"@NACONFFILE@",
 		quiet		=>	"",
 		version		=>	0,
 		list		=>	"",

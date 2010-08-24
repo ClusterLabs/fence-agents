@@ -76,15 +76,15 @@ Tells this fence agent to print debug messages.
 
 Tells the fence agent which Node Assassin to use. 
 
-I<NOTE!> The name or IP addresses *MUST* match a name or IP address defined in C</etc/na/fence_na.conf>! Specifically, it must match one of the C<node::X::ipaddr> entries where C<X> is the ID of the Node Assassin.
+I<NOTE!> The name or IP addresses *MUST* match a name or IP address defined in C<@NACONFFILE@>! Specifically, it must match one of the C<node::X::ipaddr> entries where C<X> is the ID of the Node Assassin.
 
 =head2 C<-l name>, C<login=name>
 
-This is the login name used to connect to this fence agent. It must match the value C<system::username> in C</etc/na/fence_na.conf>.
+This is the login name used to connect to this fence agent. It must match the value C<system::username> in C<@NACONFFILE@>.
 
 =head2 C<-p secret>, C<passwd=secret>
 
-This is the login password used to connect to this fence agent. It must match the value C<system::password> in C</etc/na/fence_na.conf>.
+This is the login password used to connect to this fence agent. It must match the value C<system::password> in C<@NACONFFILE@>.
 
 =head2 C<-n #>, C<port=#>
 

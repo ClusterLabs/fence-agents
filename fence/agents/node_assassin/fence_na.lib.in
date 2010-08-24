@@ -242,7 +242,7 @@ sub no_connection_error
 	my ($conf, $log, $na_id)=@_;
 	record ($conf, $log, "\nERROR: Unable to query Node Assassin: [$conf->{na}{$na_id}{na_name}]!\n", 1);
 	record ($conf, $log, "ERROR: Please check that it is connected, that the information in\n", 1);
-	record ($conf, $log, "ERROR: '/etc/na/fence_na.conf' is accurate and that the proper configuration\n", 1);
+	record ($conf, $log, "ERROR: '@NACONFFILE@' is accurate and that the proper configuration\n", 1);
 	record ($conf, $log, "ERROR: has be uploaded to the device.\n\n", 1);
 	return (0);
 }
