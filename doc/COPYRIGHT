@@ -19,6 +19,9 @@ fence/agents/intelmodular/fence_intelmodular.pl:
 fence/agents/ipmilan/expect.{c,h}:
  Copyright (C) 2000 Alan Robertson <alanr at unix.sh>
 
+fence/agents/node_assassin/*
+ Author: Digimer <digimer at alteeve.com>
+
 fence/agents/xvm/tcp.c:
  Copyright (C) 2000 Mission Critical Linux
  Copyright (C) 2002-2010 Red Hat, Inc.  All rights reserved.
