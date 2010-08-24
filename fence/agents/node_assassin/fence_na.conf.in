@@ -21,12 +21,12 @@ system::na_num		=	1
 # Version of the fence_na fence agent.
 system::agent_version	=	1.1.5.1
 
-# This is the log file. If unset, no logging will occur. If using '/var/log/',
+# This is the log file. If unset, no logging will occur. If using '@LOGDIR@',
 # be sure that this agent is able to create or edit the file. The default is to
 # write to '/tmp' to prevent accidental failure of the agent due to
 # misconfiguration.
-#system::log		=	/var/log/fence_na.log
-system::log		=	/var/log/fence_na.log
+#system::log		=	@LOGDIR@/fence_na.log
+system::log		=	@LOGDIR@/fence_na.log
 
 # If set to '1', messages to STDOUT will be surpressed except in the event of
 # errors. This can be overridden at the command line with the '-q' switch.
@@ -54,7 +54,7 @@ system::password	=	secret
 na::1::na_name		=	Motoko
 
 # This is the IP address and port where I will connect to this node at.
-# NOTE: THIS MUST MATCH THE VALUE USED IN '/etc/cluster.conf'! If you used a
+# NOTE: THIS MUST MATCH THE VALUE USED IN '@CONFDIR@/@CONFFILE@'! If you used a
 # resolvable name there, use the same name here. Vice versa for IP addresses.
 # If this doesn't match the 'ipaddr' argument sent by the 'fenced' daemon the
 # fence will not work properly!

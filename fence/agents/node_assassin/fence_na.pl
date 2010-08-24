@@ -14,7 +14,7 @@ use strict;
 use warnings;
 
 # Load our library.
-require '/etc/fence_na/fence_na.lib';
+require '@FENCEAGENTSLIBDIR@/fence_na.lib';
 
 # IO::Handle is used for logging and Net::Telnet is used for communicating with
 # the Node Assassin(s).
