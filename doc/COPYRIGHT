@@ -20,6 +20,7 @@ fence/agents/ipmilan/expect.{c,h}:
  Copyright (C) 2000 Alan Robertson <alanr at unix.sh>
 
 fence/agents/node_assassin/*
+ Copyright (C) 2009-2010 Madison Kelly/Alteeve's Niche!
  Author: Digimer <digimer at alteeve.com>
 
 fence/agents/xvm/tcp.c:
