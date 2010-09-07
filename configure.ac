@@ -135,6 +135,12 @@ AC_ARG_WITH([default-config-dir],
 	[ DEFAULT_CONFIG_DIR="$withval" ],
 	[ DEFAULT_CONFIG_DIR="$sysconfdir/cluster" ])
 
+AC_ARG_WITH([default-config-file],
+	[  --default-config-file=FILE
+			  cluster config file. ],
+	[ DEFAULT_CONFIG_FILE="$withval" ],
+	[ DEFAULT_CONFIG_FILE="cluster.conf" ])
+
 ## random vars
 
 LOGDIR=${localstatedir}/log/cluster
@@ -146,6 +152,10 @@ CLUSTERVARLIB=${localstatedir}/lib/cluster
 AC_SUBST([DEFAULT_CONFIG_DIR])
 AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_DIR], "$(eval echo ${DEFAULT_CONFIG_DIR})",
 		   [Default config directory])
+
+AC_SUBST([DEFAULT_CONFIG_FILE])
+AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_FILE], "$(eval echo ${DEFAULT_CONFIG_FILE})",
+		   [Default config file])
 
 AC_SUBST([LOGDIR])
 AC_DEFINE_UNQUOTED([LOGDIR], "$(eval echo ${LOGDIR})",
@@ -249,6 +259,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/lpar/Makefile
 		 fence/agents/manual/Makefile
 		 fence/agents/mcdata/Makefile
+		 fence/agents/node_assassin/Makefile
 		 fence/agents/nss_wrapper/Makefile
 		 fence/agents/rackswitch/Makefile
 		 fence/agents/rsa/Makefile

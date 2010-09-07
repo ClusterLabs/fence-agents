@@ -24,6 +24,7 @@ SUBDIRS 		= lib \
 			  lpar \
 			  manual \
 			  mcdata \
+			  node_assassin \
 			  nss_wrapper \
 			  rackswitch \
 			  rsa \
