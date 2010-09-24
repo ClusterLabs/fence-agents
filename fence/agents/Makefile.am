@@ -9,6 +9,7 @@ SUBDIRS 		= lib \
 			  brocade \
 			  bullpap \
 			  cisco_mds \
+			  cisco_ucs \
 			  cpint \
 			  drac \
 			  drac5 \
