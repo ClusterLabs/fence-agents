@@ -262,6 +262,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/node_assassin/Makefile
 		 fence/agents/nss_wrapper/Makefile
 		 fence/agents/rackswitch/Makefile
+		 fence/agents/rhevm/Makefile
 		 fence/agents/rsa/Makefile
 		 fence/agents/rsb/Makefile
 		 fence/agents/sanbox2/Makefile

@@ -75,6 +75,10 @@ all_opt = {
 		"getopt" : "",
 		"help" : "",
 		"order" : 1 },
+	"web"    : {
+		"getopt" : "",
+		"help" : "",
+		"order" : 1 },
 	"action" : {
 		"getopt" : "o:",
 		"longopt" : "action",
@@ -342,7 +346,7 @@ all_opt = {
 		"help" : "--shell-timeout <seconds>      Wait X seconds for cmd prompt after issuing command",
 		"default" : "3", 
 		"required" : "0",
-		"shortdesc" : "Wait X seconds for cmd promprt after issuing command",
+		"shortdesc" : "Wait X seconds for cmd prompt after issuing command",
 		"order" : 200 },
 	"power_timeout" : {
 		"getopt" : "g:",
@@ -693,6 +697,8 @@ def check_input(device_opt, opt):
 			options["-u"] = 22
 		elif options.has_key("-z"):
 			options["-u"] = 443
+		elif device_opt.count("web"):
+			options["-u"] = 80
 		else:
 			options["-u"] = 23
 

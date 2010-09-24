@@ -27,6 +27,7 @@ SUBDIRS 		= lib \
 			  node_assassin \
 			  nss_wrapper \
 			  rackswitch \
+			  rhevm \
 			  rsa \
 			  rsb \
 			  sanbox2 \
