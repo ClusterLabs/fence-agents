@@ -29,6 +29,9 @@ Vendor URL: http://www.egenera.com
 The cserver to ssh to.  cserver can be in the form user@hostname to
 specify a different user to login as.
 .TP
+\fB-u\fP \fIuser\fR
+Login name. Default login name is 'root'
+.TP
 \fB-h\fP 
 Print out a help message describing available options, then exit.
 .TP
@@ -54,6 +57,9 @@ Print out a version message, then exit.
 .TP
 \fIaction = < param >\fR
 The action required.  reboot (default), off, on or status.
+.TP
+\fIuser = < param >\fR
+Login name. Default login name is 'root'
 .TP
 \fIagent = < param >\fR
 This option is used by fence_node(8) and is ignored by fence_apc.
