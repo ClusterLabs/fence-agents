@@ -87,9 +87,14 @@ def set_power_status(conn, options):
 # Define new option
 def eps_define_new_opts():
 	all_opt["hidden_page"]={
-		"getopt":"c:",
-		"help":"-c <page>      Name of hidden page (default hidden.htm)",
-		"order": 1}
+		"getopt" : "c:",
+		"longopt" : "page",
+		"help":"-c, --page=<page>              Name of hidden page (default hidden.htm)",
+		"required" : "0",
+		"shortdesc" : "Name of hidden page",
+		"default" : "hidden.htm",
+		"order": 1
+		}
 
 # Starting point of fence agent
 def main():
@@ -103,9 +108,6 @@ def main():
 	eps_define_new_opts()
 
 	options = check_input(device_opt,process_input(device_opt))
-
-	if (not options.has_key("-c")):
-		options["-c"]="hidden.htm"
 
 	docs = { }           
 	docs["shortdesc"] = "Fence agent for ePowerSwitch" 
