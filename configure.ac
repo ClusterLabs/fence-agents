@@ -52,6 +52,7 @@ AM_PROG_CC_C_O
 AC_PROG_LN_S
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
+AC_PROG_AWK
 
 ## local helper functions
 
@@ -81,22 +82,14 @@ PKG_CHECK_MODULES([nss],[nss])
 PKG_CHECK_MODULES([nspr],[nspr])
 
 # Checks for header files.
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h libintl.h limits.h malloc.h netdb.h netinet/in.h stddef.h stdint.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h syslog.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h libintl.h limits.h stddef.h sys/socket.h sys/time.h syslog.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_C_INLINE
-AC_TYPE_INT32_T
-AC_TYPE_PID_T
 AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
-AC_TYPE_UINT16_T
-AC_TYPE_UINT32_T
-AC_TYPE_UINT64_T
-AC_TYPE_UINT8_T
 
 # Checks for library functions.
 AC_FUNC_FORK
-AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 AC_FUNC_MALLOC
 AC_CHECK_FUNCS([alarm atexit bzero dup2 memmove memset select socket strcasecmp strchr strdup strerror strtol])
 
@@ -104,18 +97,6 @@ AC_CHECK_FUNCS([alarm atexit bzero dup2 memmove memset select socket strcasecmp 
 AC_ARG_ENABLE([debug],
 	[  --enable-debug          enable debug build. ],
 	[ default="no" ])
-
-AC_ARG_WITH([syslogfacility],
-	[  --syslogfacility=FACILITY
-                          cluster default syslog facility. ],
-	[ SYSLOGFACILITY="$withval" ],
-	[ SYSLOGFACILITY="LOG_LOCAL4" ])
-
-AC_ARG_WITH([sysloglevel],
-	[  --sysloglevel=LEVEL
-                          cluster default syslog level. ],
-	[ SYSLOGLEVEL="$withval" ],
-	[ SYSLOGLEVEL="LOG_INFO" ])
 
 AC_ARG_WITH([fenceagentslibdir],
 	[  --fenceagentslibdir=PATH
@@ -145,7 +126,6 @@ AC_ARG_WITH([default-config-file],
 
 LOGDIR=${localstatedir}/log/cluster
 CLUSTERVARRUN=${localstatedir}/run/cluster
-CLUSTERVARLIB=${localstatedir}/lib/cluster
 
 ## do subst
 
@@ -165,16 +145,8 @@ AC_SUBST([CLUSTERVARRUN])
 AC_DEFINE_UNQUOTED([CLUSTERVARRUN], "$(eval echo ${CLUSTERVARRUN})",
 		   [Default cluster var/run directory])
 
-AC_SUBST([CLUSTERVARLIB])
-
 AC_SUBST([FENCEAGENTSLIBDIR])
 AC_SUBST([SNMPBIN])
-
-AC_DEFINE_UNQUOTED([SYSLOGFACILITY], $(eval echo ${SYSLOGFACILITY}),
-		   [Default syslog facility])
-
-AC_DEFINE_UNQUOTED([SYSLOGLEVEL], $(eval echo ${SYSLOGLEVEL}),
-		   [Default syslog level])
 
 ## *FLAGS handling
 

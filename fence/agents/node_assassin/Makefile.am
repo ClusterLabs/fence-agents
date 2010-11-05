@@ -37,7 +37,7 @@ $(TARGET).conf: $(TARGET).conf.in
 	cat $^ | sed \
 		-e 's#@''LOGDIR@#${LOGDIR}#g' \
 		-e 's#@''CONFDIR@#${DEFAULT_CONFIG_DIR}#g' \
-		-e 's#@CONFFILE@#${DEFAULT_CONFIG_FILE}#g' \
+		-e 's#@''CONFFILE@#${DEFAULT_CONFIG_FILE}#g' \
 	> $@
 
 $(TARGET).lib: $(TARGET).lib.in
