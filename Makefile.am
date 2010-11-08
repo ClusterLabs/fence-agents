@@ -1,4 +1,5 @@
-EXTRA_DIST		= autogen.sh make/fencebuild.mk scripts/fenceparse
+EXTRA_DIST		= autogen.sh make/fencebuild.mk scripts/fenceparse \
+			  .version
 
 AUTOMAKE_OPTIONS	= foreign
 
@@ -22,6 +23,23 @@ install-exec-local:
 uninstall-local:
 			rmdir $(DESTDIR)/$(LOGDIR) || :;
 			rmdir $(DESTDIR)/$(CLUSTERVARRUN) || :;
+
+BUILT_SOURCES = .version
+.version:
+	echo $(VERSION) > $@-t && mv $@-t $@
+
+dist-hook: gen-ChangeLog
+	echo $(VERSION) > $(distdir)/.tarball-version
+
+gen_start_date = 2000-01-01
+.PHONY: gen-ChangeLog
+gen-ChangeLog:
+	if test -d .git; then						\
+		$(top_srcdir)/make/gitlog-to-changelog			\
+			--since=$(gen_start_date) > $(distdir)/cl-t;	\
+		rm -f $(distdir)/ChangeLog;				\
+		mv $(distdir)/cl-t $(distdir)/ChangeLog;		\
+	fi
 
 maintainer-clean-local:
 	rm -rf m4

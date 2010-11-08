@@ -2,8 +2,13 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.63])
-AC_INIT([fence-agents], [master], [linux-cluster@redhat.com])
-AM_INIT_AUTOMAKE([-Wno-portability])
+
+AC_INIT([fence-agents],
+	m4_esyscmd([make/git-version-gen .tarball-version]),
+	[linux-cluster@redhat.com])
+
+AM_INIT_AUTOMAKE([-Wno-portability dist-bzip2 dist-xz])
+
 LT_PREREQ([2.2.6])
 LT_INIT
 
