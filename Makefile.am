@@ -1,5 +1,6 @@
 EXTRA_DIST		= autogen.sh make/fencebuild.mk scripts/fenceparse \
-			  .version
+			  .version make/release.mk \
+			  make/git-version-gen make/gitlog-to-changelog
 
 AUTOMAKE_OPTIONS	= foreign
 
