@@ -2,8 +2,11 @@
 #
 # Node Assassin - Fence Agent
 # Digimer; digimer@alteeve.com
-# Jun. 27, 2010
-# Version: 1.1.5
+# Nov. 25, 2010
+# Version: 1.1.6
+#
+# This software is released under the GPL v2. See the LICENSE file in the
+# configuration directory for a copy of the GPL v2.
 #
 # Bugs;
 # - None known, many expected

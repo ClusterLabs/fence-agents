@@ -4,9 +4,11 @@
 # 
 # Node Assassin - Fence Agent
 # Digimer; digimer@alteeve.com
-# Jun. 27, 2010.
-# Version: 1.1.5
+# Nov. 27, 2010.
+# Version: 1.1.6
 #
+# This software is released under the GPL v2. See the LICENSE file for a copy
+# of the GPL v2.
 
 
 # This connects to a Node Assassin and puts the handle in
@@ -242,8 +244,8 @@ sub no_connection_error
 	my ($conf, $log, $na_id)=@_;
 	record ($conf, $log, "\nERROR: Unable to query Node Assassin: [$conf->{na}{$na_id}{na_name}]!\n", 1);
 	record ($conf, $log, "ERROR: Please check that it is connected, that the information in\n", 1);
-	record ($conf, $log, "ERROR: '@NACONFFILE@' is accurate and that the proper configuration\n", 1);
-	record ($conf, $log, "ERROR: has be uploaded to the device.\n\n", 1);
+	record ($conf, $log, "ERROR: '@NACONFFILE@' is accurate and that the proper\n", 1);
+	record ($conf, $log, "ERROR: configuration has be uploaded to the device.\n\n", 1);
 	return (0);
 }
 

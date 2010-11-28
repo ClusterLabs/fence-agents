@@ -10,7 +10,7 @@ This is the fence agent for the Node Assassin fence device.
  
 =head1 SYNOPSIS
  
-  fence_na -a motoko.alteeve.com -n 2 -l motoko -p secret -o off
+  fence_na -a fence_na01.domain.com -n 2 -l admin -p secret -o off
 
 =head1 DESCRIPTION
  
@@ -161,21 +161,21 @@ The power feeds of all nodes on the Node Assassin are checked. Any found to be o
 To simulate how 'fenced' calls the script, create a text file called C<args.txt> containing:
 
   # Test file used as input for the NA fence agent.
-  ipaddr=ariel.alteeve.com
+  ipaddr=fence_na01.domain.com
   port=02
-  login=motoko
+  login=admin
   passwd=secret
-  action=off
+  action=reboot
 
 Now use C<cat> to pipe the contents into the fence agent:
 
   cat args.txt | fence_na
 
-This will call the C<off> function against node #02 connected to the Node Assassin at C<motoko.alteeve.com>, fencing it. Change the C<action> line to C<action=on> and re-run the script to release the fence and boot the node.
+This will call the C<off> function against node #02 connected to the Node Assassin at C<fence_na01.domain.com>, fencing it. Change the C<action> line to C<action=on> and re-run the script to release the fence and boot the node.
 
 To duplicate the same call using command line arguments:
 
-  fence_na -a motoko.alteeve.com -n 2 -l motoko -p secret -o off
+  fence_na -a fence_na01.domain.com -n 2 -l admin -p secret -o reboot
 
 =head1 SEE ALSO
 
@@ -183,6 +183,6 @@ http://nodeassassin.org
 
 =head1 UPDATED
 
-Jun. 26, 2010
+Nov. 27, 2010
 
 Digimer (digimer@alteeve.com)
