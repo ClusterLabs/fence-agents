@@ -28,6 +28,7 @@ usage(void)
 	printf("  -f <file>        Use <file> as configuration file.\n");
 	printf("  -d <level>       Set debugging level to <level>.\n");
 	printf("  -c               Configuration mode.\n");
+	printf("  -l               List plugins.\n");
 }
 
 
@@ -63,7 +64,7 @@ main(int argc, char **argv)
 		return -1;
 	}
 
-	while ((opt = getopt(argc, argv, "Ff:d:cw")) != EOF) {
+	while ((opt = getopt(argc, argv, "Ff:d:cwlh")) != EOF) {
 		switch(opt) {
 		case 'F':
 			printf("Background mode disabled\n");
@@ -82,6 +83,9 @@ main(int argc, char **argv)
 		case 'w':
 			wait_for_backend = 1;
 			break;
+		case 'l':
+			plugin_dump();
+			return 0;
 		case 'h':
 		case '?':
 			usage();
