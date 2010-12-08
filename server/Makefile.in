@@ -24,8 +24,9 @@ AIS_LIBS=-L/usr/lib64/openais -lSaCkpt
 COROSYNC_LIBS=-L/usr/lib64/corosync -lcpg
 CMAN_LIBS=-lcman
 VIRT_LIBS=-lvirt
-VIRT_QPID=-lqmfconsole
+VIRT_QPID=-lqmfconsole -lqpidclient -lqpidcommon
 NSS_LIBS=-lnss3
+XML_LIBS=`xml2-config --libs`
 INCLUDES=-I../include `nss-config --cflags` `nspr-config --cflags` `xml2-config --cflags`
 
 LIBS+=-L../common -lfence_virt -Wl,-wrap,syslog,-wrap,closelog -lpthread -luuid
@@ -105,7 +106,7 @@ LIBS+=$(AIS_LIBS) $(NSS_LIBS)
 endif
 ifneq ($(mod_serial),no)
 fence_virtd_SOURCES+=${serial_so_SOURCES}
-LIBS+=$(AIS_LIBS) $(NSS_LIBS)
+LIBS+=$(AIS_LIBS) $(NSS_LIBS) $(XML_LIBS)
 endif
 ifneq ($(mod_null),no)
 fence_virtd_SOURCES+=${null_so_SOURCES}
@@ -137,7 +138,7 @@ checkpoint.so: ${checkpoint_so_SOURCES:.c=.o}
 		$(COROSYNC_LIBS) $(CMAN_LIBS)
 
 serial.so: ${serial_so_SOURCES:.c=.o}
-	$(CC) -o $@ $^ $(LIBS) -shared $(VIRT_LIBS) $(UUID_LIBS)
+	$(CC) -o $@ $^ $(LIBS) -shared $(VIRT_LIBS) $(UUID_LIBS) $(XML_LIBS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $^ $(INCLUDES)
