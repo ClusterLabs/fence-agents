@@ -16,7 +16,7 @@ For compatibility, fence_xvm from linux-cluster release 2 may talk to fence_virt
 
 .P
 fence_virtd accepts a few options on the command line, but most options
-are read from fence_virtd.conf.
+are read from fence_virt.conf.
 
 .SH PARAMETERS
 .TP
@@ -32,17 +32,17 @@ Interactively prompt user for configuration information
 .TP
 .B -f
 . 
-Specify an alternate configuration file instead of /etc/fence_virtd.conf
+Specify an alternate configuration file instead of /etc/fence_virt.conf
 
 .TP
 .B -F
 . 
-Do not fork into background after starting (overrides any setting in fence_virtd.conf)
+Do not fork into background after starting (overrides any setting in fence_virt.conf)
 
 .TP
 .B -w
 . 
-Wait for backend to be available (overrides any setting in fence_virtd.conf)
+Wait for backend to be available (overrides any setting in fence_virt.conf)
 
 .SH SEE ALSO
-fence_virt(8), fence_xvm(8), fence(8), fence_virtd.conf(5)
+fence_virt(8), fence_xvm(8), fence(8), fence_virt.conf(5)

@@ -1,11 +1,11 @@
 .TH fence_virtd.conf 5
 
 .SH NAME
-fence_virtd.conf - configuration file for fence_virtd
+fence_virt.conf - configuration file for fence_virtd
 
 .SH DESCRIPTION
 
-The fence_virtd.conf file contains configuration information for fence_virtd,
+The fence_virt.conf file contains configuration information for fence_virtd,
 a fencing request routing daemon for clusters of virtual machines.
 
 The file is tree-structured.  There are parent/child relationships and sibling
@@ -17,7 +17,7 @@ relationships between the nodes.
     }
   }
 
-There are three primary sections of fence_virtd.conf.
+There are three primary sections of fence_virt.conf.
 
 .SH SECTIONS
 .SS fence_virtd
@@ -71,7 +71,7 @@ about groups below.
 
 There are various listeners available for fence_virtd, each one handles
 decoding and authentication of a given fencing request.  The following 
-configuration blocks belong in the \fBlisteners\fP section of fence_virtd.conf
+configuration blocks belong in the \fBlisteners\fP section of fence_virt.conf
 
 .SS multicast
 .TP
@@ -159,7 +159,7 @@ This selects the type of sockets to register.  Valid values are "serial"
 
 There are various backends available for fence_virtd, each one handles
 routing a fencing request to a hypervisor or management tool.  The following 
-configuration blocks belong in the \fBbackends\fP section of fence_virtd.conf
+configuration blocks belong in the \fBbackends\fP section of fence_virt.conf
 
 .SS libvirt
 
