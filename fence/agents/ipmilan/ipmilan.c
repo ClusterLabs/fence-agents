@@ -869,7 +869,10 @@ static void print_xml_metadata(char *pname) {
   printf("<longdesc>\n");
   printf("fence_ipmilan is an I/O Fencing agent which can be used with "
          "machines controlled by IPMI. This agent calls support software "
-         "using ipmitool (http://ipmitool.sf.net/).");
+         "using ipmitool (http://ipmitool.sf.net/).\n\n"
+         "To use fence_ipmilan with HP iLO 3 you have to enable lanplus "
+         "option (lanplus / -P) and increase wait after operation to "
+         "4 seconds (power_wait=4 / -T 4)");
   printf("</longdesc>\n");
   printf("%s\n","<parameters>");
 
