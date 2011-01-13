@@ -29,6 +29,7 @@
 #define ST_POWEROFF 2
 #define ST_GENERIC_RESET 3
 #define ST_CYCLE 4
+#define ST_DIAG 5
 
 #define DEFAULT_TIMEOUT 20
 #define DEFAULT_POWER_WAIT 2
@@ -167,7 +168,7 @@ struct xml_parameter_s xml_parameters[]={
   {"passwd_script","-S",0,"string",NULL,"Script to retrieve password (if required)"},
   {"lanplus","-P",0,"boolean",NULL,"Use Lanplus"},
   {"login","-l",0,"string",NULL,"Username/Login (if required) to control power on IPMI device"},
-  {"action","-o",0,"string","reboot","Operation to perform. Valid operations: on, off, reboot, status, list, monitor or metadata"},
+  {"action","-o",0,"string","reboot","Operation to perform. Valid operations: on, off, reboot, status, list, diag, monitor or metadata"},
   {"timeout","-t",0,"string",NULL,"Timeout (sec) for IPMI operation"},
   {"cipher","-C",0,"string",NULL,"Ciphersuite to use (same as ipmitool -C parameter)"},
   {"method","-M",0,"string",DEFAULT_METHOD,"Method to fence (onoff or cycle)"},
@@ -305,6 +306,10 @@ build_cmd(char *command, size_t cmdlen, struct ipmi *ipmi, int op)
 	case ST_CYCLE:
 		snprintf(arg, sizeof(arg),
 			 "%s chassis power cycle", cmd);
+		break;
+	case ST_DIAG:
+		snprintf(arg, sizeof(arg),
+			 "%s chassis power diag", cmd);
 		break;
 	}
 
@@ -520,6 +525,16 @@ ipmi_cycle(struct ipmi *ipmi)
 
 	ret = ipmi_op(ipmi, ST_CYCLE, power_cycle_complete);
 
+	return ret;
+}
+
+static int
+ipmi_diag(struct ipmi *ipmi)
+{
+	int ret;
+	
+	ret = ipmi_op(ipmi, ST_DIAG, power_off_complete);
+	
 	return ret;
 }
 
@@ -815,7 +830,8 @@ printf("   -S <path>      Script to retrieve password (if required)\n");
 printf("   -l <login>     Username/Login (if required) to control power\n"
        "                  on IPMI device\n");
 printf("   -o <op>        Operation to perform.\n");
-printf("                  Valid operations: on, off, reboot, status, list or monitor\n");
+printf("                  Valid operations: on, off, reboot, status,\n");
+printf("                  diag, list or monitor\n");
 printf("   -t <timeout>   Timeout (sec) for IPMI operation (default %d)\n",DEFAULT_TIMEOUT);
 printf("   -T <timeout>   Wait X seconds after on/off operation\n");
 printf("   -f <timeout>   Wait X seconds before fencing is started\n");
@@ -880,6 +896,7 @@ static void print_xml_metadata(char *pname) {
   printf("\t<action name=\"%s\" />\n", "off");
   printf("\t<action name=\"%s\" />\n", "reboot");
   printf("\t<action name=\"%s\" />\n", "status");
+  printf("\t<action name=\"%s\" />\n", "diag");
   printf("\t<action name=\"%s\" />\n", "list");
   printf("\t<action name=\"%s\" />\n", "monitor");
   printf("\t<action name=\"%s\" />\n", "metadata");
@@ -1052,9 +1069,9 @@ main(int argc, char **argv)
 	if (strcasecmp(op, "off") && strcasecmp(op, "on") &&
 	    strcasecmp(op, "status") && strcasecmp(op, "reboot") &&
 	    strcasecmp(op, "monitor") && strcasecmp(op, "list") &&
-	    strcasecmp(op, "metadata")) {
+	    strcasecmp(op, "metadata") && strcasecmp(op, "diag")) {
 		fail_exit("operation must be 'on', 'off', 'status', "
-			  "'reboot', 'list', 'monitor' or 'metadata'");
+			  "'reboot', 'diag', 'list', 'monitor' or 'metadata'");
 	}
 
 	if (strlen(authtype) &&
@@ -1152,6 +1169,12 @@ main(int argc, char **argv)
 	  ret=0;
 	  translated_ret = ERR_OK;
 	  print_final_status=0;
+	} else if (!strcasecmp(op, "diag")) {
+	  printf("Pulsing diagnostic interrupt to machine @ IPMI:%s...", ip);
+	  fflush(stdout);
+	  ret = ipmi_diag(i);
+	  translated_ret = (ret==0?ERR_ON_SUCCESSFUL:ERR_ON_FAIL);
+	  ret = 0;
 	}
 
 
