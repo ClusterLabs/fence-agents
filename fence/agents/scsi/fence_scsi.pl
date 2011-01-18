@@ -1,5 +1,6 @@
 #!/usr/bin/perl
 
+use Cwd 'realpath';
 use File::Basename;
 use Getopt::Std;
 use POSIX;
@@ -112,6 +113,8 @@ sub do_register ($$$)
     my $self = (caller(0))[3];
     my ($host_key, $node_key, $dev) = @_;
 
+    $dev = realpath ($dev);
+
     if (substr ($dev, 5) =~ /^dm/) {
 	my @slaves = get_mpath_slaves ($dev);
 	foreach (@slaves) {
@@ -138,6 +141,8 @@ sub do_register_ignore ($$)
 {
     my $self = (caller(0))[3];
     my ($node_key, $dev) = @_;
+
+    $dev = realpath ($dev);
 
     if (substr ($dev, 5) =~ /^dm/) {
 	my @slaves = get_mpath_slaves ($dev);
