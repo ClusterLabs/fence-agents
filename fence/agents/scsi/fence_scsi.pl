@@ -46,6 +46,7 @@ sub do_action_on ($@)
 	log_error ("device $dev does not exist") if (! -e $dev);
 	log_error ("device $dev is not a block device") if (! -b $dev);
 
+	do_reset ($dev);
 	do_register_ignore ($node_key, $dev);
 
 	if (!get_reservation_key ($dev)) {
@@ -222,6 +223,23 @@ sub do_preempt_abort ($$$)
     my $out = qx { $cmd };
 
     die "[error]: $self\n" if ($?>>8);
+
+    return;
+}
+
+sub do_reset (S)
+{
+    my $self = (caller(0))[3];
+    my ($dev) = @_;
+
+    my $cmd = "sg_turs $dev";
+    my @out = qx { $cmd 2> /dev/null };
+    my $err = ($?>>8);
+
+    ## note that it is not necessarily an error is $err is non-zero,
+    ## so just log the device and status and continue.
+
+    log_debug ("$self (dev=$dev, status=$err)");
 
     return;
 }
