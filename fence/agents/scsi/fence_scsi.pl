@@ -71,7 +71,7 @@ sub do_action_off ($@)
 	log_error ("device $dev does not exist") if (! -e $dev);
 	log_error ("device $dev is not a block device") if (! -b $dev);
 
-	my @keys = grep { /$node_key/ } get_registration_keys ($dev);
+	my @keys = grep { /^$node_key$/ } get_registration_keys ($dev);
 
 	if (scalar (@keys) != 0) {
 	    do_preempt_abort ($host_key, $node_key, $dev);
@@ -93,7 +93,7 @@ sub do_action_status ($@)
 	log_error ("device $dev does not exist") if (! -e $dev);
 	log_error ("device $dev is not a block device") if (! -b $dev);
 
-	my @keys = grep { /$node_key/ } get_registration_keys ($dev);
+	my @keys = grep { /^$node_key$/ } get_registration_keys ($dev);
 
 	if (scalar (@keys) != 0) {
 	    $dev_count++;
