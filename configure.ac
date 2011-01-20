@@ -224,6 +224,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/cpint/Makefile
 		 fence/agents/drac/Makefile
 		 fence/agents/drac5/Makefile
+		 fence/agents/eaton_snmp/Makefile
 		 fence/agents/egenera/Makefile
 		 fence/agents/eps/Makefile
 		 fence/agents/ibmblade/Makefile

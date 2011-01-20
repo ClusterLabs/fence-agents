@@ -13,6 +13,7 @@ SUBDIRS 		= lib \
 			  cpint \
 			  drac \
 			  drac5 \
+			  eaton_snmp \
 			  egenera \
 			  eps \
 			  ibmblade \

@@ -1,0 +1,20 @@
+This is an snmp based fence agent for Eaton power distribution units to be used
+with RHEL4 Red Hat Cluster Suite.
+
+In order to use this agent, you will need to have net-snmp-utils installed 
+on every node in your cluster. net-snmp-utils is scheduled for inclusion 
+in the base RHEL distribution for Update 4, and is yummable in FC5.
+
+To use the agent, cp the agent to the /sbin directory on every
+cluster node.
+
+Then define a <fencedevice> in the cluster.conf file with
+agent="fence_eaton_snmp" as an attribute, and use it that way.
+Note, please, that the GUI does not support this agent yet, and you will have
+to edit your cluster.conf by hand and then propagate it yourself. If you need
+help with this, email me at the address below.
+
+The interface for the fence_eaton_snmp agent is identical to the existing
+fence_apc_snmp agent, upon which it has been derived.
+
+--Arnaud Quette - ArnaudQuette@Eaton.com
