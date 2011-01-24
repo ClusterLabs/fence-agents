@@ -46,7 +46,6 @@ sub do_action_on ($@)
 	log_error ("device $dev does not exist") if (! -e $dev);
 	log_error ("device $dev is not a block device") if (! -b $dev);
 
-	do_reset ($dev);
 	do_register_ignore ($node_key, $dev);
 
 	if (!get_reservation_key ($dev)) {
@@ -94,6 +93,8 @@ sub do_action_status ($@)
 	log_error ("device $dev does not exist") if (! -e $dev);
 	log_error ("device $dev is not a block device") if (! -b $dev);
 
+	do_reset ($dev);
+
 	my @keys = grep { /^$node_key$/ } get_registration_keys ($dev);
 
 	if (scalar (@keys) != 0) {
@@ -129,6 +130,8 @@ sub do_register ($$$)
     my $cmd;
     my $out;
 
+    do_reset ($dev);
+
     $cmd = "sg_persist -n -o -G -K $host_key -S $node_key -d $dev";
     $cmd .= " -Z" if (defined $opt_a);
     $out = qx { $cmd };
@@ -158,11 +161,13 @@ sub do_register_ignore ($$)
     my $cmd;
     my $out;
 
+    do_reset ($dev);
+
     $cmd = "sg_persist -n -o -I -S $node_key -d $dev";
     $cmd .= " -Z" if (defined $opt_a);
     $out = qx { $cmd };
 
-    die "[error]: $self\n" if ($?>>8);
+    die "[error]: $self ($dev)\n" if ($?>>8);
 
     return;
 }
