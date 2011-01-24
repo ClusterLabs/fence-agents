@@ -110,6 +110,62 @@ sub do_action_status ($@)
     }
 }
 
+sub do_verify_on ($@)
+{
+    my $self = (caller(0))[3];
+    my ($node_key, @devices) = @_;
+    my $count = 0;
+
+    for $dev (@devices) {
+        my @keys = grep { /^$node_key$/ } get_registration_keys ($dev);
+
+        ## check that our key is registered
+        if (scalar (@keys) == 0) {
+            log_debug ("failed to register key $node_key on device $dev");
+            $count++;
+            next;
+        }
+
+        ## check that a reservation exists
+        if (!get_reservation_key ($dev)) {
+            log_debug ("no reservation exists on device $dev");
+            $count++;
+        }
+    }
+
+    if ($count != 0) {
+        log_error ("$self: failed to verify $count devices");
+    }
+}
+
+sub do_verify_off ($@)
+{
+    my $self = (caller(0))[3];
+    my ($node_key, @devices) = @_;
+    my $count = 0;
+
+    for $dev (@devices) {
+        my @keys = grep { /^$node_key$/ } get_registration_keys ($dev);
+
+        ## check that our key is not registered
+        if (scalar (@keys) != 0) {
+            log_debug ("failed to remove key $node_key from device $dev");
+            $count++;
+            next;
+        }
+
+        ## check that a reservation exists
+        if (!get_reservation_key ($dev)) {
+            log_debug ("no reservation exists on device $dev");
+            $count++;
+        }
+    }
+
+    if ($count != 0) {
+        log_error ("$self: failed to verify $count devices");
+    }
+}
+
 sub do_register ($$$)
 {
     my $self = (caller(0))[3];
@@ -668,9 +724,11 @@ if (!defined $opt_o) {
 ##
 if ($opt_o =~ /^on$/i) {
     do_action_on ($key, @devices);
+    do_verify_on ($key, @devices);
 }
 elsif ($opt_o =~ /^off$/i) {
     do_action_off ($key, @devices);
+    do_verify_off ($key, @devices);
 }
 elsif ($opt_o =~ /^status/i) {
     do_action_status ($key, @devices);
