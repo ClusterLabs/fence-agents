@@ -185,14 +185,20 @@ sub do_register ($$$)
 
     my $cmd;
     my $out;
+    my $err;
 
     do_reset ($dev);
 
     $cmd = "sg_persist -n -o -G -K $host_key -S $node_key -d $dev";
     $cmd .= " -Z" if (defined $opt_a);
-    $out = qx { $cmd };
+    $out = qx { $cmd 2> /dev/null };
+    $err = ($?>>8);
 
-    die "[error]: $self\n" if ($?>>8);
+    if ($err != 0) {
+	log_error ("$self (err=$err)");
+    }
+
+    # die "[error]: $self\n" if ($?>>8);
 
     return;
 }
@@ -216,14 +222,20 @@ sub do_register_ignore ($$)
 
     my $cmd;
     my $out;
+    my $err;
 
     do_reset ($dev);
 
     $cmd = "sg_persist -n -o -I -S $node_key -d $dev";
     $cmd .= " -Z" if (defined $opt_a);
-    $out = qx { $cmd };
+    $out = qx { $cmd 2> /dev/null };
+    $err = ($?>>8);
 
-    die "[error]: $self ($dev)\n" if ($?>>8);
+    if ($err != 0) {
+	log_error ("$self (err=$err)");
+    }
+
+    # die "[error]: $self ($dev)\n" if ($?>>8);
 
     return;
 }
@@ -236,9 +248,14 @@ sub do_reserve ($$)
     log_debug ("$self (host_key=$host_key, dev=$dev)");
 
     my $cmd = "sg_persist -n -o -R -T 5 -K $host_key -d $dev";
-    my $out = qx { $cmd };
+    my $out = qx { $cmd 2> /dev/null };
+    my $err = ($?>>8);
 
-    die "[error]: $self\n" if ($?>>8);
+    if ($err != 0) {
+	log_error ("$self (err=$err)");
+    }
+
+    # die "[error]: $self\n" if ($?>>8);
 
     return;
 }
@@ -251,9 +268,14 @@ sub do_release ($$)
     log_debug ("$self (host_key=$host_key, dev=$dev)");
 
     my $cmd = "sg_persist -n -o -L -T 5 -K $host_key -d $dev";
-    my $out = qx { $cmd };
+    my $out = qx { $cmd 2> /dev/null };
+    my $err = ($?>>8);
 
-    die "[error]: $self\n" if ($?>>8);
+    if ($err != 0) {
+	log_error ("$self (err=$err)");
+    }
+
+    # die "[error]: $self\n" if ($?>>8);
 
     return;
 }
@@ -266,9 +288,14 @@ sub do_preempt ($$$)
     log_debug ("$self (host_key=$host_key, node_key=$node_key, dev=$dev)");
 
     my $cmd = "sg_persist -n -o -P -T 5 -K $host_key -S $node_key -d $dev";
-    my $out = qx { $cmd };
+    my $out = qx { $cmd 2> /dev/null };
+    my $err = ($?>>8);
 
-    die "[error]: $self\n" if ($?>>8);
+    if ($err != 0) {
+	log_error ("$self (err=$err)");
+    }
+
+    # die "[error]: $self\n" if ($?>>8);
 
     return;
 }
@@ -281,9 +308,14 @@ sub do_preempt_abort ($$$)
     log_debug ("$self (host_key=$host_key, node_key=$node_key, dev=$dev)");
 
     my $cmd = "sg_persist -n -o -A -T 5 -K $host_key -S $node_key -d $dev";
-    my $out = qx { $cmd };
+    my $out = qx { $cmd 2> /dev/null };
+    my $err = ($?>>8);
 
-    die "[error]: $self\n" if ($?>>8);
+    if ($err != 0) {
+	log_error ("$self (err=$err)");
+    }
+
+    # die "[error]: $self\n" if ($?>>8);
 
     return;
 }
@@ -343,9 +375,14 @@ sub get_node_id ($)
     my $node_id;
 
     my $cmd = "cman_tool nodes -n $_[0] -F id";
-    my $out = qx { $cmd };
+    my $out = qx { $cmd 2> /dev/null };
+    my $err = ($?>>8);
 
-    die "[error]: $self\n" if ($?>>8);
+    if ($err != 0) {
+	log_error ("$self (err=$err)");
+    }
+
+    # die "[error]: $self\n" if ($?>>8);
 
     chomp ($out);
 
@@ -360,9 +397,14 @@ sub get_cluster_id ()
     my $cluster_id;
 
     my $cmd = "cman_tool status";
-    my @out = qx { $cmd };
+    my @out = qx { $cmd 2> /dev/null };
+    my $err = ($?>>8);
 
-    die "[error]: $self\n" if ($?>>8);
+    if ($err != 0) {
+	log_error ("$self (err=$err)");
+    }
+
+    # die "[error]: $self\n" if ($?>>8);
 
     foreach (@out) {
 	chomp;
@@ -388,8 +430,13 @@ sub get_devices_clvm ()
 	"              devices { preferred_names = [ \"^/dev/dm\" ] }'";
 
     my @out = qx { $cmd 2> /dev/null };
+    my $err = ($?>>8);
 
-    die "[error]: $self\n" if ($?>>8);
+    if ($err != 0) {
+	log_error ("$self (err=$err)");
+    }
+
+    # die "[error]: $self\n" if ($?>>8);
 
     foreach (@out) {
 	chomp;
@@ -479,9 +526,14 @@ sub get_registration_keys ($)
     my @keys;
 
     my $cmd = "sg_persist -n -i -k -d $dev";
-    my @out = qx { $cmd };
+    my @out = qx { $cmd 2> /dev/null };
+    my $err = ($?>>8);
 
-    die "[error]: $self\n" if ($?>>8);
+    if ($err != 0) {
+	log_error ("$self (err=$err)");
+    }
+
+    # die "[error]: $self\n" if ($?>>8);
 
     foreach (@out) {
 	chomp;
@@ -500,9 +552,14 @@ sub get_reservation_key ($)
     my $key;
 
     my $cmd = "sg_persist -n -i -r -d $dev";
-    my @out = qx { $cmd };
+    my @out = qx { $cmd 2> /dev/null };
+    my $err = ($?>>8);
 
-    die "[error]: $self\n" if ($?>>8);
+    if ($err != 0) {
+	log_error ("$self (err=$err)");
+    }
+
+    # die "[error]: $self\n" if ($?>>8);
 
     foreach (@out) {
 	chomp;
