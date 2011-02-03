@@ -1,5 +1,5 @@
 $(TARGET):
-	sh $(top_srcdir)/scripts/fenceparse \
+	bash $(top_srcdir)/scripts/fenceparse \
 		$(top_srcdir)/make/copyright.cf REDHAT_COPYRIGHT \
 		$(VERSION) \
 		$(abs_srcdir) $@ | \
