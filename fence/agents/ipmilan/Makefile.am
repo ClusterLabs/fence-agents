@@ -6,7 +6,7 @@ noinst_HEADERS		= expect.h
 
 fence_ipmilan_SOURCES	= expect.c ipmilan.c
 
-dist_man_MANS		= fence_ipmilan.8
+man_MANS		= fence_ipmilan.8
 
 fence_ipmilan.8: fence_ipmilan $(top_srcdir)/fence/agents/lib/fence2man.xsl
 	set -e && \

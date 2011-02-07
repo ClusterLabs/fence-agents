@@ -35,7 +35,6 @@ endif
 tarballs: tag
 	./autogen.sh
 	./configure
-	make
 	make distcheck
 
 sha256: tarballs $(project)-$(version).sha256

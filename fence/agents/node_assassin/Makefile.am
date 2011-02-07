@@ -17,7 +17,7 @@ conffile_DATA		= $(TARGET).conf
 
 sbin_SCRIPTS		= $(TARGET)
 
-dist_man_MANS		= $(TARGET).8
+man_MANS		= $(TARGET).8
 
 $(TARGET): $(TARGET).pl
 	cat $^ |  sed \
