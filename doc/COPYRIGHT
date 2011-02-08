@@ -1,7 +1,7 @@
 Unless specified otherwise in the "exceptions section" below:
 
 Copyright (C) 1997-2003 Sistina Software, Inc.  All rights reserved.
-Copyright (C) 2004-2010 Red Hat, Inc.  All rights reserved.
+Copyright (C) 2004-2011 Red Hat, Inc.  All rights reserved.
 
 Exceptions:
 
@@ -9,27 +9,26 @@ fence/agents/apc_snmp/powernet369.mib:
  Copyright (c) 2005 American Power Conversion, Inc.
  PowerNet is a Trademark of American Power Conversion Corp.
 
+fence/agents/eaton_snmp/fence_eaton_snmp.py:
+ Copyright (c) 2011 eaton.com
+ Author: Arnaud Quette <ArnaudQuette at Eaton.com>
+
 fence/agents/ifmib/fence_ifmib.py:
- Copyright (C) 2008-2010 Ross Vandegrift.
+ Copyright (C) 2008-2011 Ross Vandegrift.
  Written by Ross Vandegrift <ross at kallisti.us>
 
 fence/agents/intelmodular/fence_intelmodular.pl:
- Contributed by Matthew Kent <matt@bravenet.com>
+ Contributed by Matthew Kent <matt at bravenet.com>
 
 fence/agents/ipmilan/expect.{c,h}:
  Copyright (C) 2000 Alan Robertson <alanr at unix.sh>
 
 fence/agents/node_assassin/*
- Copyright (C) 2009-2010 Madison Kelly/Alteeve's Niche!
+ Copyright (C) 2009-2011 Madison Kelly/Alteeve's Niche!
  Author: Digimer <digimer at alteeve.com>
 
-fence/agents/xvm/tcp.c:
- Copyright (C) 2000 Mission Critical Linux
- Copyright (C) 2002-2010 Red Hat, Inc.  All rights reserved.
- Author: Jeff Moyer <jmoyer at redhat.com>
-
 fence/man/fence_ifmib.8:
- Copyright (C) 2008-2010 Ross Vandegrift.
+ Copyright (C) 2008-2011 Ross Vandegrift.
  Written by Ross Vandegrift <ross at kallisti.us>
 
 Authors as known by current RCS as of the time of writing:
