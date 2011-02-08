@@ -58,6 +58,8 @@ AC_PROG_LN_S
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_AWK
+AC_PROG_CXX
+AC_PROG_RANLIB
 
 ## local helper functions
 
@@ -82,7 +84,7 @@ check_lib_no_libs() {
 	LIBS=$ac_check_lib_save_LIBS
 }
 
-# corosync libs
+# external libs
 PKG_CHECK_MODULES([nss],[nss])
 PKG_CHECK_MODULES([nspr],[nspr])
 
