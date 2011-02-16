@@ -25,7 +25,12 @@ def get_power_status(conn, options):
 	except pexpect.TIMEOUT:
 		fail(EC_TIMED_OUT)
 				
-	status = re.compile("Power: (.*)", re.IGNORECASE).search(conn.before).group(1)
+	match = re.compile("Power: (.*)", re.IGNORECASE).search(conn.before)
+	if (match != None):
+		status = match.group(1)
+	else:
+		status = "undefined"
+
 	return status.lower().strip()
 
 def set_power_status(conn, options):
