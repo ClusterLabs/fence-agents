@@ -28,13 +28,12 @@ def get_power_status(conn, options):
 		conn.send("/S"+"\r\n")
 
 		if isinstance(options["-c"], list):
-			re_all = options["-c"]
+			re_all = list(options["-c"])
 		else:
 			re_all = [options["-c"]]
 		re_next = re.compile("Enter: ", re.IGNORECASE)
 		re_all.append(re_next)
 
-		conn.send("/S"+"\r\n")
 		result = conn.log_expect(options, re_all, int(options["-Y"]))
 		listing = conn.before
 		if result == (len(re_all) - 1):
