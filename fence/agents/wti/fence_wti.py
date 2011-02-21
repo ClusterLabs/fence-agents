@@ -22,9 +22,26 @@ BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):
-	try:
+	listing = ""
+
+	try:		
 		conn.send("/S"+"\r\n")
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
+
+		if isinstance(options["-c"], list):
+			re_all = options["-c"]
+		else:
+			re_all = [options["-c"]]
+		re_next = re.compile("Enter: ", re.IGNORECASE)
+		re_all.append(re_next)
+
+		conn.send("/S"+"\r\n")
+		result = conn.log_expect(options, re_all, int(options["-Y"]))
+		listing = conn.before
+		if result == (len(re_all) - 1):
+			conn.send("\r\n")
+			conn.log_expect(options, options["-c"], int(options["-Y"]))
+			listing += conn.before
+
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
@@ -32,8 +49,8 @@ def get_power_status(conn, options):
 	
 	plug_section = 0
 	outlets = {}
-	for line in conn.before.splitlines():
-		if (plug_section == 2) and line.find("|") >= 0:
+	for line in listing.splitlines():
+		if (plug_section == 2) and line.find("|") >= 0 and line.startswith("PLUG") == False:
 			plug_line = [x.strip().lower() for x in line.split("|")]
 			if len(plug_line) < len(plug_header):
 				plug_section = -1
@@ -42,7 +59,8 @@ def get_power_status(conn, options):
 				return plug_line[status_index]
 			else:
 				## We already believe that first column contains plug number
-				outlets[plug_line[0]] = (plug_line[name_index], plug_line[status_index])
+				if len(plug_line[0]) != 0:
+					outlets[plug_line[0]] = (plug_line[name_index], plug_line[status_index])
 		elif (plug_section == 1):
 			plug_section = 2
 			pass
