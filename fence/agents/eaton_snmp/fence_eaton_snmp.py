@@ -160,6 +160,11 @@ def main():
 	if (not (options.has_key("-s"))):
 		options["-s"]="1"
 
+	# Plug indexing start from zero, so we substract '1' from the
+	# user's given plug number
+	if ((options.has_key("-n")) and (options["-n"].isdigit())):
+		options["-n"] = str(int(options["-n"]) - 1)
+
 	docs = { }
 	docs["shortdesc"] = "Fence agent for Eaton over SNMP"
 	docs["longdesc"] = "fence_eaton_snmp is an I/O Fencing agent \
