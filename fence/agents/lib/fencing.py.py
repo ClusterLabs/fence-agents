@@ -603,7 +603,7 @@ def process_input(avail_opt):
 
 			if all_opt[name]["getopt"].endswith(":"):
 				opt["-"+all_opt[name]["getopt"].rstrip(":")] = value
-			elif ((value == "1") or (value.lower() == "yes")):
+			elif ((value == "1") or (value.lower() == "yes") or (value.lower() == "on") or (value.lower() == "true")):
 				opt["-"+all_opt[name]["getopt"]] = "1"
 	return opt
 
