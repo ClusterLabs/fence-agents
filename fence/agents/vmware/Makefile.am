@@ -2,7 +2,9 @@ MAINTAINERCLEANFILES	= Makefile.in
 
 TARGET			= fence_vmware fence_vmware_helper
 
-EXTRA_DIST		= fence_vmware.py fence_vmware_helper.pl
+SRC			= fence_vmware.py fence_vmware_helper.pl
+
+EXTRA_DIST		= $(SRC)
 
 sbin_SCRIPTS		= $(TARGET)
 

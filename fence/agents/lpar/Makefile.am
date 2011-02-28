@@ -2,7 +2,9 @@ MAINTAINERCLEANFILES	= Makefile.in
 
 TARGET			= fence_lpar
 
-EXTRA_DIST		= $(TARGET).py
+SRC			= $(TARGET).py
+
+EXTRA_DIST		= $(SRC)
 
 sbin_SCRIPTS		= $(TARGET)
 

@@ -2,7 +2,9 @@ MAINTAINERCLEANFILES	= Makefile.in
 
 TARGET			= fence_vixel
 
-EXTRA_DIST		= $(TARGET).pl
+SRC			= $(TARGET).pl
+
+EXTRA_DIST		= $(SRC)
 
 sbin_SCRIPTS		= $(TARGET)
 

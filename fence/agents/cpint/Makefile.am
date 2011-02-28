@@ -2,7 +2,9 @@ MAINTAINERCLEANFILES	= Makefile.in
 
 TARGET			= fence_cpint
 
-EXTRA_DIST		= $(TARGET).pl
+SRC			= $(TARGET).pl
+
+EXTRA_DIST		= $(SRC)
 
 sbin_SCRIPTS		= $(TARGET)
 

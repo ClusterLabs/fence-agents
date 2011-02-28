@@ -1,4 +1,4 @@
-$(TARGET):
+$(TARGET): $(SRC)
 	bash $(top_srcdir)/scripts/fenceparse \
 		$(top_srcdir)/make/copyright.cf REDHAT_COPYRIGHT \
 		$(VERSION) \

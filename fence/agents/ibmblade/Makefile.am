@@ -2,7 +2,9 @@ MAINTAINERCLEANFILES	= Makefile.in
 
 TARGET			= fence_ibmblade
 
-EXTRA_DIST		= $(TARGET).py
+SRC			= $(TARGET).py
+
+EXTRA_DIST		= $(SRC)
 
 sbin_SCRIPTS		= $(TARGET)
 

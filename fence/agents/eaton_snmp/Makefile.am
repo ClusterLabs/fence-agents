@@ -2,7 +2,9 @@ MAINTAINERCLEANFILES	= Makefile.in
 
 TARGET			= fence_eaton_snmp
 
-EXTRA_DIST		= $(TARGET).py \
+SRC			= $(TARGET).py
+
+EXTRA_DIST		= $(SRC) \
 			  README
 
 sbin_SCRIPTS		= $(TARGET)

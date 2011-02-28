@@ -2,7 +2,10 @@ MAINTAINERCLEANFILES	= Makefile.in
 
 TARGET			= fence_ifmib
 
-EXTRA_DIST		= $(TARGET).py README
+SRC			= $(TARGET).py
+
+EXTRA_DIST		= $(SRC) \
+			  README
 
 sbin_SCRIPTS		= $(TARGET)
 

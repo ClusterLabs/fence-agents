@@ -2,7 +2,9 @@ MAINTAINERCLEANFILES	= Makefile.in
 
 TARGET			= fence_apc_snmp
 
-EXTRA_DIST		= $(TARGET).py \
+SRC			= $(TARGET).py
+
+EXTRA_DIST		= $(SRC) \
 			  powernet369.mib \
 			  README
 
