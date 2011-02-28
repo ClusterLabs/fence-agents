@@ -56,7 +56,7 @@
 #include "serial.h"
 
 #define NAME "serial"
-#define VERSION "0.3"
+#define VERSION "0.4"
 
 #define SERIAL_PLUG_MAGIC 0x1227a000
 
@@ -80,6 +80,8 @@ typedef struct _serial_info {
 
 
 struct serial_hostlist_arg {
+	map_object_t *map;
+	const char *src;
 	int fd;
 };
 
@@ -112,6 +114,12 @@ serial_hostlist(const char *vm_name, const char *vm_uuid,
 	host_state_t hinfo;
 	struct timeval tv;
 	int ret;
+
+	if (map_check(arg->map, arg->src, vm_uuid) == 0) {
+		/* if we don't have access to fence this VM,
+		 * we should not see it in a hostlist either */
+		return 0;
+	}
 
 	strncpy((char *)hinfo.domain, vm_name, sizeof(hinfo.domain));
 	strncpy((char *)hinfo.uuid, vm_uuid, sizeof(hinfo.uuid));
@@ -209,6 +217,10 @@ do_fence_request(int fd, const char *src, serial_req_t *req, serial_info *info)
 		response = info->cb->devstatus(info->priv);
 		break;
 	case FENCE_HOSTLIST:
+		arg.map = info->maps;
+		arg.src = src;
+		arg.fd = fd;
+
 		serial_hostlist_begin(arg.fd);
 		response = info->cb->hostlist(serial_hostlist, &arg,
 					      info->priv);

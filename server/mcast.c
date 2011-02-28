@@ -58,7 +58,7 @@
 #include "fdops.h"
 
 #define NAME "multicast"
-#define VERSION "1.0"
+#define VERSION "1.1"
 
 #define MCAST_MAGIC 0xabb911a3
 
@@ -95,6 +95,8 @@ typedef struct _mcast_info {
 
 
 struct mcast_hostlist_arg {
+	map_object_t *map;
+	const char *src;
 	int fd;
 };
 
@@ -187,6 +189,12 @@ mcast_hostlist(const char *vm_name, const char *vm_uuid,
 	struct timeval tv;
 	int ret;
 
+	if (map_check(arg->map, arg->src, vm_uuid) == 0) {
+		/* if we don't have access to fence this VM,
+		 * we should not see it in a hostlist either */
+		return 0;
+	}
+
 	strncpy((char *)hinfo.domain, vm_name, sizeof(hinfo.domain));
 	strncpy((char *)hinfo.uuid, vm_uuid, sizeof(hinfo.uuid));
 	hinfo.state = state;
@@ -246,7 +254,6 @@ do_fence_request_tcp(fence_req_t *req, mcast_info *info)
 			strerror(errno));
 		goto out;
 	}
-	arg.fd = fd;
 
 	inet_ntop(req->family, req->address,
 		  ip_addr_src, sizeof(ip_addr_src));
@@ -292,6 +299,10 @@ do_fence_request_tcp(fence_req_t *req, mcast_info *info)
 		response = info->cb->devstatus(info->priv);
 		break;
 	case FENCE_HOSTLIST:
+		arg.map = info->map;
+		arg.src = ip_addr_src;
+		arg.fd = fd;
+
 		mcast_hostlist_begin(arg.fd);
 		response = info->cb->hostlist(mcast_hostlist, &arg,
 					      info->priv);
