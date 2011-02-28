@@ -133,6 +133,7 @@ AC_ARG_WITH([default-config-file],
 
 LOGDIR=${localstatedir}/log/cluster
 CLUSTERVARRUN=${localstatedir}/run/cluster
+CLUSTERDATA=${datadir}/cluster
 
 ## do subst
 
@@ -152,6 +153,7 @@ AC_SUBST([CLUSTERVARRUN])
 AC_DEFINE_UNQUOTED([CLUSTERVARRUN], "$(eval echo ${CLUSTERVARRUN})",
 		   [Default cluster var/run directory])
 
+AC_SUBST([CLUSTERDATA])
 AC_SUBST([FENCEAGENTSLIBDIR])
 AC_SUBST([SNMPBIN])
 
