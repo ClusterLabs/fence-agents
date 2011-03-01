@@ -2,6 +2,7 @@
 
 use Cwd 'realpath';
 use File::Basename;
+use File::Path;
 use Getopt::Std;
 use POSIX;
 
@@ -359,6 +360,10 @@ sub dev_write ($)
     my $file = "/var/run/cluster/fence_scsi.dev";
     my $dev = shift;
 
+    if (! -d "/var/run/cluster") {
+	mkpath ("/var/run/cluster");
+    }
+
     open (\*FILE, ">>$file") or die "$!\n";
     print FILE "$dev\n";
     close (FILE);
@@ -384,6 +389,10 @@ sub key_write ($)
     my $self = (caller(0))[3];
     my $file = "/var/run/cluster/fence_scsi.key";
     my $key = shift;
+
+    if (! -d "/var/run/cluster") {
+	mkpath ("/var/run/cluster");
+    }
 
     open (\*FILE, ">$file") or die "$!\n";
     print FILE "$key\n";
