@@ -40,6 +40,7 @@ sub do_action_on ($@)
     my $self = (caller(0))[3];
     my ($node_key, @devices) = @_;
 
+    dev_unlink ();
     key_write ($node_key);
 
     foreach $dev (@devices) {
@@ -125,6 +126,9 @@ sub do_verify_on ($@)
             $count++;
             next;
         }
+
+	## write dev to device file once registration is verified
+	dev_write ($dev);
 
         ## check that a reservation exists
         if (!get_reservation_key ($dev)) {
@@ -337,12 +341,38 @@ sub do_reset (S)
     return;
 }
 
+sub dev_unlink ()
+{
+    my $self = (caller(0))[3];
+    my $file = "/var/run/cluster/fence_scsi.dev";
+
+    if (-e $file) {
+	unlink ($file) or die "$!\n";
+    }
+
+    return;
+}
+
+sub dev_write ($)
+{
+    my $self = (caller(0))[3];
+    my $file = "/var/run/cluster/fence_scsi.dev";
+    my $dev = shift;
+
+    open (\*FILE, ">>$file") or die "$!\n";
+    print FILE "$dev\n";
+    close (FILE);
+
+    return;
+}
+
 sub key_read ()
 {
     my $self = (caller(0))[3];
+    my $file = "/var/run/cluster/fence_scsi.key";
     my $key;
 
-    open (\*FILE, "</var/run/cluster/fence_scsi.key") or die "$!\n";
+    open (\*FILE, "<$file") or die "$!\n";
     chomp ($key = <FILE>);
     close (FILE);
 
@@ -352,9 +382,11 @@ sub key_read ()
 sub key_write ($)
 {
     my $self = (caller(0))[3];
+    my $file = "/var/run/cluster/fence_scsi.key";
+    my $key = shift;
 
-    open (\*FILE, ">/var/run/cluster/fence_scsi.key") or die "$!\n";
-    print FILE "$_[0]\n";
+    open (\*FILE, ">$file") or die "$!\n";
+    print FILE "$key\n";
     close (FILE);
 
     return;
