@@ -787,7 +787,7 @@ else {
 
 ## verify that key is not zero
 ##
-if ($key == 0) {
+if (hex($key) == 0) {
     log_error ("key cannot be zero");
 }
 
