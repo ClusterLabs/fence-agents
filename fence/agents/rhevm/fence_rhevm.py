@@ -41,7 +41,7 @@ def get_power_status(conn, options):
 	else:
 		status = result.group(1)
 
-	if (status == "RUNNING"):
+	if (status == "UP"):
 		return "on"
 	else:
 		return "off"
