@@ -120,9 +120,13 @@ def get_outlets_status(conn, options):
 	for x in res_ports:
 		t=x[0].split('.')
 
-		port_num=((device.has_switches) and "%s:%s"%(t[len(t)-3],t[len(t)-1]) or "%s"%(t[len(t)-1]))
+		# Plug indexing start from zero, so we substract '1' from the
+		# user's given plug number
+		port_num=str(int(((device.has_switches) and "%s:%s"%(t[len(t)-3],t[len(t)-1]) or "%s"%(t[len(t)-1]))) + 1)
 
-                port_name=x[1].strip('"')
+                # Plug indexing start from zero, so we add '1'
+                # for the user's exposed plug number
+                port_name=str(int(x[1].strip('"')) + 1)
                 port_status=""
                 result[port_num]=(port_name,port_status)
 
