@@ -18,7 +18,7 @@ re_get_desc = re.compile(" descr=\"(.*?)\"", re.IGNORECASE)
 
 def get_power_status(conn, options):
 	try:
-		res = send_command(options, "<configResolveDn cookie=\"" + options["cookie"] + "\" inHierarchical=\"false\" dn=\"org-root/ls-" + options["-n"] + "/power\"/>")
+		res = send_command(options, "<configResolveDn cookie=\"" + options["cookie"] + "\" inHierarchical=\"false\" dn=\"org-root" + options["-s"] + "/ls-" + options["-n"] + "/power\"/>")
 	except pycurl.error, e:
 		sys.stderr.write(e[1] + "\n")
 		fail(EC_TIMED_OUT)
@@ -102,7 +102,7 @@ def main():
 			"action", "ipaddr", "login", "passwd", "passwd_script",
 			"ssl", "inet4_only", "inet6_only", "ipport", "port", 
 			"web", "separator", "power_wait", "power_timeout",
-			"shell_timeout" ]
+			"shell_timeout", "suborg" ]
 
 	atexit.register(atexit_handler)
 	
@@ -123,6 +123,14 @@ used with Cisco UCS to fence machines."
 		fail(EC_LOGIN_DENIED)
 
 	options["cookie"] = result.group(1);
+
+	##
+	## Modify suborg to format /suborg
+	if options["-s"] != "":
+		if options["-s"].startswith("/") == False:
+			options["-s"] = "/" + options["-s"]
+		if options["-s"].endswith("/") == True:
+			options["-s"] = options["-s"][0:-1]
 
 	##
 	## Fence operations

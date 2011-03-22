@@ -215,6 +215,14 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "Physical switch number on device",
 		"order" : 1 },
+	"suborg" : {
+		"getopt" : "s:",
+		"longopt" : "suborg",
+		"help" : "--suborg=<path>                Additional path needed to access suborganization",
+		"required" : "0",
+		"shortdesc" : "Additional path needed to access suborganization",
+		"default" : "",
+		"order" : 1 },
 	"partition" : {
 		"getopt" : "n:",
 		"help" : "-n <id>                        Name of the partition",
