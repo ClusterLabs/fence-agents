@@ -41,7 +41,7 @@ def set_power_status(conn, options):
 	}[options["-o"]]
 	
 	try:
-		res = send_command(options, "<configConfMos cookie=\"" + options["cookie"] + "\" inHierarchical=\"no\"><inConfigs><pair key=\"org-root/ls-" + options["-n"] + "/power\"><lsPower dn=\"org-root/ls-" + options["-n"] + "/power\" state=\"" + action + "\" status=\"modified\" /></pair></inConfigs></configConfMos>")
+		res = send_command(options, "<configConfMos cookie=\"" + options["cookie"] + "\" inHierarchical=\"no\"><inConfigs><pair key=\"org-root" + options["-s"] + "/ls-" + options["-n"] + "/power\"><lsPower dn=\"org-root/ls-" + options["-n"] + "/power\" state=\"" + action + "\" status=\"modified\" /></pair></inConfigs></configConfMos>")
 	except pycurl.error, e:
 		sys.stderr.write(e[1] + "\n")
 		fail(EC_TIMED_OUT)
