@@ -88,6 +88,7 @@ def send_command(opt, command):
 	c.setopt(pycurl.WRITEFUNCTION, b.write)
 	c.setopt(pycurl.TIMEOUT, int(opt["-Y"]))
 	c.setopt(pycurl.SSL_VERIFYPEER, 0)
+	c.setopt(pycurl.SSL_VERIFYHOST, 0)
 	c.perform()
 	result = b.getvalue()
 
