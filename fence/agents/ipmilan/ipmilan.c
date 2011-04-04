@@ -1192,5 +1192,9 @@ metaout:
 	  else
 	    printf("Failed\n");
 	}
+	
+	if (!strcasecmp(op, "monitor"))
+          translated_ret = ret;
+
 	return translated_ret;
 }
