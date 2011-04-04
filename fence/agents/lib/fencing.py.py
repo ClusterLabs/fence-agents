@@ -386,7 +386,14 @@ all_opt = {
 		"default" : "1",
 		"required" : "0",
 		"shortdesc" : "Count of attempts to retry power on",
-		"order" : 201 }
+		"order" : 201 },
+	"uuid" : {
+		"getopt" : "U:",
+		"longopt" : "uuid",
+		"help" : "-U, --uuid                     UUID of the VM to fence.",
+		"required" : "0",
+		"shortdesc" : "The UUID of the virtual machine to fence.",
+		"order" : 1}
 }
 
 common_opt = [ "retry_on", "delay" ]
@@ -687,7 +694,7 @@ def check_input(device_opt, opt):
 		if 0 == os.path.isfile(options["-k"]):
 			fail_usage("Failed: Identity file " + options["-k"] + " does not exist")
 
-	if (0 == ["list", "monitor"].count(options["-o"].lower())) and (0 == options.has_key("-n")) and (device_opt.count("port")):
+	if (0 == ["list", "monitor"].count(options["-o"].lower())) and (0 == options.has_key("-n") and 0 == options.has_key("-U")) and (device_opt.count("port")):
 		fail_usage("Failed: You have to enter plug number")
 
 	if options.has_key("-S"):
