@@ -1195,15 +1195,6 @@ metaout:
 	
 	if (!strcasecmp(op, "monitor"))
           translated_ret = ret;
-        
-        if (!strcasecmp(op, "diaf")) {
-          /** .. but when a system receive the DIAG signal , it 
-           ** switches to a kdump kernel, but the machine is always
-           ** "on" during the dump phase. It only become temporarily
-           ** "off" at the end of the dump just before rebooting.
-           **/
-          translated_ret = 0;
-        }
 
 	return translated_ret;
 }
