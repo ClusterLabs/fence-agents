@@ -253,6 +253,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/virsh/Makefile
 		 fence/agents/vixel/Makefile
 		 fence/agents/vmware/Makefile
+		 fence/agents/vmware_soap/Makefile
 		 fence/agents/wti/Makefile
 		 fence/agents/xcat/Makefile
 		 fence/agents/zvm/Makefile

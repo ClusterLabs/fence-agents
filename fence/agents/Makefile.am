@@ -37,6 +37,7 @@ SUBDIRS 		= lib \
 			  virsh \
 			  vixel \
 			  vmware \
+			  vmware_soap \
 			  wti \
 			  xcat \
 			  zvm
