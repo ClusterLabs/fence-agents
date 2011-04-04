@@ -387,6 +387,13 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "Count of attempts to retry power on",
 		"order" : 201 },
+	"session_url" : {
+		"getopt" : "s:",
+		"longopt" : "session-url",
+		"help" : "-s, --session-url              URL to connect to XenServer on.",
+		"required" : "1",
+		"shortdesc" : "The URL of the XenServer host.",
+		"order" : 1},
 	"uuid" : {
 		"getopt" : "U:",
 		"longopt" : "uuid",
@@ -676,7 +683,7 @@ def check_input(device_opt, opt):
 	if (0 == options.has_key("-l")) and device_opt.count("login") and (device_opt.count("no_login") == 0):
 		fail_usage("Failed: You have to set login name")
 
-	if 0 == options.has_key("-a"):
+	if 0 == options.has_key("-a") and 0 == options.has_key("-s"):
 		fail_usage("Failed: You have to enter fence address")
 
 	if (device_opt.count("no_password") == 0):
