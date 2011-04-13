@@ -846,7 +846,7 @@ printf("   ipaddr=<#>            Same as -a\n");
 printf("   passwd=<pass>         Same as -p\n");
 printf("   passwd_script=<path>  Same as -S\n");
 printf("   lanplus               Same as -P\n");
-printf("   login=<login>         Same as -u\n");
+printf("   login=<login>         Same as -l\n");
 printf("   option=<op>           Same as -o\n");
 printf("   operation=<op>        Same as -o\n");
 printf("   action=<op>           Same as -o\n");
