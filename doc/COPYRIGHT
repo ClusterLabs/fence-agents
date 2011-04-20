@@ -5,6 +5,10 @@ Copyright (C) 2004-2011 Red Hat, Inc.  All rights reserved.
 
 Exceptions:
 
+fence/agents/xenapi/*:
+ Copyright (C) 2011 Matthew Clark.
+ Author: Matthew Clark <mattjclark0407 at hotmail.com>
+ 
 fence/agents/apc_snmp/powernet369.mib:
  Copyright (c) 2005 American Power Conversion, Inc.
  PowerNet is a Trademark of American Power Conversion Corp.

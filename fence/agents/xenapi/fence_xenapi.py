@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #
 #############################################################################
-# Copyright 2011 Matt Clark
+# Copyright 2011 Matthew Clark
 # This file is part of fence-xenserver
 #
 # fence-xenserver is free software: you can redistribute it and/or modify
@@ -32,9 +32,15 @@
 # whether I should continue support for it. mattjclark0407 at hotmail dot com
 
 import sys
-sys.path.append("/usr/lib/fence")
+sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 import XenAPI
+
+#BEGIN_VERSION_GENERATION
+RELEASE_VERSION=""
+REDHAT_COPYRIGHT=""
+BUILD_DATE=""
+#END_VERSION_GENERATION
 
 EC_BAD_SESSION 		= 1
 # Find the status of the port given in the -U flag of options.
@@ -223,5 +229,3 @@ the status of virtual machines running on the host."
 
 if __name__ == "__main__":
 	main()
-RELEASE_VERSION="3.1.2.11-2b5b-dirty"
-BUILD_DATE="(built Fri Mar 25 22:57:28 EST 2011)"
