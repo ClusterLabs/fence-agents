@@ -40,4 +40,5 @@ SUBDIRS 		= lib \
 			  vmware_soap \
 			  wti \
 			  xcat \
+			  xenapi \
 			  zvm
