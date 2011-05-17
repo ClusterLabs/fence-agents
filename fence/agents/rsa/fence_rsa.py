@@ -3,6 +3,7 @@
 #####
 ##
 ## The Following Agent Has Been Tested On:
+##  Main GFEP25A & Boot GFBP25A
 ##
 #####
 
