@@ -4,7 +4,7 @@ TARGET			= fencing.py fencing_snmp.py XenAPI.py
 
 SRC			= fencing.py.py fencing_snmp.py.py XenAPI.py.py
 
-EXTRA_DIST		= $(SRC) fence2man.xsl
+EXTRA_DIST		= $(SRC) fence2man.xsl fence2rng.xsl
 
 fencelibdir		= ${FENCEAGENTSLIBDIR}
 
