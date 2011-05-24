@@ -106,28 +106,55 @@ AC_ARG_ENABLE([debug],
 	[ default="no" ])
 
 AC_ARG_WITH([fenceagentslibdir],
-	[  --fenceagentslibdir=PATH
+	[  --with-fenceagentslibdir=PATH
                           installation path for fence library. ],
 	[ FENCEAGENTSLIBDIR="$withval" ],
 	[ FENCEAGENTSLIBDIR="${datadir}/fence" ])
 
 AC_ARG_WITH([snmpbin],
-	[  --snmpbin=PATH
+	[  --with-snmpbin=PATH
                           path to snmp binaries (snmpwalk/get). ],
 	[ SNMPBIN="$withval" ],
 	[ SNMPBIN="${bindir}" ])
 
 AC_ARG_WITH([default-config-dir],
-	[  --default-config-dir=DIR
+	[  --with-default-config-dir=DIR
 			  cluster config directory. ],
 	[ DEFAULT_CONFIG_DIR="$withval" ],
 	[ DEFAULT_CONFIG_DIR="$sysconfdir/cluster" ])
 
 AC_ARG_WITH([default-config-file],
-	[  --default-config-file=FILE
+	[  --with-default-config-file=FILE
 			  cluster config file. ],
 	[ DEFAULT_CONFIG_FILE="$withval" ],
 	[ DEFAULT_CONFIG_FILE="cluster.conf" ])
+
+AC_ARG_WITH([agents],
+	[  --with-agents=LIST
+                          list of agents to build/ship (default: all). ],
+	[ AGENTS_LIST="$withval" ],
+	[ AGENTS_LIST="all" ])
+
+if test "x$AGENTS_LIST" = x; then
+	AC_ERROR([No agents selected])
+fi
+
+if test "x$AGENTS_LIST" != xall; then
+	for j in $AGENTS_LIST; do
+		if ! test -d fence/agents/$j; then
+			AC_ERROR([Agent $j does not exists])
+		fi
+	done
+fi
+
+if test "x$AGENTS_LIST" = xall; then
+	AGENTS_LIST=`find $srcdir/fence/agents -mindepth 2 -maxdepth 2 -name Makefile.am -printf '%h ' | sed -e 's#'$srcdir'/fence/agents/##g' -e 's#lib ##g' -e 's#nss_wrapper ##g'`
+fi
+
+XENAPILIB=0
+if echo "$AGENTS_LIST" | grep -q xenapi; then
+	XENAPILIB=1
+fi
 
 ## random vars
 
@@ -156,6 +183,8 @@ AC_DEFINE_UNQUOTED([CLUSTERVARRUN], "$(eval echo ${CLUSTERVARRUN})",
 AC_SUBST([CLUSTERDATA])
 AC_SUBST([FENCEAGENTSLIBDIR])
 AC_SUBST([SNMPBIN])
+AC_SUBST([AGENTS_LIST])
+AM_CONDITIONAL(BUILD_XENAPILIB, test $XENAPILIB -eq 1)
 
 ## *FLAGS handling
 

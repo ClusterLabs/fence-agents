@@ -1,6 +1,10 @@
 MAINTAINERCLEANFILES	= Makefile.in
 
-TARGET			= fencing.py fencing_snmp.py XenAPI.py
+TARGET			= fencing.py fencing_snmp.py
+
+if BUILD_XENAPILIB
+TARGET			+= XenAPI.py
+endif
 
 SRC			= fencing.py.py fencing_snmp.py.py XenAPI.py.py
 
