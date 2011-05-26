@@ -56,7 +56,14 @@ def set_power_status(conn, options):
 		node_cmd = "system:blade\[" + options["-n"] + "\]>"
 
 		conn.send("env -T system:blade[" + options["-n"] + "]\r\n")
-		conn.log_expect(options, node_cmd, int(options["-Y"]))
+		i = conn.log_expect(options, [ node_cmd, "system>" ] , int(options["-Y"]))
+		if i == 1:
+			## Given blade number does not exist
+			if options.has_key("-M"):
+				return
+			else:
+				fail(EC_GENERIC_ERROR)
+
 		conn.send("power -"+options["-o"]+"\r\n")
 		conn.log_expect(options, node_cmd, int(options["-Y"]))
 		conn.send("env -T system\r\n")
