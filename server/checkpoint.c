@@ -195,7 +195,7 @@ wait_domain(const char *vm_name, virConnectPtr vp, int timeout)
 	virDomainInfo vdi;
 
 	if (use_uuid) {
-		vdp = virDomainLookupByUUID(vp, (const unsigned char *)vm_name);
+		vdp = virDomainLookupByUUIDString(vp, (const char *)vm_name);
 	} else {
 		vdp = virDomainLookupByName(vp, vm_name);
 	}
@@ -210,8 +210,8 @@ wait_domain(const char *vm_name, virConnectPtr vp, int timeout)
 	do {
 		sleep(1);
 		if (use_uuid) {
-			vdp = virDomainLookupByUUID(vp,
-					(const unsigned char *)vm_name);
+			vdp = virDomainLookupByUUIDString(vp,
+					(const char *)vm_name);
 		} else {
 			vdp = virDomainLookupByName(vp, vm_name);
 		}
@@ -298,7 +298,7 @@ cluster_virt_status(const char *vm_name, uint32_t *owner)
 	}
 
 out:
-	dbg_printf(80, "%s %s\n", __FUNCTION__, vm_name);
+	dbg_printf(80, "%s %s ret %d\n", __FUNCTION__, vm_name, ret);
 	return ret;
 }
 
@@ -371,14 +371,14 @@ do_off(const char *vm_name)
 	virDomainInfo vdi;
 	int ret = -1;
 
-	dbg_printf(5, "%s %s\n", __FUNCTION__, vm_name);
+	dbg_printf(5, "%s %s uuid %d\n", __FUNCTION__, vm_name, use_uuid);
 	vp = virConnectOpen(uri);
 	if (!vp)
 		return 1;
 
 	if (use_uuid) {
-		vdp = virDomainLookupByUUID(vp,
-					    (const unsigned char *)vm_name);
+		vdp = virDomainLookupByUUIDString(vp,
+					    (const char *)vm_name);
 	} else {
 		vdp = virDomainLookupByName(vp, vm_name);
 	}
@@ -437,8 +437,8 @@ do_reboot(const char *vm_name)
 		return 1;
 	
 	if (use_uuid) {
-		vdp = virDomainLookupByUUID(vp,
-					    (const unsigned char *)vm_name);
+		vdp = virDomainLookupByUUIDString(vp,
+					    (const char *)vm_name);
 	} else {
 		vdp = virDomainLookupByName(vp, vm_name);
 	}
@@ -536,6 +536,10 @@ do_real_work(void *data, size_t len, uint32_t nodeid, uint32_t seqno)
 	switch(req->request) {
 	case FENCE_STATUS:
 		ret = cluster_virt_status(req->vm_name, &owner);
+		if (ret == 3) {
+			ret = RESP_OFF;
+			break;
+		}
 		if (ret == 2) {
 			return;
 		}
@@ -545,6 +549,11 @@ do_real_work(void *data, size_t len, uint32_t nodeid, uint32_t seqno)
 		break;
 	case FENCE_OFF:
 		ret = cluster_virt_status(req->vm_name, &owner);
+		if (ret == 3) {
+			/* No record of this VM in the checkpoint. */
+			ret = 0;
+			break;
+		}
 		if (ret != 0) {
 			return;
 		}
