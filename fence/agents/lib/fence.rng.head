@@ -5,7 +5,7 @@
     <!-- begin specific fence devices -->
        <!-- begin non-generated device definitions -->
        <!-- RPS10 -->
-       <group rha:fence_agent="fence_rps10" rha:description="RPS10 Serial Switch" >
+       <group rha:name="fence_rps10" rha:description="RPS10 Serial Switch" >
         <attribute name="device" rha:description="The device the switch
             is connected to on the controlling host."
             rha:sample="/dev/ttys2"/>
@@ -16,7 +16,7 @@
        the auth and lanplus attributes. Those attributes apply only to
        the impilan fence device.-->
        <!-- Brocade, McData, SANBox2, Bladecenter,bullpap, ipmilan -->
-       <!-- FIXME split apart and add rha:fence_agent hints for
+       <!-- FIXME split apart and add rha:name hints for
             configuration utilities -->
        <group>
         <attribute name="ipaddr" rha:description="IP address or the name
@@ -47,7 +47,7 @@
         </optional>
        </group>
        <!-- Vixel -->
-       <group rha:fence_agent="fence_vixel">
+       <group rha:name="fence_vixel">
         <optional>
          <attribute name="ipaddr" rha:description="IP address or the
              name of the device." rha:sample="10.1.0.1"/>
@@ -70,7 +70,7 @@
        and pserver parameters. Also, in Conga, the esh parameter is
        an optional ESH path. Presumably those should be attributes in
        the schema. We need more invormation on this. -->
-       <group rha:fence_agent="fence_egenera">
+       <group rha:name="fence_egenera">
         <optional>
          <attribute name="cserver" rha:description="The hostname (and
             optionally the username in the form of username@hostname)
@@ -99,10 +99,10 @@
        <!-- FIXME: It appears that xCat is no longer supported. Found no
        fence agents for x Cat in RHEL 5.3. -->
        <!-- xCAT -->
-       <group rha:fence_agent="fence_xcat">
+       <group rha:name="fence_xcat">
         <attribute name="rpowerpath" rha:description="" rha:sample=""/>
        </group>
-       <group rha:fence_agent="fence_na" rha:description="Node Assassin">
+       <group rha:name="fence_na" rha:description="Node Assassin">
          <optional>
            <attribute name="option"/> <!-- deprecated; for compatibility.  use "action" -->
          </optional>
