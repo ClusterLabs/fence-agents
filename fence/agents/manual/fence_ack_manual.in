@@ -7,7 +7,7 @@ if [ "$1" = "-n" ]; then
 	shift
 fi
 
-if [ -z "$1" ] || [ "$1" = "-h" ]; then
+if [ -z "$1" ] || [ "${1:0:1}" = "-" ]; then
 	echo "usage:"
         echo " 	$0 <nodename>"
         echo " 	$0 -n <nodename>"
