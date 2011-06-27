@@ -42,6 +42,7 @@
 #include "mcast.h"
 #include "options.h"
 
+#define SCHEMA_COMPAT '\xfe'
 
 
 /* Assignment functions */
@@ -416,7 +417,7 @@ static struct arg_info _arg_info[] = {
 	  "Virtual Machine (domain name) to fence",
 	  assign_domain },
 
-	{ '\xff', NULL, "domain",
+	{ SCHEMA_COMPAT, NULL, "domain",
 	  0, "string", NULL,
 	  "Virtual Machine (domain name) to fence (deprecated; use port)",
 	  assign_domain },
@@ -659,6 +660,25 @@ args_metadata(char *progname, const char *optstr)
 
 		printf("\t<parameter name=\"%s\">\n",arg->stdin_opt);
                 printf("\t\t<getopt mixed=\"-%c\" />\n",arg->opt);
+                if (arg->default_value) {
+                  printf("\t\t<content type=\"%s\" default=\"%s\" />\n", arg->content_type, arg->default_value);
+                } else {
+                  printf("\t\t<content type=\"%s\" />\n", arg->content_type);
+                }
+		printf("\t\t<shortdesc lang=\"en\">");
+		print_desc_xml(arg->desc);
+		printf("</shortdesc>\n");
+		printf("\t</parameter>\n");
+	}
+
+	for (x = 0; _arg_info[x].opt != 0; x++) {
+		if (_arg_info[x].opt != SCHEMA_COMPAT)
+			continue;
+
+		arg = &_arg_info[x];
+
+		printf("\t<parameter name=\"%s\">\n",arg->stdin_opt);
+		printf("\t\t<!-- DEPRECATED; FOR COMPATIBILITY ONLY -->\n");
                 if (arg->default_value) {
                   printf("\t\t<content type=\"%s\" default=\"%s\" />\n", arg->content_type, arg->default_value);
                 } else {
