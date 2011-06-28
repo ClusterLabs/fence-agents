@@ -298,7 +298,7 @@ cluster_virt_status(const char *vm_name, uint32_t *owner)
 	}
 
 out:
-	dbg_printf(80, "%s %s ret %d\n", __FUNCTION__, vm_name, ret);
+	dbg_printf(80, "%s %s\n", __FUNCTION__, vm_name);
 	return ret;
 }
 
@@ -371,7 +371,7 @@ do_off(const char *vm_name)
 	virDomainInfo vdi;
 	int ret = -1;
 
-	dbg_printf(5, "%s %s uuid %d\n", __FUNCTION__, vm_name, use_uuid);
+	dbg_printf(5, "%s %s\n", __FUNCTION__, vm_name);
 	vp = virConnectOpen(uri);
 	if (!vp)
 		return 1;

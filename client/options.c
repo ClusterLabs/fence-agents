@@ -787,6 +787,7 @@ args_get_stdin(const char *optstr, fence_virt_args_t *args)
 
 		arg = find_arg_by_string(name);
 		if (!arg || (arg->opt != '\xff' && 
+			     arg->opt != SCHEMA_COMPAT &&
 			     !strchr(optstr, arg->opt))) {
 			fprintf(stderr,
 				"parse warning: "
