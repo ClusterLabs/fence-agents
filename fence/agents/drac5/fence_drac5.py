@@ -66,10 +66,10 @@ def get_list_devices(conn, options):
 			conn.sendline("getmodinfo")
 
 			list_re = re.compile("^([^\s]*?)\s+Present\s*(ON|OFF)\s*.*$")
+			conn.log_expect(options, options["-c"], int(options["-g"]))
 			for line in conn.before.splitlines():
 				if (list_re.search(line)):
 					outlets[list_re.search(line).group(1)] = ("", list_re.search(line).group(2))
-			conn.log_expect(options, options["-c"], int(options["-g"]))
 		elif options["model"] == "DRAC 5":
 			## DRAC 5 can be used only for one computer
 			pass
@@ -113,7 +113,7 @@ By default, the telnet interface is not  enabled."
 	conn = fence_login(options)
 
 	if conn.before.find("CMC") >= 0:
-		if 0 == options.has_key("-m") and 0 == ["monitor", "list"].count(option["-o"].lower()):
+		if 0 == options.has_key("-m") and 0 == ["monitor", "list"].count(options["-o"].lower()):
 			fail_usage("Failed: You have to enter module name (-m)")
 			
 		options["model"]="DRAC CMC"		
