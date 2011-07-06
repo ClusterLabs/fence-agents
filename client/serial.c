@@ -267,6 +267,7 @@ serial_fence_virt(fence_virt_args_t *args)
 	
 	tv.tv_sec = 3;
 	tv.tv_usec = 0;
+	swab_serial_req_t(&req);
 	ret = _write_retry(fd, &req, sizeof(req), &tv);
 	if (ret < sizeof(req)) {
 		if (ret < 0)
@@ -282,6 +283,8 @@ serial_fence_virt(fence_virt_args_t *args)
 			     sizeof(resp.magic), &tv) == 0) {
 			ret = _read_retry(fd, &resp.response, sizeof(resp.response), &tv);
 		}
+
+		swab_serial_resp_t(&resp);
 	} while(resp.magic != SERIAL_MAGIC && (tv.tv_sec || tv.tv_usec));
 
 	if (resp.magic != SERIAL_MAGIC)

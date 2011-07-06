@@ -22,6 +22,8 @@
 #include <stdint.h>
 #include <sechash.h>
 #include <netinet/in.h>
+#include <byteswap.h>
+#include <endian.h>
 
 #define XVM_VERSION "1.9.0"
 
@@ -85,6 +87,17 @@ typedef struct __attribute__ ((packed)) _fence_req {
 	uint8_t  hash[MAX_HASH_LENGTH];	/* Binary hash */
 } fence_req_t;
 
+#if __BYTE_ORDER == __BIG_ENDIAN
+#define swab_fence_req_t(req) \
+do { \
+	(req)->seqno  = b_swap32((req)->seqno); \
+	(req)->family = b_swap32((req)->family); \
+	(req)->port   = b_swap32((req)->port); \
+} while(0)
+#else
+#define swab_fence_req_t(req)
+#endif
+
 
 /* for host list */
 typedef struct __attribute__ ((packed)) _host_info {
@@ -108,10 +121,31 @@ typedef struct __attribute__((packed)) _serial_fence_req {
 	uint32_t seqno;
 } serial_req_t;
 
+#if __BYTE_ORDER == __BIG_ENDIAN
+#define swab_serial_req_t(req) \
+do { \
+	(req)->magic = b_swap32((req)->magic); \
+	(req)->seqno = b_swap32((req)->seqno); \
+} while(0)
+#else
+#define swab_serial_req_t(req)
+#endif
+
+
 typedef struct __attribute__((packed)) _serial_fense_resp {
 	uint32_t magic;
 	uint8_t response;
 } serial_resp_t;
+
+#if __BYTE_ORDER == __BIG_ENDIAN
+#define swab_serial_resp_t(req) \
+do { \
+	(req)->magic = b_swap32((req)->magic); \
+} while(0)
+#else
+#define swab_serial_resp_t(req) 
+#endif
+
 
 #define RESP_SUCCESS	0
 #define RESP_FAIL	1

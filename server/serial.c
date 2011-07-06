@@ -230,6 +230,7 @@ do_fence_request(int fd, const char *src, serial_req_t *req, serial_info *info)
 
 	resp.magic = SERIAL_MAGIC;
 	resp.response = response;
+	swab_serial_resp_t(&resp);
 
 	dbg_printf(3, "Sending response to caller...\n");
 	if (write(fd, &resp, sizeof(resp)) < 0) {
@@ -289,6 +290,7 @@ serial_dispatch(listener_context_t c, struct timeval *timeout)
 				else
 					return 0;
 			} else {
+				swab_serial_req_t(&data);
 				break;
 			}
 		}
