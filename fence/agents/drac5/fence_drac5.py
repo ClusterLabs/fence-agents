@@ -72,6 +72,10 @@ def get_list_devices(conn, options):
 					outlets[list_re.search(line).group(1)] = ("", list_re.search(line).group(2))
 		elif options["model"] == "DRAC 5":
 			## DRAC 5 can be used only for one computer
+			## standard fence library can't handle correctly situation
+			## when some fence devices supported by fence agent
+			## works with 'list' and other should returns 'N/A'
+			print "N/A"
 			pass
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
