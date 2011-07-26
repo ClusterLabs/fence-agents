@@ -27,6 +27,7 @@
 #include <getopt.h>
 #include <unistd.h>
 #include <syslog.h>
+#include <ctype.h>
 #include <errno.h>
 #include <netdb.h>
 #include <sys/types.h>
