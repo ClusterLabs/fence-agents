@@ -89,11 +89,13 @@ PKG_CHECK_MODULES([nss],[nss])
 PKG_CHECK_MODULES([nspr],[nspr])
 
 # Checks for header files.
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h libintl.h limits.h stddef.h sys/socket.h sys/time.h syslog.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h libintl.h limits.h netdb.h stddef.h sys/socket.h sys/time.h syslog.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_C_INLINE
 AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
+AC_TYPE_UINT32_T
 
 # Checks for library functions.
 AC_FUNC_FORK
