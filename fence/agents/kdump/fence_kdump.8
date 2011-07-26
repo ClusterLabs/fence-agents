@@ -1,0 +1,85 @@
+.TH fence_kdump 8
+.SH NAME
+fence_kdump - fencing agent for use with kdump crash recovery service
+.SH SYNOPSIS
+.B
+fence_kdump
+[\fIOPTIONS\fR]...
+.SH DESCRIPTION
+\fIfence_kdump\fP is an I/O fencing agent to be used with the kdump
+crash recovery service. When the \fIfence_kdump\fP agent is invoked,
+it will listen for a message from the failed node that acknowledges
+that the failed node it executing the kdump crash kernel.
+Note that \fIfence_kdump\fP is not a replacement for traditional
+fencing methods. The \fIfence_kdump\fP agent can only detect that a
+node has entered the kdump crash recovery service. This allows the
+kdump crash recovery service complete without being preempted by
+traditional power fencing methods.
+.SH OPTIONS
+.TP
+.B -n, --nodename=\fINODE\fP
+Name or IP address of node to be fenced. This option is required for
+the "off" action. (default: none)
+.TP
+.B -p, --ipport=\fIPORT\fP
+IP port number that the \fIfence_kdump\fP agent will use to listen for
+messages. (default: 7410)
+.TP
+.B -f, --family=\fIFAMILY\fP
+IP network family. Force the \fIfence_kdump\fP agent to use a specific
+family. The value for \fIFAMILY\fP can be "auto", "ipv4", or
+"ipv6". (default: auto)
+.TP
+.B -o, --action=\fIACTION\fP
+Fencing action to perform. The value for \fIACTION\fP can be either
+"off" or "metadata". (default: off)
+.TP
+.B -t, --timeout=\fITIMEOUT\fP
+Numer of seconds to wait for message from failed node. If no message
+is received within \fITIMEOUT\fP seconds, the \fIfence_kdump\fP agent
+returns failure. (default: 60)
+.TP
+.B -v, --verbose
+Print verbose output.
+.TP
+.B -V, --version
+Print version and exit.
+.TP
+.B -h, --help
+Print usage and exit.
+.SH STDIN PARAMETERS
+.PP
+These parameters are passed to \fIfence_kdump\fP via standard input if
+no command-line options are present.
+.TP
+.B nodename=\fINODE\fP
+Name or IP address of node to be fenced. This option is required for
+the "off" action. (default: none)
+.TP
+.B ipport=\fIPORT\fP
+IP port number that the \fIfence_kdump\fP agent will use to listen for
+messages. (default: 7410)
+.TP
+.B action=\fIACTION\fP
+Fencing action to perform. The value for \fIACTION\fP can be either
+"off" or "metadata". (default: off)
+.TP
+.B timeout=\fITIMEOUT\fP
+Numer of seconds to wait for message from failed node. If no message
+is received within \fITIMEOUT\fP seconds, the \fIfence_kdump\fP agent
+returns failure. (default: 60)
+.SH ACTIONS
+.TP
+.B off
+Listen for message from failed node that acknowledges node has entered
+kdump crash recovery service. If a valid message is received from the
+failed node, the node is considered to be fenced and the agent returns
+success. Failure to receive a valid message from the failed node in
+the given timeout period results in fencing failure.
+.TP
+.B metadata
+Print XML metadata to standard output.
+.SH AUTHOR
+Ryan O'Hara <rohara@redhat.com>
+.SH SEE ALSO
+fence_kdump_send(8), fenced(8), fence_node(8)
