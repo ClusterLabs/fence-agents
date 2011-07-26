@@ -32,7 +32,7 @@ typedef struct __attribute__ ((packed)) fence_kdump_msg {
     uint32_t version;
 } fence_kdump_msg_t;
 
-inline void
+static inline void
 init_message (fence_kdump_msg_t *msg)
 {
     msg->magic   = FENCE_KDUMP_MAGIC;

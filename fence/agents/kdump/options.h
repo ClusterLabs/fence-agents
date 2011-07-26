@@ -73,20 +73,20 @@ typedef struct fence_kdump_node {
     struct list_head list;
 } fence_kdump_node_t;
 
-inline void
+static inline void
 init_node (fence_kdump_node_t *node)
 {
     node->info = NULL;
 }
 
-inline void
+static inline void
 free_node (fence_kdump_node_t *node)
 {
     freeaddrinfo (node->info);
     free (node);
 }
 
-inline void
+static inline void
 print_node (const fence_kdump_node_t *node)
 {
     fprintf (stdout, "[debug]: node {       \n");
@@ -97,7 +97,7 @@ print_node (const fence_kdump_node_t *node)
     fprintf (stdout, "[debug]: }            \n");
 }
 
-inline void
+static inline void
 init_options (fence_kdump_opts_t *opts)
 {
     opts->nodename = NULL;
@@ -112,7 +112,7 @@ init_options (fence_kdump_opts_t *opts)
     INIT_LIST_HEAD (&opts->nodes);
 }
 
-inline void
+static inline void
 free_options (fence_kdump_opts_t *opts)
 {
     fence_kdump_node_t *node;
@@ -126,7 +126,7 @@ free_options (fence_kdump_opts_t *opts)
     free (opts->nodename);
 }
 
-inline void
+static inline void
 print_options (fence_kdump_opts_t *opts)
 {
     fence_kdump_node_t *node;
@@ -146,7 +146,7 @@ print_options (fence_kdump_opts_t *opts)
     }
 }
 
-inline void
+static inline void
 set_option_nodename (fence_kdump_opts_t *opts, const char *arg)
 {
     if (opts->nodename != NULL) {
@@ -156,7 +156,7 @@ set_option_nodename (fence_kdump_opts_t *opts, const char *arg)
     opts->nodename = strdup (arg);
 }
 
-inline void
+static inline void
 set_option_ipport (fence_kdump_opts_t *opts, const char *arg)
 {
     opts->ipport = atoi (arg);
@@ -167,7 +167,7 @@ set_option_ipport (fence_kdump_opts_t *opts, const char *arg)
     }
 }
 
-inline void
+static inline void
 set_option_family (fence_kdump_opts_t *opts, const char *arg)
 {
     if (!strcasecmp (arg, "auto")) {
@@ -182,7 +182,7 @@ set_option_family (fence_kdump_opts_t *opts, const char *arg)
     }
 }
 
-inline void
+static inline void
 set_option_action (fence_kdump_opts_t *opts, const char *arg)
 {
     if (!strcasecmp (arg, "off")) {
@@ -195,7 +195,7 @@ set_option_action (fence_kdump_opts_t *opts, const char *arg)
     }
 }
 
-inline void
+static inline void
 set_option_count (fence_kdump_opts_t *opts, const char *arg)
 {
     opts->count = atoi (arg);
@@ -206,7 +206,7 @@ set_option_count (fence_kdump_opts_t *opts, const char *arg)
     }
 }
 
-inline void
+static inline void
 set_option_interval (fence_kdump_opts_t *opts, const char *arg)
 {
     opts->interval = atoi (arg);
@@ -217,7 +217,7 @@ set_option_interval (fence_kdump_opts_t *opts, const char *arg)
     }
 }
 
-inline void
+static inline void
 set_option_timeout (fence_kdump_opts_t *opts, const char *arg)
 {
     opts->timeout = atoi (arg);
@@ -228,7 +228,7 @@ set_option_timeout (fence_kdump_opts_t *opts, const char *arg)
     }
 }
 
-inline void
+static inline void
 set_option_verbose (fence_kdump_opts_t *opts, const char *arg)
 {
     if (arg != NULL) {
