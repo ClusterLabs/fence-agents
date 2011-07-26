@@ -25,7 +25,6 @@
 #define FENCE_KDUMP_MAGIC 0x1B302A40
 
 #define FENCE_KDUMP_MSGV1 0x1
-#define FENCE_KDUMP_MSGV2 0x2
 
 typedef struct __attribute__ ((packed)) fence_kdump_msg {
     uint32_t magic;
