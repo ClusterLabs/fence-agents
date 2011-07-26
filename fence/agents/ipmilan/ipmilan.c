@@ -76,6 +76,7 @@ struct ipmi {
 	char *i_user;
 	char *i_authtype;
 	char *i_password;
+	char *i_privlvl;
 	int i_rdfd;
 	int i_wrfd;
 	pid_t i_pid;
@@ -174,6 +175,7 @@ struct xml_parameter_s xml_parameters[]={
   {"method","-M",0,"string",DEFAULT_METHOD,"Method to fence (onoff or cycle)"},
   {"power_wait","-T",0,"string","2","Wait X seconds after on/off operation"},
   {"delay","-f",0,"string",NULL,"Wait X seconds before fencing is started"},
+  {"privlvl","-L",0,"string",NULL,"Privilege level on IPMI device"},
   {"verbose","-v",0,"boolean",NULL,"Verbose mode"}};
 
 /*
@@ -267,6 +269,11 @@ build_cmd(char *command, size_t cmdlen, struct ipmi *ipmi, int op)
 
 	if (ipmi->i_authtype) {
 		snprintf(arg, sizeof(arg), " -A %s", str_prepare_for_sh(tmp,ipmi->i_authtype,sizeof(tmp)));
+		strncat(cmd, arg, sizeof(cmd) - strlen(arg));
+	}
+
+	if (ipmi->i_privlvl) {
+		snprintf(arg, sizeof(arg), " -L %s", str_prepare_for_sh(tmp,ipmi->i_privlvl,sizeof(tmp)));
 		strncat(cmd, arg, sizeof(cmd) - strlen(arg));
 	}
 
@@ -558,6 +565,10 @@ ipmi_destroy(struct ipmi *i)
 		free(i->i_host);
 		i->i_host = NULL;
 	}
+	if (i->i_privlvl) {
+		free(i->i_privlvl);
+		i->i_privlvl = NULL;
+	}
 	i->i_config = 0;
 	i->i_id = NOTIPMI;
 }
@@ -571,7 +582,7 @@ static struct ipmi *
 ipmi_init(struct ipmi *i, char *host, char *authtype,
 	  char *user, char *password, int lanplus, int verbose,int timeout,
 	  int power_wait,
-	  int cipher)
+	  int cipher, char *privlvl)
 {
 	const char *p;
 
@@ -621,6 +632,10 @@ ipmi_init(struct ipmi *i, char *host, char *authtype,
 	} else
 		i->i_authtype = NULL;
 
+	if (privlvl && strlen(privlvl)) {
+		i->i_privlvl = strdup(privlvl);
+	} else
+		i->i_privlvl = NULL;
 
 	if (user && strlen(user)) {
 		i->i_user= strdup(user);
@@ -710,7 +725,8 @@ get_options_stdin(char *ip, size_t iplen,
 		  int *lanplus, int *verbose,int *timeout,
 		  int *power_wait,
 	          int *cipher, char *method, int methodlen,
-	          char *delay, size_t delaylen)
+	          char *delay, size_t delaylen,
+		  char *privlvl, size_t privlen)
 {
 	char in[256];
 	int line = 0;
@@ -765,6 +781,11 @@ get_options_stdin(char *ip, size_t iplen,
 				pwd_script[pwd_script_len - 1] = '\0';
 			} else
 				pwd_script[0] = '\0';
+		} else if (!strcasecmp(name, "privlvl")) {
+			if (val) {
+				strncpy(privlvl, val, privlen);
+			} else
+				privlvl[0] = '\0';
 		} else if (!strcasecmp(name, "user") || !strcasecmp(name, "login")) {
 			/* username */
 			if (val)
@@ -829,6 +850,8 @@ printf("   -P             Use Lanplus\n");
 printf("   -S <path>      Script to retrieve password (if required)\n");
 printf("   -l <login>     Username/Login (if required) to control power\n"
        "                  on IPMI device\n");
+printf("   -L <privlvl>   IPMI privilege level.  Defaults to ADMINISTRATOR.\n"
+       "                  See ipmitool(1) for more info.\n");
 printf("   -o <op>        Operation to perform.\n");
 printf("                  Valid operations: on, off, reboot, status,\n");
 printf("                  diag, list or monitor\n");
@@ -855,6 +878,7 @@ printf("   timeout=<timeout>     Same as -t\n");
 printf("   power_wait=<time>     Same as -T\n");
 printf("   cipher=<cipher>       Same as -C\n");
 printf("   method=<method>       Same as -M\n");
+printf("   privlvl=<privlvl>     Same as -L\n");
 printf("   verbose               Same as -v\n\n");
 	exit(1);
 }
@@ -917,6 +941,7 @@ main(int argc, char **argv)
 	char passwd[64];
 	char user[64];
 	char op[64];
+	char privlvl[64];
 	char method[64];
 	char delay[64];
 	char pwd_script[PATH_MAX] = { 0, };
@@ -935,6 +960,7 @@ main(int argc, char **argv)
 	memset(passwd, 0, sizeof(passwd));
 	memset(user, 0, sizeof(user));
 	memset(op, 0, sizeof(op));
+	memset(privlvl, 0, sizeof(privlvl));
 	memset(method, 0, sizeof(method));
 	memset(delay, 0, sizeof(delay));
 
@@ -942,11 +968,17 @@ main(int argc, char **argv)
 		/*
 		   Parse command line options if any were specified
 		 */
-		while ((opt = getopt(argc, argv, "A:a:i:l:p:S:Po:vV?hHt:T:C:M:f:")) != EOF) {
+		while ((opt = getopt(argc, argv, "A:a:i:l:p:S:Po:vV?hHt:T:C:M:f:L:")) != EOF) {
 			switch(opt) {
 			case 'A':
 				/* Auth type */
 				strncpy(authtype, optarg, sizeof(authtype));
+				break;
+			case 'L':
+				/* Privilege level - ipmitool defaults
+				 * to ADMINISTRATOR if nothing is given
+				 */
+				strncpy(privlvl, optarg, sizeof(privlvl));
 				break;
 			case 'a':
 			case 'i':
@@ -1024,7 +1056,8 @@ main(int argc, char **argv)
 				      op, sizeof(op), &lanplus, &verbose,&timeout,
 				      &down_sleep,
 				      &cipher, method, sizeof(method),
-				      delay, sizeof(delay)) != 0)
+				      delay, sizeof(delay),
+				      privlvl, sizeof(privlvl)) != 0)
 			return 1;
 	}
 
@@ -1103,7 +1136,7 @@ main(int argc, char **argv)
 	}
 
 	/* Ok, set up the IPMI struct */
-	i = ipmi_init(NULL, ip, authtype, user, passwd, lanplus, verbose, timeout, down_sleep, cipher);
+	i = ipmi_init(NULL, ip, authtype, user, passwd, lanplus, verbose, timeout, down_sleep, cipher, privlvl);
 	if (!i)
 		fail_exit("Failed to initialize\n");
 
