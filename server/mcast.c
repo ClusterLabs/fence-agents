@@ -364,7 +364,7 @@ mcast_dispatch(listener_context_t c, struct timeval *timeout)
 		return len;
 	}
 
-	swap_fence_req_t(&data);
+	swab_fence_req_t(&data);
 
 	if (!verify_request(&data, info->args.hash, info->key,
 			    info->key_len)) {
