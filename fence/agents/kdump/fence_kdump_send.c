@@ -39,16 +39,16 @@
 
 static int verbose = 0;
 
-#define log_debug(lvl, fmt, args...)        \
-do {                                        \
-    if (lvl <= verbose)                     \
-        fprintf (stdout, fmt, ##args);      \
+#define log_debug(lvl, fmt, args...)               \
+do {                                               \
+    if (lvl <= verbose)                            \
+        fprintf (stdout, "[debug]: " fmt, ##args); \
 } while (0);
 
-#define log_error(lvl, fmt, args...)        \
-do {                                        \
-    if (lvl <= verbose)                     \
-        fprintf (stderr, fmt, ##args);      \
+#define log_error(lvl, fmt, args...)               \
+do {                                               \
+    if (lvl <= verbose)                            \
+        fprintf (stderr, "[error]: " fmt, ##args); \
 } while (0);
 
 static int
@@ -58,11 +58,11 @@ send_message (const fence_kdump_node_t *node, void *msg, int len)
 
     error = sendto (node->socket, msg, len, 0, node->info->ai_addr, node->info->ai_addrlen);
     if (error < 0) {
-        log_error (1, "[error]: sendto (%s)\n", strerror (errno));
+        log_error (2, "sendto (%s)\n", strerror (errno));
         goto out;
     }
 
-    log_debug (1, "[debug]: message sent to node '%s'\n", node->addr);
+    log_debug (1, "message sent to node '%s'\n", node->addr);
 
 out:
     return (error);
@@ -94,7 +94,7 @@ print_usage (const char *self)
     return;
 }
 
-static void
+static int
 get_options_node (fence_kdump_opts_t *opts)
 {
     int error;
@@ -103,8 +103,8 @@ get_options_node (fence_kdump_opts_t *opts)
 
     node = malloc (sizeof (fence_kdump_node_t));
     if (!node) {
-        log_error (1, "[error]: malloc (%s)\n", strerror (errno));
-        return;
+        log_error (2, "malloc (%s)\n", strerror (errno));
+        return (1);
     }
 
     memset (node, 0, sizeof (fence_kdump_node_t));
@@ -121,9 +121,9 @@ get_options_node (fence_kdump_opts_t *opts)
     node->info = NULL;
     error = getaddrinfo (node->name, node->port, &hints, &node->info);
     if (error != 0) {
-        log_error (1, "[error]: getaddrinfo (%s)\n", gai_strerror (error));
+        log_error (2, "getaddrinfo (%s)\n", gai_strerror (error));
         free_node (node);
-        return;
+        return (1);
     }
 
     error = getnameinfo (node->info->ai_addr, node->info->ai_addrlen,
@@ -131,23 +131,23 @@ get_options_node (fence_kdump_opts_t *opts)
                          node->port, sizeof (node->port),
                          NI_NUMERICHOST | NI_NUMERICSERV);
     if (error != 0) {
-        log_error (1, "[error]: getnameinfo (%s)\n", gai_strerror (error));
+        log_error (2, "getnameinfo (%s)\n", gai_strerror (error));
         free_node (node);
-        return;
+        return (1);
     }
 
     node->socket = socket (node->info->ai_family,
                            node->info->ai_socktype,
                            node->info->ai_protocol);
     if (node->socket < 0) {
-        log_error (1, "[error]: socket (%s)\n", strerror (errno));
+        log_error (2, "socket (%s)\n", strerror (errno));
         free_node (node);
-        return;
+        return (1);
     }
 
     list_add_tail (&node->list, &opts->nodes);
 
-    return;
+    return (0);
 }
 
 static void
@@ -219,7 +219,9 @@ main (int argc, char **argv)
 
     for (; optind < argc; optind++) {
         opts.nodename = argv[optind];
-        get_options_node (&opts);
+        if (get_options_node (&opts) != 0) {
+            log_error (1, "failed to get node '%s'\n", opts.nodename);
+        }
         opts.nodename = NULL;
     }
 

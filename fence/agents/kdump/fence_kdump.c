@@ -39,16 +39,20 @@
 
 static int verbose = 0;
 
-#define log_debug(lvl, fmt, args...)        \
-do {                                        \
-    if (lvl <= verbose)                     \
-        fprintf (stdout, fmt, ##args);      \
+#define log_debug(lvl, fmt, args...)               \
+do {                                               \
+    if (lvl <= verbose) {                          \
+        fprintf (stdout, "[debug]: " fmt, ##args); \
+        syslog (LOG_INFO, fmt, ##args);            \
+    }                                              \
 } while (0);
 
-#define log_error(lvl, fmt, args...)        \
-do {                                        \
-    if (lvl <= verbose)                     \
-        fprintf (stderr, fmt, ##args);      \
+#define log_error(lvl, fmt, args...)               \
+do {                                               \
+    if (lvl <= verbose) {                          \
+        fprintf (stderr, "[error]: " fmt, ##args); \
+        syslog (LOG_ERR, fmt, ##args);             \
+    }                                              \
 } while (0);
 
 static int
@@ -87,7 +91,7 @@ read_message (const fence_kdump_node_t *node, void *msg, int len)
 
     error = recvfrom (node->socket, msg, len, 0, (struct sockaddr *) &ss, &size);
     if (error < 0) {
-        log_error (1, "[error]: recvfrom (%s)\n", strerror (errno));
+        log_error (2, "recvfrom (%s)\n", strerror (errno));
         goto out;
     }
 
@@ -96,13 +100,13 @@ read_message (const fence_kdump_node_t *node, void *msg, int len)
                          port, sizeof (port),
                          NI_NUMERICHOST | NI_NUMERICSERV);
     if (error != 0) {
-        log_error (1, "[error]: getnameinfo (%s)\n", gai_strerror (error));
+        log_error (2, "getnameinfo (%s)\n", gai_strerror (error));
         goto out;
     }
 
     error = strcasecmp (node->addr, addr);
     if (error != 0) {
-        log_debug (1, "[debug]: discard message from '%s'\n", addr);
+        log_debug (1, "discard message from '%s'\n", addr);
     }
 
 out:
@@ -130,16 +134,16 @@ do_action_off (const fence_kdump_opts_t *opts)
     FD_ZERO (&rfds);
     FD_SET (node->socket, &rfds);
 
-    log_debug (1, "[debug]: waiting for message from %s\n", node->addr);
+    log_debug (0, "waiting for message from '%s'\n", node->addr);
 
     for (;;) {
         error = select (node->socket + 1, &rfds, NULL, NULL, &timeout);
         if (error < 0) {
-            log_error (1, "[error]: select (%s)\n", strerror (errno));
+            log_error (2, "select (%s)\n", strerror (errno));
             break;
         }
         if (error == 0) {
-            log_debug (1, "[debug]: timeout after %d seconds\n", opts->timeout);
+            log_debug (0, "timeout after %d seconds\n", opts->timeout);
             break;
         }
 
@@ -148,15 +152,16 @@ do_action_off (const fence_kdump_opts_t *opts)
         }
 
         if (msg.magic != FENCE_KDUMP_MAGIC) {
-            log_debug (1, "[debug]: invalid magic number '0x%X'\n", msg.magic);
+            log_debug (1, "invalid magic number '0x%X'\n", msg.magic);
             continue;
         }
 
         switch (msg.version) {
         case FENCE_KDUMP_MSGV1:
+            log_debug (0, "received valid message from '%s'\n", node->addr);
             return (0);
         default:
-            log_debug (1, "[debug]: invalid message version '0x%X'\n", msg.version);
+            log_debug (1, "invalid message version '0x%X'\n", msg.version);
             continue;
         }
     }
@@ -272,7 +277,7 @@ print_usage (const char *self)
     return;
 }
 
-static void
+static int
 get_options_node (fence_kdump_opts_t *opts)
 {
     int error;
@@ -281,8 +286,8 @@ get_options_node (fence_kdump_opts_t *opts)
 
     node = malloc (sizeof (fence_kdump_node_t));
     if (!node) {
-        log_error (1, "[error]: malloc (%s)\n", strerror (errno));
-        return;
+        log_error (2, "malloc (%s)\n", strerror (errno));
+        return (1);
     }
 
     memset (node, 0, sizeof (fence_kdump_node_t));
@@ -299,9 +304,9 @@ get_options_node (fence_kdump_opts_t *opts)
     node->info = NULL;
     error = getaddrinfo (node->name, node->port, &hints, &node->info);
     if (error != 0) {
-        log_error (1, "[error]: getaddrinfo (%s)\n", gai_strerror (error));
+        log_error (2, "getaddrinfo (%s)\n", gai_strerror (error));
         free_node (node);
-        return;
+        return (1);
     }
 
     error = getnameinfo (node->info->ai_addr, node->info->ai_addrlen,
@@ -309,9 +314,9 @@ get_options_node (fence_kdump_opts_t *opts)
                          node->port, sizeof (node->port),
                          NI_NUMERICHOST | NI_NUMERICSERV);
     if (error != 0) {
-        log_error (1, "[error]: getnameinfo (%s)\n", gai_strerror (error));
+        log_error (2, "getnameinfo (%s)\n", gai_strerror (error));
         free_node (node);
-        return;
+        return (1);
     }
 
     hints.ai_family = node->info->ai_family;
@@ -322,30 +327,30 @@ get_options_node (fence_kdump_opts_t *opts)
     node->info = NULL;
     error = getaddrinfo (NULL, node->port, &hints, &node->info);
     if (error != 0) {
-        log_error (1, "[error]: getaddrinfo (%s)\n", gai_strerror (error));
+        log_error (2, "getaddrinfo (%s)\n", gai_strerror (error));
         free_node (node);
-        return;
+        return (1);
     }
 
     node->socket = socket (node->info->ai_family,
                            node->info->ai_socktype,
                            node->info->ai_protocol);
     if (node->socket < 0) {
-        log_error (1, "[error]: socket (%s)\n", strerror (errno));
+        log_error (2, "socket (%s)\n", strerror (errno));
         free_node (node);
-        return;
+        return (1);
     }
 
     error = bind (node->socket, node->info->ai_addr, node->info->ai_addrlen);
     if (error != 0) {
-        log_error (1, "[error]: bind (%s)\n", strerror (errno));
+        log_error (2, "bind (%s)\n", strerror (errno));
         free_node (node);
-        return;
+        return (1);
     }
 
     list_add_tail (&node->list, &opts->nodes);
 
-    return;
+    return (0);
 }
 
 static void
@@ -469,12 +474,17 @@ main (int argc, char **argv)
         get_options_stdin (&opts);
     }
 
+    openlog ("fence_kdump", LOG_CONS|LOG_PID, LOG_DAEMON);
+
     if (opts.action == FENCE_KDUMP_ACTION_OFF) {
         if (opts.nodename == NULL) {
-            log_error (0, "[error]: action 'off' requires nodename\n");
+            log_error (0, "action 'off' requires nodename\n");
             exit (1);
         }
-        get_options_node (&opts);
+        if (get_options_node (&opts) != 0) {
+            log_error (0, "failed to get node '%s'\n", opts.nodename);
+            exit (1);
+        }
     }
 
     if (verbose != 0) {
