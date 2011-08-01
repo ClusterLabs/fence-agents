@@ -170,7 +170,7 @@ do_lq_request(struct lq_info *info, const char *vm_name,
 		i = 0;
 	}
 
-	if (!strcasecmp(action, "status")) {
+	if (!strcasecmp(action, "state")) {
 		result.code = i;
 		goto out;
 	}
@@ -246,7 +246,7 @@ lq_status(const char *vm_name, void *priv)
 	VALIDATE(priv);
 	printf("[libvirt-qpid] STATUS operation on %s\n", vm_name);
 
-	return do_lq_request((lq_info *)priv, vm_name, "destroy");
+	return do_lq_request((lq_info *)priv, vm_name, "state");
 }
 
 
