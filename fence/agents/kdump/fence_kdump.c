@@ -230,7 +230,7 @@ do_action_metadata (const char *self)
              "Print version");
     fprintf (stdout, "\t</parameter>\n");
 
-    fprintf (stdout, "\t<parameter name=\"verbose\" unique=\"1\" required=\"0\">\n");
+    fprintf (stdout, "\t<parameter name=\"usage\" unique=\"1\" required=\"0\">\n");
     fprintf (stdout, "\t\t<getopt mixed=\"-h, --help\" />\n");
     fprintf (stdout, "\t\t<content type=\"boolean\" />\n");
     fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
