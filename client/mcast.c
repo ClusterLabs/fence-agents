@@ -137,14 +137,14 @@ tcp_exchange(int fd, fence_auth_type_t auth, void *key,
 	if (tcp_challenge(fd, auth, key, key_len, timeout) <= 0) {
 		/* Challenge failed */
 		printf("Invalid response to challenge\n");
-		return 0;
+		return 1;
 	}
 
 	/* Now they'll send us one, so we need to respond here */
 	dbg_printf(3, "Responding to TCP challenge\n");
 	if (tcp_response(fd, auth, key, key_len, timeout) <= 0) {
 		printf("Invalid response to challenge\n");
-		return 0;
+		return 1;
 	}
 
 	dbg_printf(2, "TCP Exchange + Authentication done... \n");
