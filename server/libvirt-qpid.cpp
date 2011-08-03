@@ -28,14 +28,17 @@
 #include <string.h>
 #include <malloc.h>
 #include <errno.h>
+#include <string>
+#include <sstream>
+#include <iostream>
 #include "uuid-test.h"
 #include <xvm.h>
 
-#include <qpid/console/SessionManager.h>
-
-using namespace qpid::console; 
-using namespace qpid::client; 
-
+#include <qpid/types/Variant.h>
+#include <qpid/messaging/Connection.h>
+#include <qpid/console/Object.h>
+#include <qmf/ConsoleSession.h>
+#include <qmf/ConsoleEvent.h>
 
 
 #define NAME "libvirt-qpid"
@@ -51,7 +54,9 @@ struct lq_info {
 	char *service;
 	int use_gssapi;
 };
-	
+
+
+const std::string domainQuery("{class: domain, package: 'org.redhat.libvirt'}");
 
 
 #define VALIDATE(arg) \
@@ -63,138 +68,166 @@ do {\
 } while(0)
 
 
+static qmf::ConsoleSession
+lq_open_session(struct lq_info *info)
+{
+	std::stringstream url;
+	url << info->host << ":" << info->port;
+
+	qpid::types::Variant::Map options;
+	if (info->username) {
+		options["username"] = info->username;
+	}
+        if (info->service) {
+		options["sasl-service"] = info->service;
+	}
+	if (info->use_gssapi) {
+		options["sasl-mechanism"] = "GSSAPI";
+	}
+
+	qpid::messaging::Connection connection(url.str(), options);
+	connection.open();
+
+	qmf::ConsoleSession session;
+	if (!connection.isOpen()) {
+		std::cout << "Error connecting." << std::endl;
+	} else {
+		session = qmf::ConsoleSession(connection);
+
+		std::stringstream filter;
+		filter << "[eq, _product, [quote, 'libvirt-qpid']]";
+		session.setAgentFilter(filter.str());
+		session.open();
+	}
+
+	return session;
+}
+
 int
 do_lq_request(struct lq_info *info, const char *vm_name,
 	      const char *action)
 {
-	Broker *b = NULL;
-	SessionManager::NameVector names;
-	Object::Vector domains;
-	Object *domain = NULL;
-	const char *property = "name";
-	unsigned i, tries = 0, found = 0;
 	const char *vm_state = NULL;
-
+	const char *property = "name";
 	if (is_uuid(vm_name) == 1) {
 		property = "uuid";
 	}
 	
-	SessionManager::Settings s;
-
-	s.rcvObjects = true;
-	s.rcvEvents = false;
-	s.rcvHeartbeats = false;
-	s.userBindings = false;
-	s.methodTimeout = 10;
-	s.getTimeout = 10;
-
-	SessionManager sm(NULL, s);
-
-	ConnectionSettings cs;
-	if (info->host)
-		cs.host = info->host;
-	if (info->port)
-		cs.port = info->port;
-	if (info->username)
-		cs.username = info->username;
-	if (info->service)
-		cs.service = info->service;
-	if (info->use_gssapi)
-		cs.mechanism = "GSSAPI";
-
-	try {
-		b = sm.addBroker(cs);
-	}
-	catch (...) {
-		std::cout << "Error connecting.\n";
+	qmf::ConsoleSession session(lq_open_session(info));
+	if (!session.isValid()) {
+		std::cout << "Invalid session." << std::endl;
 		return 1;
 	}
 
+	qmf::Agent agent;
+	qmf::Data domain;
+	int result;
+
+	unsigned tries = 0;
+	bool found = false;
 	while (++tries < 10 && !found) {
 		sleep(1);
 
-		// why not com.redhat.libvirt:domain or having
-		// a way to specify that I want the domain objects from
-		// the com.redhat.libvirt namespace?!
+		uint32_t numAgents = session.getAgentCount();
+		for (unsigned a = 0; !found && a < numAgents; a++) {
+			agent = session.getAgent(a);
 
-		sm.getObjects(domains, "domain", NULL, NULL);
-
-		for (i = 0; i < domains.size(); i++) {
-#if 0
-			SchemaClass *c;
-
-			c = domains[i].getSchema();
-#endif
-
-			if (strcmp(domains[i].attrString(property).c_str(),
-				   vm_name)) {
-				continue;
-			}
-
-			found = 1;
-			domain = &domains[i];
-
-			break;
-
-#if 0
-			for (j = 0; j < c->properties.size(); j++) {
-				if (!strcmp(c->properties[j]->name.c_str(), "name") &&
-				    !strcmp(domains[i].attrString(c->properties[j]->name).c_str(), argv[1])) {
-					std::cout << c->properties[j]->name << " " << domains[i].attrString(c->properties[j]->name) << std::endl;
+			qmf::ConsoleEvent event(agent.query(domainQuery));
+			uint32_t numDomains = event.getDataCount();
+			for (unsigned d = 0; !found && d < numDomains; d++) {
+				domain = event.getData(d);
+				qpid::types::Variant prop;
+				try {
+					prop = domain.getProperty(property);
+				} catch (qmf::KeyNotFound e) {
+					std::cout << e.what() << " - skipping" << std::endl;
+					continue;
 				}
-			}
-#endif
 
+				if (prop.asString() != vm_name) {
+					continue;
+				}
+
+				found = true;
+			}
 		}
 	}
 
-	Object::AttributeMap attrs;
-	MethodResponse result;
-
 	if (!found) {
-		result.code = 1;
+		result = 1;
 		goto out;
 	}
 
-	vm_state = domain->attrString("state").c_str();
+	vm_state = domain.getProperty("state").asString().c_str();
 
-	std::cout << domain->attrString(property) << " "
-		  << vm_state << std::endl;
-	
+	std::cout << vm_name << " " << vm_state << std::endl;
+
+	int r;
 	if (!strcmp( vm_state, "running" ) ||
 	    !strcmp( vm_state, "idle" ) ||
 	    !strcmp( vm_state, "paused" ) ||
 	    !strcmp( vm_state, "no state" ) ) {
-		i = RESP_OFF;
+		r = RESP_OFF;
 	} else {
-		i = 0;
+		r = 0;
 	}
 
-	if (!strcasecmp(action, "state")) {
-		result.code = i;
+	if (strcasecmp(action, "state") == 0) {
+		result = r;
 		goto out;
 	}
 
-	result.code = 1;
-	if (!strcasecmp(action, "destroy") && !i) {
+	result = 1;
+	if (!r && strcasecmp(action, "destroy") == 0) {
 		std::cout << "Domain is inactive; nothing to do" << std::endl;
-		result.code = 0;
+		result = 0;
 		goto out;
 	}
-	if (!strcasecmp(action, "create") && i) {
+	if (r && strcasecmp(action, "create") == 0) {
 		std::cout << "Domain is active; nothing to do" << std::endl;
-		result.code = 0;
+		result = 0;
 		goto out;
 	}
 
-	domain->invokeMethod(action, attrs, result);
+	{
+		qmf::ConsoleEvent response;
+		response = agent.callMethod(action,
+				qpid::types::Variant::Map(),
+				domain.getAddr());
 
-	std::cout << "Response: " << result.code << " (" << result.text << ")" << std::endl;
+		if (response.getType() == qmf::CONSOLE_EXCEPTION) {
+			std::string errorText;
+			if (response.getDataCount()) {
+				qmf::Data responseData(response.getData(0));
+
+				qpid::types::Variant code(responseData.getProperty("error_code"));
+				if (code.getType() == qpid::types::VAR_INT32) {
+					result = responseData.getProperty("error_code").asInt32();
+				} else {
+					result = 7; // Exception
+				}
+				qpid::types::Variant text(responseData.getProperty("error_text"));
+				if (text.getType() != qpid::types::VAR_VOID) {
+					errorText = text.asString();
+				}
+			} else {
+				result = 7; // Exception
+			}
+
+			std::cout << "Response: " << result;
+			if (errorText.length()) {
+				std::cout << " (" << errorText << ")";
+			}
+			std::cout << std::endl;
+		} else { // Success
+			result = 0;
+		}
+	}
 
 out:
-	sm.delBroker(b);
+	session.close();
 
-	return result.code;
+	return result;
 }
 
 
@@ -270,79 +303,54 @@ lq_hostlist(hostlist_callback callback, void *arg, void *priv)
 {
 	VALIDATE(priv);
 
-	struct lq_info *info = (struct lq_info *)priv;
-
-	Broker *b = NULL;
-	SessionManager::NameVector names;
-	Object::Vector domains;
-	unsigned i, tries = 0;
-	const char *vm_name, *vm_uuid, *vm_state_str;
-	int vm_state = 0, ret = 1;
-
 	printf("[libvirt-qpid] HOSTLIST operation\n");
 	
-	SessionManager::Settings s;
-
-	s.rcvObjects = true;
-	s.rcvEvents = false;
-	s.rcvHeartbeats = false;
-	s.userBindings = false;
-	s.methodTimeout = 10;
-	s.getTimeout = 10;
-
-	SessionManager sm(NULL, s);
-
-	ConnectionSettings cs;
-	if (info->host)
-		cs.host = info->host;
-	if (info->port)
-		cs.port = info->port;
-	if (info->username)
-		cs.username = info->username;
-	if (info->service)
-		cs.service = info->service;
-	if (info->use_gssapi)
-		cs.mechanism = "GSSAPI";
-
-	try {
-		b = sm.addBroker(cs);
-	}
-	catch (...) {
-		std::cout << "Error connecting.\n";
+	qmf::ConsoleSession session(lq_open_session((struct lq_info *)priv));
+	if (!session.isValid()) {
 		return 1;
 	}
 
-	while (++tries < 10) {
+	unsigned tries = 0;
+	qmf::ConsoleEvent event;
+	uint32_t numDomains = 0;
+	while (++tries < 10 && !numDomains) {
 		sleep(1);
+		uint32_t numAgents = session.getAgentCount();
+		for (unsigned a = 0; a < numAgents; a++) {
+			qmf::Agent agent(session.getAgent(a));
+			event = agent.query(domainQuery);
 
-		sm.getObjects(domains, "domain", NULL, NULL);
-
-		if (domains.size() >= 1) {
-			break;
+			numDomains = event.getDataCount();
+			if (numDomains >= 1) {
+				break;
+			}
 		}
 	}
 
-	if (domains.size() < 1)
-		goto out;
+	for (unsigned d = 0; d < numDomains; d++) {
+		qmf::Data domain = event.getData(d);
 
-	for (i = 0; i < domains.size(); i++) {
+		std::string vm_name, vm_uuid, vm_state_str;
+		try {
+			vm_name = domain.getProperty("name").asString();
+			vm_uuid = domain.getProperty("uuid").asString();
+			vm_state_str = domain.getProperty("state").asString();
+		} catch (qmf::KeyNotFound e) {
+			std::cout << e.what() << " - skipping" << std::endl;
+			continue;
+		}
 
-		vm_name = domains[i].attrString("name").c_str();
-		vm_uuid = domains[i].attrString("uuid").c_str();
-		vm_state_str = domains[i].attrString("state").c_str();
-
-		if (!strcasecmp(vm_state_str, "shutoff"))
+		int vm_state;
+		if (!strcasecmp(vm_state_str.c_str(), "shutoff")) {
 			vm_state = 0;
-		else 
+		} else {
 			vm_state = 1;
+		}
 
-		callback(vm_name, vm_uuid, vm_state, arg);
+		callback(vm_name.c_str(), vm_uuid.c_str(), vm_state, arg);
 	}
-	ret = 0;
 
-out:
-	sm.delBroker(b);
-
+	session.close();
 	return 0;
 }
 
