@@ -56,9 +56,6 @@ struct lq_info {
 };
 
 
-const std::string domainQuery("{class: domain, package: 'org.redhat.libvirt'}");
-
-
 #define VALIDATE(arg) \
 do {\
 	if (!arg || ((struct lq_info *)arg)->magic != MAGIC) { \
@@ -95,12 +92,28 @@ lq_open_session(struct lq_info *info)
 		session = qmf::ConsoleSession(connection);
 
 		std::stringstream filter;
-		filter << "[eq, _product, [quote, 'libvirt-qpid']]";
+		filter << "[or, "
+			   "[eq, _product, [quote, 'libvirt-qmf']], "
+			   "[eq, _product, [quote, 'libvirt-qpid']]"
+			  "]";
 		session.setAgentFilter(filter.str());
 		session.open();
 	}
 
 	return session;
+}
+
+static qmf::ConsoleEvent
+queryDomain(qmf::Agent& agent)
+{
+	std::string query;
+	if (agent.getProduct() == "libvirt-qmf") {
+		query = "{class: Domain, package: 'org.libvirt'}";
+	} else {
+		query = "{class: domain, package: 'com.redhat.libvirt'}";
+	}
+
+	return agent.query(query);
 }
 
 int
@@ -132,7 +145,7 @@ do_lq_request(struct lq_info *info, const char *vm_name,
 		for (unsigned a = 0; !found && a < numAgents; a++) {
 			agent = session.getAgent(a);
 
-			qmf::ConsoleEvent event(agent.query(domainQuery));
+			qmf::ConsoleEvent event(queryDomain(agent));
 			uint32_t numDomains = event.getDataCount();
 			for (unsigned d = 0; !found && d < numDomains; d++) {
 				domain = event.getData(d);
@@ -318,7 +331,7 @@ lq_hostlist(hostlist_callback callback, void *arg, void *priv)
 		uint32_t numAgents = session.getAgentCount();
 		for (unsigned a = 0; a < numAgents; a++) {
 			qmf::Agent agent(session.getAgent(a));
-			event = agent.query(domainQuery);
+			event = queryDomain(agent);
 
 			numDomains = event.getDataCount();
 			if (numDomains >= 1) {
@@ -366,7 +379,7 @@ lq_init(backend_context_t *c, config_object_t *config)
 		return -1;
 
 	memset(info, 0, sizeof(*info));
-	info->port = 5672;
+	info->port = 49000;
 
 	if(sc_get(config, "backends/libvirt-qpid/@host",
 		   value, sizeof(value))==0){
