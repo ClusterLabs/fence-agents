@@ -12,7 +12,7 @@
 ## @note: drac_version was removed
 #####
 
-import sys, re, pexpect, exceptions
+import sys, re, pexpect, exceptions, time
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 
@@ -134,6 +134,7 @@ By default, the telnet interface is not  enabled."
 	######
 	try:
 		conn.sendline("exit")
+		time.sleep(1)
 		conn.close()
 	except exceptions.OSError:
 		pass
