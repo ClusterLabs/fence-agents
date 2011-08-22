@@ -13,7 +13,7 @@ BUILD_DATE="March, 2008"
 
 
 re_get_id = re.compile("<vm id=\"(.*?)\"", re.IGNORECASE);
-re_status = re.compile("<status>(.*?)</status>", re.IGNORECASE);
+re_status = re.compile("<state>(.*?)</state>", re.IGNORECASE);
 re_get_name = re.compile("<name>(.*?)</name>", re.IGNORECASE); 
 
 def get_power_status(conn, options):
@@ -41,7 +41,7 @@ def get_power_status(conn, options):
 	else:
 		status = result.group(1)
 
-	if (status == "UP"):
+	if (status == "up"):
 		return "on"
 	else:
 		return "off"
