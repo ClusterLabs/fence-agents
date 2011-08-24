@@ -120,7 +120,7 @@ int
 do_lq_request(struct lq_info *info, const char *vm_name,
 	      const char *action)
 {
-	const char *vm_state = NULL;
+	std::string vm_state;
 	const char *property = "name";
 	if (is_uuid(vm_name) == 1) {
 		property = "uuid";
@@ -171,15 +171,15 @@ do_lq_request(struct lq_info *info, const char *vm_name,
 		goto out;
 	}
 
-	vm_state = domain.getProperty("state").asString().c_str();
+	vm_state = domain.getProperty("state").asString();
 
 	std::cout << vm_name << " " << vm_state << std::endl;
 
 	int r;
-	if (!strcmp( vm_state, "running" ) ||
-	    !strcmp( vm_state, "idle" ) ||
-	    !strcmp( vm_state, "paused" ) ||
-	    !strcmp( vm_state, "no state" ) ) {
+	if (vm_state == "running" ||
+	    vm_state == "idle" ||
+	    vm_state == "paused" ||
+	    vm_state == "no state") {
 		r = RESP_OFF;
 	} else {
 		r = 0;
