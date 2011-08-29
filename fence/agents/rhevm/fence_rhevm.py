@@ -89,7 +89,7 @@ def send_command(opt, command, method = "GET"):
 	else:
 		url = "http:"
 
-	url += "//" + opt["-a"] + ":" + str(opt["-u"]) + "/rhevm-api/" + command
+	url += "//" + opt["-a"] + ":" + str(opt["-u"]) + "/api/" + command
 
 	## send command through pycurl
 	c = pycurl.Curl()
