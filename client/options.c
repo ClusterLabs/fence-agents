@@ -76,6 +76,9 @@ static inline void
 assign_family(fence_virt_args_t *args, struct arg_info *arg,
 	      char *value)
 {
+	if (!value)
+		return;
+
 	if (!strcasecmp(value, "ipv4")) {
 		args->net.family = PF_INET;
 	} else if (!strcasecmp(value, "ipv6")) {
@@ -92,6 +95,9 @@ assign_family(fence_virt_args_t *args, struct arg_info *arg,
 static inline void
 assign_address(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
+	if (!value)
+		return;
+
 	if (args->net.addr)
 		free(args->net.addr);
 	args->net.addr = strdup(value);
@@ -101,6 +107,9 @@ assign_address(fence_virt_args_t *args, struct arg_info *arg, char *value)
 static inline void
 assign_channel_address(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
+	if (!value)
+		return;
+
 	if (args->serial.address)
 		free(args->serial.address);
 	args->serial.address = strdup(value);
@@ -110,6 +119,9 @@ assign_channel_address(fence_virt_args_t *args, struct arg_info *arg, char *valu
 static inline void
 assign_port(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
+	if (!value)
+		return;
+
 	args->net.port = atoi(value);
 	if (args->net.port <= 0 || args->net.port >= 65500) {
 		printf("Invalid port: '%s'\n", value);
@@ -121,6 +133,9 @@ assign_port(fence_virt_args_t *args, struct arg_info *arg, char *value)
 static inline void
 assign_interface(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
+	if (!value)
+		return;
+
 	args->net.ifindex = if_nametoindex(value);
 }
 
@@ -128,6 +143,9 @@ assign_interface(fence_virt_args_t *args, struct arg_info *arg, char *value)
 static inline void
 assign_retrans(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
+	if (!value)
+		return;
+
 	args->retr_time = atoi(value);
 	if (args->retr_time <= 0) {
 		printf("Invalid retransmit time: '%s'\n", value);
@@ -138,6 +156,9 @@ assign_retrans(fence_virt_args_t *args, struct arg_info *arg, char *value)
 static inline void
 assign_hash(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
+	if (!value)
+		return;
+
 	if (!strcasecmp(value, "none")) {
 		args->net.hash = HASH_NONE;
 	} else if (!strcasecmp(value, "sha1")) {
@@ -156,6 +177,9 @@ assign_hash(fence_virt_args_t *args, struct arg_info *arg, char *value)
 static inline void
 assign_auth(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
+	if (!value)
+		return;
+
 	if (!strcasecmp(value, "none")) {
 		args->net.auth = AUTH_NONE;
 	} else if (!strcasecmp(value, "sha1")) {
@@ -175,6 +199,9 @@ assign_key(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
 	struct stat st;
 
+	if (!value)
+		return;
+
 	if (args->net.key_file)
 		free(args->net.key_file);
 	args->net.key_file = strdup(value);
@@ -190,6 +217,9 @@ assign_key(fence_virt_args_t *args, struct arg_info *arg, char *value)
 static inline void
 assign_op(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
+	if (!value)
+		return;
+
 	if (!strcasecmp(value, "null")) {
 		args->op = FENCE_NULL;
 	} else if (!strcasecmp(value, "on")) {
@@ -216,6 +246,9 @@ assign_op(fence_virt_args_t *args, struct arg_info *arg, char *value)
 static inline void
 assign_device(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
+	if (!value)
+		return;
+
 	args->serial.device = strdup(value);
 }
 
@@ -223,6 +256,9 @@ assign_device(fence_virt_args_t *args, struct arg_info *arg, char *value)
 static inline void
 assign_params(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
+	if (!value)
+		return;
+
 	args->serial.speed = strdup(value);
 }
 
@@ -235,6 +271,9 @@ assign_domain(fence_virt_args_t *args, struct arg_info *arg, char *value)
 		args->flags |= F_ERR;
 		return;
 	}
+
+	if (!value)
+		return;
 
 	args->domain = strdup(value);
 
@@ -269,6 +308,9 @@ assign_uuid_lookup(fence_virt_args_t *args, struct arg_info *arg, char *value)
 static inline void
 assign_timeout(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
+	if (!value)
+		return;
+
 	args->timeout = atoi(value);
 	if (args->timeout <= 0) {
 		printf("Invalid timeout: '%s'\n", value);
