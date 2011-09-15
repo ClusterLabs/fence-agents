@@ -427,6 +427,8 @@ get_options_stdin (fence_kdump_opts_t *opts)
         if ((arg = strchr (opt, '=')) != 0) {
             *arg = 0;
             arg += 1;
+        } else {
+            continue;
         }
 
         if (!strcasecmp (opt, "nodename")) {
