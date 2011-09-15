@@ -48,10 +48,16 @@ sub do_action_on ($@)
 	log_error ("device $dev does not exist") if (! -e $dev);
 	log_error ("device $dev is not a block device") if (! -b $dev);
 
-	do_register_ignore ($node_key, $dev);
+	if (do_register_ignore ($node_key, $dev) != 0) {
+	    log_error ("failed to create registration (key=$node_key, device=$dev)");
+	}
 
 	if (!get_reservation_key ($dev)) {
-	    do_reserve ($node_key, $dev);
+	    if (do_reserve ($node_key, $dev) != 0) {
+		if (!get_reservation_key ($dev)) {
+		    log_error ("failed to create reservation (key=$node_key, device=$dev)");
+		}
+	    }
 	}
     }
 
@@ -106,8 +112,7 @@ sub do_action_status ($@)
 
     if ($dev_count != 0) {
 	exit (0);
-    }
-    else {
+    } else {
 	exit (2);
     }
 }
@@ -199,13 +204,13 @@ sub do_register ($$$)
     $out = qx { $cmd 2> /dev/null };
     $err = ($?>>8);
 
-    if ($err != 0) {
-	log_error ("$self (err=$err)");
-    }
+    # if ($err != 0) {
+    # 	log_error ("$self (err=$err)");
+    # }
 
-    # die "[error]: $self\n" if ($?>>8);
+    log_debug ("$self (err=$err)");
 
-    return;
+    return ($err);
 }
 
 sub do_register_ignore ($$)
@@ -236,13 +241,13 @@ sub do_register_ignore ($$)
     $out = qx { $cmd 2> /dev/null };
     $err = ($?>>8);
 
-    if ($err != 0) {
-	log_error ("$self (err=$err)");
-    }
+    # if ($err != 0) {
+    # 	log_error ("$self (err=$err)");
+    # }
 
-    # die "[error]: $self ($dev)\n" if ($?>>8);
+    log_debug ("$self (err=$err)");
 
-    return;
+    return ($err);
 }
 
 sub do_reserve ($$)
@@ -256,13 +261,13 @@ sub do_reserve ($$)
     my $out = qx { $cmd 2> /dev/null };
     my $err = ($?>>8);
 
-    if ($err != 0) {
-	log_error ("$self (err=$err)");
-    }
+    # if ($err != 0) {
+    # 	log_error ("$self (err=$err)");
+    # }
 
-    # die "[error]: $self\n" if ($?>>8);
+    log_debug ("$self (err=$err)");
 
-    return;
+    return ($err);
 }
 
 sub do_release ($$)
@@ -276,13 +281,13 @@ sub do_release ($$)
     my $out = qx { $cmd 2> /dev/null };
     my $err = ($?>>8);
 
-    if ($err != 0) {
-	log_error ("$self (err=$err)");
-    }
+    # if ($err != 0) {
+    # 	log_error ("$self (err=$err)");
+    # }
 
-    # die "[error]: $self\n" if ($?>>8);
+    log_debug ("$self (err=$err)");
 
-    return;
+    return ($err);
 }
 
 sub do_preempt ($$$)
@@ -296,13 +301,13 @@ sub do_preempt ($$$)
     my $out = qx { $cmd 2> /dev/null };
     my $err = ($?>>8);
 
-    if ($err != 0) {
-	log_error ("$self (err=$err)");
-    }
+    # if ($err != 0) {
+    # 	log_error ("$self (err=$err)");
+    # }
 
-    # die "[error]: $self\n" if ($?>>8);
+    log_debug ("$self (err=$err)");
 
-    return;
+    return ($err);
 }
 
 sub do_preempt_abort ($$$)
@@ -316,13 +321,13 @@ sub do_preempt_abort ($$$)
     my $out = qx { $cmd 2> /dev/null };
     my $err = ($?>>8);
 
-    if ($err != 0) {
-	log_error ("$self (err=$err)");
-    }
+    # if ($err != 0) {
+    # 	log_error ("$self (err=$err)");
+    # }
 
-    # die "[error]: $self\n" if ($?>>8);
+    log_debug ("$self (err=$err)");
 
-    return;
+    return ($err);
 }
 
 sub do_reset (S)
@@ -339,7 +344,7 @@ sub do_reset (S)
 
     log_debug ("$self (dev=$dev, status=$err)");
 
-    return;
+    return ($err);
 }
 
 sub dev_unlink ()
@@ -756,8 +761,7 @@ if (@ARGV > 0) {
     if ($opt_o =~ /^metadata$/i) {
 	print_metadata;
     }
-}
-else {
+} else {
     get_options_stdin ();
 }
 
@@ -780,8 +784,7 @@ if ((!defined $opt_n) && (!defined $opt_k)) {
 ##
 if (defined $opt_k) {
     $key = $opt_k;
-}
-else {
+} else {
     $key = get_key ($opt_n);
 }
 
@@ -801,8 +804,7 @@ if ($key =~ /^0/) {
 ##
 if (defined $opt_d) {
     @devices = split (/\s*,\s*/, $opt_d);
-}
-else {
+} else {
     @devices = get_devices_clvm ();
 }
 
@@ -830,8 +832,7 @@ elsif ($opt_o =~ /^off$/i) {
 }
 elsif ($opt_o =~ /^status/i) {
     do_action_status ($key, @devices);
-}
-else {
+} else {
     log_error ("unknown action '$opt_o'");
     exit (1);
 }
