@@ -245,7 +245,7 @@ static char *str_prepare_for_sh(char *dest,char *source,int max_len) {
 }
 
 static int
-build_cmd(char *command, size_t cmdlen, struct ipmi *ipmi, int op)
+build_cmd(char *command, size_t cmdlen, struct ipmi *ipmi, int op, int nopass)
 {
 	char cmd[2048];
 	char arg[2048];
@@ -283,7 +283,11 @@ build_cmd(char *command, size_t cmdlen, struct ipmi *ipmi, int op)
 	}
 
 	if (ipmi->i_password) {
-		snprintf(arg, sizeof(arg), " -P %s", str_prepare_for_sh(tmp,ipmi->i_password,sizeof(tmp)));
+		if (nopass) {
+			snprintf(arg, sizeof(arg), " -P %s", str_prepare_for_sh(tmp,(char *)"[set]",sizeof(tmp)));
+		} else {
+			snprintf(arg, sizeof(arg), " -P %s", str_prepare_for_sh(tmp,ipmi->i_password,sizeof(tmp)));
+		}
 		strncat(cmd, arg, sizeof(cmd) - strlen(arg));
 	} else {
 		snprintf(arg, sizeof(arg), " -P ''");
@@ -326,9 +330,9 @@ build_cmd(char *command, size_t cmdlen, struct ipmi *ipmi, int op)
 
 
 static int
-ipmi_spawn(struct ipmi *ipmi, const char *cmd)
+ipmi_spawn(struct ipmi *ipmi, const char *cmd, const char *cmd_print)
 {
-	dbg_printf(ipmi, 1, "Spawning: '%s'...\n", cmd);
+	dbg_printf(ipmi, 1, "Spawning: '%s'...\n", cmd_print);
 	if (!ipmi) {
 		errno = EINVAL;
 		return -1;
@@ -344,8 +348,8 @@ ipmi_spawn(struct ipmi *ipmi, const char *cmd)
 	if ((ipmi->i_pid = StartProcess(cmd, &ipmi->i_rdfd,
 					&ipmi->i_wrfd,
 					EXP_STDERR|EXP_NOCTTY)) >= 0) {
-		dbg_printf(ipmi, 2, "Spawned: '%s' - PID %d\n", cmd,
-			   (int)ipmi->i_pid);
+		dbg_printf(ipmi, 2, "Spawned: '%s' - PID %d\n",
+			   cmd_print, (int)ipmi->i_pid);
 		return 0;
 	}
 	return -1;
@@ -405,11 +409,18 @@ static int
 ipmi_op(struct ipmi *ipmi, int op, struct Etoken *toklist)
 {
 	char cmd[2048];
+	char cmd_nopass[2048];
+	char *cmd_print = cmd;
 	int ret;
 
-	build_cmd(cmd, sizeof(cmd), ipmi, op);
+	build_cmd(cmd, sizeof(cmd), ipmi, op, 0);
+	if (ipmi->i_verbose >= 1 && ipmi->i_password) {
+		build_cmd(cmd_nopass, sizeof(cmd_nopass),
+			  ipmi, op, 1);
+		cmd_print = cmd_nopass;
+	}
 
-	if (ipmi_spawn(ipmi, cmd) != 0)
+	if (ipmi_spawn(ipmi, cmd, cmd_print) != 0)
 		return -1;
 	ret = ipmi_expect(ipmi, toklist, ipmi->i_timeout);
 	ipmi_reap(ipmi);
