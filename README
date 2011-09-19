@@ -1,6 +1,6 @@
 TODO: update
 
-I. Fence_xvm - the Xen virtual machine fencing agent
+I. Fence_xvm - Virtual machine fencing agent
 
 Fence_xvm is an agent which establishes a communications link between
 a cluster of virtual machines (VC) and a cluster of domain0/physical
@@ -22,15 +22,15 @@ would hate to receive a false positive response from a node not in the
 cluster!).
 
 
-II. Fence_xvmd - The Xen virtual machine fencing host
+II. Fence_virtd - Virtual machine fencing host
 
-Fence_xvmd is a daemon which runs on physical hosts (e.g. in domain0)
-of the cluster hosting the Xen virtual cluster.  It listens on a port
-for multicast traffic from Xen virtual cluster(s), and takes actions.
+Fence_virtd is a daemon which runs on physical hosts (e.g. in domain0)
+of the cluster hosting the virtual cluster.  It listens on a port
+for multicast traffic from virtual cluster(s), and takes actions.
 Multiple disjoint virtual clusters can coexist on a single physical
-host cluster, but this requires multiple instances of fence_xvmd.
+host cluster, but this requires multiple instances of fence_virtd.
 
-NOTE: fence_xvmd *MUST* be run on ALL nodes in a given cluster which
+NOTE: fence_virtd *MUST* be run on ALL nodes in a given cluster which
 will be hosting virtual machines if fence_xvm is to be used for 
 fencing!
 
@@ -43,15 +43,15 @@ In order to be able to guarantee safe fencing of a VM even if the
 last- known host is down, we must store the last-known locations of
 each virtual machine in some sort of cluster-wide way.  For this, we
 use the AIS Checkpointing API, which is provided by OpenAIS.  Every
-few seconds, fence_xvmd queries the Xen Hypervisor via libvirt and
+few seconds, fence_virtd queries the hypervisor via libvirt and
 stores any local VM states in a checkpoint.  In the event of a
 physical node failure (which consequently causes the failure of one
-or more Xen guests), we can then read the checkpoint section
-corresponding to the guest we need to fence to find out the previous
-owner.  With that information, we can then check with CMAN to see if
-the last-known host node has been fenced.  If so, then the VM is
-clean as well.  The physical cluster must, therefore, have fencing
-in order for fence_xvmd to work.
+or more guests), we can then read the checkpoint section corresponding
+to the guest we need to fence to find out the previous owner.  With
+that information, we can then check with CMAN to see if the last-
+known host node has been fenced.  If so, then the VM is clean as well.
+The physical cluster must, therefore, have fencing in order for
+fence_virtd to work.
 
 Operation of a node hosting a VM which needs to be fenced:
   
@@ -93,7 +93,7 @@ network, there are cases where it may not be.
 fencing action is taken based solely on the information contained
 within the packet, this should not allow an attacker to maliciously
 fence a VM from outside the cluster, though it may be possible to
-cause a DoS of fence_xvmd if enough multicast packets are sent.
+cause a DoS of fence_virtd if enough multicast packets are sent.
 
 * The only currently supported authentication mechanisms are simple
 challenge-response based on a shared private key and pseudorandom
@@ -104,7 +104,7 @@ known VM, even if they are not on a cluster node.
 
 * Different shared keys should be used for different virtual
 clusters on the same subnet (whether in the same physical cluster
-or not).  Additionally, multiple fence_xvmd instances must be run
+or not).  Additionally, multiple fence_virtd instances must be run
 (each listening on a different multicast IP + port combination).
 
 IV.  Configuration
@@ -118,7 +118,7 @@ as all dom0s which will be hosting that particular cluster of domUs.
 The key should not be placed on shared file systems (because shared
 file systems require the cluster, which requires fencing...).
 
-Start fence_xvmd on all dom0s
+Start fence_virtd on all hosts
 
 Configure fence_xvm on the domU cluster...
 
