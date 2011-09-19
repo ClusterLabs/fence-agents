@@ -293,6 +293,11 @@ do_fence_request_tcp(fence_req_t *req, mcast_info *info)
 					    req->seqno, info->priv);
 		break;
 	case FENCE_STATUS:
+		if (map_check(info->map, ip_addr_src,
+				     (const char *)req->domain) == 0) {
+			response = RESP_PERM;
+			break;
+		}
 		response = info->cb->status((char *)req->domain, info->priv);
 		break;
 	case FENCE_DEVSTATUS:

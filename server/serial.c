@@ -211,6 +211,11 @@ do_fence_request(int fd, const char *src, serial_req_t *req, serial_info *info)
 					    req->seqno, info->priv);
 		break;
 	case FENCE_STATUS:
+		if (map_check(info->maps, src,
+				     (const char *)req->domain) == 0) {
+			response = RESP_PERM;
+			break;
+		}
 		response = info->cb->status((char *)req->domain, info->priv);
 		break;
 	case FENCE_DEVSTATUS:
