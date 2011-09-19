@@ -291,29 +291,33 @@ mcast_fence_virt(fence_virt_args_t *args)
 		return 1;
 	}
 
-	switch (args->net.auth) {
-		case AUTH_NONE:
-		case AUTH_SHA1:
-		case AUTH_SHA256:
-		case AUTH_SHA512:
-			if (args->net.family == PF_INET) {
-				lfd = ipv4_listen(args->net.port, 10);
-			} else {
-				lfd = ipv6_listen(args->net.port, 10);
-			}
-			break;
-		/*case AUTH_X509:*/
-			/* XXX Setup SSL listener socket here */
-		default:
-			return 1;
-	}
-
-	if (lfd < 0) {
-		printf("Failed to listen: %s\n", strerror(errno));
-		return 1;
-	}
-
 	attempts = args->timeout * 10 / args->retr_time;
+
+	do {
+		switch (args->net.auth) {
+			case AUTH_NONE:
+			case AUTH_SHA1:
+			case AUTH_SHA256:
+			case AUTH_SHA512:
+				if (args->net.family == PF_INET) {
+					lfd = ipv4_listen(args->net.port, 10);
+				} else {
+					lfd = ipv6_listen(args->net.port, 10);
+				}
+				break;
+			/*case AUTH_X509:*/
+				/* XXX Setup SSL listener socket here */
+			default:
+				return 1;
+		}
+
+		if (lfd < 0) {
+			printf("Failed to listen: %s\n", strerror(errno));
+			usleep(args->retr_time * 100000);
+			--attempts;
+			continue;
+		}
+	} while (0);
 
 	gettimeofday(&tv, NULL);
 	seqno = (uint32_t)tv.tv_usec;
