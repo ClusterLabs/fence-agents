@@ -191,6 +191,7 @@ wait_domain(const char *vm_name, virConnectPtr vp, int timeout)
 {
 	int tries = 0;
 	int response = 1;
+	int ret;
 	virDomainPtr vdp;
 	virDomainInfo vdi;
 
@@ -208,6 +209,9 @@ wait_domain(const char *vm_name, virConnectPtr vp, int timeout)
 	   synchronous virDomainDestroy, so this check will not
 	   be necessary */
 	do {
+		if (++tries > timeout)
+			break;
+
 		sleep(1);
 		if (use_uuid) {
 			vdp = virDomainLookupByUUIDString(vp,
@@ -222,8 +226,10 @@ wait_domain(const char *vm_name, virConnectPtr vp, int timeout)
 		}
 
 		memset(&vdi, 0, sizeof(vdi));
-		virDomainGetInfo(vdp, &vdi);
+		ret = virDomainGetInfo(vdp, &vdi);
 		virDomainFree(vdp);
+		if (ret < 0)
+			continue;
 
 		if (vdi.state == VIR_DOMAIN_SHUTOFF) {
 			dbg_printf(2, "Domain has been shut off\n");
@@ -234,9 +240,6 @@ wait_domain(const char *vm_name, virConnectPtr vp, int timeout)
 		dbg_printf(4, "Domain still exists (state %d) "
 			   "after %d seconds\n",
 			   vdi.state, tries);
-
-		if (++tries >= timeout)
-			break;
 	} while (1);
 
 	return response;
