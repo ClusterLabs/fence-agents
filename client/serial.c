@@ -252,6 +252,7 @@ serial_fence_virt(fence_virt_args_t *args)
 			perror("vmchannel connect");
 			printf("Failed to connect to %s:%d\n", args->serial.address,
 			       args->net.port);
+			return -1;
 		}
 	}
 

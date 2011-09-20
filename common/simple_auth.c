@@ -202,6 +202,10 @@ sha_challenge(int fd, fence_auth_type_t auth, void *key,
 	unsigned int rlen;
 
 	devrand = open("/dev/urandom", O_RDONLY);
+	if (devrand < 0) {
+		perror("open /dev/urandom");
+		return 0;
+	}
 	if (read(devrand, challenge, sizeof(challenge)) < 0) {
 		perror("read /dev/urandom");
 		return 0;

@@ -70,7 +70,6 @@ ipv4_recv_sk(char *addr, int port, unsigned int ifindex)
 	sock = socket(PF_INET, SOCK_DGRAM, 0);
 	if (sock < 0) {
 		printf("socket: %s\n", strerror(errno));
-		close(sock);
 		sock = -1;
 		return 1;
 	}
@@ -130,6 +129,9 @@ ipv4_send_sk(char *send_addr, char *addr, int port, struct sockaddr *tgt,
 		errno = EINVAL;
 		return -1;
 	}
+
+	memset(&mcast, 0, sizeof(mcast));
+	memset(&src, 0, sizeof(src));
 
 	/* Store multicast address */
 	mcast.sin_family = PF_INET;
@@ -235,7 +237,6 @@ ipv6_recv_sk(char *addr, int port, unsigned int ifindex)
 	sock = socket(PF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 	if (sock < 0) {
 		printf("socket: %s\n", strerror(errno));
-		close(sock);
 		sock = -1;
 		return 1;
 	}
@@ -299,6 +300,8 @@ ipv6_send_sk(char *send_addr, char *addr, int port, struct sockaddr *tgt,
 		return -1;
 	}
 
+	memset(&mcast, 0, sizeof(mcast));
+	memset(&src, 0, sizeof(src));
 	memset(&mreq, 0, sizeof(mreq));
 
 	/* Store multicast address */

@@ -55,7 +55,6 @@ check_pid_valid(pid_t pid, const char *prog)
 
 	snprintf(dirpath, sizeof (dirpath), "/proc/%d", pid);
 	if ((dir = opendir(dirpath)) == NULL) {
-		closedir(dir);
 		return 0;	/* Pid has gone away. */
 	}
 	closedir(dir);
@@ -91,7 +90,7 @@ check_pid_valid(pid_t pid, const char *prog)
 	/*
 	 * Check to see if this is the same executable.
 	 */
-	if ((s = strstr(proc_cmdline, prog)) == NULL) {
+	if (strstr(proc_cmdline, prog) == NULL) {
 		return 0;
 	} else {
 		return 1;

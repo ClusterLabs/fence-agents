@@ -282,6 +282,7 @@ mcast_fence_virt(fence_virt_args_t *args)
 			       "authentication\n", args->net.key_file);
 			args->net.auth = AUTH_NONE;
 			args->net.hash = HASH_NONE;
+			key_len = 0;
 		}
 	}
 

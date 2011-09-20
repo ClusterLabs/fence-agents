@@ -130,11 +130,12 @@ domain_sock_setup(const char *domain, const char *socket_path)
 	return 0;
 
 out_fail:
-	if (node)
+	if (node) {
 		free(node->domain_name);
-	if (node)
-		free(node->socket_path);
-	free(node);
+		if (node->socket_path)
+			free(node->socket_path);
+		free(node);
+	}
 	free(sun);
 	if (sock >= 0)
 		close(sock);
