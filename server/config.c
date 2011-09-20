@@ -46,7 +46,7 @@ text_input(const char *prompt, char *dfl, char *input, size_t len)
 	printf("%s [%s]: ", prompt, dfl?dfl:"");
 	fflush(stdout);
 
-	memset(input, 0, sizeof(input));
+	memset(input, 0, len);
 	if (fgets(input, len, stdin) == NULL) {
 		strncpy(input, dfl, len);
 		return 0;
