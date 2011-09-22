@@ -709,7 +709,6 @@ eol:
 	for (x=0; x <= linelen; x++) {
 		switch(line[x]) {
 		case '\t':
-		case ' ':
 		case '\r':
 		case '\n':
 			line[x] = 0;
