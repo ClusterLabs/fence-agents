@@ -41,7 +41,6 @@ sub do_action_on ($@)
     my $self = (caller(0))[3];
     my ($node_key, @devices) = @_;
 
-    dev_unlink ();
     key_write ($node_key);
 
     foreach $dev (@devices) {
@@ -369,8 +368,17 @@ sub dev_write ($)
 	mkpath ("/var/run/cluster");
     }
 
-    open (\*FILE, ">>$file") or die "$!\n";
-    print FILE "$dev\n";
+    open (\*FILE, "+>>$file") or die "$!\n";
+
+    ## since the file is opened for read, write and append,
+    ## we need to seek to the beginning of the file before grep.
+
+    seek (FILE, 0, 0);
+
+    if (! grep { /^$dev$/ } <FILE>) {
+	print FILE "$dev\n";
+    }
+
     close (FILE);
 
     return;
