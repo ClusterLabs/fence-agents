@@ -13,7 +13,7 @@ int domain_sock_name(int fd, char *outbuf, size_t buflen);
 int domain_sock_cleanup(void);
 
 /* virt-serial.c - event thread control functions */
-int start_event_listener(const char *uri, const char *path, int mode);
+int start_event_listener(const char *uri, const char *path, int mode, int *wake_fd);
 int stop_event_listener(void);
 
 

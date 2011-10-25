@@ -69,25 +69,6 @@ struct domain_info {
 };
 
 
-int
-myDomainEventCallback1(virConnectPtr conn,
-		       virDomainPtr dom, int event, int detail, void *opaque)
-{
-	struct domain_info *dinfo = (struct domain_info *) opaque;
-
-	if (event == VIR_DOMAIN_EVENT_STARTED ||
-	    event == VIR_DOMAIN_EVENT_STOPPED) {
-		virDomainRef(dom);
-		dinfo->dom = dom;
-		dinfo->event = event;
-	} else {
-		dinfo->event = VIR_DOMAIN_EVENT_UNDEFINED;
-	}
-
-	return 0;
-}
-
-
 /* EventImpl Functions */
 int
 myEventHandleTypeToPollEvent(virEventHandleType events)
@@ -413,7 +394,31 @@ struct event_args {
 	char *uri;
 	char *path;
 	int mode;
+	int wake_fd;
 };
+
+
+int
+myDomainEventCallback1(virConnectPtr conn,
+		       virDomainPtr dom, int event, int detail, void *opaque)
+{
+	struct event_args *args = (struct event_args *)opaque;
+
+	if (event == VIR_DOMAIN_EVENT_STARTED ||
+	    event == VIR_DOMAIN_EVENT_STOPPED) {
+		virDomainRef(dom);
+		if (event == VIR_DOMAIN_EVENT_STARTED) {
+			domainStarted(dom, args->path, args->mode);
+			virDomainFree(dom);
+			write(args->wake_fd, "x", 1);
+		} else if (event == VIR_DOMAIN_EVENT_STOPPED) {
+			domainStopped(dom);
+			virDomainFree(dom);
+		}
+	}
+
+	return 0;
+}
 
 
 static void *
@@ -421,7 +426,6 @@ event_thread(void *arg)
 {
 	struct event_args *args = (struct event_args *)arg;
 	virConnectPtr dconn = NULL;
-	struct domain_info dinfo;
 	int callback1ret = -1;
 	int sts;
 
@@ -450,11 +454,9 @@ event_thread(void *arg)
 	registerExisting(dconn, args->path, args->mode);
 
 	/* Add 2 callbacks to prove this works with more than just one */
-	memset(&dinfo, 0, sizeof (dinfo));
-	dinfo.event = VIR_DOMAIN_EVENT_UNDEFINED;
 	callback1ret =
 	    virConnectDomainEventRegister(dconn, myDomainEventCallback1,
-					  &dinfo, NULL);
+					  arg, NULL);
 
 	if ((callback1ret == 0)) {
 		while (run) {
@@ -467,18 +469,6 @@ event_thread(void *arg)
 			/* We are assuming timeout of 0 here - so execute every time */
 			if (t_cb && t_active) {
 				t_cb(t_timeout, t_opaque);
-			}
-
-			if (dinfo.event == VIR_DOMAIN_EVENT_STARTED) {
-				domainStarted(dinfo.dom, args->path, args->mode);
-				virDomainFree(dinfo.dom);
-				dinfo.dom = NULL;
-				dinfo.event = VIR_DOMAIN_EVENT_UNDEFINED;
-			} else if (dinfo.event == VIR_DOMAIN_EVENT_STOPPED) {
-				domainStopped(dinfo.dom);
-				virDomainFree(dinfo.dom);
-				dinfo.dom = NULL;
-				dinfo.event = VIR_DOMAIN_EVENT_UNDEFINED;
 			}
 
 			if (sts == 0) {
@@ -522,9 +512,10 @@ out:
 
 
 int
-start_event_listener(const char *uri, const char *path, int mode)
+start_event_listener(const char *uri, const char *path, int mode, int *wake_fd)
 {
 	struct event_args *args = NULL;
+	int wake_pipe[2];
 
 	virInitialize();
 
@@ -533,6 +524,10 @@ start_event_listener(const char *uri, const char *path, int mode)
 		return -1;
 	memset(args, 0, sizeof(*args));
        
+	if (pipe2(wake_pipe, O_CLOEXEC) < 0) {
+		goto out_fail;
+	}
+
 	if (uri) {
 	       args->uri = strdup(uri);
 	       if (args->uri == NULL)
@@ -546,6 +541,10 @@ start_event_listener(const char *uri, const char *path, int mode)
 	}
 
 	args->mode = mode;
+	//args->p_tid = pthread_self();
+	*wake_fd = wake_pipe[0];
+	args->wake_fd = wake_pipe[1];
+
 	run = 1;
 
 	return pthread_create(&event_tid, NULL, event_thread, args);

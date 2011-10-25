@@ -76,6 +76,7 @@ typedef struct _serial_info {
 	history_info_t *history;
 	map_object_t *maps;
 	int mode;
+	int wake_fd;
 } serial_info;
 
 
@@ -262,17 +263,33 @@ serial_dispatch(listener_context_t c, struct timeval *timeout)
 	struct timeval tv;
 	int max;
 	int n, x, ret;
+	char tmp_buf[32];
 
 	info = (serial_info *)c;
 	VALIDATE(info);
 
 	FD_ZERO(&rfds);
 	domain_sock_fdset(&rfds, &max);
+	FD_SET(info->wake_fd, &rfds);
+	if (info->wake_fd > max)
+		max = info->wake_fd;
 
 	n = select(max+1, &rfds, NULL, NULL, timeout);
 	if (n < 0) {
 		perror("select");
 		return n;
+	}
+
+	/*
+	 * See if the goal was just to be woken up in order to refill our
+	 * file descriptor set.  For example, if multiple domains were 
+	 * created simultaneously, we would have to refill our fd_set
+	 */
+	if (FD_ISSET(info->wake_fd, &rfds)) {
+		tv.tv_sec = 0;
+		tv.tv_usec = 10000;
+		_read_retry(info->wake_fd, &c, 1, &tv);
+		return 0;
 	}
 
 	/* 
@@ -392,7 +409,7 @@ serial_init(listener_context_t *c, const fence_callbacks_t *cb,
 	info->magic = SERIAL_PLUG_MAGIC;
 	info->history = history_init(check_history, 10, sizeof(fence_req_t));
 	*c = (listener_context_t)info;
-	start_event_listener(info->uri, info->path, info->mode);
+	start_event_listener(info->uri, info->path, info->mode, &info->wake_fd);
 	sleep(1);
 
 	return 0;
