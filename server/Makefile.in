@@ -22,6 +22,8 @@ TARGETS=fence_virtd
 MAIN_LIBS=-L../config -lsimpleconfig -ldl
 AIS_LIBS=-L/usr/lib64/openais -lSaCkpt
 COROSYNC_LIBS=-L/usr/lib64/corosync -lcpg
+PACEMAKER_LIBS=-lcib -lpe_status -lncurses `pkg-config --libs glib-2.0`
+PACEMAKER_INCLUDES=`pkg-config --cflags glib-2.0` -I/usr/include/pacemaker -I/usr/include/heartbeat
 CMAN_LIBS=-lcman
 VIRT_LIBS=-lvirt
 VIRT_QPID=-lqmf2 -lqpidclient -lqpidtypes -lqpidcommon -lqpidmessaging
@@ -40,8 +42,9 @@ fence_virtd_SOURCES = main.c plugin.c config.c static_map.c uuid-test.c \
 		      daemon_init.c
 libvirt_so_SOURCES = libvirt.c virt.c uuid-test.c
 null_so_SOURCES = null.c
-libvirt_qpid_so_SOURCES = uuid-test.c
-libvirt_qpid_cxx_so_SOURCES = libvirt-qpid.cpp
+libvirt_qmf_so_SOURCES = uuid-test.c
+libvirt_qmf_cxx_so_SOURCES = libvirt-qmf.cpp
+pm_fence_so_SOURCES = pm-fence.c
 multicast_so_SOURCES = mcast.c history.c
 checkpoint_so_SOURCES = virt.c vm_states.c history.c checkpoint.c cpg.c
 serial_so_SOURCES = virt-serial.c virt-sockets.c serial.c history.c
@@ -53,7 +56,8 @@ ifeq ($(with_modules),yes)
 mod_null=@mod_null@
 mod_libvirt=@mod_libvirt@
 mod_checkpoint=@mod_checkpoint@
-mod_libvirt_qpid=@mod_libvirt_qpid@
+mod_libvirt_qmf=@mod_libvirt_qmf@
+mod_pm_fence=@mod_pm_fence@
 mod_multicast=@mod_multicast@
 mod_serial=@mod_serial@
 
@@ -68,8 +72,11 @@ endif
 ifneq ($(mod_checkpoint),no)
 MODULES+=checkpoint.so
 endif
-ifneq ($(mod_libvirt_qpid),no)
-MODULES+=libvirt-qpid.so
+ifneq ($(mod_libvirt_qmf),no)
+MODULES+=libvirt-qmf.so
+endif
+ifneq ($(mod_pm_fence),no)
+MODULES+=pm-fence.so
 endif
 ifneq ($(mod_multicast),no)
 MODULES+=multicast.so
@@ -95,10 +102,15 @@ ifneq ($(mod_checkpoint),no)
 fence_virtd_SOURCES+=${checkpoint_so_SOURCES}
 LIBS+=$(AIS_LIBS) $(COROSYNC_LIBS) $(CMAN_LIBS)
 endif
-ifneq ($(mod_libvirt_qpid),no)
-fence_virtd_SOURCES+=${libvirt_qpid_so_SOURCES}
-fence_virtd_cxx_SOURCES+=${libvirt_qpid_cxx_so_SOURCES}
+ifneq ($(mod_libvirt_qmf),no)
+fence_virtd_SOURCES+=${libvirt_qmf_so_SOURCES}
+fence_virtd_cxx_SOURCES+=${libvirt_qmf_cxx_so_SOURCES}
 LIBS+=$(VIRT_QPID)
+endif
+ifneq ($(mod_pm_fence),no)
+fence_virtd_SOURCES+=${pm_fence_so_SOURCES}
+INCLUDES+=$(PACEMAKER_INCLUDES)
+LIBS+=$(PACEMAKER_LIBS)
 endif
 ifneq ($(mod_multicast),no)
 fence_virtd_SOURCES+=${multicast_so_SOURCES}
@@ -116,6 +128,11 @@ endif
 
 CFLAGS+=-DSYSCONFDIR=\"@sysconfdir@\"
 
+pm_ver=@pm_ver@
+ifeq ($(pm_ver),1.0)
+CFLAGS+=-DPM_1_0
+endif
+
 all: ${TARGETS} ${MODULES}
 
 fence_virtd: ${fence_virtd_SOURCES:.c=.o} ${fence_virtd_cxx_SOURCES:.cpp=.opp}
@@ -127,8 +144,11 @@ multicast.so: ${multicast_so_SOURCES:.c=.o}
 libvirt.so: ${libvirt_so_SOURCES:.c=.o}
 	$(CC) -o $@ $^ $(LIBS) -shared $(VIRT_LIBS) $(UUID_LIBS)
 
-libvirt-qpid.so: ${libvirt_qpid_so_SOURCES:.c=.o} ${libvirt_qpid_cxx_so_SOURCES:.cpp=.opp}
+libvirt-qmf.so: ${libvirt_qmf_so_SOURCES:.c=.o} ${libvirt_qmf_cxx_so_SOURCES:.cpp=.opp}
 	$(CXX) -o $@ $^ $(LIBS) -shared $(VIRT_QPID)
+
+pm-fence.so: ${pm_fence_so_SOURCES:.c=.o}
+	$(CC) -o $@ $^ $(LIBS) -shared $(PACEMAKER_LIBS)
 
 null.so: ${null_so_SOURCES:.c=.o}
 	$(CC) -o $@ $^ $(LIBS) -shared
