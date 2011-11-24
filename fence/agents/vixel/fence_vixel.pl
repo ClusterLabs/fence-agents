@@ -34,6 +34,7 @@ sub usage
     print "Options:\n";
     print "  -a <ip>          IP address or hostname of switch\n";
     print "  -h               Usage\n";
+    print "  -o metadata      print XML metadata for fence agent\n";
     print "  -n <num>         Port number to disable\n";
     print "  -p <string>      Password for login\n";
     print "  -S <path>        Script to run to retrieve login password\n";
@@ -66,13 +67,67 @@ sub version
   exit 0;
 }
 
+sub print_metadata
+{
+print '<?xml version="1.0" ?>
+<resource-agent name="fence_vixel" shortdesc="I/O Fencing agent for Vixel FC switches" >
+<longdesc>
+fence_vixel is an I/O Fencing agent which can be used with Vixel FC switches. It logs into a Vixel switch via telnet and removes the specified port from the zone. Removing the zone access from the port disables the port from being able to access the storage.
+
+After a fence operation has taken place the fenced machine can no longer connect to the Vixel FC switch. When the fenced machine is ready to be brought back into the GFS cluster (after reboot) the port on the Vixel FC switch needs to be enabled. In order to do this, log into the Vixel FC switch. Then go to:
+
+config->zones->config &lt;port&gt; &lt;comma-separated-list-of-ports-in-the-zone&gt;
+
+Then apply. Consult the Vixel manual for details.
+</longdesc>
+<vendor-url>http://www.emulex.com</vendor-url>
+<parameters>
+        <parameter name="ipaddr" unique="1" required="1">
+                <getopt mixed="-a &lt;ip&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">IP Address or Hostname</shortdesc>
+        </parameter>
+        <parameter name="passwd" unique="1" required="0">
+                <getopt mixed="-p &lt;password&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">Login password or passphrase</shortdesc>
+        </parameter>
+        <parameter name="passwd_script" unique="1" required="0">
+                <getopt mixed="-S &lt;script&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">Script to retrieve password</shortdesc>
+        </parameter>
+        <parameter name="port" unique="1" required="1">
+                <getopt mixed="-n &lt;id&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">Physical plug number or name of virtual machine</shortdesc>
+        </parameter>
+        <parameter name="help" unique="1" required="0">
+                <getopt mixed="-h" />           
+                <content type="string"  />
+                <shortdesc lang="en">Display help and exit</shortdesc>                    
+        </parameter>
+</parameters>
+<actions>
+        <action name="metadata" />
+</actions>
+</resource-agent>
+';
+}
+
+
 if (@ARGV > 0) {
-    getopts("a:hn:p:S:V") || fail_usage ;
+    getopts("a:hn:p:S:Vo:") || fail_usage ;
 
     usage if defined $opt_h;
     version if defined $opt_V;
 
     fail_usage "Unknown parameter." if (@ARGV > 0);
+
+    if ((defined $opt_o) && ($opt_o =~ /metadata/i)) {
+        print_metadata();
+        exit 0;
+    }
 
     fail_usage "No '-a' flag specified." unless defined $opt_a;
 

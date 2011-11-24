@@ -46,7 +46,7 @@ sub usage
     print "  -h               usage\n";
     print "  -l <name>        Login name\n";
     print "  -n <num>         Port number to disable\n";
-    print "  -o <string>      Action:  disable (default) or enable\n";
+    print "  -o <string>      Action:  disable (default), enable or metadata\n";
     print "  -p <string>      Password for login\n";
     print "  -S <path>        Script to run to retrieve login password\n";
     print "  -q               quiet mode\n";
@@ -78,6 +78,64 @@ sub version
 
   exit 0;
 }
+
+sub print_metadata
+{
+print '<?xml version="1.0" ?>
+<resource-agent name="fence_mcdata" shortdesc="I/O Fencing agent for McData FC switches" >
+<longdesc>
+fence_mcdata is an I/O Fencing agent which can be used with McData FC switches. It logs into a McData switch via telnet and disables a specified port. Disabling the port which a machine is connected to effectively fences that machine. Lengthy telnet connections to the switch should be avoided while a GFS cluster is running because the connection will block any necessary fencing actions.
+
+After a fence operation has taken place the fenced machine can no longer connect to the McData FC switch.  When the fenced machine is ready to be brought back into the GFS cluster (after reboot) the port on the McData FC switch needs to be enabled. This can be done by running fence_mcdata and specifying the enable action.
+</longdesc>
+<vendor-url>http://www.brocade.com</vendor-url>
+<parameters>
+        <parameter name="action" unique="1" required="1">
+                <getopt mixed="-o &lt;action&gt;" />
+                <content type="string" default="disable" />
+                <shortdesc lang="en">Fencing Action</shortdesc>
+        </parameter>
+        <parameter name="ipaddr" unique="1" required="1">
+                <getopt mixed="-a &lt;ip&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">IP Address or Hostname</shortdesc>
+        </parameter>
+        <parameter name="login" unique="1" required="1">
+                <getopt mixed="-l &lt;name&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">Login Name</shortdesc>
+        </parameter>
+        <parameter name="passwd" unique="1" required="0">
+                <getopt mixed="-p &lt;password&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">Login password or passphrase</shortdesc>
+        </parameter>
+        <parameter name="passwd_script" unique="1" required="0">
+                <getopt mixed="-S &lt;script&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">Script to retrieve password</shortdesc>
+        </parameter>
+        <parameter name="port" unique="1" required="1">
+                <getopt mixed="-n &lt;id&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">Physical plug number or name of virtual machine</shortdesc>
+        </parameter>
+        <parameter name="help" unique="1" required="0">
+                <getopt mixed="-h" />           
+                <content type="string"  />
+                <shortdesc lang="en">Display help and exit</shortdesc>                    
+        </parameter>
+</parameters>
+<actions>
+        <action name="enable" />
+        <action name="disable" />
+        <action name="status" />
+        <action name="metadata" />
+</actions>
+</resource-agent>
+';
+}
+
 
 sub get_options_stdin
 {
@@ -152,6 +210,11 @@ if (@ARGV > 0) {
    version if defined $opt_V;
 
    fail_usage "Unknown parameter." if (@ARGV > 0);
+
+   if ((defined $opt_o) && ($opt_o =~ /metadata/i)) {
+     print_metadata();
+     exit 0;
+   }
 
    fail_usage "No '-a' flag specified." unless defined $opt_a;
    fail_usage "No '-n' flag specified." unless defined $opt_n;

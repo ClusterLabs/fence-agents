@@ -36,6 +36,7 @@ sub usage
     print "\n";
     print "Options:\n";
     print "  -h               usage\n";
+    print "  -o metadata      print XML metadata for fence agent\n";
     print "  -u <string>      userid of the virtual machine to fence\n";
     print "  -q               quiet mode\n";
     print "  -V               Version\n";
@@ -64,6 +65,35 @@ sub version
   print "$REDHAT_COPYRIGHT\n" if ( $REDHAT_COPYRIGHT );
 
   exit 0;
+}
+
+sub print_metadata
+{
+print '<?xml version="1.0" ?>
+<resource-agent name="fence_cpint" shortdesc="I/O Fencing agent for GFS on s390 and zSeries VM clusters" >
+<longdesc>
+fence_cpint is an I/O Fencing agent used on a virtual machine running GFS in a s390 or zSeries VM cluster. It uses the cpint package to send a CP LOGOFF command to the specified virtual machine. For fence_cpint to execute correctly, you must have the cpint module installed, and hcp in your PATH.
+
+NOTE: for fence_cpint to send a command to another virtual machine, the machine executing it must either be a privilege class C user or it must be the secondary user of the virtual machine to be fenced. This means that unless all of you GULM server nodes are privilege class C, fence_cpint can only be used with SLM.
+</longdesc>
+<vendor-url>http://www.ibm.com</vendor-url>
+<parameters>
+        <parameter name="userid" unique="1" required="1">
+                <getopt mixed="-u &lt;userid&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">Userid of the virtual machine to fence</shortdesc>
+        </parameter>
+        <parameter name="help" unique="1" required="0">
+                <getopt mixed="-h" />           
+                <content type="string"  />
+                <shortdesc lang="en">Display help and exit</shortdesc>                    
+        </parameter>
+</parameters>
+<actions>
+        <action name="metadata" />
+</actions>
+</resource-agent>
+';
 }
 
 sub get_options_stdin
@@ -121,11 +151,16 @@ sub get_options_stdin
 }
 
 if (@ARGV > 0){
-    getopts("hqu:V") || fail_usage;
+    getopts("hqu:Vo:") || fail_usage;
     usage if defined $opt_h;
     version if defined $opt_V;
 
     fail_usage "Unkown parameter." if (@ARGV > 0);
+
+    if ((defined $opt_o) && ($opt_o =~ /metadata/i)) {
+        print_metadata();
+        exit 0;
+    }
 
     fail_usage "No '-u' flag specified." unless defined $opt_u;
 } else {

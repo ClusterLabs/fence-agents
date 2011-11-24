@@ -74,7 +74,7 @@ sub usage
 	print "  -h               usage\n";
 	print "  -l <name>        Login name\n";
 	print "  -m <modulename>  DRAC/MC module name\n";
-	print "  -o <string>      Action: reboot (default), off or on\n";
+	print "  -o <string>      Action: reboot (default), off, on or metadata\n";
 	print "  -p <string>      Login password\n";
 	print "  -S <path>        Script to run to retrieve password\n";
 	print "  -f <seconds>     Wait X seconds before fencing is started\n";
@@ -128,6 +128,86 @@ sub version
 	print "$pname $RELEASE_VERSION $BUILD_DATE\n";
 	print "$REDHAT_COPYRIGHT\n" if ( $REDHAT_COPYRIGHT );
 	exit 0;
+}
+
+sub print_metadata
+{
+print '<?xml version="1.0" ?>
+<resource-agent name="fence_drac" shortdesc="fencing agent for Dell Remote Access Card" >
+<longdesc>
+fence_drac is an I/O Fencing agent which can be used with the Dell Remote Access Card (DRAC). This card provides remote access to controlling power to a server. It logs into the DRAC through the telnet interface of the card. By default, the telnet interface is not enabled. To enable the interface, you will need to use the racadm command in the racser-devel rpm available from Dell.  To enable telnet on the DRAC:
+
+[root]# racadm config -g cfgSerial -o cfgSerialTelnetEnable 1
+
+[root]# racadm racreset
+</longdesc>
+<vendor-url>http://www.dell.com</vendor-url>
+<parameters>
+        <parameter name="action" unique="1" required="1">
+                <getopt mixed="-o &lt;action&gt;" />
+                <content type="string" default="reboot" />
+                <shortdesc lang="en">Fencing Action</shortdesc>
+        </parameter>
+        <parameter name="ipaddr" unique="1" required="1">
+                <getopt mixed="-a &lt;ip&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">IP Address or Hostname</shortdesc>
+        </parameter>
+        <parameter name="login" unique="1" required="1">
+                <getopt mixed="-l &lt;name&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">Login Name</shortdesc>
+        </parameter>
+        <parameter name="passwd" unique="1" required="0">
+                <getopt mixed="-p &lt;password&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">Login password or passphrase</shortdesc>
+        </parameter>
+        <parameter name="passwd_script" unique="1" required="0">
+                <getopt mixed="-S &lt;script&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">Script to retrieve password</shortdesc>
+        </parameter>
+        <parameter name="cmd_prompt" unique="1" required="0">
+                <getopt mixed="-c &lt;prompt&gt;" />
+                <content type="string" />
+                <shortdesc lang="en">Force fence_drac to use cmd_prompt as the command prompt</shortdesc>
+        </parameter>
+        <parameter name="drac_version" unique="1" required="0">
+                <getopt mixed="-d &lt;version&gt;" />
+                <content type="string" />
+                <shortdesc lang="en">Force fence_drac to treat the device as though it was for the specified drac version</shortdesc>
+        </parameter>
+        <parameter name="module_name" unique="1" required="0">
+                <getopt mixed="-m &lt;modulename&gt;" />
+                <content type="string"/>
+                <shortdesc lang="en">The module name of the blade when using DRAC/MC firmware.</shortdesc>
+        </parameter>
+        <parameter name="debug" unique="1" required="0">
+                <getopt mixed="-D &lt;dumpfile&gt;" />
+                <content type="string"/>
+                <shortdesc lang="en">Debug file of the telnet interaction</shortdesc>
+        </parameter>
+        <parameter name="delay" unique="1" required="0">
+                <getopt mixed="-f &lt;seconds&gt;" />
+                <content type="string" default="0"/>
+                <shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
+        </parameter>
+        <parameter name="help" unique="1" required="0">
+                <getopt mixed="-h" />           
+                <content type="string"  />
+                <shortdesc lang="en">Display help and exit</shortdesc>                    
+        </parameter>
+</parameters>
+<actions>
+        <action name="on" />
+        <action name="off" />
+	<action name="reboot" />
+        <action name="status" />
+        <action name="metadata" />
+</actions>
+</resource-agent>
+';
 }
 
 
@@ -596,6 +676,11 @@ if (@ARGV > 0) {
 	$debug = $opt_D; 
 
 	fail_usage "Unknown parameter." if (@ARGV > 0);
+
+	if ((defined $opt_o) && ($opt_o =~ /metadata/i)) {
+		print_metadata();
+		exit 0;
+	}
 
 	fail_usage "No '-a' flag specified." unless defined $opt_a;
 	$address = $opt_a;

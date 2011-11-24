@@ -38,7 +38,7 @@ sub usage
     print "Options:\n";
     print "  -h               usage\n";
     print "  -n <name>        nodename\n";
-    print "  -o <string>      Action:  on | off | reset (default) | stat\n";
+    print "  -o <string>      Action: on, off, reset (default), status or metadata\n";
     print "  -r <rpower>      rpower command\n";
     print "  -q               quiet mode\n";
     print "  -V               version\n";
@@ -69,6 +69,49 @@ sub version
 
   exit 0;
 }
+
+sub print_metadata
+{
+print '<?xml version="1.0" ?>
+<resource-agent name="fence_xcat" shortdesc="I/O Fencing agent for xcat environments" >
+<longdesc>
+fence_xcat is a wrapper to the rpower(1) command that is distributed with the xCAT project available at http://www.xcat.org. Use of fence_xcat requires that xcat has already been properly configured for your environment. Refer to xCAT(1) for more information on configuring xCAT.
+
+NOTE: It is recommended that fence_bladecenter(8) is used instead of fence_xcat if the bladecenter firmware supports telnet.  This interface is much cleaner and easier to setup.
+</longdesc>
+<vendor-url>http://www.xcat.org</vendor-url>
+<parameters>
+        <parameter name="action" unique="1" required="1">
+                <getopt mixed="-o &lt;action&gt;" />
+                <content type="string" default="restart" />
+                <shortdesc lang="en">Fencing Action</shortdesc>
+        </parameter>
+        <parameter name="nodename" unique="1" required="1">
+                <getopt mixed="-n &lt;nodename&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">The nodename as defined in nodelist.tab of the xCAT setup.</shortdesc>
+        </parameter>
+        <parameter name="rpower" unique="1" required="0">
+                <getopt mixed="-r &lt;rpower&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">The path to the rpower binary.</shortdesc>
+        </parameter>
+        <parameter name="help" unique="1" required="0">
+                <getopt mixed="-h" />           
+                <content type="string"  />
+                <shortdesc lang="en">Display help and exit</shortdesc>                    
+        </parameter>
+</parameters>
+<actions>
+        <action name="on" />
+        <action name="off" />
+        <action name="status" />
+        <action name="metadata" />
+</actions>
+</resource-agent>
+';
+}
+
 
 sub get_options_stdin
 {
@@ -128,10 +171,15 @@ if (@ARGV > 0) {
 
    fail_usage "Unknown parameter." if (@ARGV > 0);
 
+   if ((defined $opt_o) && ($opt_o =~ /metadata/i)) {
+     print_metadata();
+     exit 0;
+   }
+
    fail_usage "No '-n' flag specified." unless defined $opt_n;
    $opt_o=lc($opt_o);
    fail_usage "Unrecognised action '$opt_o' for '-o' flag"
-      unless $opt_o =~ /^(on|off|reset|stat)$/;
+      unless $opt_o =~ /^(on|off|reset|stat|status)$/;
 
 } else {
    get_options_stdin();
@@ -139,7 +187,7 @@ if (@ARGV > 0) {
    fail "failed: no plug number" unless defined $opt_n;
    $opt_o=lc($opt_o);
    fail "failed: unrecognised action: $opt_o"
-      unless $opt_o =~ /^(on|off|reset|stat)$/;
+      unless $opt_o =~ /^(on|off|reset|stat|status)$/;
 }
 
 pipe (RDR,WTR);
@@ -173,7 +221,7 @@ while (<RDR>)
       {
          $status = $2;
 
-         if (($opt_o eq $2) || ($opt_o eq "stat"))
+         if (($opt_o eq $2) || ($opt_o =~ /stat/i) || ($opt_o =~ /status/i))
          {
             $found=1;
             last;

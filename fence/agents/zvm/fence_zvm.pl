@@ -40,6 +40,7 @@ sub usage
     print "Options:\n";
     print "  -a <ip>          IP address or hostname of the physical s390\n";
     print "  -h               usage\n";
+    print "  -o metadata      print XML metadata for fence agent\n";
     print "  -u <string>      userid of the virtual machine to fence\n";
     print "  -p <string>      Password\n";
     print "  -S <path>        Script to run to retrieve login password\n";
@@ -71,6 +72,48 @@ sub version
   print "$REDHAT_COPYRIGHT\n" if ( $REDHAT_COPYRIGHT );
 
   exit 0;
+}
+
+sub print_metadata
+{
+print '<?xml version="1.0" ?>
+<resource-agent name="fence_zvm" shortdesc="I/O Fencing agent for GFS on s390 and zSeries VM clusters" >
+<longdesc>
+fence_zvm is an I/O Fencing agent used on a GFS virtual machine in a s390 or zSeries VM cluster. It uses the s3270 program to log the specified virtual machine out of VM. For fence_zvm to execute correctly, you must have s3270 in your PATH.
+</longdesc>
+<vendor-url>http://www.ibm.com</vendor-url>
+<parameters>
+        <parameter name="ipaddr" unique="1" required="1">
+                <getopt mixed="-a &lt;ip&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">IP Address or Hostname</shortdesc>
+        </parameter>
+        <parameter name="userid" unique="1" required="1">
+                <getopt mixed="-u &lt;userid&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">Userid of the virtual machine to fence</shortdesc>
+        </parameter>
+        <parameter name="passwd" unique="1" required="0">
+                <getopt mixed="-p &lt;password&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">Login password or passphrase</shortdesc>
+        </parameter>
+        <parameter name="passwd_script" unique="1" required="0">
+                <getopt mixed="-S &lt;script&gt;" />
+                <content type="string"  />
+                <shortdesc lang="en">Script to retrieve password</shortdesc>
+        </parameter>
+        <parameter name="help" unique="1" required="0">
+                <getopt mixed="-h" />           
+                <content type="string"  />
+                <shortdesc lang="en">Display help and exit</shortdesc>                    
+        </parameter>
+</parameters>
+<actions>
+        <action name="metadata" />
+</actions>
+</resource-agent>
+';
 }
 
 
@@ -282,11 +325,16 @@ sub get_options_stdin
 }
 
 if (@ARGV > 0){
-    getopts("a:hp:S:qr:u:V") || fail_usage;
+    getopts("a:hp:S:qr:u:Vo:") || fail_usage;
     usage if defined $opt_h;
     version if defined $opt_V;
 
     fail_usage "Unkown parameter." if (@ARGV > 0);
+
+    if ((defined $opt_o) && ($opt_o =~ /metadata/i)) {
+        print_metadata();
+        exit 0;
+    }
 
     fail_usage "No '-a' flag specified." unless defined $opt_a;
 
