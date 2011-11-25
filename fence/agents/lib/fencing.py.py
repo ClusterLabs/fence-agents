@@ -871,7 +871,7 @@ def fence_login(options):
 
 	try:
 		re_login = re.compile("(login\s*: )|(Login Name:  )|(username: )|(User Name :)", re.IGNORECASE)
-		re_pass  = re.compile("password", re.IGNORECASE)
+		re_pass  = re.compile("(password)|(pass phrase)", re.IGNORECASE)
 
 		if options.has_key("-z"):
 			command = '%s %s %s %s' % (SSL_PATH, force_ipvx, options["-a"], options["-u"])
