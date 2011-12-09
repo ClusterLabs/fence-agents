@@ -94,18 +94,28 @@ def get_power_status(conn, options):
 		return machines
 	else:
 		if options.has_key("-U") == False:
-			## Transform InventoryPath to UUID
-			mo_SearchIndex = Property(options["ServiceContent"].searchIndex.value)
-			mo_SearchIndex._type = "SearchIndex"
+			if options["-n"].startswith('/'):
+				## Transform InventoryPath to UUID
+				mo_SearchIndex = Property(options["ServiceContent"].searchIndex.value)
+				mo_SearchIndex._type = "SearchIndex"
 			
-			vm = conn.service.FindByInventoryPath(mo_SearchIndex, options["-n"])
+				vm = conn.service.FindByInventoryPath(mo_SearchIndex, options["-n"])
 			
-			try:
-				options["-U"] = mappingToUUID[vm.value]
-			except KeyError, ex:
-				fail(EC_STATUS)
-			except AttributeError, ex:
-				fail(EC_STATUS)
+				try:
+					options["-U"] = mappingToUUID[vm.value]
+				except KeyError, ex:
+					fail(EC_STATUS)
+				except AttributeError, ex:
+					fail(EC_STATUS)
+			else:
+				## Name of virtual machine instead of path
+				## warning: if you have same names of machines this won't work correctly
+				try:
+					(options["-U"], _) = machines[options["-n"]]
+				except KeyError, ex:
+					fail(EC_STATUS)
+				except AttributeError, ex:
+					fail(EC_STATUS)
 
 		try:
 			if uuid[options["-U"]] == "poweredOn":
@@ -149,8 +159,9 @@ which can be used with the virtual machines managed by VMWare products \
 that have SOAP API v4.1+. \
 \n.P\n\
 Name of virtual machine (-n / port) has to be used in inventory path \
-format (e.g. /datacenter/vm/Discovered virtual machine/myMachine). Alternatively \
-you can use UUID (-U / uuid) to access virtual machine."
+format (e.g. /datacenter/vm/Discovered virtual machine/myMachine). \
+In the cases when name of yours VM is unique you can use it instead. \
+Alternatively you can always use UUID (-U / uuid) to access virtual machine."
 	docs["vendorurl"] = "http://www.vmware.com"
 	show_docs(options, docs)
 
