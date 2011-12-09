@@ -1,6 +1,6 @@
 %.8: $(TARGET) $(top_srcdir)/fence/agents/lib/fence2man.xsl
 	set -e && \
-		./$(TARGET) -o metadata > .$@.tmp && \
+		./$^ -o metadata > .$@.tmp && \
 	xsltproc $(top_srcdir)/fence/agents/lib/fence2man.xsl .$@.tmp > $@
 
 clean-man:

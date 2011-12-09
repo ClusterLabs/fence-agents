@@ -1,17 +1,16 @@
 MAINTAINERCLEANFILES	= Makefile.in
 
-sbin_PROGRAMS		= fence_ipmilan
+TARGET			= fence_ipmilan
+
+sbin_PROGRAMS		= $(TARGET)
 
 noinst_HEADERS		= expect.h
 
 fence_ipmilan_SOURCES	= expect.c ipmilan.c
 
-man_MANS		= fence_ipmilan.8
+dist_man_MANS		= $(TARGET).8
 
-fence_ipmilan.8: fence_ipmilan $(top_srcdir)/fence/agents/lib/fence2man.xsl
-	set -e && \
-	./$^ -o metadata > .$@.tmp && \
-	xsltproc $(top_srcdir)/fence/agents/lib/fence2man.xsl .$@.tmp > $@
+include $(top_srcdir)/make/fencemanc.mk
 
-clean-local:
-	rm -f *.8 .*.8.tmp
+clean-local: clean-man
+	rm -f $(TARGET)
