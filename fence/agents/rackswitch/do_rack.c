@@ -158,6 +158,40 @@ static void print_usage(void)
 
 
 
+static void print_metadata(void)
+{
+  printf("<?xml version=\"1.0\" ?>\n"
+        "<resource-agent name=\"fence_rackswitch\" shortdesc=\"fence_rackswitch - I/O Fencing agent for RackSaver RackSwitch\" >\n"
+        "<longdesc>fence_rackswitch is an I/O Fencing agent which can be used with the RackSaver RackSwitch. It logs into the RackSwitch and boots a specified plug. Using the http interface to the RackSwitch should be avoided while a GFS cluster is running because the connection may interfere with the operation of this agent.</longdesc>\n"
+	"<vendor-url>http://www.bladenetwork.net</vendor-url>\n"
+	"<parameters>\n"
+        "<parameter name=\"ipaddr\" unique=\"1\" required=\"1\">\n"
+        "\t<getopt mixed=\"-a &lt;ip&gt;\" />\n"
+        "\t<content type=\"string\"  />\n"
+        "\t<shortdesc lang=\"en\">IP Address or Hostname</shortdesc>\n"
+        "</parameter>\n"
+        "<parameter name=\"login\" unique=\"1\" required=\"1\">\n"
+        "\t<getopt mixed=\"-l &lt;name&gt;\" />\n"
+        "\t<content type=\"string\"  />\n"
+        "\t<shortdesc lang=\"en\">Login Name</shortdesc>\n"
+        "</parameter>\n"
+        "<parameter name=\"passwd\" unique=\"1\" required=\"0\">\n"
+        "\t<getopt mixed=\"-p &lt;password&gt;\" />\n"
+        "\t<content type=\"string\"  />\n"
+        "\t<shortdesc lang=\"en\">Login password or passphrase</shortdesc>\n"
+        "</parameter>\n"
+        "<parameter name=\"passwd_script\" unique=\"1\" required=\"0\">\n"
+        "\t<getopt mixed=\"-S &lt;script&gt;\" />\n"
+        "\t<content type=\"string\"  />\n"
+        "\t<shortdesc lang=\"en\">Script to retrieve password</shortdesc>\n"
+        "</parameter>\n"
+	"</parameters>\n"
+	"<actions>\n"
+	"\t<action name=\"metadata\" />\n"
+	"</actions>\n"
+	"</resource-agent>\n");
+}
+
 static void get_options(int argc, char **argv)
 {
   int c;
@@ -167,7 +201,7 @@ static void get_options(int argc, char **argv)
     /*
      * Command line input
      */
-    while ((c = getopt(argc, argv, "ha:n:l:p:S:vqVd")) != -1)
+    while ((c = getopt(argc, argv, "ha:n:l:p:S:vqVdo:")) != -1)
       {
 	switch(c)
 	  {
@@ -220,6 +254,16 @@ static void get_options(int argc, char **argv)
 	    fprintf(stderr, "Please use '-h' for usage.\n");
 	    exit(DID_FAILURE);
 	    break;
+          
+          case 'o':
+            if (strncasecmp(optarg, "metadata", 254) == 0) {
+              print_metadata();
+              exit(DID_SUCCESS);              
+            } else {
+              fprintf(stderr, "Only 'metadata' option is aviable for this fence agent\n");
+              exit(DID_FAILURE);
+            }
+            break;
 
 	  default:
 	    fprintf(stderr, "Bad programmer! You forgot to catch the %c flag\n", c);
