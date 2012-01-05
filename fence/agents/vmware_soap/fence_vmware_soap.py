@@ -39,6 +39,17 @@ def soap_login(options):
 	options["mo_SessionManager"] = mo_SessionManager
 	return conn
 
+def process_results(results, machines, uuid, mappingToUUID):
+	for m in results.objects:
+		info = {}
+		for i in m.propSet:
+			info[i.name] = i.val
+		machines[info["name"]] = (info["config.uuid"], info["summary.runtime.powerState"])
+		uuid[info["config.uuid"]] = info["summary.runtime.powerState"]
+		mappingToUUID[m.obj.value] = info["config.uuid"]
+
+	return (machines, uuid, mappingToUUID)
+
 def get_power_status(conn, options):
 	mo_ViewManager = Property(options["ServiceContent"].viewManager.value)
 	mo_ViewManager._type = "ViewManager"
@@ -78,18 +89,19 @@ def get_power_status(conn, options):
 	except Exception, ex:
 		fail(EC_STATUS)
 
-	machines = { }
-	uuid = { }
-	mappingToUUID = { }
+	(machines, uuid, mappingToUUID) = process_results(raw_machines, {}, {}, {})
 
-	for m in raw_machines.objects:
-		info = {}
-		for i in m.propSet:
-			info[i.name] = i.val
-		machines[info["name"]] = (info["config.uuid"], info["summary.runtime.powerState"])
-		uuid[info["config.uuid"]] = info["summary.runtime.powerState"]
-		mappingToUUID[m.obj.value] = info["config.uuid"]
-	
+        # Probably need to loop over the ContinueRetreive if there are more results after 1 iteration.
+	while (hasattr(raw_machines, 'token') == True):
+		try:
+			raw_machines = conn.service.ContinueRetrievePropertiesEx(mo_PropertyCollector, raw_machines.token)
+		except Exception, ex:
+			fail(EC_STATUS)
+		(more_machines, more_uuid, more_mappingToUUID) = process_results(raw_machines, {}, {}, {})
+		machines.update(more_machines)
+		uuid.update(more_uuid)
+		mappingToUUID.update(more_mappingToUUID)
+
 	if ["list", "monitor"].count(options["-o"]) == 1:
 		return machines
 	else:
