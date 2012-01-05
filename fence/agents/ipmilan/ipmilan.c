@@ -332,11 +332,11 @@ build_cmd(char *command, size_t cmdlen, struct ipmi *ipmi, int op, int nopass)
 static int
 ipmi_spawn(struct ipmi *ipmi, const char *cmd, const char *cmd_print)
 {
-	dbg_printf(ipmi, 1, "Spawning: '%s'...\n", cmd_print);
 	if (!ipmi) {
 		errno = EINVAL;
 		return -1;
 	}
+	dbg_printf(ipmi, 1, "Spawning: '%s'...\n", cmd_print);
 
 	if (ipmi->i_pid != -1)  {
 		dbg_printf(ipmi, 1, "Can't spawn: PID %d running\n",
@@ -805,19 +805,22 @@ get_options_stdin(char *ip, size_t iplen,
 		} else if (!strcasecmp(name, "lanplus")) {
 			(*lanplus) = 1;
 		} else if (!strcasecmp(name,"timeout")) {
-			if ((sscanf(val,"%d",timeout)!=1) || *timeout<1) {
+			if ((!val) || (sscanf(val,"%d",timeout)!=1) || *timeout<1) {
 			    *timeout=DEFAULT_TIMEOUT;
 			}
 		} else if (!strcasecmp(name,"power_wait")) {
-			if ((sscanf(val,"%d",power_wait)!=1) || *power_wait<1) {
+			if ((!val) || (sscanf(val,"%d",power_wait)!=1) || *power_wait<1) {
 			    *power_wait=DEFAULT_POWER_WAIT;
 			}
 		} else if (!strcasecmp(name,"cipher")) {
-			if ((sscanf(val,"%d",cipher)!=1) || *cipher<0) {
+			if ((!val) || (sscanf(val,"%d",cipher)!=1) || *cipher<0) {
 			    *cipher=-1;
 			}
 		} else if (!strcasecmp(name,"method")) {
-			strncpy (method, val, methodlen);
+			if (val)
+				strncpy (method, val, methodlen);
+			else
+				method[0] = 0;
 		} else if (!strcasecmp(name, "option") ||
 			   !strcasecmp(name, "operation") ||
 			   !strcasecmp(name, "action")) {
@@ -983,40 +986,47 @@ main(int argc, char **argv)
 			case 'A':
 				/* Auth type */
 				strncpy(authtype, optarg, sizeof(authtype));
+				authtype[sizeof(authtype)-1] = 0;
 				break;
 			case 'L':
 				/* Privilege level - ipmitool defaults
 				 * to ADMINISTRATOR if nothing is given
 				 */
 				strncpy(privlvl, optarg, sizeof(privlvl));
+				privlvl[sizeof(privlvl)-1] = 0;
 				break;
 			case 'a':
 			case 'i':
 				/* IP address */
 				strncpy(ip, optarg, sizeof(ip));
+				ip[sizeof(ip)-1] = 0;
 				break;
 			case 'l':
 				/* user / login */
 				strncpy(user, optarg, sizeof(user));
+				user[sizeof(user)-1] = 0;
 				break;
 			case 'p':
 				/* password */
 				strncpy(passwd, optarg, sizeof(passwd));
+				passwd[sizeof(passwd)-1] = 0;
 				break;
 			case 'P':
 				lanplus = 1;
 				break;
 			case 'S':
 				strncpy(pwd_script, optarg, sizeof(pwd_script));
-				pwd_script[sizeof(pwd_script) - 1] = '\0';
+				pwd_script[sizeof(pwd_script)-1] = 0;
 				break;
 			case 'o':
 				/* Operation */
 				strncpy(op, optarg, sizeof(op));
+				op[sizeof(op)-1] = 0;
 				break;
 			case 'f':
 				/* Delay */
 				strncpy(delay, optarg, sizeof(delay));
+				delay[sizeof(delay)-1] = 0;
 				break;
 			case 't':
 				/* Timeout */
@@ -1039,6 +1049,7 @@ main(int argc, char **argv)
 			case 'M':
 				/* Reboot method */
 				strncpy(method, optarg, sizeof(method));
+				method[sizeof(method)-1] = 0;
 				break;
 			case 'v':
 				verbose++;
@@ -1077,6 +1088,7 @@ main(int argc, char **argv)
 		fp = popen(pwd_script, "r");
 		if (fp != NULL) {
 			ssize_t len = fread(pwd_buf, 1, sizeof(pwd_buf), fp);
+			pwd_buf[sizeof(pwd_buf)-1] = 0;
 			if (len > 0) {
 				char *p;
 				p = strchr(pwd_buf, '\n');
