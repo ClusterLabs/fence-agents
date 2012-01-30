@@ -25,6 +25,7 @@ EC_WAITING_ON      = 6
 EC_WAITING_OFF     = 7
 EC_STATUS          = 8
 EC_STATUS_HMC      = 9
+EC_PASSWORD_MISSING = 10
 
 TELNET_PATH = "/usr/bin/telnet"
 SSH_PATH    = "/usr/bin/ssh"
@@ -439,7 +440,8 @@ def fail(error_code):
 		EC_WAITING_ON : "Failed: Timed out waiting to power ON",
 		EC_WAITING_OFF : "Failed: Timed out waiting to power OFF",
 		EC_STATUS : "Failed: Unable to obtain correct plug status or plug is not available",
-		EC_STATUS_HMC : "Failed: Either unable to obtaion correct plug status, partition is not available or incorrect HMC version used"
+		EC_STATUS_HMC : "Failed: Either unable to obtaion correct plug status, partition is not available or incorrect HMC version used",
+		EC_PASSWORD_MISSING : "Failed: You have to set login password"
 	}[error_code] + "\n"
 	sys.stderr.write(message)
 	sys.exit(EC_GENERIC_ERROR)
@@ -946,8 +948,11 @@ def fence_login(options):
 			conn.log_expect(options, re_login, int(options["-y"]))
 			conn.send(options["-l"] + login_eol)
 			conn.log_expect(options, re_pass, int(options["-Y"]))
-			conn.send(options["-p"] + login_eol)
-			conn.log_expect(options, options["-c"], int(options["-Y"]))
+			try:
+				conn.send(options["-p"] + login_eol)
+				conn.log_expect(options, options["-c"], int(options["-Y"]))
+			except KeyError:
+				fail(EC_PASSWORD_MISSING)
 	except pexpect.EOF:
 		fail(EC_LOGIN_DENIED) 
 	except pexpect.TIMEOUT:
