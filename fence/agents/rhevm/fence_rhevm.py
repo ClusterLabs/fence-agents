@@ -41,10 +41,10 @@ def get_power_status(conn, options):
 	else:
 		status = result.group(1)
 
-	if (status == "up"):
-		return "on"
-	else:
+	if (status.lower() == "down"):
 		return "off"
+	else:
+		return "on"
 
 def set_power_status(conn, options):
 	action = {
