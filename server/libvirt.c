@@ -56,7 +56,6 @@
 #include "mcast.h"
 #include "tcp.h"
 #include "virt.h"
-#include "libcman.h"
 #include "debug.h"
 #include "uuid-test.h"
 
