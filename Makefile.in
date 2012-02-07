@@ -11,7 +11,7 @@
 ###############################################################################
 
 
-all:
+all: fence_virtd.service
 	make -C config
 	make -C common
 	make -C client
@@ -28,7 +28,17 @@ clean:
 	make -C common clean
 	make -C client clean
 	make -C server clean
+	rm -f fence_virtd.service
 
 maintainer-clean:
 	make clean
 	git clean -df
+
+fence_virtd.service: fence_virtd.service.in
+	# Expand macros and add to unit file
+	SBINDIR="@sbindir@"; \
+	SCDIR="@sysconfdir@"; \
+	cat $^ > $@ ; \
+	echo "EnvironmentFile=-$$SCDIR/sysconfig/fence_virtd" >> $@ ;\
+	echo "ExecStart=$$SBINDIR/fence_virtd \$$FENCE_VIRTD_ARGS" >> $@
+
