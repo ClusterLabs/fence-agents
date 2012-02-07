@@ -124,6 +124,12 @@ main(int argc, char **argv)
 		if (sc_get(config, "fence_virtd/@wait_for_init",
 			   val, sizeof(val)) == 0)
 			wait_for_init = atoi(val);
+		if (!wait_for_init) {
+			/* XXX compat */
+			if (sc_get(config, "fence_virtd/@wait_for_backend",
+				   val, sizeof(val)) == 0)
+				wait_for_init = atoi(val);
+		}
 	}
 
 	if (dget() > 3)

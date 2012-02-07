@@ -41,9 +41,10 @@ the plugin to be used to carry out fencing requests
 do not fork into the background.
 
 .TP
-.B wait_for_backend
+.B wait_for_init
 .
-wait for the backend management layer to initialize rather than giving up immediately
+wait for the frontend and backends to become available rather than giving up immediately.
+This replaces wait_for_backend in 0.2.x.
 
 .TP
 .B module_path
