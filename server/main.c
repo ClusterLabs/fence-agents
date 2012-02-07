@@ -53,7 +53,7 @@ main(int argc, char **argv)
 	const backend_plugin_t *p;
 	listener_context_t listener_ctx = NULL;
 	backend_context_t backend_ctx = NULL;
-	int debug_set = 0, foreground = 0, wait_for_backend = 0;
+	int debug_set = 0, foreground = 0, wait_for_init = 0;
 	int opt, configure = 0;
 
 	config = sc_init();
@@ -81,7 +81,7 @@ main(int argc, char **argv)
 			configure = 1;
 			break;
 		case 'w':
-			wait_for_backend = 1;
+			wait_for_init = 1;
 			break;
 		case 'l':
 			plugin_dump();
@@ -90,7 +90,7 @@ main(int argc, char **argv)
 		case '?':
 			usage();
 			return 0;
-		default: 
+		default:
 			return -1;
 		}
 	}
@@ -120,13 +120,13 @@ main(int argc, char **argv)
 			foreground = atoi(val);
 	}
 
-	if (!wait_for_backend) {
-		if (sc_get(config, "fence_virtd/@wait_for_backend",
+	if (!wait_for_init) {
+		if (sc_get(config, "fence_virtd/@wait_for_init",
 			   val, sizeof(val)) == 0)
-			wait_for_backend = atoi(val);
+			wait_for_init = atoi(val);
 	}
 
-	if (dget() > 3) 
+	if (dget() > 3)
 		sc_dump(config, stdout);
 
 	if (sc_get(config, "fence_virtd/@backend", backend_name,
@@ -189,8 +189,10 @@ main(int argc, char **argv)
 	signal(SIGTERM, exit_handler);
 	signal(SIGQUIT, exit_handler);
 
+	syslog(LOG_NOTICE, "fence_virtd starting.  Listener: %s  Backend: %s", backend_name, listener_name);
+
 	while (p->init(&backend_ctx, config) < 0) {
-		if (!wait_for_backend) {
+		if (!wait_for_init) {
 			if (foreground) {
 				printf("Backend plugin %s failed to initialize\n",
 				       backend_name);
@@ -208,19 +210,24 @@ main(int argc, char **argv)
 	}
 
 	/* only client we have now is mcast (fence_xvm behavior) */
-	if (lp->init(&listener_ctx, p->callbacks, config, map,
-		       backend_ctx) < 0) {
-		if (foreground) {
-			printf("Listener plugin %s failed to initialize\n",
+	while (lp->init(&listener_ctx, p->callbacks, config, map,
+			backend_ctx) != 0) {
+		if (!wait_for_init)
+			if (foreground) {
+				printf("Listener plugin %s failed to initialize\n",
+				       listener_name);
+			}
+			syslog(LOG_ERR,
+			       "Listener plugin %s failed to initialize\n",
 			       listener_name);
+			return 1;
 		}
-		syslog(LOG_ERR,
-		       "Listener plugin %s failed to initialize\n",
-		       listener_name);
-		return 1;
+		sleep(5);
 	}
 
 	while (run && lp->dispatch(listener_ctx, NULL) >= 0);
+
+	syslog(LOG_NOTICE, "fence_virtd shutting down");
 
 	map_release(map);
 	sc_release(config);
