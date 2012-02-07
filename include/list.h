@@ -68,14 +68,14 @@ do { \
  * * cnt ends up being the number of items in the list.
  */
 #define list_for(list, curr, cnt) \
-	if (((cnt=0) == 0) && (list != NULL) && (*list != NULL)) \
+	if ((!(cnt=0)) && (*list != NULL)) \
 		for (curr = *list; \
 		     (cnt == 0) || (curr != *list); \
 		     curr = (void*)le(curr)->le_next, \
 		     cnt++)
 			
 #define list_for_rev(list, curr, cnt) \
-	if (((cnt=0) == 0) && list && *list) \
+	if ((!(cnt=0)) && (*list != NULL)) \
 		for (curr = (void *)(le(*list)->le_prev); \
 		     (cnt == 0) || ((void *)curr != le(*list)->le_prev); \
 		     curr = (void*)(le(curr)->le_prev), \

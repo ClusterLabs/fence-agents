@@ -263,7 +263,6 @@ serial_dispatch(listener_context_t c, struct timeval *timeout)
 	struct timeval tv;
 	int max;
 	int n, x, ret;
-	char tmp_buf[32];
 
 	info = (serial_info *)c;
 	VALIDATE(info);

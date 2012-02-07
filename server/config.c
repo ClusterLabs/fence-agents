@@ -190,7 +190,7 @@ listener_config_multicast(config_object_t *config)
 {
 	char val[4096];
 	char inp[4096];
-	const char *family;
+	const char *family = "ipv4";
 	struct in_addr sin;
 	struct in6_addr sin6;
 	int done = 0;

@@ -6,6 +6,8 @@
 #include <signal.h>
 #include <errno.h>
 #include <pthread.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 #include <sys/types.h>
 #include <sys/poll.h>
@@ -234,7 +236,6 @@ domainStarted(virDomainPtr mojaDomain, const char *path, int mode)
 	xmlDocPtr doc;
 	xmlNodePtr cur, devices, child, serial;
 	xmlAttrPtr attr, attr_mode, attr_path;
-	size_t path_len = 0;
 
 	if (!mojaDomain)
 		return -1;
@@ -243,9 +244,6 @@ domainStarted(virDomainPtr mojaDomain, const char *path, int mode)
 
 	xml = virDomainGetXMLDesc(mojaDomain, 0);
 	// printf("%s\n", xml);
-	if (path)
-		path_len = strlen(path);
-
 	// @todo: free mojaDomain       
 
 	// parseXML output
