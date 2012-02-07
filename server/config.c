@@ -426,11 +426,13 @@ backend_configure(config_object_t *config)
 
 	sc_set(config, "fence_virtd/@backend", inp);
 
+#if 0
 	if (!strcmp(inp, "libvirt")) {
 		backend_config_libvirt(config);
 	} else if (!strcmp(inp, "checkpoint")) {
 		backend_config_checkpoint(config);
 	}
+#endif
 
 	return 0;
 }
