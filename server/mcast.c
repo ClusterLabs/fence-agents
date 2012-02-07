@@ -58,7 +58,7 @@
 #include "fdops.h"
 
 #define NAME "multicast"
-#define VERSION "1.1"
+#define VERSION "1.2"
 
 #define MCAST_MAGIC 0xabb911a3
 
@@ -569,7 +569,7 @@ mcast_init(listener_context_t *c, const fence_callbacks_t *cb,
 	if (mc_sock < 0) {
 		printf("Could not set up multicast listen socket\n");
 		free(info);
-		return 1;
+		return -1;
 	}
 
 	info->magic = MCAST_MAGIC;
