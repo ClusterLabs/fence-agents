@@ -80,10 +80,10 @@ AC_ARG_ENABLE(libvirt-plugin,
 [ mod_libvirt=$enableval ], [ mod_libvirt=yes ])
 AC_SUBST(mod_libvirt)
 
-# checkpoint plugin: Enabled by default
+# checkpoint plugin: Disabled by default
 AC_ARG_ENABLE(checkpoint-plugin,
-[AS_HELP_STRING([--disable-checkpoint-plugin],
-		[Disable cluster checkpoint backend plugin])],
+[AS_HELP_STRING([--enable-checkpoint-plugin],
+		[Enable CMAN / AIS checkpoint backend plugin])],
 [ mod_checkpoint=$enableval ], [ mod_checkpoint=no ])
 AC_SUBST(mod_checkpoint)
 

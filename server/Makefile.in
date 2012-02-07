@@ -76,6 +76,7 @@ ifneq ($(mod_libvirt_qmf),no)
 MODULES+=libvirt-qmf.so
 endif
 ifneq ($(mod_pm_fence),no)
+INCLUDES+=$(PACEMAKER_INCLUDES)
 MODULES+=pm-fence.so
 endif
 ifneq ($(mod_multicast),no)
