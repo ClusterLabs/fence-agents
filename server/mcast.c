@@ -555,6 +555,7 @@ mcast_init(listener_context_t *c, const fence_callbacks_t *cb,
 			       "authentication\n", info->args.key_file);
 			info->args.auth = AUTH_NONE;
 			info->args.hash = HASH_NONE;
+			info->key_len = 0;
 		}
 	}
 

@@ -114,6 +114,12 @@ sha_verify(fence_req_t *req, void *key, size_t key_len)
 			return 0;
 	}
 
+	if (!key || !key_len) {
+		dbg_printf(3, "%s: Hashing requested when we have no key data\n",
+			   __FUNCTION__);
+		return 0;
+	}
+
 	memset(hash, 0, sizeof(hash));
 	h = HASH_Create(ht);
 	if (!h)
