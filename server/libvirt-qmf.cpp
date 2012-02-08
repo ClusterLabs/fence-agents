@@ -41,8 +41,8 @@
 #include <qmf/ConsoleEvent.h>
 
 
-#define NAME "libvirt-qpid"
-#define VERSION "0.1"
+#define NAME "libvirt-qmf"
+#define VERSION "0.2"
 
 #define MAGIC 0x1e01017a
 
@@ -68,6 +68,7 @@ do {\
 static qmf::ConsoleSession
 lq_open_session(struct lq_info *info)
 {
+	qmf::ConsoleSession session;
 	std::stringstream url;
 	url << info->host << ":" << info->port;
 
@@ -82,22 +83,27 @@ lq_open_session(struct lq_info *info)
 		options["sasl-mechanism"] = "GSSAPI";
 	}
 
-	qpid::messaging::Connection connection(url.str(), options);
-	connection.open();
+	try {
+		qpid::messaging::Connection connection(url.str(), options);
+		connection.open();
+	
+		if (!connection.isOpen()) {
+			std::cout << "Error connecting." << std::endl;
+		} else {
+			session = qmf::ConsoleSession(connection);
 
-	qmf::ConsoleSession session;
-	if (!connection.isOpen()) {
-		std::cout << "Error connecting." << std::endl;
-	} else {
-		session = qmf::ConsoleSession(connection);
+			std::stringstream filter;
+			filter << "[or, "
+			   	"[eq, _product, [quote, 'libvirt-qmf']], "
+			   	"[eq, _product, [quote, 'libvirt-qpid']]"
+			  	"]";
+			session.setAgentFilter(filter.str());
+			session.open();
+		}
+	}
 
-		std::stringstream filter;
-		filter << "[or, "
-			   "[eq, _product, [quote, 'libvirt-qmf']], "
-			   "[eq, _product, [quote, 'libvirt-qpid']]"
-			  "]";
-		session.setAgentFilter(filter.str());
-		session.open();
+	catch (qpid::messaging::TransportFailure ex) {
+		std::cout << "Error establishing session: " << ex.what() << std::endl;
 	}
 
 	return session;
@@ -248,7 +254,7 @@ static int
 lq_null(const char *vm_name, void *priv)
 {
 	VALIDATE(priv);
-	printf("[libvirt-qpid] libvirt-qpid operation on %s\n", vm_name);
+	printf("[libvirt-qmf] NULL operation on %s\n", vm_name);
 
 	return 1;
 }
@@ -258,7 +264,7 @@ static int
 lq_off(const char *vm_name, const char *src, uint32_t seqno, void *priv)
 {
 	VALIDATE(priv);
-	printf("[libvirt-qpid] OFF operation on %s\n", vm_name);
+	printf("[libvirt-qmf] OFF operation on %s\n", vm_name);
 
 	return do_lq_request((lq_info *)priv, vm_name, "destroy");
 
@@ -270,7 +276,7 @@ static int
 lq_on(const char *vm_name, const char *src, uint32_t seqno, void *priv)
 {
 	VALIDATE(priv);
-	printf("[libvirt-qpid] ON operation on %s\n", vm_name);
+	printf("[libvirt-qmf] ON operation on %s\n", vm_name);
 
 	return do_lq_request((lq_info *)priv, vm_name, "create");
 }
@@ -280,7 +286,7 @@ static int
 lq_devstatus(void *priv)
 {
 	VALIDATE(priv);
-	printf("[libvirt-qpid] Device status\n");
+	printf("[libvirt-qmf] Device status\n");
 
 	return 0;
 }
@@ -290,7 +296,7 @@ static int
 lq_status(const char *vm_name, void *priv)
 {
 	VALIDATE(priv);
-	printf("[libvirt-qpid] STATUS operation on %s\n", vm_name);
+	printf("[libvirt-qmf] STATUS operation on %s\n", vm_name);
 
 	return do_lq_request((lq_info *)priv, vm_name, "state");
 }
@@ -300,7 +306,7 @@ static int
 lq_reboot(const char *vm_name, const char *src, uint32_t seqno, void *priv)
 {
 	VALIDATE(priv);
-	printf("[libvirt-qpid] REBOOT operation on %s\n", vm_name);
+	printf("[libvirt-qmf] REBOOT operation on %s\n", vm_name);
 	
 	if (lq_off(vm_name, src, seqno, priv) != 0)
 		return 1;
@@ -316,7 +322,7 @@ lq_hostlist(hostlist_callback callback, void *arg, void *priv)
 {
 	VALIDATE(priv);
 
-	printf("[libvirt-qpid] HOSTLIST operation\n");
+	printf("[libvirt-qmf] HOSTLIST operation\n");
 	
 	qmf::ConsoleSession session(lq_open_session((struct lq_info *)priv));
 	if (!session.isValid()) {
@@ -379,9 +385,9 @@ lq_init(backend_context_t *c, config_object_t *config)
 		return -1;
 
 	memset(info, 0, sizeof(*info));
-	info->port = 49000;
+	info->port = 5672; /* Actually match default qpid port */
 
-	if(sc_get(config, "backends/libvirt-qpid/@host",
+	if(sc_get(config, "backends/libvirt-qmf/@host",
 		   value, sizeof(value))==0){
 		printf("\n\nHOST = %s\n\n",value);	
 		info->host = strdup(value);
@@ -392,13 +398,13 @@ lq_init(backend_context_t *c, config_object_t *config)
 		info->host = strdup("127.0.0.1");
 	}
 
-	if(sc_get(config, "backends/libvirt-qpid/@port",
+	if(sc_get(config, "backends/libvirt-qmf/@port",
 		   value, sizeof(value)-1)==0){
 		printf("\n\nPORT = %d\n\n",atoi(value));	
 		info->port = atoi(value);
 	}
 
-	if(sc_get(config, "backends/libvirt-qpid/@username",
+	if(sc_get(config, "backends/libvirt-qmf/@username",
 		   value, sizeof(value))==0){
 		printf("\n\nUSERNAME = %s\n\n",value);	
 		info->username = strdup(value);
@@ -407,7 +413,7 @@ lq_init(backend_context_t *c, config_object_t *config)
 		}
 	}
 
-	if(sc_get(config, "backends/libvirt-qpid/@service",
+	if(sc_get(config, "backends/libvirt-qmf/@service",
 		   value, sizeof(value))==0){
 		printf("\n\nSERVICE = %s\n\n",value);	
 		info->service = strdup(value);
@@ -416,7 +422,7 @@ lq_init(backend_context_t *c, config_object_t *config)
 		}
 	}
 
-	if(sc_get(config, "backends/libvirt-qpid/@gssapi",
+	if(sc_get(config, "backends/libvirt-qmf/@gssapi",
 		   value, sizeof(value)-1)==0){
 		printf("\n\nGSSAPI = %d\n\n",atoi(value));	
 		if (atoi(value) > 0) {
