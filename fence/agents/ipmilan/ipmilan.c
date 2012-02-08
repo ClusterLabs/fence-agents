@@ -473,7 +473,7 @@ ipmi_off(struct ipmi *ipmi)
 		if (ret != 0)
 			return ret;
 
-		sleep(2);
+		sleep(ipmi->i_power_wait);
 		--retries;
 		ret = ipmi_op(ipmi, ST_STATUS, power_status);
 
