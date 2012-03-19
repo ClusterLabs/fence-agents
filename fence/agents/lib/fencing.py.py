@@ -787,8 +787,6 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 				print o + options["-C"] + alias	
 		return
 
-	if options["-o"] in ["off", "reboot"]:
-		time.sleep(int(options["-f"]))
 	status = get_power_fn(tn, options)
 
 	if status != "on" and status != "off":  
@@ -870,6 +868,11 @@ def fence_login(options):
 		login_eol = "\n"
 	else:
 		login_eol = "\r\n"
+
+	## Do the delay of the fence device before logging in
+	## Delay is important for two-node clusters fencing but we do not need to delay 'status' operations
+	if options["-o"] in ["off", "reboot"]:
+		time.sleep(int(options["-f"]))
 
 	try:
 		re_login = re.compile("(login\s*: )|(Login Name:  )|(username: )|(User Name :)", re.IGNORECASE)
