@@ -1151,7 +1151,7 @@ main(int argc, char **argv)
 	}
 
 	/* Delay fencing if requested */
-	if (delay) {
+	if (delay[0] != '\0') {
 		if (!strcasecmp(op, "reboot") || !strcasecmp(op, "off")) {
 			sleep(atoi(delay));
 		}
