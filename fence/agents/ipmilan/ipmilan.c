@@ -1142,7 +1142,7 @@ main(int argc, char **argv)
 
 	if (strcasecmp(method, "onoff") &&
 	    strcasecmp(method, "cycle")) {
-		fail_exit("method, if included, muse be 'onoff', 'cycle'.");
+		fail_exit("method, if included, must be 'onoff', 'cycle'.");
 	}
 
 	if (!strcasecmp(method, "cycle") &&
