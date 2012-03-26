@@ -27,7 +27,8 @@ PACEMAKER_LIBS=-lcib -lcrmcommon -lpe_status -lplumb \
 PACEMAKER_INCLUDES=`pkg-config --cflags glib-2.0` -I/usr/include/pacemaker -I/usr/include/heartbeat
 CMAN_LIBS=-lcman
 VIRT_LIBS=-lvirt
-VIRT_QPID=-lqmf2 -lqpidclient -lqpidtypes -lqpidcommon -lqpidmessaging
+VIRT_QPID=-lqmf2
+# No longer needed: -lqpidclient -lqpidtypes -lqpidcommon -lqpidmessaging
 NSS_LIBS=-lnss3
 XML_LIBS=`xml2-config --libs`
 INCLUDES=-I../include `nss-config --cflags` `nspr-config --cflags` `xml2-config --cflags`
