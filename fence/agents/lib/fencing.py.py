@@ -474,7 +474,7 @@ def metadata(avail_opt, options, docs):
 	print "<parameters>"
 	for option, value in sorted_list:
 		if all_opt[option].has_key("shortdesc"):
-			print "\t<parameter name=\"" + option + "\" unique=\"1\" required=\"" + all_opt[option]["required"] + "\">"
+			print "\t<parameter name=\"" + option + "\" unique=\"0\" required=\"" + all_opt[option]["required"] + "\">"
 
 			default = ""
 			if all_opt[option].has_key("default"):

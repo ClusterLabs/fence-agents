@@ -914,7 +914,7 @@ static void print_xml_metadata(char *pname) {
   printf("%s\n","<parameters>");
 
   for (i=0;i<(sizeof(xml_parameters)/sizeof(struct xml_parameter_s));i++) {
-    printf("\t<parameter name=\"%s\" unique=\"1\">\n",xml_parameters[i].name);
+    printf("\t<parameter name=\"%s\" unique=\"0\">\n",xml_parameters[i].name);
 
     printf("\t\t<getopt mixed=\"%s\" />\n",xml_parameters[i].getopt);
     if (xml_parameters[i].default_value == NULL) {
