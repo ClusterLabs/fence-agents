@@ -1179,6 +1179,7 @@ main(int argc, char **argv)
 
 		if (!strcasecmp(method, "cycle")) {
 			ret = ipmi_cycle(i);
+			translated_ret = (ret==0?ERR_OFF_SUCCESSFUL:ERR_OFF_FAIL);
 		} else {
 			/* Original onoff method */
 			ret = ipmi_off(i);
