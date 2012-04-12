@@ -294,7 +294,7 @@ sub get_options_stdin
 	# FIXME -- depreicated residue of old fencing system
 	elsif ($name eq "name" ) { } 
 
-        elsif ($name eq "option" )
+        elsif (($name eq "option" ) || ($name eq "action"))
         {
             $opt_o = $val;
         }
