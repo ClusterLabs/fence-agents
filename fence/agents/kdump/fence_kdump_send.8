@@ -16,7 +16,7 @@ kdump kernel after a cluster node has encountered a kernel panic. Once
 the cluster node has entered the kdump crash recovery service,
 \fIfence_kdump_send\fP will periodically send messages to all cluster
 nodes. When the \fIfence_kdump\fP agent receives a valid message from
-the failed not, fencing is complete.
+the failed node, fencing is complete.
 .SH OPTIONS
 .TP
 .B -p, --ipport=\fIPORT\fP
