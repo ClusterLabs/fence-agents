@@ -283,6 +283,9 @@ serial_fence_virt(fence_virt_args_t *args)
 		if (wait_for(fd, (const char *)&resp.magic,
 			     sizeof(resp.magic), &tv) == 0) {
 			ret = _read_retry(fd, &resp.response, sizeof(resp.response), &tv);
+		} else {
+			/* The other end died or closed the connection */
+			return -1;
 		}
 
 		swab_serial_resp_t(&resp);
