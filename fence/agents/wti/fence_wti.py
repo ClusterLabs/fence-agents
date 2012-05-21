@@ -124,7 +124,7 @@ is running because the connection will block any necessary fencing actions."
 	if 0 == options.has_key("-x"):
 		try:
 			try:
-				conn = fspawn(TELNET_PATH)
+				conn = fspawn(options, TELNET_PATH)
 				conn.send("set binary\n")
 				conn.send("open %s -%s\n"%(options["-a"], options["-u"]))
 			except pexpect.ExceptionPexpect, ex:

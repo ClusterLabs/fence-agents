@@ -19,7 +19,7 @@ BUILD_DATE=""
 
 def get_power_status(conn, options):
 	try:
-		conn.send("power state\r\n")
+		conn.send_eol("power state")
 		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
@@ -36,7 +36,7 @@ def get_power_status(conn, options):
 
 def set_power_status(conn, options):
 	try:
-		conn.send("power " + options["-o"] + "\r\n")
+		conn.send_eol("power " + options["-o"])
 		conn.log_expect(options, options["-c"], int(options["-g"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
@@ -84,7 +84,7 @@ will block any necessary fencing actions."
 	## Logout from system
 	######
 	try:
-		conn.sendline("exit")
+		conn.send_eol("exit")
 		conn.close()
 	except exceptions.OSError:
 		pass

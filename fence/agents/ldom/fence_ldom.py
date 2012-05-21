@@ -22,11 +22,11 @@ COMMAND_PROMPT_NEW="[PEXPECT]"
 
 # Start comunicating after login. Prepare good environment.
 def start_communication(conn, options):
-	conn.sendline ("PS1='"+COMMAND_PROMPT_NEW+"'")
+	conn.send_eol ("PS1='"+COMMAND_PROMPT_NEW+"'")
 	res=conn.expect([pexpect.TIMEOUT, COMMAND_PROMPT_REG],int(options["-Y"]))
 	if res==0:
 		#CSH stuff
-		conn.sendline("set prompt='"+COMMAND_PROMPT_NEW+"'")
+		conn.send_eol("set prompt='"+COMMAND_PROMPT_NEW+"'")
 		conn.log_expect(options, COMMAND_PROMPT_REG,int(options["-Y"]))
 	
 
@@ -34,7 +34,7 @@ def get_power_status(conn, options):
 	try:
 		start_communication(conn,options)
 		
-		conn.sendline("ldm ls")
+		conn.send_eol("ldm ls")
 		    
 		conn.log_expect(options,COMMAND_PROMPT_REG,int(options["-Y"]))
 
@@ -71,7 +71,7 @@ def set_power_status(conn, options):
          	
 		cmd_line="ldm "+(options["-o"]=="on" and "start" or "stop -f")+" \""+options["-n"]+"\""
             	
-		conn.sendline(cmd_line)
+		conn.send_eol(cmd_line)
 		    
 		conn.log_expect(options,COMMAND_PROMPT_REG,int(options["-g"]))
 		
@@ -126,7 +126,7 @@ root. Than prompt is $, so again, you must use parameter -c."
 	## Logout from system
 	######
 	try:
-		conn.sendline("logout")
+		conn.send_eol("logout")
 		conn.close()
 	except exceptions.OSError:
 		pass

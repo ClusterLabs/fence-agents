@@ -33,13 +33,13 @@ def set_power_status(conn, options):
 	try:
 		conn.send("2")
 		conn.log_expect(options, options["-c"], int(options["-Y"]))
-		conn.sendline(action)
+		conn.send_eol(action)
 		conn.log_expect(options, ["want to power off", "'yes' or 'no'"], int(options["-Y"]))
-		conn.send("yes\r")
+		conn.send_eol("yes")
 		conn.log_expect(options, "any key to continue", int(options["-g"]))
-		conn.send("\r")
+		conn.send_eol("")
 		conn.log_expect(options, options["-c"], int(options["-Y"]))
-		conn.sendline("0")
+		conn.send_eol("0")
 		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
@@ -100,7 +100,7 @@ will block any necessary fencing actions."
 	## a problem because everything is checked before.
 	######
 	try:
-		conn.sendline("0")
+		conn.send_eol("0")
 		conn.close()
 	except exceptions.OSError:
 		pass

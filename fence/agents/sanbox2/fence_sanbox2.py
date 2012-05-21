@@ -24,14 +24,14 @@ def get_power_status(conn, options):
 		'offline' : "off"
 	}
 	try:
-		conn.send("show port " + options["-n"] + "\n")
+		conn.send_eol("show port " + options["-n"])
 		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
 		try:
-			conn.send("admin end\n")
-			conn.send("exit\n")
+			conn.send_eol("admin end")
+			conn.send_eol("exit")
 			conn.close()
 		except:
 			pass
@@ -51,28 +51,28 @@ def set_power_status(conn, options):
 	}[options["-o"]]
 
         try:
-        	conn.send("set port " + options["-n"] + " state " + action + "\n")
+        	conn.send_eol("set port " + options["-n"] + " state " + action)
 		conn.log_expect(options, options["-c"], int(options["-g"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
 		try:
-			conn.send("admin end\n")
-			conn.send("exit\n")
+			conn.send_eol("admin end")
+			conn.send_eol("exit")
 			conn.close()
 		except:
 			pass
 		fail(EC_TIMED_OUT)                                                                         	
 
 	try:
-		conn.send("set port " + options["-n"] + " state " + action + "\n")
+		conn.send_eol("set port " + options["-n"] + " state " + action)
 		conn.log_expect(options, options["-c"], int(options["-g"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
 		try:
-			conn.send("admin end\n")
-			conn.send("exit\n")
+			conn.send_eol("admin end")
+			conn.send_eol("exit")
 			conn.close()
 		except:
 			pass
@@ -82,7 +82,7 @@ def get_list_devices(conn, options):
 	outlets = { }
 
 	try:
-		conn.send("show port" + "\n")
+		conn.send_eol("show port")
 		conn.log_expect(options, options["-c"], int(options["-Y"]))
 
 		list_re = re.compile("^\s+(\d+?)\s+(Online|Offline)\s+", re.IGNORECASE)
@@ -98,8 +98,8 @@ def get_list_devices(conn, options):
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
 		try:
-			conn.send("admin end\n")
-			conn.send("exit\n")
+			conn.send_eol("admin end")
+			conn.send_eol("exit")
 			conn.close()
 		except:
 			pass
@@ -110,7 +110,7 @@ def get_list_devices(conn, options):
 def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"io_fencing", "ipaddr", "login", "passwd", "passwd_script",
-			"cmd_prompt", "port", "ipport", "login_eol_lf", "separator",
+			"cmd_prompt", "port", "ipport", "separator",
 			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
 	atexit.register(atexit_handler)
@@ -138,7 +138,7 @@ because the connection will block any necessary fencing actions."
 	##
 	conn = fence_login(options)
 
-	conn.send("admin start\n")
+	conn.send_eol("admin start")
 	conn.log_expect(options, options["-c"], int(options["-Y"]))
 
 	if (re.search("\(admin\)", conn.before, re.MULTILINE) == None):
@@ -153,8 +153,8 @@ because the connection will block any necessary fencing actions."
 	## Logout from system
 	######
 	try:
-		conn.send("admin end\n")
-		conn.send("exit\n")
+		conn.send_eol("admin end")
+		conn.send_eol("exit\n")
 		conn.close()
 	except exceptions.OSError:
 		pass

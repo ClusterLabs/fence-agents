@@ -12,7 +12,7 @@ BUILD_DATE=""
 
 def get_power_status(conn, options):
 	try:
-		conn.send("show /system1\r\n")
+		conn.send_eol("show /system1")
 		
 		re_state = re.compile('EnabledState=(.*)', re.IGNORECASE)
 		conn.log_expect(options, re_state, int(options["-Y"]))
@@ -31,9 +31,9 @@ def get_power_status(conn, options):
 def set_power_status(conn, options):
 	try:
 		if options["-o"] == "on":
-			conn.send("start /system1\r\n")
+			conn.send_eol("start /system1")
 		else:
-			conn.send("stop -f /system1\r\n")
+			conn.send_eol("stop -f /system1")
 
 		conn.log_expect(options, options["-c"], int(options["-g"]))
 
@@ -46,7 +46,7 @@ def set_power_status(conn, options):
 def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
-			"secure", "identity_file", "cmd_prompt", "ipport", "login_eol_lf",
+			"secure", "identity_file", "cmd_prompt", "ipport",
 			"separator", "inet4_only", "inet6_only",
 			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
@@ -64,7 +64,7 @@ def main():
 	show_docs(options, docs)
 	
 	conn = fence_login(options)
-	conn.send("SMCLP\r\n")
+	conn.send_eol("SMCLP")
 
 	##
 	## Fence operations
@@ -72,7 +72,7 @@ def main():
 	result = fence_action(conn, options, set_power_status, get_power_status)
 
 	try:
-		conn.send("exit\r\n")
+		conn.send_eol("exit")
 	except exceptions.OSError:
 		pass
 	except pexpect.ExceptionPexpect:

@@ -25,9 +25,9 @@ BUILD_DATE="March, 2008"
 def get_power_status(conn, options):
 	try:
 		if options["model"] == "DRAC CMC":
-			conn.sendline("racadm serveraction powerstatus -m " + options["-m"])
+			conn.send_eol("racadm serveraction powerstatus -m " + options["-m"])
 		elif options["model"] == "DRAC 5":
-			conn.sendline("racadm serveraction powerstatus")
+			conn.send_eol("racadm serveraction powerstatus")
 		
 		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
@@ -49,9 +49,9 @@ def set_power_status(conn, options):
 
 	try:
 		if options["model"] == "DRAC CMC":
-			conn.sendline("racadm serveraction " + action + " -m " + options["-m"])
+			conn.send_eol("racadm serveraction " + action + " -m " + options["-m"])
 		elif options["model"] == "DRAC 5":
-			conn.sendline("racadm serveraction " + action)
+			conn.send_eol("racadm serveraction " + action)
 		conn.log_expect(options, options["-c"], int(options["-g"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
@@ -63,7 +63,7 @@ def get_list_devices(conn, options):
 
 	try:
 		if options["model"] == "DRAC CMC":
-			conn.sendline("getmodinfo")
+			conn.send_eol("getmodinfo")
 
 			list_re = re.compile("^([^\s]*?)\s+Present\s*(ON|OFF)\s*.*$")
 			conn.log_expect(options, options["-c"], int(options["-g"]))
@@ -133,7 +133,7 @@ By default, the telnet interface is not  enabled."
 	## Logout from system
 	######
 	try:
-		conn.sendline("exit")
+		conn.send_eol("exit")
 		time.sleep(1)
 		conn.close()
 	except exceptions.OSError:

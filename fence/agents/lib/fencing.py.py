@@ -175,11 +175,6 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "Force ribcl version to use",
 		"order" : 1 },
-	"login_eol_lf" : {
-		"getopt" : "",
-		"help" : "",
-		"order" : 1
-		},
 	"cmd_prompt" : {
 		"getopt" : "c:",
 		"longopt" : "command-prompt",
@@ -407,11 +402,19 @@ all_opt = {
 common_opt = [ "retry_on", "delay" ]
 
 class fspawn(pexpect.spawn):
+	def __init__(self, options, command):
+		pexpect.spawn.__init__(self, command)
+		self.opt = options
+		
 	def log_expect(self, options, pattern, timeout):
 		result = self.expect(pattern, timeout)
 		if options["log"] >= LOG_MODE_VERBOSE:
 			options["debug_fh"].write(self.before + self.after)
 		return result
+
+	# send EOL according to what was detected in login process (telnet)
+	def send_eol(self, message):
+		self.send(message + self.opt["eol"])
 
 def atexit_handler():
 	try:
@@ -864,10 +867,7 @@ def fence_login(options):
 	if (options.has_key("-4")):
 		force_ipvx="-4 "
 
-	if (options["device_opt"].count("login_eol_lf")):
-		login_eol = "\n"
-	else:
-		login_eol = "\r\n"
+	options["eol"] = "\r\n"
 
 	## Do the delay of the fence device before logging in
 	## Delay is important for two-node clusters fencing but we do not need to delay 'status' operations
@@ -881,7 +881,7 @@ def fence_login(options):
 		if options.has_key("-z"):
 			command = '%s %s %s %s' % (SSL_PATH, force_ipvx, options["-a"], options["-u"])
 			try:
-				conn = fspawn(command)
+				conn = fspawn(options, command)
 			except pexpect.ExceptionPexpect, ex:
 			 	## SSL telnet is part of the fencing package
 			 	sys.stderr.write(str(ex) + "\n")
@@ -891,7 +891,7 @@ def fence_login(options):
 			if options.has_key("ssh_options"):
 				command += ' ' + options["ssh_options"]
 			try:
-				conn = fspawn(command)
+				conn = fspawn(options, command)
 			except pexpect.ExceptionPexpect, ex:
 				sys.stderr.write(str(ex) + "\n")
 				sys.stderr.write("Due to limitations, binary dependencies on fence agents "
@@ -920,7 +920,7 @@ def fence_login(options):
 			if options.has_key("ssh_options"):
 				command += ' ' + options["ssh_options"]
 			try:
-				conn = fspawn(command)
+				conn = fspawn(options, command)
 			except pexpect.ExceptionPexpect, ex:
 				sys.stderr.write(str(ex) + "\n")
 				sys.stderr.write("Due to limitations, binary dependencies on fence agents "
@@ -939,7 +939,7 @@ def fence_login(options):
 					fail_usage("Failed: You have to enter passphrase (-p) for identity file")
 		else:
 			try:
-				conn = fspawn(TELNET_PATH)
+				conn = fspawn(options, TELNET_PATH)
 				conn.send("set binary\n")
 				conn.send("open %s -%s\n"%(options["-a"], options["-u"]))
 			except pexpect.ExceptionPexpect, ex:
@@ -948,11 +948,20 @@ def fence_login(options):
 				"are not in the spec file and must be installed separately." + "\n")
 				sys.exit(EC_GENERIC_ERROR)
 
-			conn.log_expect(options, re_login, int(options["-y"]))
-			conn.send(options["-l"] + login_eol)
-			conn.log_expect(options, re_pass, int(options["-Y"]))
+			result = conn.log_expect(options, re_login, int(options["-y"]))
+			conn.send_eol(options["-l"])
+
+			## automatically change end of line separator
+			screen = conn.read_nonblocking(size=100, timeout=int(options["-Y"]))
+			if (re_login.search(screen) != None):
+				options["eol"] = "\n"
+				conn.send_eol(options["-l"])
+				result = conn.log_expect(options, re_pass, int(options["-y"]))
+			elif (re_pass.search(screen) == None):
+				conn.log_expect(options, re_pass, int(options["-Y"]))
+
 			try:
-				conn.send(options["-p"] + login_eol)
+				conn.send_eol(options["-p"])
 				conn.log_expect(options, options["-c"], int(options["-Y"]))
 			except KeyError:
 				fail(EC_PASSWORD_MISSING)

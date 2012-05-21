@@ -26,7 +26,7 @@ def get_power_status(conn, options):
 	try:
 		node_cmd = "system:blade\[" + options["-n"] + "\]>"
 
-		conn.send("env -T system:blade[" + options["-n"] + "]\r\n")
+		conn.send_eol("env -T system:blade[" + options["-n"] + "]")
 		i = conn.log_expect(options, [ node_cmd, "system>" ] , int(options["-Y"]))
 		if i == 1:
 			## Given blade number does not exist
@@ -34,10 +34,10 @@ def get_power_status(conn, options):
 				return "off"
 			else:
 				fail(EC_STATUS)
-		conn.send("power -state\r\n")
+		conn.send_eol("power -state")
 		conn.log_expect(options, node_cmd, int(options["-Y"]))
 		status = conn.before.splitlines()[-1]
-		conn.send("env -T system\r\n")
+		conn.send_eol("env -T system")
 		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
@@ -55,7 +55,7 @@ def set_power_status(conn, options):
 	try:
 		node_cmd = "system:blade\[" + options["-n"] + "\]>"
 
-		conn.send("env -T system:blade[" + options["-n"] + "]\r\n")
+		conn.send_eol("env -T system:blade[" + options["-n"] + "]")
 		i = conn.log_expect(options, [ node_cmd, "system>" ] , int(options["-Y"]))
 		if i == 1:
 			## Given blade number does not exist
@@ -64,9 +64,9 @@ def set_power_status(conn, options):
 			else:
 				fail(EC_GENERIC_ERROR)
 
-		conn.send("power -"+options["-o"]+"\r\n")
+		conn.send_eol("power -"+options["-o"])
 		conn.log_expect(options, node_cmd, int(options["-Y"]))
-		conn.send("env -T system\r\n")
+		conn.send_eol("env -T system")
 		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
@@ -78,9 +78,9 @@ def get_blades_list(conn, options):
 	try:
 		node_cmd = "system>"
 
-		conn.send("env -T system\r\n")
+		conn.send_eol("env -T system")
 		conn.log_expect(options, node_cmd, int(options["-Y"]))
-		conn.send("list -l 2\r\n")
+		conn.send_eol("list -l 2")
 		conn.log_expect(options, node_cmd, int(options["-Y"]))
 
 		lines = conn.before.split("\r\n")
@@ -130,7 +130,7 @@ and uses the command line interface to power on and off blades."
 	## Logout from system
 	######
 	try:
-		conn.send("exit\r\n")
+		conn.send_eol("exit")
 		conn.close()
 	except exceptions.OSError:
 		pass

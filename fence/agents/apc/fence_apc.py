@@ -28,7 +28,7 @@ def get_power_status(conn, options):
 	exp_result = 0
 	outlets = {}
 	try:
-		conn.send("1\r\n")
+		conn.send_eol("1")
 		conn.log_expect(options, options["-c"], int(options["-Y"]))
 
 		version = 0
@@ -57,15 +57,15 @@ def get_power_status(conn, options):
 		if switch == 0:
 			if version == 2:
 				if admin == 0:
-					conn.send("2\r\n")
+					conn.send_eol("2")
 				else:
-					conn.send("3\r\n")
+					conn.send_eol("3")
 			else:
-				conn.send("2\r\n")
+				conn.send_eol("2")
 				conn.log_expect(options, options["-c"], int(options["-Y"]))
-				conn.send("1\r\n")
+				conn.send_eol("1")
 		else:
-			conn.send(options["-s"]+"\r\n")
+			conn.send_eol(options["-s"])
 			
 		while True:
 			exp_result = conn.log_expect(options, [ options["-c"],  "Press <ENTER>" ], int(options["-Y"]))
@@ -75,7 +75,7 @@ def get_power_status(conn, options):
 				res = show_re.search(x)
 				if (res != None):
 					outlets[res.group(2)] = (res.group(3), res.group(4))
-			conn.send("\r\n")
+			conn.send_eol("")
 			if exp_result == 0:
 				break
 		conn.send(chr(03))		
@@ -102,7 +102,7 @@ def set_power_status(conn, options):
 	}[options["-o"]]
 
 	try:
-		conn.send("1\r\n")
+		conn.send_eol("1")
 		conn.log_expect(options, options["-c"], int(options["-Y"]))
 
 		version = 0
@@ -137,41 +137,41 @@ def set_power_status(conn, options):
 		if switch == 0:
 			if version == 2:
 				if admin2 == 0:
-					conn.send("2\r\n")
+					conn.send_eol("2")
 				else:
-					conn.send("3\r\n")
+					conn.send_eol("3")
 			else:
-				conn.send("2\r\n")
+				conn.send_eol("2")
 				conn.log_expect(options, options["-c"], int(options["-Y"]))
 				if (None == re.compile('.*2- Outlet Restriction.*', re.IGNORECASE | re.S).match(conn.before)):
 					admin3 = 0
 				else:
 					admin3 = 1
-				conn.send("1\r\n")
+				conn.send_eol("1")
 		else:
-			conn.send(options["-s"] + "\r\n")
+			conn.send_eol(options["-s"])
 
 		while 1 == conn.log_expect(options, [ options["-c"],  "Press <ENTER>" ], int(options["-Y"])):
-			conn.send("\r\n")
-		conn.send(options["-n"]+"\r\n")
+			conn.send_eol("")
+		conn.send_eol(options["-n"]+"")
 		conn.log_expect(options, options["-c"], int(options["-Y"]))
 
 		if switch == 0:
 			if admin2 == 1:
-				conn.send("1\r\n")
+				conn.send_eol("1")
 				conn.log_expect(options, options["-c"], int(options["-Y"]))
 			if admin3 == 1:
-				conn.send("1\r\n")
+				conn.send_eol("1")
 				conn.log_expect(options, options["-c"], int(options["-Y"]))
 		else:
-			conn.send("1\r\n")
+			conn.send_eol("1")
 			conn.log_expect(options, options["-c"], int(options["-Y"]))
 			
-		conn.send(action+"\r\n")
+		conn.send_eol(action)
 		conn.log_expect(options, "Enter 'YES' to continue or <ENTER> to cancel :", int(options["-Y"]))
-		conn.send("YES\r\n")
+		conn.send_eol("YES")
 		conn.log_expect(options, "Press <ENTER> to continue...", int(options["-Y"]))
-		conn.send("\r\n")
+		conn.send_eol("")
 		conn.log_expect(options, options["-c"], int(options["-Y"]))
 		conn.send(chr(03))
 		conn.log_expect(options, "- Logout", int(options["-Y"]))
@@ -230,7 +230,7 @@ will block any necessary fencing actions."
 	## a problem because everything is checked before.
 	######
 	try:
-		conn.sendline("4")
+		conn.send_eol("4")
 		conn.close()
 	except exceptions.OSError:
 		pass
