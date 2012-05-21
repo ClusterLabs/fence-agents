@@ -84,37 +84,37 @@ After  a fence operation has taken place the fenced machine can no longer connec
 </longdesc>
 <vendor-url>http://www.brocade.com</vendor-url>
 <parameters>
-        <parameter name="action" unique="1" required="1">
+        <parameter name="action" unique="0" required="1">
                 <getopt mixed="-o &lt;action&gt;" />
                 <content type="string" default="disable" />
                 <shortdesc lang="en">Fencing Action</shortdesc>
         </parameter>
-        <parameter name="ipaddr" unique="1" required="1">
+        <parameter name="ipaddr" unique="0" required="1">
                 <getopt mixed="-a &lt;ip&gt;" />
                 <content type="string"  />
                 <shortdesc lang="en">IP Address or Hostname</shortdesc>
         </parameter>
-        <parameter name="login" unique="1" required="1">
+        <parameter name="login" unique="0" required="1">
                 <getopt mixed="-l &lt;name&gt;" />
                 <content type="string"  />
                 <shortdesc lang="en">Login Name</shortdesc>
         </parameter>
-        <parameter name="passwd" unique="1" required="0">
+        <parameter name="passwd" unique="0" required="0">
                 <getopt mixed="-p &lt;password&gt;" />
                 <content type="string"  />
                 <shortdesc lang="en">Login password or passphrase</shortdesc>
         </parameter>
-        <parameter name="passwd_script" unique="1" required="0">
+        <parameter name="passwd_script" unique="0" required="0">
                 <getopt mixed="-S &lt;script&gt;" />
                 <content type="string"  />
                 <shortdesc lang="en">Script to retrieve password</shortdesc>
         </parameter>
-        <parameter name="port" unique="1" required="1">
+        <parameter name="port" unique="0" required="1">
                 <getopt mixed="-n &lt;id&gt;" />
                 <content type="string"  />
                 <shortdesc lang="en">Physical plug number or name of virtual machine</shortdesc>
         </parameter>
-        <parameter name="help" unique="1" required="0">
+        <parameter name="help" unique="0" required="0">
                 <getopt mixed="-h" />           
                 <content type="string"  />
                 <shortdesc lang="en">Display help and exit</shortdesc>                    

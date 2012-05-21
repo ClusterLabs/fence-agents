@@ -702,42 +702,42 @@ sub print_metadata ()
           " shortdesc=\"fence agent for SCSI-3 persistent reservations\">\n";
     print "<longdesc>fence_scsi</longdesc>\n";
     print "<parameters>\n";
-    print "\t<parameter name=\"aptpl\" unique=\"1\" required=\"0\">\n";
+    print "\t<parameter name=\"aptpl\" unique=\"0\" required=\"0\">\n";
     print "\t\t<getopt mixed=\"-a\"/>\n";
     print "\t\t<content type=\"boolean\"/>\n";
     print "\t\t<shortdesc lang=\"en\">" .
           "Use APTPL flag for registrations" .
           "</shortdesc>\n";
     print "\t</parameter>\n";
-    print "\t<parameter name=\"devices\" unique=\"1\" required=\"0\">\n";
+    print "\t<parameter name=\"devices\" unique=\"0\" required=\"0\">\n";
     print "\t\t<getopt mixed=\"-d\"/>\n";
     print "\t\t<content type=\"string\"/>\n";
     print "\t\t<shortdesc lang=\"en\">" .
           "List of devices to be used for fencing action" .
           "</shortdesc>\n";
     print "\t</parameter>\n";
-    print "\t<parameter name=\"logfile\" unique=\"1\" required=\"0\">\n";
+    print "\t<parameter name=\"logfile\" unique=\"0\" required=\"0\">\n";
     print "\t\t<getopt mixed=\"-f\"/>\n";
     print "\t\t<content type=\"string\"/>\n";
     print "\t\t<shortdesc lang=\"en\">" .
           "File to write error/debug messages" .
           "</shortdesc>\n";
     print "\t</parameter>\n";
-    print "\t<parameter name=\"key\" unique=\"1\" required=\"0\">\n";
+    print "\t<parameter name=\"key\" unique=\"0\" required=\"0\">\n";
     print "\t\t<getopt mixed=\"-k\"/>\n";
     print "\t\t<content type=\"string\"/>\n";
     print "\t\t<shortdesc lang=\"en\">" .
           "Key value to be used for fencing action" .
           "</shortdesc>\n";
     print "\t</parameter>\n";
-    print "\t<parameter name=\"action\" unique=\"1\" required=\"0\">\n";
+    print "\t<parameter name=\"action\" unique=\"0\" required=\"0\">\n";
     print "\t\t<getopt mixed=\"-o\"/>\n";
     print "\t\t<content type=\"string\" default=\"off\"/>\n";
     print "\t\t<shortdesc lang=\"en\">" .
           "Fencing action" .
           "</shortdesc>\n";
     print "\t</parameter>\n";
-    print "\t<parameter name=\"nodename\" unique=\"1\" required=\"0\">\n";
+    print "\t<parameter name=\"nodename\" unique=\"0\" required=\"0\">\n";
     print "\t\t<getopt mixed=\"-n\"/>\n";
     print "\t\t<content type=\"string\"/>\n";
     print "\t\t<shortdesc lang=\"en\">" .

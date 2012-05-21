@@ -181,56 +181,56 @@ do_action_metadata (const char *self)
 
     fprintf (stdout, "<parameters>\n");
 
-    fprintf (stdout, "\t<parameter name=\"nodename\" unique=\"1\" required=\"0\">\n");
+    fprintf (stdout, "\t<parameter name=\"nodename\" unique=\"0\" required=\"0\">\n");
     fprintf (stdout, "\t\t<getopt mixed=\"-n, --nodename\" />\n");
     fprintf (stdout, "\t\t<content type=\"string\" />\n");
     fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
              "Name or IP address of node to be fenced");
     fprintf (stdout, "\t</parameter>\n");
 
-    fprintf (stdout, "\t<parameter name=\"ipport\" unique=\"1\" required=\"0\">\n");
+    fprintf (stdout, "\t<parameter name=\"ipport\" unique=\"0\" required=\"0\">\n");
     fprintf (stdout, "\t\t<getopt mixed=\"-p, --ipport\" />\n");
     fprintf (stdout, "\t\t<content type=\"string\" default=\"7410\" />\n");
     fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
              "Port number");
     fprintf (stdout, "\t</parameter>\n");
 
-    fprintf (stdout, "\t<parameter name=\"family\" unique=\"1\" required=\"0\">\n");
+    fprintf (stdout, "\t<parameter name=\"family\" unique=\"0\" required=\"0\">\n");
     fprintf (stdout, "\t\t<getopt mixed=\"-f, --family\" />\n");
     fprintf (stdout, "\t\t<content type=\"string\" default=\"auto\" />\n");
     fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
              "Network family");
     fprintf (stdout, "\t</parameter>\n");
 
-    fprintf (stdout, "\t<parameter name=\"action\" unique=\"1\" required=\"0\">\n");
+    fprintf (stdout, "\t<parameter name=\"action\" unique=\"0\" required=\"0\">\n");
     fprintf (stdout, "\t\t<getopt mixed=\"-o, --action\" />\n");
     fprintf (stdout, "\t\t<content type=\"string\" default=\"off\" />\n");
     fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
              "Fencing action");
     fprintf (stdout, "\t</parameter>\n");
 
-    fprintf (stdout, "\t<parameter name=\"timeout\" unique=\"1\" required=\"0\">\n");
+    fprintf (stdout, "\t<parameter name=\"timeout\" unique=\"0\" required=\"0\">\n");
     fprintf (stdout, "\t\t<getopt mixed=\"-t, --timeout\" />\n");
     fprintf (stdout, "\t\t<content type=\"string\" default=\"60\" />\n");
     fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
              "Timeout in seconds");
     fprintf (stdout, "\t</parameter>\n");
 
-    fprintf (stdout, "\t<parameter name=\"verbose\" unique=\"1\" required=\"0\">\n");
+    fprintf (stdout, "\t<parameter name=\"verbose\" unique=\"0\" required=\"0\">\n");
     fprintf (stdout, "\t\t<getopt mixed=\"-v, --verbose\" />\n");
     fprintf (stdout, "\t\t<content type=\"boolean\" />\n");
     fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
              "Print verbose output");
     fprintf (stdout, "\t</parameter>\n");
 
-    fprintf (stdout, "\t<parameter name=\"version\" unique=\"1\" required=\"0\">\n");
+    fprintf (stdout, "\t<parameter name=\"version\" unique=\"0\" required=\"0\">\n");
     fprintf (stdout, "\t\t<getopt mixed=\"-V, --version\" />\n");
     fprintf (stdout, "\t\t<content type=\"boolean\" />\n");
     fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
              "Print version");
     fprintf (stdout, "\t</parameter>\n");
 
-    fprintf (stdout, "\t<parameter name=\"usage\" unique=\"1\" required=\"0\">\n");
+    fprintf (stdout, "\t<parameter name=\"usage\" unique=\"0\" required=\"0\">\n");
     fprintf (stdout, "\t\t<getopt mixed=\"-h, --help\" />\n");
     fprintf (stdout, "\t\t<content type=\"boolean\" />\n");
     fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",

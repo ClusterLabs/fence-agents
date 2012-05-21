@@ -143,57 +143,57 @@ fence_drac is an I/O Fencing agent which can be used with the Dell Remote Access
 </longdesc>
 <vendor-url>http://www.dell.com</vendor-url>
 <parameters>
-        <parameter name="action" unique="1" required="1">
+        <parameter name="action" unique="0" required="1">
                 <getopt mixed="-o &lt;action&gt;" />
                 <content type="string" default="reboot" />
                 <shortdesc lang="en">Fencing Action</shortdesc>
         </parameter>
-        <parameter name="ipaddr" unique="1" required="1">
+        <parameter name="ipaddr" unique="0" required="1">
                 <getopt mixed="-a &lt;ip&gt;" />
                 <content type="string"  />
                 <shortdesc lang="en">IP Address or Hostname</shortdesc>
         </parameter>
-        <parameter name="login" unique="1" required="1">
+        <parameter name="login" unique="0" required="1">
                 <getopt mixed="-l &lt;name&gt;" />
                 <content type="string"  />
                 <shortdesc lang="en">Login Name</shortdesc>
         </parameter>
-        <parameter name="passwd" unique="1" required="0">
+        <parameter name="passwd" unique="0" required="0">
                 <getopt mixed="-p &lt;password&gt;" />
                 <content type="string"  />
                 <shortdesc lang="en">Login password or passphrase</shortdesc>
         </parameter>
-        <parameter name="passwd_script" unique="1" required="0">
+        <parameter name="passwd_script" unique="0" required="0">
                 <getopt mixed="-S &lt;script&gt;" />
                 <content type="string"  />
                 <shortdesc lang="en">Script to retrieve password</shortdesc>
         </parameter>
-        <parameter name="cmd_prompt" unique="1" required="0">
+        <parameter name="cmd_prompt" unique="0" required="0">
                 <getopt mixed="-c &lt;prompt&gt;" />
                 <content type="string" />
                 <shortdesc lang="en">Force fence_drac to use cmd_prompt as the command prompt</shortdesc>
         </parameter>
-        <parameter name="drac_version" unique="1" required="0">
+        <parameter name="drac_version" unique="0" required="0">
                 <getopt mixed="-d &lt;version&gt;" />
                 <content type="string" />
                 <shortdesc lang="en">Force fence_drac to treat the device as though it was for the specified drac version</shortdesc>
         </parameter>
-        <parameter name="module_name" unique="1" required="0">
+        <parameter name="module_name" unique="0" required="0">
                 <getopt mixed="-m &lt;modulename&gt;" />
                 <content type="string"/>
                 <shortdesc lang="en">The module name of the blade when using DRAC/MC firmware.</shortdesc>
         </parameter>
-        <parameter name="debug" unique="1" required="0">
+        <parameter name="debug" unique="0" required="0">
                 <getopt mixed="-D &lt;dumpfile&gt;" />
                 <content type="string"/>
                 <shortdesc lang="en">Debug file of the telnet interaction</shortdesc>
         </parameter>
-        <parameter name="delay" unique="1" required="0">
+        <parameter name="delay" unique="0" required="0">
                 <getopt mixed="-f &lt;seconds&gt;" />
                 <content type="string" default="0"/>
                 <shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
         </parameter>
-        <parameter name="help" unique="1" required="0">
+        <parameter name="help" unique="0" required="0">
                 <getopt mixed="-h" />           
                 <content type="string"  />
                 <shortdesc lang="en">Display help and exit</shortdesc>                    

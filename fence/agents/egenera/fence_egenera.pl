@@ -83,37 +83,37 @@ fence_egenera  is  an I/O Fencing agent which can be used with the Egenera Blade
 </longdesc>
 <vendor-url>http://www.bull.com</vendor-url>
 <parameters>
-        <parameter name="action" unique="1" required="1">
+        <parameter name="action" unique="0" required="1">
                 <getopt mixed="-o &lt;action&gt;" />
                 <content type="string" default="reboot" />
                 <shortdesc lang="en">Fencing Action</shortdesc>
         </parameter>
-        <parameter name="cserver" unique="1" required="1">
+        <parameter name="cserver" unique="0" required="1">
                 <getopt mixed="-c &lt;cserver&gt;" />
                 <content type="string"  />
                 <shortdesc lang="en">The cserver to ssh to. cserver can be in the form user@hostname to specify a different user to login as.</shortdesc>
         </parameter>
-        <parameter name="pserver" unique="1" required="1">
+        <parameter name="pserver" unique="0" required="1">
                 <getopt mixed="-p &lt;pserver&gt;" />
                 <content type="string"  />
                 <shortdesc lang="en">The pserver to operate on.</shortdesc>
         </parameter>
-        <parameter name="user" unique="1" required="1">
+        <parameter name="user" unique="0" required="1">
                 <getopt mixed="-u &lt;name&gt;" />
                 <content type="string" default="root" />
                 <shortdesc lang="en">Login Name</shortdesc>
         </parameter>
-        <parameter name="lpan" unique="1" required="1">
+        <parameter name="lpan" unique="0" required="1">
                 <getopt mixed="-l &lt;lpan&gt;" />
                 <content type="string"  />
                 <shortdesc lang="en">The lpan to operate on.</shortdesc>
         </parameter>
-        <parameter name="delay" unique="1" required="0">
+        <parameter name="delay" unique="0" required="0">
                 <getopt mixed="-f &lt;seconds&gt;" />
                 <content type="string" default="0"/>
                 <shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
         </parameter>
-        <parameter name="help" unique="1" required="0">
+        <parameter name="help" unique="0" required="0">
                 <getopt mixed="-h" />           
                 <content type="string"  />
                 <shortdesc lang="en">Display help and exit</shortdesc>                    
