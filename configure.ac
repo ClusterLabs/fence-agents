@@ -261,6 +261,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/eaton_snmp/Makefile
 		 fence/agents/egenera/Makefile
 		 fence/agents/eps/Makefile
+		 fence/agents/hpblade/Makefile
 		 fence/agents/ibmblade/Makefile
 		 fence/agents/ifmib/Makefile
 		 fence/agents/ilo/Makefile

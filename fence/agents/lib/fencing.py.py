@@ -867,7 +867,8 @@ def fence_login(options):
 	if (options.has_key("-4")):
 		force_ipvx="-4 "
 
-	options["eol"] = "\r\n"
+	if (options.has_key("eol") == False):
+		options["eol"] = "\r\n"
 
 	## Do the delay of the fence device before logging in
 	## Delay is important for two-node clusters fencing but we do not need to delay 'status' operations
