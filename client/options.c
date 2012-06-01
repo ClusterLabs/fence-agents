@@ -414,10 +414,6 @@ static struct arg_info _arg_info[] = {
 	  "IP address to connect to in TCP mode (default=" IPV4_TCP_ADDR_DEFAULT " / " IPV6_TCP_ADDR_DEFAULT ")",
 	  assign_ip_address },
 
-	{ 'p', "-p <port>", "ipport",
-          0, "string", "1229",
-	  "TCP, Multicast, or VMChannel IP port (default=1229)",
-	  assign_port },
 	{ 'A', "-A <address>", "channel_address",
           0, "string", "10.0.2.179",
 	  "VM Channel IP address (default=" DEFAULT_CHANNEL_IP ")",
