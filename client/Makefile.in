@@ -18,7 +18,7 @@ TARGET=fence_virt
 # XVM/Multicast mode compatibility link
 LINK=fence_xvm
 
-fence_virt_SOURCES = mcast.c serial.c main.c options.c
+fence_virt_SOURCES = mcast.c serial.c main.c options.c tcp.c
 
 INCLUDES=-I../include `nss-config --cflags` `nspr-config --cflags` \
 	 `xml2-config --cflags`

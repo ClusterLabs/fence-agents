@@ -59,7 +59,7 @@ main(int argc, char **argv)
        		my_options = "di:a:p:r:C:c:k:M:H:uo:t:?hV";
 		args.mode = MODE_MULTICAST;
 	} else {
-       		my_options = "dD:P:A:p:M:H:o:t:?hV";
+       		my_options = "dD:P:A:p:M:H:o:t:?hVT:C:c:k:";
 		args.mode = MODE_SERIAL;
 	}
 
@@ -105,6 +105,10 @@ main(int argc, char **argv)
 		args.flags |= F_ERR;
 	}
 
+	if (args.net.ipaddr) {
+		args.mode = MODE_TCP;
+	}
+
 	if (args.flags & F_ERR) {
 		args_usage(argv[0], my_options, (argc == 1));
 		exit(1);
@@ -121,6 +125,9 @@ main(int argc, char **argv)
 		break;
 	case MODE_SERIAL:
 		ret = serial_fence_virt(&args);
+		break;
+	case MODE_TCP:
+		ret = tcp_fence_virt(&args);
 		break;
 	default:
 		return 1;

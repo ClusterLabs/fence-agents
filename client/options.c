@@ -40,6 +40,7 @@
 #include "xvm.h"
 #include "simple_auth.h"
 #include "mcast.h"
+#include "tcp_listener.h"
 #include "options.h"
 
 #define SCHEMA_COMPAT '\xfe'
@@ -103,6 +104,16 @@ assign_address(fence_virt_args_t *args, struct arg_info *arg, char *value)
 	args->net.addr = strdup(value);
 }
 
+static inline void
+assign_ip_address(fence_virt_args_t *args, struct arg_info *arg, char *value)
+{
+	if (!value)
+		return;
+
+	if (args->net.ipaddr)
+		free(args->net.ipaddr);
+	args->net.ipaddr = strdup(value);
+}
 
 static inline void
 assign_channel_address(fence_virt_args_t *args, struct arg_info *arg, char *value)
@@ -398,6 +409,15 @@ static struct arg_info _arg_info[] = {
 	  "Multicast address (default=" IPV4_MCAST_DEFAULT " / " IPV6_MCAST_DEFAULT ")",
 	  assign_address },
 
+	{ 'T', "-T <address>", "ipaddr",
+          0, "string", "127.0.0.1",
+	  "IP address to connect to in TCP mode (default=" IPV4_TCP_ADDR_DEFAULT " / " IPV6_TCP_ADDR_DEFAULT ")",
+	  assign_ip_address },
+
+	{ 'p', "-p <port>", "ipport",
+          0, "string", "1229",
+	  "TCP, Multicast, or VMChannel IP port (default=1229)",
+	  assign_port },
 	{ 'A', "-A <address>", "channel_address",
           0, "string", "10.0.2.179",
 	  "VM Channel IP address (default=" DEFAULT_CHANNEL_IP ")",
@@ -405,7 +425,7 @@ static struct arg_info _arg_info[] = {
 
 	{ 'p', "-p <port>", "ipport",
           0, "string", "1229",
-	  "Multicast or VMChannel IP port (default=1229)",
+	  "TCP, Multicast, or VMChannel IP port (default=1229)",
 	  assign_port },
 
 	{ 'I', "-I <interface>", "interface",
@@ -546,6 +566,7 @@ args_init(fence_virt_args_t *args)
 	args->net.hash = DEFAULT_HASH;
 	args->net.auth = DEFAULT_AUTH;
 	args->net.addr = NULL;
+	args->net.ipaddr = NULL;
 	args->net.port = DEFAULT_MCAST_PORT;
 	args->net.ifindex = 0;
 	args->net.family = PF_INET;

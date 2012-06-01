@@ -271,8 +271,10 @@ serial_fence_virt(fence_virt_args_t *args)
 	swab_serial_req_t(&req);
 	ret = _write_retry(fd, &req, sizeof(req), &tv);
 	if (ret < sizeof(req)) {
-		if (ret < 0)
+		if (ret < 0) {
+			close(fd);
 			return ret;
+		}
 		printf("Failed to send request\n");
 	}
 
@@ -285,14 +287,17 @@ serial_fence_virt(fence_virt_args_t *args)
 			ret = _read_retry(fd, &resp.response, sizeof(resp.response), &tv);
 		} else {
 			/* The other end died or closed the connection */
+			close(fd);
 			return -1;
 		}
 
 		swab_serial_resp_t(&resp);
 	} while(resp.magic != SERIAL_MAGIC && (tv.tv_sec || tv.tv_usec));
 
-	if (resp.magic != SERIAL_MAGIC)
+	if (resp.magic != SERIAL_MAGIC) {
+		close(fd);
 		return -1;
+	}
 	ret = resp.response;
 	if (resp.response == RESP_HOSTLIST) /* hostlist */ {
 		/* ok read hostlist */
@@ -301,6 +306,5 @@ serial_fence_virt(fence_virt_args_t *args)
 	}
 
 	close(fd);
-
 	return ret;
 }

@@ -48,6 +48,7 @@ libvirt_qmf_so_SOURCES = uuid-test.c
 libvirt_qmf_cxx_so_SOURCES = libvirt-qmf.cpp
 pm_fence_so_SOURCES = pm-fence.c
 multicast_so_SOURCES = mcast.c history.c
+tcp_so_SOURCES = tcp.c history.c
 checkpoint_so_SOURCES = virt.c vm_states.c history.c checkpoint.c cpg.c
 serial_so_SOURCES = virt-serial.c virt-sockets.c serial.c history.c
 
@@ -63,6 +64,7 @@ mod_libvirt_qmf=@mod_libvirt_qmf@
 mod_pm_fence=@mod_pm_fence@
 mod_multicast=@mod_multicast@
 mod_serial=@mod_serial@
+mod_tcp=@mod_tcp@
 
 ################################
 ifeq ($(with_modules),yes)
@@ -90,6 +92,9 @@ MODULES+=multicast.so
 endif
 ifneq ($(mod_serial),no)
 MODULES+=serial.so
+endif
+ifneq ($(mod_tcp),no)
+MODULES+=tcp.so
 endif
 ifneq ($(mod_null),no)
 MODULES+=null.so
@@ -126,6 +131,10 @@ endif
 ifneq ($(mod_serial),no)
 fence_virtd_SOURCES+=${serial_so_SOURCES}
 LIBS+=$(NSS_LIBS) $(XML_LIBS)
+endif
+ifneq ($(mod_tcp),no)
+fence_virtd_SOURCES+=${tcp_so_SOURCES}
+LIBS+=$(NSS_LIBS)
 endif
 ifneq ($(mod_null),no)
 fence_virtd_SOURCES+=${null_so_SOURCES}
@@ -166,6 +175,9 @@ checkpoint.so: ${checkpoint_so_SOURCES:.c=.o}
 
 serial.so: ${serial_so_SOURCES:.c=.o}
 	$(CC) -o $@ $^ $(LIBS) -shared $(VIRT_LIBS) $(UUID_LIBS) $(XML_LIBS)
+
+tcp.so: ${tcp_so_SOURCES:.c=.o}
+	$(CC) -o $@ $^ $(LIBS) -shared $(NSS_LIBS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $^ $(INCLUDES)

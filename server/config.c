@@ -324,6 +324,102 @@ listener_config_multicast(config_object_t *config)
 	return 0;
 }
 
+static int
+listener_config_tcp(config_object_t *config)
+{
+	char val[4096];
+	char inp[4096];
+	const char *family = "ipv4";
+	struct in_addr sin;
+	struct in6_addr sin6;
+	int done = 0;
+
+	printf("\n");
+	printf("The TCP listener module is designed for use in environments\n"
+	       "where the guests and hosts communicate over viosproxy.\n\n");
+
+	/* IP ADDRESS/FAMILY */
+	printf("The IP address is the address that a client will use to\n"
+	       "send fencing requests to fence_virtd.\n\n");
+
+	if (sc_get(config, "listeners/tcp/@address",
+		   val, sizeof(val)-1)) {
+		strncpy(val, IPV4_MCAST_DEFAULT, sizeof(val));
+	}
+
+	do {
+		text_input("TCP Listen IP Address", val, inp, sizeof(inp));
+
+		if (inet_pton(AF_INET, inp, &sin) == 1) {
+			printf("\nUsing ipv4 as family.\n\n");
+			family = "ipv4";
+		} else if (inet_pton(AF_INET6, inp, &sin6) == 1) {
+			printf("\nUsing ipv6 as family.\n\n");
+			family = "ipv6";
+		} else {
+			printf("'%s' is not a valid IP address!\n", inp);
+			continue;
+		}
+
+	} while (0);
+	sc_set(config, "listeners/tcp/@family", family);
+	sc_set(config, "listeners/tcp/@address", inp);
+
+
+	/* MULTICAST IP PORT */
+	if (sc_get(config, "listeners/tcp/@port",
+		   val, sizeof(val)-1)) {
+		snprintf(val, sizeof(val), "%d", DEFAULT_MCAST_PORT);
+	}
+
+	do {
+		text_input("TCP Listen Port", val, inp, sizeof(inp));
+
+		done = atoi(inp);
+		if (done <= 0 || done != (done & 0xffff)) {
+			printf("Port value '%s' is out of range\n", val);
+			continue;
+		}
+
+	} while (0);
+	sc_set(config, "listeners/tcp/@port", inp);
+
+	/* KEY FILE */
+	printf("\nThe key file is the shared key information which is used to\n"
+	       "authenticate fencing requests.  The contents of this file must\n"
+	       "be distributed to each physical host and virtual machine within\n"
+	       "a cluster.\n\n");
+
+	if (sc_get(config, "listeners/tcp/@key_file",
+		   val, sizeof(val)-1)) {
+		strncpy(val, DEFAULT_KEY_FILE, sizeof(val));
+	}
+
+	do { 
+		text_input("Key File", val, inp, sizeof(inp));
+
+		if (!strcasecmp(inp, "none")) {
+			break;
+		}
+
+		if (strlen(inp) > 0) {
+			if (inp[0] != '/') {
+				printf("Invalid key file: %s\n", inp);
+				if (yesno("Use anyway", 1) == 1)
+					break;
+				continue;
+			}
+			break;
+		}
+	} while(0);
+	if (!strcasecmp(inp, "none")) {
+		sc_set(config, "listeners/tcp/@key_file", NULL);
+	} else {
+		sc_set(config, "listeners/tcp/@key_file", inp);
+	}
+
+	return 0;
+}
 
 static int
 listener_config_serial(config_object_t *config)
@@ -469,6 +565,8 @@ listener_configure(config_object_t *config)
 	sc_set(config, "fence_virtd/@listener", inp);
 	if (!strcmp(inp, "multicast"))
 		listener_config_multicast(config);
+	else if (!strcmp(inp, "tcp"))
+		listener_config_tcp(config);
 	else if (!strcmp(inp, "serial"))
 		listener_config_serial(config);
 	else

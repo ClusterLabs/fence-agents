@@ -32,10 +32,12 @@
 #include <fcntl.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
+#include <netdb.h>
 
 #include "debug.h"
 
 static int connect_nb(int fd, struct sockaddr *dest, socklen_t len, int timeout);
+static int get_addr(const char *hostname, int family, struct sockaddr_storage *addr);
 
 /**
   Set close-on-exec bit option for a socket.
@@ -56,27 +58,44 @@ set_cloexec(int fd)
 /**
   Bind to a port on the local IPv6 stack
 
+  @param addr_str	Address to listen on, NULL for inaddr6_any
   @param port		Port to bind to
   @param backlog	same as backlog for listen(2)
   @return		0 on success, -1 on failure
   @see			ipv4_bind
  */
 int
-ipv6_listen(uint16_t port, int backlog)
+ipv6_listen(const char *addr_str, uint16_t port, int backlog)
 {
 	struct sockaddr_in6 _sin6;
 	int fd, ret;
 
 	dbg_printf(4, "%s: Setting up ipv6 listen socket\n", __FUNCTION__);
-	fd = socket(PF_INET6, SOCK_STREAM, 0);
-	if (fd < 0)
-		return -1;
 
 	memset(&_sin6, 0, sizeof(_sin6));
 	_sin6.sin6_family = PF_INET6;
 	_sin6.sin6_port = htons(port);
 	_sin6.sin6_flowinfo = 0;
-	_sin6.sin6_addr = in6addr_any;
+
+	if (addr_str == NULL) {
+		_sin6.sin6_addr = in6addr_any;
+	} else {
+		struct sockaddr_storage ss;
+
+		if (get_addr(addr_str, AF_INET6, &ss) == -1) {
+			dbg_printf(4, "%s: Can't get addr for %s\n",
+				__FUNCTION__, addr_str);
+			return -1;
+		}
+
+		memcpy(&_sin6.sin6_addr,
+			&((struct sockaddr_in6 *)&ss)->sin6_addr, sizeof(struct sockaddr_in6));
+		memcpy(&_sin6.sin6_addr, &ss, sizeof(struct sockaddr_in6));
+	}
+
+	fd = socket(PF_INET6, SOCK_STREAM, 0);
+	if (fd < 0)
+		return -1;
 
 	ret = 1;
 	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void *)&ret, sizeof (ret));
@@ -106,25 +125,41 @@ ipv6_listen(uint16_t port, int backlog)
 /**
   Bind to a port on the local IPv4 stack
 
+  @param addr_str	Address to listen on, NULL for inaddr_any
   @param port		Port to bind to
   @param backlog	same as backlog for listen(2)
   @return		0 on success, -1 on failure
   @see			ipv6_bind
  */
 int
-ipv4_listen(uint16_t port, int backlog)
+ipv4_listen(const char *addr_str, uint16_t port, int backlog)
 {
 	struct sockaddr_in _sin;
 	int fd, ret;
 
 	dbg_printf(4, "%s: Setting up ipv4 listen socket\n", __FUNCTION__);
-	fd = socket(PF_INET, SOCK_STREAM, 0);
-	if (fd < 0)
-		return -1;
 
 	_sin.sin_family = PF_INET;
 	_sin.sin_port = htons(port);
-	_sin.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	if (addr_str == NULL) {
+		_sin.sin_addr.s_addr = htonl(INADDR_ANY);
+	} else {
+		struct sockaddr_storage ss;
+
+		if (get_addr(addr_str, AF_INET, &ss) == -1) {
+			dbg_printf(4, "%s: Can't get addr for %s\n",
+				__FUNCTION__, addr_str);
+			return -1;
+		}
+
+		memcpy(&_sin.sin_addr,
+			&((struct sockaddr_in *)&ss)->sin_addr, sizeof(struct sockaddr_in));
+	}
+
+	fd = socket(PF_INET, SOCK_STREAM, 0);
+	if (fd < 0)
+		return -1;
 
 	ret = 1;
 	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void *)&ret, sizeof (ret));
@@ -296,5 +331,42 @@ connect_nb(int fd, struct sockaddr *dest, socklen_t len, int timeout)
 	}
 
 	errno = EIO;
+	return -1;
+}
+
+static int
+get_addr(const char *hostname, int family, struct sockaddr_storage *addr)
+{
+	struct addrinfo *res;
+	size_t len;
+	struct addrinfo ai;
+
+	memset(&ai, 0, sizeof(ai));
+	ai.ai_family = family;
+
+	if (getaddrinfo(hostname, NULL, &ai, &res) != 0)
+		return -1;
+
+	switch (res->ai_addr->sa_family) {
+		case AF_INET:
+			len = sizeof(struct sockaddr_in);
+			break;
+		case AF_INET6:
+			len = sizeof(struct sockaddr_in6);
+			break;
+		default:
+			goto out_fail;
+	}
+
+	if (len < (size_t) res->ai_addrlen)
+		goto out_fail;
+
+	memcpy(addr, res->ai_addr, res->ai_addrlen);
+	freeaddrinfo(res);
+
+	return 0;
+
+out_fail:
+	freeaddrinfo(res);
 	return -1;
 }

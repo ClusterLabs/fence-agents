@@ -35,7 +35,8 @@ typedef enum {
 	MODE_MULTICAST  = 0,
 	/*MODE_BROADCAST  = 1,*/
 	MODE_SERIAL     = 2,
-	MODE_VMCHANNEL  = 3
+	MODE_VMCHANNEL  = 3,
+	MODE_TCP		= 4
 } client_mode_t;
 
 typedef struct {
@@ -49,6 +50,7 @@ typedef struct {
 
 	struct network_args {
 		char *addr;
+		char *ipaddr;
 		char *key_file;
 		int port;
 		fence_hash_t hash;

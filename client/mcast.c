@@ -301,9 +301,9 @@ mcast_fence_virt(fence_virt_args_t *args)
 			case AUTH_SHA256:
 			case AUTH_SHA512:
 				if (args->net.family == PF_INET) {
-					lfd = ipv4_listen(args->net.port, 10);
+					lfd = ipv4_listen(NULL, args->net.port, 10);
 				} else {
-					lfd = ipv6_listen(args->net.port, 10);
+					lfd = ipv6_listen(NULL, args->net.port, 10);
 				}
 				break;
 			/*case AUTH_X509:*/
