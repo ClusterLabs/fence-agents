@@ -8,7 +8,7 @@ EXTRA_DIST		= $(SRC)
 
 sbin_SCRIPTS		= $(TARGET)
 
-dist_man_MANS		= $(TARGET).8
+man_MANS		= $(TARGET).8
 
 include $(top_srcdir)/make/fencebuild.mk
 include $(top_srcdir)/make/fencemanperl.mk

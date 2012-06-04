@@ -8,7 +8,7 @@ noinst_HEADERS		= expect.h
 
 fence_ipmilan_SOURCES	= expect.c ipmilan.c
 
-dist_man_MANS		= $(TARGET).8
+man_MANS		= $(TARGET).8
 
 include $(top_srcdir)/make/fencemanc.mk
 
