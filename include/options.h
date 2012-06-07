@@ -45,6 +45,7 @@ typedef struct {
 	client_mode_t mode;
 	int debug;
 	int timeout;
+	int delay;
 	int retr_time;
 	arg_flags_t flags;
 

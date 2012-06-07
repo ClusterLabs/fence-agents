@@ -44,6 +44,11 @@ Fencing action (null, off, on, reboot, status, monitor, list, or metadata) (Defa
 . 
 Fencing timeout (in seconds) (Default Value: 30)
 
+.TP
+.B -w
+. 
+Fencing delay (in seconds). The fence agent will wait the specified number of seconds before attempting a fencing operation. (Default Value: 0)
+
 .SH MULTICAST PARAMETERS
 These parameters are used only when using fence_virt in multicast mode
 (e.g. by running fence_xvm).

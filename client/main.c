@@ -56,10 +56,10 @@ main(int argc, char **argv)
 
 	args_init(&args);
 	if (!strcmp(basename(argv[0]), "fence_xvm")) {
-       		my_options = "di:a:p:r:C:c:k:M:H:uo:t:?hV";
+       		my_options = "di:a:p:r:C:c:k:M:H:uo:t:?hVw:";
 		args.mode = MODE_MULTICAST;
 	} else {
-       		my_options = "dD:P:A:p:M:H:o:t:?hVT:C:c:k:";
+       		my_options = "dD:P:A:p:M:H:o:t:?hVT:C:c:k:w:";
 		args.mode = MODE_SERIAL;
 	}
 
@@ -118,6 +118,9 @@ main(int argc, char **argv)
 		args_metadata(argv[0], my_options);
 		return 0;
 	}
+
+	if (args.delay > 0)
+		sleep(args.delay);
 
 	switch(args.mode) {
 	case MODE_MULTICAST:

@@ -329,6 +329,18 @@ assign_timeout(fence_virt_args_t *args, struct arg_info *arg, char *value)
 	}
 }
 
+static inline void
+assign_delay(fence_virt_args_t *args, struct arg_info *arg, char *value)
+{
+	if (!value)
+		return;
+
+	args->delay = atoi(value);
+	if (args->timeout <= 0) {
+		printf("Invalid delay: '%s'\n", value);
+		args->flags |= F_ERR;
+	}
+}
 
 static inline void
 assign_help(fence_virt_args_t *args, struct arg_info *arg, char *value)
@@ -505,6 +517,11 @@ static struct arg_info _arg_info[] = {
 	  "URI for Hypervisor (default: auto detect)",
 	  assign_uri },
 	  
+	{ 'w', "-w <delay>", "delay",
+	  0, "string", "0",
+	  "Fencing delay (in seconds; default=0)",
+	  assign_delay },
+
 	{ 'V', "-V", NULL,
 	  0, "boolean", "0",
  	  "Display version and exit", 
