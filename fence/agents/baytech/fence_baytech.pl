@@ -166,13 +166,14 @@ sub get_options
 
       fail_usage "Unkown parameter." if (@ARGV > 0);
 
-      if ((defined $opt_o) && ($opt_o =~ /metadata/i)) {
-         print_metadata();
-         exit 0;
-      }
    } else {
       get_options_stdin();
    } 
+
+   if ((defined $opt_o) && ($opt_o =~ /metadata/i)) {
+      print_metadata();
+      exit 0;
+   }
 
    fail "failed: must specify hostname" unless defined $opt_a;
    $host=$opt_a;

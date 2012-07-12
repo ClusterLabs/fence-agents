@@ -717,6 +717,11 @@ if (@ARGV > 0) {
 } else {
 	get_options_stdin();
 
+	if ((defined $action) && ($action =~ /metadata/i)) {
+		print_metadata();
+		exit 0;
+	}
+
 	fail "failed: no IP address" unless defined $address;
 	fail "failed: no login name" unless defined $login;
 

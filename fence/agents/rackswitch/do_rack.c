@@ -301,6 +301,15 @@ static void get_options(int argc, char **argv)
       strcpy(name, pname);
       if (!strcmp(arg, "ipaddr"))
         strcpy(ipaddr, value);
+
+      if (!strcmp(arg, "action")) 
+        if (strncasecmp(value, "metadata", 254) == 0) {
+          print_metadata();
+          exit(DID_SUCCESS);              
+        } else {
+          fprintf(stderr, "Only 'metadata' option is aviable for this fence agent\n");
+          exit(DID_FAILURE);
+        } 
       
       if (!strcmp(arg, "portnumber"))
         strcpy(portnumber, value);

@@ -299,6 +299,11 @@ sub get_options_stdin
         {
             $opt_r = $val;
         }
+        
+        elsif ($name eq "action")
+        {
+            $opt_o = $val;
+        }
 
         # FIXME -- depreicated residue of old fencing system
       	elsif ($name eq "name" ) { }
@@ -351,6 +356,11 @@ if (@ARGV > 0){
 
 } else {
     get_options_stdin();
+
+    if ((defined $opt_o) && ($opt_o =~ /metadata/i)) {
+        print_metadata();
+        exit 0;
+    }
 
     fail "no IP address" unless defined $opt_a;
     fail "no userid" unless defined $opt_u;

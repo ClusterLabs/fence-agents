@@ -162,6 +162,11 @@ if (@ARGV > 0) {
 } else {
    get_options_stdin();
 
+   if ((defined $opt_o) && ($opt_o =~ /metadata/i)) {
+     print_metadata();
+     exit 0;
+   }
+
    fail "failed: no IP address" unless defined $opt_a;
    fail "failed: no plug number" unless defined $opt_n;
    fail "failed: no login name" unless defined $opt_l;

@@ -179,7 +179,7 @@ sub get_options_stdin
 		{
 			$login = $val;
 		} 
-		elsif ($name eq "option" )
+		elsif (($name eq "option" ) || ($name eq "action"))
 		{
 			$action = $val;
 		}
@@ -311,6 +311,11 @@ if (@ARGV > 0)
 else 
 {
 	get_options_stdin();
+
+	if ((defined $action) && ($action =~ /metadata/i)) {
+		print_metadata();
+		exit 0;
+	}
 
 	fail "failed: no IP address" unless defined $host;
 	fail "failed: no domain" unless defined $domain;

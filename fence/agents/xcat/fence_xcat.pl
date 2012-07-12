@@ -184,6 +184,11 @@ if (@ARGV > 0) {
 } else {
    get_options_stdin();
 
+   if ((defined $opt_o) && ($opt_o =~ /metadata/i)) {
+     print_metadata();
+     exit 0;
+   }
+   
    fail "failed: no plug number" unless defined $opt_n;
    $opt_o=lc($opt_o);
    fail "failed: unrecognised action: $opt_o"

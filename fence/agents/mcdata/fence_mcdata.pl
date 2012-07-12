@@ -176,7 +176,7 @@ sub get_options_stdin
 	{
             $opt_l = $val;
         } 
-        elsif ($name eq "option" )
+        elsif (($name eq "option" ) || ($name eq "action"))
         {
             $opt_o = $val;
         }
@@ -234,6 +234,11 @@ if (@ARGV > 0) {
 
 } else {
    get_options_stdin();
+
+   if ((defined $opt_o) && ($opt_o =~ /metadata/i)) {
+     print_metadata();
+     exit 0;
+   }
 
    fail "failed: no IP address" unless defined $opt_a;
    fail "failed: no plug number" unless defined $opt_n;

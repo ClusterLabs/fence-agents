@@ -142,6 +142,11 @@ sub get_options_stdin
             $opt_u = $val;
         }
 
+        elsif ($name eq "action" )
+        {
+            $opt_o = $val;
+        }
+
 	else
         {
            print stderr "parse error: unknown option \"$opt\"\n";
@@ -165,6 +170,11 @@ if (@ARGV > 0){
     fail_usage "No '-u' flag specified." unless defined $opt_u;
 } else {
     get_options_stdin();
+
+    if ((defined $opt_o) && ($opt_o =~ /metadata/i)) {
+        print_metadata();
+        exit 0;
+    }
 
     fail "no userid" unless defined $opt_u;
 }

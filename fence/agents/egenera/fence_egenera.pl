@@ -139,10 +139,6 @@ if (@ARGV > 0)
 
 	fail_usage "Unkown parameter." if (@ARGV > 0);
 
-	if ((defined $opt_o) && ($opt_o =~ /metadata/i)) {
-		print_metadata();
-		exit 0;
-	}
 
 	$cserv  = $opt_c if defined $opt_c;
 	$lpan   = $opt_l if defined $opt_l;
@@ -155,6 +151,11 @@ else
 {
 	get_options_stdin();
 } 
+
+if (((defined $opt_o) && ($opt_o =~ /metadata/i)) || ((defined $action) && ($action =~ /metadata/i))) {
+	print_metadata();
+	exit 0;
+}
 
 $action = "reboot" unless defined $action;
 $user = "root" unless defined $user;
