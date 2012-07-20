@@ -49,6 +49,7 @@ fence/agents/ifmib/fence_ifmib
 fence/agents/ilo/fence_ilo
 fence/agents/ilo_mp/fence_ilo_mp
 fence/agents/intelmodular/fence_intelmodular
+fence/agents/ipdu/fence_ipdu
 fence/agents/ipmilan/fence_ipmilan
 fence/agents/ldom/fence_ldom
 fence/agents/lib/fencing.py
