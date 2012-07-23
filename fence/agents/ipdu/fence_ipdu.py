@@ -49,7 +49,7 @@ def ipdu_set_device(conn,options):
 	agents_dir={'.1.3.6.1.4.1.2.6.223':IBMiPDU,
 		    None:IBMiPDU}
 
-	# First resolve type of APC
+	# First resolve type of PDU device
 	pdu_type=conn.walk(OID_SYS_OBJECT_ID)
 
 	if (not ((len(pdu_type)==1) and (agents_dir.has_key(pdu_type[0][1])))):
@@ -133,6 +133,7 @@ def get_outlets_status(conn, options):
 def ipdu_snmp_define_defaults():
 	all_opt["snmp_version"]["default"]="3"
 	all_opt["community"]["default"]="private"
+	all_opt["switch"]["default"]="1"
 	device=IBMiPDU
 
 # Main agent method
@@ -151,16 +152,6 @@ def main():
 	ipdu_snmp_define_defaults()
 
 	options=check_input(device_opt,process_input(device_opt))
-
-        ## Support for -n [switch]:[plug] notation that was used before
-	if ((options.has_key("-n")) and (-1 != options["-n"].find(":"))):
-		(switch, plug) = options["-n"].split(":", 1)
-		if ((switch.isdigit()) and (plug.isdigit())):
-		        options["-s"] = switch
-			options["-n"] = plug
-
-	if (not (options.has_key("-s"))):
-		options["-s"]="1"
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for iPDU over SNMP"
