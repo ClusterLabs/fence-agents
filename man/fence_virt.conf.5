@@ -83,7 +83,7 @@ the shared key file to use (default: /etc/cluster/fence_xvm.key).
 .TP
 .B hash
 .
-the hashing algorithm to use for packet signing (default: sha256, but could
+the weakest hashing algorithm allowed for client requests.  Clients may send packets with stronger hashes than the one specified, but not weaker ones.  (default: sha256, but could
 be sha1, sha512, or none)
 
 .TP
