@@ -33,6 +33,10 @@
 .TH FENCE_AGENT 8 2009-10-20 "<xsl:value-of select="@name"/> (Fence Agent)"
 .SH NAME
 <xsl:value-of select="@name" /> - <xsl:value-of select="@shortdesc" />
+<xsl:for-each select="symlink">
+.P
+<xsl:value-of select="@name" /> - <xsl:value-of select="@shortdesc" /> (symlink)
+</xsl:for-each>
 .SH DESCRIPTION
 .P
 <xsl:value-of select="longdesc"/>

@@ -471,6 +471,9 @@ def metadata(avail_opt, options, docs):
 
 	print "<?xml version=\"1.0\" ?>"
 	print "<resource-agent name=\"" + os.path.basename(sys.argv[0]) + "\" shortdesc=\"" + docs["shortdesc"] + "\" >"
+	if "symlink" in docs:
+		for (symlink,desc) in docs["symlink"]:
+			print "<symlink name=\"" + symlink + "\" shortdesc=\"" + desc + "\"/>"
 	print "<longdesc>" + docs["longdesc"] + "</longdesc>"
 	if docs.has_key("vendorurl"):
 		print "<vendor-url>" + docs["vendorurl"] + "</vendor-url>"

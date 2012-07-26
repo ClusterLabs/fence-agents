@@ -82,6 +82,7 @@ The agent opens an SSL connection to the iLO card. Once the SSL \
 connection is established, the agent is able to communicate with \
 the iLO card through an XML stream."
 	docs["vendorurl"] = "http://www.hp.com"
+	docs["symlink"] = [("fence_ilo2", "Fence agent for HP iLO2")]
 	show_docs(options, docs)
 
 	##
