@@ -2,7 +2,9 @@
 
 # The Following agent has been tested on:
 # - Eaton ePDU Managed - SNMP v1
+#   EATON | Powerware ePDU model: Managed ePDU (PW104MA0UB99), firmware: 01.01.01
 # - Eaton ePDU Switched - SNMP v1
+#   EATON | Powerware ePDU model: Switched ePDU (IPV3600), firmware: 2.0.K
 
 import sys, re, pexpect
 sys.path.append("@FENCEAGENTSLIBDIR@")
