@@ -215,17 +215,9 @@ def main():
 	snmp_define_defaults ()
 	eaton_snmp_define_defaults()
 
+	all_opt["switch"]["default"] = 1
+	all_opt["power_wait"]["default"] = 2
 	options=check_input(device_opt,process_input(device_opt))
-
-	## Support for -n [switch]:[plug] notation that was used before
-	if ((options.has_key("-n")) and (-1 != options["-n"].find(":"))):
-		(switch, plug) = options["-n"].split(":", 1)
-		if ((switch.isdigit()) and (plug.isdigit())):
-		        options["-s"] = switch
-			options["-n"] = plug
-
-	if (not (options.has_key("-s"))):
-		options["-s"]="1"
 
 	# Plug indexing start from zero on ePDU Managed, so we substract '1' from
 	# the user's given plug number.
