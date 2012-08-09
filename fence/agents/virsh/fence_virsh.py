@@ -16,8 +16,14 @@ BUILD_DATE=""
 #END_VERSION_GENERATION
 
 def get_outlets_status(conn, options):
+	if options.has_key("-d"):
+		prefix = SUDO_PATH + " "
+	else:
+		prefix = ""
+
 	try:
-		conn.sendline("virsh list --all")
+		conn.sendline(prefix + "virsh list --all")
+		conn.interact()
 		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
@@ -48,8 +54,13 @@ def get_power_status(conn, options):
                 return outlets[options["-n"]][1]
 
 def set_power_status(conn, options):
+	if options.has_key("-d"):
+		prefix = SUDO_PATH + " "
+	else:
+		prefix = ""
+
 	try:
-		conn.sendline("virsh %s "%(options["-o"] == "on" and "start" or "destroy")+options["-n"])
+		conn.sendline(prefix + "virsh %s "%(options["-o"] == "on" and "start" or "destroy")+options["-n"])
 
 		conn.log_expect(options, options["-c"], int(options["-g"]))
                 time.sleep(1)
@@ -63,7 +74,7 @@ def main():
 	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
 			"action", "ipaddr", "login", "passwd", "passwd_script",
 			"secure", "identity_file", "test", "port", "separator",
-			"inet4_only", "inet6_only", "ipport",
+			"inet4_only", "inet6_only", "ipport", "sudo",
 			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
 
 	atexit.register(atexit_handler)

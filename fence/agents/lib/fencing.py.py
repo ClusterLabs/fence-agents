@@ -30,6 +30,7 @@ EC_PASSWORD_MISSING = 10
 TELNET_PATH = "/usr/bin/telnet"
 SSH_PATH    = "/usr/bin/ssh"
 SSL_PATH    = "@SBINDIR@/fence_nss_wrapper"
+SUDO_PATH   = "/usr/bin/sudo"
 
 all_opt = {
 	"help"    : {
@@ -386,17 +387,24 @@ all_opt = {
 	"session_url" : {
 		"getopt" : "s:",
 		"longopt" : "session-url",
-		"help" : "-s, --session-url              URL to connect to XenServer on.",
+		"help" : "-s, --session-url              URL to connect to XenServer on",
 		"required" : "1",
 		"shortdesc" : "The URL of the XenServer host.",
 		"order" : 1},
 	"uuid" : {
 		"getopt" : "U:",
 		"longopt" : "uuid",
-		"help" : "-U, --uuid                     UUID of the VM to fence.",
+		"help" : "-U, --uuid                     UUID of the VM to fence",
 		"required" : "0",
 		"shortdesc" : "The UUID of the virtual machine to fence.",
-		"order" : 1}
+		"order" : 1},
+	"sudo" : {
+		"getopt" : "d",
+		"longopt" : "use-sudo",
+		"help" : "--use-sudo                     Use sudo (without password) when calling 3rd party software",
+		"required" : "0",
+		"shortdesc" : "Use sudo (without password) when calling 3rd party sotfware.",
+		"order" : 205}
 }
 
 common_opt = [ "retry_on", "delay" ]
