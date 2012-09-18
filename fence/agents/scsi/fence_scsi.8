@@ -41,13 +41,15 @@ and created registrations for each path.
 .SH OPTIONS
 .TP
 \fB-o\fP \fIaction\fR
-Fencing action. This value can be "on", "off", or "status". All
-actions require either a key (see -k option) or node name (see -n
-option). For "on", the agent will attempt to register with the
-device(s) and create a reservation if none exists. The "off" action
-will attempt to remove a node's key from the device(s). The "status"
-action will report whether or not a node's key is currently register
-with one or more of the devices. The default action if "off".
+Fencing action. This value can be "on", "off", "status", or
+"metadata". The "on", "off", and "status" actions require either a key
+(see -k option) or node name (see -n option). For "on", the agent will
+attempt to register with the device(s) and create a reservation if
+none exists. The "off" action will attempt to remove a node's key from
+the device(s). The "status" action will report whether or not a node's
+key is currently register with one or more of the devices. The
+"metadata" action will display the XML metadata. The default action if
+"off".
 .TP
 \fB-d\fP \fIdevices\fR
 List of devices to use for current operation. Devices can be
