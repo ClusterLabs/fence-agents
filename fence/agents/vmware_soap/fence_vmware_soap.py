@@ -44,9 +44,12 @@ def process_results(results, machines, uuid, mappingToUUID):
 		info = {}
 		for i in m.propSet:
 			info[i.name] = i.val
-		machines[info["name"]] = (info["config.uuid"], info["summary.runtime.powerState"])
-		uuid[info["config.uuid"]] = info["summary.runtime.powerState"]
-		mappingToUUID[m.obj.value] = info["config.uuid"]
+		# Prevent error KeyError: 'config.uuid' when reaching systems which P2V failed,
+		# since these systems don't have a valid UUID
+		if info.has_key("config.uuid"):
+			machines[info["name"]] = (info["config.uuid"], info["summary.runtime.powerState"])
+			uuid[info["config.uuid"]] = info["summary.runtime.powerState"]
+			mappingToUUID[m.obj.value] = info["config.uuid"]
 
 	return (machines, uuid, mappingToUUID)
 
@@ -77,7 +80,7 @@ def get_power_status(conn, options):
 
 	propSpec = conn.factory.create('ns0:PropertySpec')
 	propSpec.all = False
-	propSpec.pathSet = ["name", "summary.runtime.powerState", "config.uuid", "summary", "config", "capability", "network"]
+	propSpec.pathSet = ["name", "summary.runtime.powerState", "config.uuid"]
 	propSpec.type = "VirtualMachine"
 
 	propFilterSpec = conn.factory.create('ns0:PropertyFilterSpec')
@@ -101,6 +104,9 @@ def get_power_status(conn, options):
 		machines.update(more_machines)
 		uuid.update(more_uuid)
 		mappingToUUID.update(more_mappingToUUID)
+		# Do not run unnecessary SOAP requests
+		if options.has_key("-U") and options["-U"] in uuid:
+			break
 
 	if ["list", "monitor"].count(options["-o"]) == 1:
 		return machines
