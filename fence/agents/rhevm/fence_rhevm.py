@@ -12,7 +12,7 @@ BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
 
 
-re_get_id = re.compile("<vm id=\"(.*?)\"", re.IGNORECASE);
+re_get_id = re.compile("<vm( .*)?  id=\"(.*?)\"", re.IGNORECASE);
 re_status = re.compile("<state>(.*?)</state>", re.IGNORECASE);
 re_get_name = re.compile("<name>(.*?)</name>", re.IGNORECASE); 
 
@@ -29,7 +29,7 @@ def get_power_status(conn, options):
 		# Unable to obtain ID needed to access virtual machine
 		fail(EC_STATUS)
 
-	options["id"] = result.group(1);
+	options["id"] = result.group(2);
 	
 	re_status.search(res)
 	result = re_status.search(res)
