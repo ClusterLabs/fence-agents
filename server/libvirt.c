@@ -178,7 +178,7 @@ libvirt_off(const char *vm_name, const char *src,
 
 		if (vdp)
 			virDomainFree(vdp);
-		return 0;
+		return 1;
 	}
 
 	syslog(LOG_NOTICE, "Destroying domain %s\n", vm_name);
@@ -320,7 +320,7 @@ libvirt_reboot(const char *vm_name, const char *src,
 			   "do - domain does not exist\n");
 		if (vdp)
 			virDomainFree(vdp);
-		return 0;
+		return 1;
 	}
 
 	syslog(LOG_NOTICE, "Rebooting domain %s\n", vm_name);

@@ -393,7 +393,7 @@ do_off(const char *vm_name)
 
 		if (vdp)
 			virDomainFree(vdp);
-		return 0;
+		return 1;
 	}
 
 	syslog(LOG_NOTICE, "Destroying domain %s\n", vm_name);
@@ -452,7 +452,7 @@ do_reboot(const char *vm_name)
 			   "do - domain does not exist\n");
 		if (vdp)
 			virDomainFree(vdp);
-		return 0;
+		return 1;
 	}
 
 	syslog(LOG_NOTICE, "Rebooting domain %s\n", vm_name);
