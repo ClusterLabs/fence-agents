@@ -12,7 +12,7 @@ BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
 
 
-re_get_id = re.compile("<vm( .*)?  id=\"(.*?)\"", re.IGNORECASE);
+re_get_id = re.compile("<vm( .*)? id=\"(.*?)\"", re.IGNORECASE);
 re_status = re.compile("<state>(.*?)</state>", re.IGNORECASE);
 re_get_name = re.compile("<name>(.*?)</name>", re.IGNORECASE); 
 
