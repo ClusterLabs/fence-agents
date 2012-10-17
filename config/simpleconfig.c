@@ -166,8 +166,8 @@ static int
 _sc_get(void *config, const char *key, char *value, size_t valuesz)
 {
 	char buf[1024];
-	struct node *n, *node = ((struct parser_context *)config)->node_list;
-	struct value *v, *values = ((struct parser_context *)config)->val_list;
+	struct node *n, *node;
+	struct value *v, *values;
 	char *ptr;
 	char *slash;
 	char *bracket;
@@ -178,6 +178,10 @@ _sc_get(void *config, const char *key, char *value, size_t valuesz)
 
 	if (!config)
 		return -1;
+
+	node = ((struct parser_context *)config)->node_list;
+	values = ((struct parser_context *)config)->val_list;
+
 	assert(strlen(key) < sizeof(buf));
 
 	ptr = (char *)key;
