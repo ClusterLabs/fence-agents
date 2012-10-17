@@ -85,7 +85,6 @@ tcp_exchange(int fd, fence_auth_type_t auth, void *key,
 		ret = 0;
 	}
 
-	close(fd);
 	return ret;
 }
 
@@ -147,6 +146,7 @@ tcp_fence_virt(fence_virt_args_t *args)
 	ret = _write_retry(fd, &freq, sizeof(freq), NULL);
 	if (ret != sizeof(freq)) {
 		perror("write");
+		close(fd);
 		return 1;
 	}
 
@@ -155,15 +155,19 @@ tcp_fence_virt(fence_virt_args_t *args)
 		case AUTH_SHA1:
 		case AUTH_SHA256:
 		case AUTH_SHA512:
-			return tcp_exchange(fd, args->net.auth, key, key_len,
+			ret = tcp_exchange(fd, args->net.auth, key, key_len,
 					    args->timeout);
+			close(fd);
+			return ret;
 			break;
 		/* case AUTH_X509: 
 			return ssl_exchange(...); */
 		default:
 			dbg_printf(3, "Unknown auth type: %d\n", args->net.auth);
+			close(fd);
 			return 1;
 	}
 
+	close(fd);
 	return 1;
 }

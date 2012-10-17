@@ -168,8 +168,6 @@ tcp_exchange(int fd, fence_auth_type_t auth, void *key,
 		ret = 0;
 	}
 
-	close(fd);
-
 	return ret;
 }
 
@@ -264,7 +262,7 @@ mcast_fence_virt(fence_virt_args_t *args)
 	ip_list_t ipl;
 	char key[MAX_KEY_LEN];
 	struct timeval tv;
-	int lfd, key_len = 0, fd;
+	int lfd = -1, key_len = 0, fd, ret;
 	int attempts = 0;
 	uint32_t seqno;
 	
@@ -326,6 +324,7 @@ mcast_fence_virt(fence_virt_args_t *args)
 	do {
 		if (send_multicast_packets(&ipl, args, seqno,
 					   key, key_len)) {
+			close(lfd);
 			return -1;
 		}
 
@@ -343,11 +342,15 @@ mcast_fence_virt(fence_virt_args_t *args)
 				... = ssl_wait_connect... */
 			break;
 		default:
+			close(lfd);
 			return 1;
 		}
 
 		break;
 	} while (--attempts);
+
+	if (lfd >= 0)
+		close(lfd);
 
 	if (fd < 0) {
 		if (attempts <= 0) {
@@ -363,14 +366,18 @@ mcast_fence_virt(fence_virt_args_t *args)
 		case AUTH_SHA1:
 		case AUTH_SHA256:
 		case AUTH_SHA512:
-			return tcp_exchange(fd, args->net.auth, key, key_len,
+			ret = tcp_exchange(fd, args->net.auth, key, key_len,
 					    args->timeout);
+			close(fd);
+			return ret;
 			break;
 		/* case AUTH_X509: 
 			return ssl_exchange(...); */
 		default:
+			close(fd);
 			return 1;
 	}
 
+	close(fd);
 	return 1;
 }
