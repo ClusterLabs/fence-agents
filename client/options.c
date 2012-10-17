@@ -590,6 +590,7 @@ args_init(fence_virt_args_t *args)
 	args->retr_time = 20;
 	args->flags = 0;
 	args->debug = 0;
+	args->delay = 0;
 }
 
 
