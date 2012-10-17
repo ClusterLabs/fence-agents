@@ -82,13 +82,13 @@ add_ip(ip_list_t *ipl, char *ipaddr, char family)
 			return -1;
 	}
 	
-	dbg_printf(4, "Adding IP %s to list (family %d)\n", ipaddr, family);
-
-	ipa = malloc(sizeof(*ipa));
-	memset(ipa, 0, sizeof(*ipa));
+	ipa = calloc(1, sizeof(*ipa));
+	if (!ipa)
+		return -1;
 	ipa->ipa_family = family;
 	ipa->ipa_address = strdup(ipaddr);
 
+	dbg_printf(4, "Adding IP %s to list (family %d)\n", ipaddr, family);
 	TAILQ_INSERT_TAIL(ipl, ipa, ipa_entries);
 
 	return 0;
