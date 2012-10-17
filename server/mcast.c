@@ -541,9 +541,11 @@ mcast_init(listener_context_t *c, const fence_callbacks_t *cb,
 	ret = mcast_config(config, &info->args);
 	if (ret < 0) {
 		perror("mcast_config");
+		free(info);
 		return -1;
 	} else if (ret > 0) {
 		printf("%d errors found during configuration\n",ret);
+		free(info);
 		return -1;
 	}
 
