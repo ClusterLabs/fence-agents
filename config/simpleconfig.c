@@ -434,8 +434,10 @@ _sc_parse(const char *filename, void **config)
 	}
 
 	c = malloc(sizeof(*c));
-	if (!c)
-		return -1;
+	if (!c) {
+        ret = -1;
+        goto out_unlock;
+    }
 	c->node_list = node_list;
 	c->val_list = val_list;
 	c->next = NULL;
@@ -446,8 +448,8 @@ _sc_parse(const char *filename, void **config)
 	if (fp)
 		fclose(fp);
 
+out_unlock:
 	pthread_mutex_unlock(&parser_mutex);
-
 	return ret;
 }
 
