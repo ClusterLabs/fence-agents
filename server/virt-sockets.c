@@ -108,7 +108,7 @@ domain_sock_setup(const char *domain, const char *socket_path)
 	free(sun);
 	sun = NULL;
 
-	node = malloc(sizeof(*node));
+	node = calloc(1, sizeof(*node));
 	if (!node)
 		goto out_fail;
 
