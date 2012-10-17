@@ -122,6 +122,7 @@ add_ip_addresses(int family, ip_list_t *ipl)
 	x = recvfrom(fd, buf, sizeof(buf), 0, NULL, 0);
 	if (x < 0) {
 		perror("recvfrom");
+		close(fd);
 		return -1;
 	}
 	
