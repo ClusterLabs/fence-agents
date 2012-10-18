@@ -106,6 +106,12 @@ foreach my $i (1..$conf->{'system'}{na_num})
 }
 
 die "Exiting on errors.\n" if $bad;
+
+if ($conf->{na}{action} eq "metadata") {
+	show_metadata();
+	do_exit($conf, $log, 0);
+}
+
 my @ny=("no", "yes");
 record($conf, $log, "Node Assassin: . [$conf->{na}{ipaddr}].\n");
 record($conf, $log, "TCP Port: ...... [$conf->{na}{tcp_port}].\n");
