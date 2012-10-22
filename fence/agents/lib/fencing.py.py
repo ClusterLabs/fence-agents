@@ -407,7 +407,8 @@ all_opt = {
 		"order" : 205}
 }
 
-common_opt = [ "retry_on", "delay" ]
+common_opt = [ "help", "debug", "verbose", "quiet", "version", "action", "agent", 
+		"power_timeout", "shell_timeout", "login_timeout", "power_wait", "retry_on", "delay" ]
 
 class fspawn(pexpect.spawn):
 	def __init__(self, options, command):

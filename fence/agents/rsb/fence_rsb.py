@@ -47,11 +47,9 @@ def set_power_status(conn, options):
 		fail(EC_TIMED_OUT)
 
 def main():
-	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
-			"action", "ipaddr", "login", "passwd", "passwd_script",
+	device_opt = [  "ipaddr", "login", "passwd", "passwd_script",
 			"secure", "identity_file", "separator", "cmd_prompt",
-			"inet4_only", "inet6_only", "ipport", "telnet_port",
-			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
+			"inet4_only", "inet6_only", "ipport", "telnet_port" ]
 
 	atexit.register(atexit_handler)
 	all_opt["telnet_port"] = {

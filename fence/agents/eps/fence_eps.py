@@ -98,10 +98,8 @@ def eps_define_new_opts():
 
 # Starting point of fence agent
 def main():
-	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
-			"action", "ipaddr", "login", "passwd", "passwd_script",
-			"test", "port", "hidden_page", "no_login", "no_password",
-			"separator" ]
+	device_opt = [  "ipaddr", "login", "passwd", "passwd_script", "test",
+			"port", "hidden_page", "no_login", "no_password", "separator" ]
 
 	atexit.register(atexit_handler)
 

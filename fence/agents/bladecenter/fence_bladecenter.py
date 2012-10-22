@@ -98,11 +98,9 @@ def get_blades_list(conn, options):
 	return outlets
 
 def main():
-	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
-			"action", "ipaddr", "login", "passwd", "passwd_script",
+	device_opt = [  "ipaddr", "login", "passwd", "passwd_script",
 			"cmd_prompt", "secure", "port", "identity_file", "separator",
-			"inet4_only", "inet6_only", "ipport",
-			"power_timeout", "shell_timeout", "login_timeout", "power_wait", "missing_as_off" ]
+			"inet4_only", "inet6_only", "ipport", "missing_as_off" ]
 
 	atexit.register(atexit_handler)
 

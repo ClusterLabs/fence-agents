@@ -63,13 +63,11 @@ def get_outlets_status(conn, options):
 def main():
 	global port_oid
 
-	device_opt = [ "help", "version", "agent", "quiet", "verbose", "debug",
-		       "action", "ipaddr", "login", "passwd", "passwd_script",
+	device_opt = [ "ipaddr", "login", "passwd", "passwd_script",
 		       "test", "port", "separator", "no_login", "no_password",
 		       "snmp_version", "community", "snmp_auth_prot", "snmp_sec_level",
 		       "snmp_priv_prot", "snmp_priv_passwd", "snmp_priv_passwd_script",
-		       "udpport","inet4_only","inet6_only",
-		       "power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
+		       "udpport", "inet4_only", "inet6_only" ]
 
 	atexit.register(atexit_handler)
 

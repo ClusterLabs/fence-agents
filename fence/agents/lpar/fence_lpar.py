@@ -130,11 +130,9 @@ def get_lpar_list(conn, options):
 	return outlets
 
 def main():
-	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
-			"action", "ipaddr", "login", "passwd", "passwd_script",
-			"secure", "identity_file", "partition", "managed", "hmc_version", "cmd_prompt",
-			"separator", "inet4_only", "inet6_only", "ipport",
-			"power_timeout", "shell_timeout", "login_timeout", "power_wait" ]
+	device_opt = [  "ipaddr", "login", "passwd", "passwd_script", "secure",
+	                "identity_file", "partition", "managed", "hmc_version", "cmd_prompt",
+			"separator", "inet4_only", "inet6_only", "ipport" ]
 
 	atexit.register(atexit_handler)
 
