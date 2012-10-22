@@ -18,7 +18,7 @@ re_get_desc = re.compile(" descr=\"(.*?)\"", re.IGNORECASE)
 
 def get_power_status(conn, options):
 	try:
-		res = send_command(options, "<configResolveDn cookie=\"" + options["cookie"] + "\" inHierarchical=\"false\" dn=\"org-root" + options["-s"] + "/ls-" + options["-n"] + "/power\"/>")
+		res = send_command(options, "<configResolveDn cookie=\"" + options["cookie"] + "\" inHierarchical=\"false\" dn=\"org-root" + options["-s"] + "/ls-" + options["-n"] + "/power\"/>", int(options["-Y"]))
 	except pycurl.error, e:
 		sys.stderr.write(e[1] + "\n")
 		fail(EC_TIMED_OUT)
@@ -41,7 +41,7 @@ def set_power_status(conn, options):
 	}[options["-o"]]
 	
 	try:
-		res = send_command(options, "<configConfMos cookie=\"" + options["cookie"] + "\" inHierarchical=\"no\"><inConfigs><pair key=\"org-root" + options["-s"] + "/ls-" + options["-n"] + "/power\"><lsPower dn=\"org-root/ls-" + options["-n"] + "/power\" state=\"" + action + "\" status=\"modified\" /></pair></inConfigs></configConfMos>")
+		res = send_command(options, "<configConfMos cookie=\"" + options["cookie"] + "\" inHierarchical=\"no\"><inConfigs><pair key=\"org-root" + options["-s"] + "/ls-" + options["-n"] + "/power\"><lsPower dn=\"org-root/ls-" + options["-n"] + "/power\" state=\"" + action + "\" status=\"modified\" /></pair></inConfigs></configConfMos>", int(options["-Y"]))
 	except pycurl.error, e:
 		sys.stderr.write(e[1] + "\n")
 		fail(EC_TIMED_OUT)
@@ -53,7 +53,7 @@ def get_list(conn, options):
 
 	try:
 		try:
-			res = send_command(options, "<configResolveClass cookie=\"" + options["cookie"] + "\" inHierarchical=\"false\" classId=\"lsServer\"/>")
+			res = send_command(options, "<configResolveClass cookie=\"" + options["cookie"] + "\" inHierarchical=\"false\" classId=\"lsServer\"/>", int(options["-Y"]))
 		except pycurl.error, e:
 			sys.stderr.write(e[1] + "\n")
 			fail(EC_TIMED_OUT)
@@ -70,7 +70,7 @@ def get_list(conn, options):
 
 	return outlets
 
-def send_command(opt, command):
+def send_command(opt, command, timeout):
 	## setup correct URL
 	if opt.has_key("-z"):
 		url = "https:"
@@ -86,7 +86,7 @@ def send_command(opt, command):
 	c.setopt(pycurl.HTTPHEADER, [ "Content-type: text/xml" ])
 	c.setopt(pycurl.POSTFIELDS, command)
 	c.setopt(pycurl.WRITEFUNCTION, b.write)
-	c.setopt(pycurl.TIMEOUT, int(opt["-Y"]))
+	c.setopt(pycurl.TIMEOUT, timeout)
 	c.setopt(pycurl.SSL_VERIFYPEER, 0)
 	c.setopt(pycurl.SSL_VERIFYHOST, 0)
 	c.perform()
@@ -115,7 +115,7 @@ used with Cisco UCS to fence machines."
 	show_docs(options, docs)
 
 	### Login
-	res = send_command(options, "<aaaLogin inName=\"" + options["-l"] + "\" inPassword=\"" + options["-p"] + "\" />")
+	res = send_command(options, "<aaaLogin inName=\"" + options["-l"] + "\" inPassword=\"" + options["-p"] + "\" />", int(options["-y"]))
 	result = re_cookie.search(res)
 	if (result == None):	
 		## Cookie is absenting in response
@@ -137,7 +137,7 @@ used with Cisco UCS to fence machines."
 	result = fence_action(None, options, set_power_status, get_power_status, get_list)
 
 	### Logout; we do not care about result as we will end in any case
-	send_command(options, "<aaaLogout inCookie=\"" + options["cookie"] + "\" />")
+	send_command(options, "<aaaLogout inCookie=\"" + options["cookie"] + "\" />", int(options["-Y"]))
 	
 	sys.exit(result)
 
