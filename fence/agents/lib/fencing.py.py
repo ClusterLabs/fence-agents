@@ -89,13 +89,9 @@ all_opt = {
 		"shortdesc" : "Fencing Action",
 		"default" : "reboot",
 		"order" : 1 },
-	"io_fencing" : {
-		"getopt" : "o:",
-		"longopt" : "action",
-		"help" : "-o, --action=<action>          Action: status, enable or disable",
-		"required" : "1",
-		"shortdesc" : "Fencing Action",
-		"default" : "disable",
+	"fabric_fencing" : {
+		"getopt" : "",
+		"help" : "",
 		"order" : 1 },
 	"ipaddr" : {
 		"getopt" : "a:",
@@ -522,13 +518,11 @@ def metadata(avail_opt, options, docs):
 			print "\t</parameter>"
 	print "</parameters>"
 	print "<actions>"
-	if avail_opt.count("io_fencing") == 0:
-		print "\t<action name=\"on\" />"
-		print "\t<action name=\"off\" />"
+	print "\t<action name=\"on\" />"
+	print "\t<action name=\"off\" />"
+
+	if avail_opt.count("fabric_fencing") == 0:
 		print "\t<action name=\"reboot\" />"
-	else:
-		print "\t<action name=\"enable\" />"
-		print "\t<action name=\"disable\" />"	
 
 	print "\t<action name=\"status\" />"
 	print "\t<action name=\"list\" />"
@@ -629,8 +623,6 @@ def process_input(avail_opt):
 				name = "ipaddr"
 			elif name == "modulename":
 				name = "module_name"
-			elif name == "action" and 1 == avail_opt.count("io_fencing"):
-				name = "io_fencing"
 			elif name == "port" and 1 == avail_opt.count("drac_version"):
 				name = "module_name"
 
@@ -683,19 +675,30 @@ def check_input(device_opt, opt):
 			if 0 == options.has_key(getopt):
 				options[getopt] = all_opt[opt]["default"]
 
-	options["-o"]=options["-o"].lower()
+	options["-o"] = options["-o"].lower()
 
 	if options.has_key("-v"):
 		options["log"] = LOG_MODE_VERBOSE
 	else:
 		options["log"] = LOG_MODE_QUIET
 
-	if 0 == device_opt.count("io_fencing"):
-		if 0 == ["on", "off", "reboot", "status", "list", "monitor"].count(options["-o"].lower()):
-			fail_usage("Failed: Unrecognised action '" + options["-o"] + "'")
+	acceptable_actions = [ "on", "off", "status", "list", "monitor" ]
+	if 0 == device_opt.count("fabric_fencing"):
+		## Compatibility layer
+		#####
+		acceptable_actions.extend(["enable", "disable"])
 	else:
-		if 0 == ["enable", "disable", "status", "list", "monitor"].count(options["-o"].lower()):
-			fail_usage("Failed: Unrecognised action '" + options["-o"] + "'")
+		acceptable_actions.extend(["reboot"])
+
+	if 0 == acceptable_actions.count(options["-o"]):
+		fail_usage("Failed: Unrecognised action '" + options["-o"] + "'")
+
+	## Compatibility layer 
+	#####
+	if options["-o"] == "enable":
+		options["-o"] = "on"
+	if options["-o"] == "disable":
+		options["-o"] = "off"
 		
 	if (0 == options.has_key("-l")) and device_opt.count("login") and (device_opt.count("no_login") == 0):
 		fail_usage("Failed: You have to set login name")
@@ -807,11 +810,6 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 	if status != "on" and status != "off":  
 		fail(EC_STATUS)
 
-	
-	if options["-o"] == "enable":
-		options["-o"] = "on"
-	if options["-o"] == "disable":
-		options["-o"] = "off"
 
 	if options["-o"] == "on":
 		if status == "on":

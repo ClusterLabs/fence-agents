@@ -81,7 +81,7 @@ def get_outlets_status(conn, options):
 def main():
 	global port_oid
 
-	device_opt = [ "ipaddr", "login", "passwd", "passwd_script",
+	device_opt = [ "fabric_fencing", "ipaddr", "login", "passwd", "passwd_script",
 		       "test", "port", "separator", "no_login", "no_password",
 		       "snmp_version", "community", "snmp_auth_prot", "snmp_sec_level",
 		       "snmp_priv_prot", "snmp_priv_passwd", "snmp_priv_passwd_script",
@@ -90,20 +90,8 @@ def main():
 	atexit.register(atexit_handler)
 
 	snmp_define_defaults ()
-	options=process_input(device_opt)
 
-	# Emulate enable/disable functionality
-	if (options.has_key("-o")):
-		options["-o"]=options["-o"].lower()
-
-		if (options["-o"]=="enable"):
-			options["-o"]="on"
-		if (options["-o"]=="disable"):
-			options["-o"]="off"
-	else:
-		options["-o"]="off"
-
-	options = check_input(device_opt, options)
+	options = check_input(device_opt, process_input(device_opt))
 
 	docs = { }           
 	docs["shortdesc"] = "Fence agent for Cisco MDS"
