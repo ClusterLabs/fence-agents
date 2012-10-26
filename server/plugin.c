@@ -299,10 +299,8 @@ plugin_load(const char *libpath)
 	}
 
 	if (!backend_plugin_load(handle, libpath) ||
-	    !listener_plugin_load(handle, libpath)) {
-		dlclose(handle);
+	    !listener_plugin_load(handle, libpath))
 		return 0;
-	}
 
 	dbg_printf(3, "%s is not a valid plugin\n", libpath);
 	dlclose(handle);
