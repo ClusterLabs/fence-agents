@@ -386,14 +386,16 @@ do_off(const char *vm_name)
 		vdp = virDomainLookupByName(vp, vm_name);
 	}
 
-	if (!vdp ||
-	    ((virDomainGetInfo(vdp, &vdi) == 0) &&
-	     (vdi.state == VIR_DOMAIN_SHUTOFF))) {
+	if (!vdp) {
 		dbg_printf(2, "Nothing to do - domain does not exist\n");
-
-		if (vdp)
-			virDomainFree(vdp);
 		return 1;
+	}
+
+	if (((virDomainGetInfo(vdp, &vdi) == 0) &&
+	     (vdi.state == VIR_DOMAIN_SHUTOFF))) {
+		dbg_printf(2, "Nothing to do - domain is off\n");
+		virDomainFree(vdp);
+		return 0;
 	}
 
 	syslog(LOG_NOTICE, "Destroying domain %s\n", vm_name);
@@ -446,13 +448,18 @@ do_reboot(const char *vm_name)
 		vdp = virDomainLookupByName(vp, vm_name);
 	}
 
-	if (!vdp || ((virDomainGetInfo(vdp, &vdi) == 0) &&
-	     (vdi.state == VIR_DOMAIN_SHUTOFF))) {
+	if (!vdp) {
 		dbg_printf(2, "[libvirt:REBOOT] Nothing to "
 			   "do - domain does not exist\n");
-		if (vdp)
-			virDomainFree(vdp);
 		return 1;
+	}
+
+	if (((virDomainGetInfo(vdp, &vdi) == 0) &&
+	     (vdi.state == VIR_DOMAIN_SHUTOFF))) {
+		dbg_printf(2, "[libvirt:REBOOT] Nothing to "
+			   "do - domain is off\n");
+		virDomainFree(vdp);
+		return 0;
 	}
 
 	syslog(LOG_NOTICE, "Rebooting domain %s\n", vm_name);
