@@ -89,8 +89,7 @@ ipv6_listen(const char *addr_str, uint16_t port, int backlog)
 		}
 
 		memcpy(&_sin6.sin6_addr,
-			&((struct sockaddr_in6 *)&ss)->sin6_addr, sizeof(struct sockaddr_in6));
-		memcpy(&_sin6.sin6_addr, &ss, sizeof(struct sockaddr_in6));
+			&((struct sockaddr_in6 *)&ss)->sin6_addr, sizeof(_sin6.sin6_addr));
 	}
 
 	fd = socket(PF_INET6, SOCK_STREAM, 0);
@@ -154,7 +153,7 @@ ipv4_listen(const char *addr_str, uint16_t port, int backlog)
 		}
 
 		memcpy(&_sin.sin_addr,
-			&((struct sockaddr_in *)&ss)->sin_addr, sizeof(struct sockaddr_in));
+			&((struct sockaddr_in *)&ss)->sin_addr, sizeof(_sin.sin_addr));
 	}
 
 	fd = socket(PF_INET, SOCK_STREAM, 0);
