@@ -78,10 +78,6 @@ def get_power_fn(session, options):
 # Set the state of the port given in the -U flag of options.
 def set_power_fn(session, options):
 	action = options["-o"].lower()
-	if options.has_key("-v"):
-		verbose = True
-	else:
-		verbose = False
 	
 	try:
 		# Get a reference to the vm specified in the UUID or vm_name/port parameter

@@ -26,8 +26,8 @@ class FencingSnmp:
 		if self.options["log"] >= LOG_MODE_VERBOSE:
 			self.options["debug_fh"].write(message+"\n")
 
-	def quote_for_run(self, str):
-		return ''.join(map(lambda x:x==r"'" and "'\\''" or x, str))
+	def quote_for_run(self, string):
+		return ''.join(map(lambda x:x==r"'" and "'\\''" or x, string))
 
 	def complete_missed_params(self):
 		mapping = [
@@ -112,14 +112,14 @@ class FencingSnmp:
 	def set(self, oid, value, additional_timemout=0):
 		mapping = ((int, 'i'), (str, 's'))
 
-		type = ''
+		type_of_value = ''
 
 		for item in mapping:
 			if (isinstance(value, item[0])):
-				type = item[1]
+				type_of_value = item[1]
 				break
 
-		cmd = "%s '%s' %s '%s'"% (self.prepare_cmd("snmpset"), self.quote_for_run(oid), type, self.quote_for_run(str(value)))
+		cmd = "%s '%s' %s '%s'"% (self.prepare_cmd("snmpset"), self.quote_for_run(oid), type_of_value, self.quote_for_run(str(value)))
 
 		self.run_command(cmd, additional_timemout)
 

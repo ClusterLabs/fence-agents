@@ -47,7 +47,12 @@ def get_power_status(conn, options):
 		fail(EC_TIMED_OUT)
 	
 	plug_section = 0
+	plug_index = -1
+	name_index = -1
+	status_index = -1
+	plug_header = list()
 	outlets = {}
+	
 	for line in listing.splitlines():
 		if (plug_section == 2) and line.find("|") >= 0 and line.startswith("PLUG") == False:
 			plug_line = [x.strip().lower() for x in line.split("|")]

@@ -139,7 +139,6 @@ def get_power_status(conn, options):
 				return "on"
 			else:
 				return "off"
-			return status
 		except KeyError, ex:
 			fail(EC_STATUS)
 
