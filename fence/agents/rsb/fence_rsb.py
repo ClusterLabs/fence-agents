@@ -85,8 +85,6 @@ will block any necessary fencing actions."
 	##
 	## Operate the fencing device
 	####
-	print options["-u"]
-
 	conn = fence_login(options)
 	result = fence_action(conn, options, set_power_status, get_power_status, None)
 

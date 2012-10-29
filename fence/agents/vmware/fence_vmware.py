@@ -256,10 +256,6 @@ def vmware_is_supported_vmrun_version(options):
 
 	return True
 
-# Define new options
-def vmware_define_defaults():
-	all_opt["vmware_type"]["default"]=VMWARE_DEFAULT_TYPE
-
 # Check vmware type, set vmware_internal_type to one of VMWARE_TYPE_ value and
 # options["-e"] to path (if not specified)
 def vmware_check_vmware_type(options):
@@ -290,12 +286,10 @@ def main():
 
 	atexit.register(atexit_handler)
 
-	vmware_define_defaults()
+	all_opt["secure"]["default"] = "1"
+	all_opt["vmware_type"]["default"] = VMWARE_DEFAULT_TYPE
 
 	options = check_input(device_opt, process_input(device_opt))
-
-	# Default is secure connection
-	options["-x"] = 1
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for VMWare"

@@ -197,11 +197,6 @@ def get_outlets_status(conn, options):
 
 	return result
 
-# Define new options
-def eaton_snmp_define_defaults():
-	all_opt["snmp_version"]["default"]="1"
-	all_opt["community"]["default"]="private"
-
 # Main agent method
 def main():
 	device_opt = [ "ipaddr", "login", "passwd", "passwd_script",
@@ -213,10 +208,11 @@ def main():
 	atexit.register(atexit_handler)
 
 	snmp_define_defaults ()
-	eaton_snmp_define_defaults()
 
 	all_opt["switch"]["default"] = 1
 	all_opt["power_wait"]["default"] = 2
+	all_opt["snmp_version"]["default"] = "1"
+	all_opt["community"]["default"] = "private"
 	options=check_input(device_opt,process_input(device_opt))
 
 	# Plug indexing start from zero on ePDU Managed, so we substract '1' from

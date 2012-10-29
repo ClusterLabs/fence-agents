@@ -182,21 +182,16 @@ def set_power_status(conn, options):
 		fail(EC_TIMED_OUT)
 
 def main():
-	device_opt = [  "ipaddr", "login", "passwd", "passwd_script",
+	device_opt = [  "ipaddr", "login", "passwd", "passwd_script", "cmd_prompt",
 			"secure", "port", "identity_file", "switch", "test", "separator",
 			"inet4_only", "inet6_only", "ipport" ]
 
 	atexit.register(atexit_handler)
 
+	all_opt["cmd_prompt"]["default"] = "\n>"
+
 	options = check_input(device_opt, process_input(device_opt))
-
-	## 
-	## Fence agent specific defaults
-	#####
 	options["ssh_options"] = "-1 -c blowfish"
-
-	if 0 == options.has_key("-c"):
-		options["-c"] = "\n>"
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for APC over telnet/ssh"

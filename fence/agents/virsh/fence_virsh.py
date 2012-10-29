@@ -71,19 +71,16 @@ def set_power_status(conn, options):
 		fail(EC_TIMED_OUT)
 
 def main():
-	device_opt = [  "ipaddr", "login", "passwd", "passwd_script",
+	device_opt = [  "ipaddr", "login", "passwd", "passwd_script", "cmd_prompt",
 			"secure", "identity_file", "test", "port", "separator",
 			"inet4_only", "inet6_only", "ipport", "sudo" ]
 
 	atexit.register(atexit_handler)
 
-	pinput = process_input(device_opt)
-	pinput["-x"] = 1
-	options = check_input(device_opt, pinput)
+	all_opt["secure"]["default"] = "1"
+	all_opt["cmd_prompt"]["default"] = [ "\[EXPECT\]#\ " ]
 
-	## Defaults for fence agent
-	if 0 == options.has_key("-c"):
-		options["-c"] = "\[EXPECT\]#\ "
+	options = check_input(device_opt, process_input(device_opt))
 
 	options["ssh_options"]="-t '/bin/bash -c \"PS1=\[EXPECT\]#\  /bin/bash --noprofile --norc\"'"
 

@@ -96,13 +96,9 @@ def main():
 
 	atexit.register(atexit_handler)
 
-	options = check_input(device_opt, process_input(device_opt))
+	all_opt["cmd_prompt"]["default"] = [ "RSM>", "MPC>", "IPS>", "TPS>", "NBB>", "NPS>", "VMR>" ]
 
-	## 
-	## Fence agent specific defaults
-	#####
-	if 0 == options.has_key("-c"):
-		options["-c"] = [ "RSM>", "MPC>", "IPS>", "TPS>", "NBB>", "NPS>", "VMR>" ]
+	options = check_input(device_opt, process_input(device_opt))
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for WTI"

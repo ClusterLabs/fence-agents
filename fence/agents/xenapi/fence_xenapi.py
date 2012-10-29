@@ -204,9 +204,7 @@ def main():
 
 	atexit.register(atexit_handler)
 
-	options=process_input(device_opt)
-
-	options = check_input(device_opt, options)
+	options = check_input(device_opt, process_input(device_opt))
 
 	docs = { }
 	docs["shortdesc"] = "XenAPI based fencing for the Citrix XenServer virtual machines."

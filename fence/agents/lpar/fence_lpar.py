@@ -138,14 +138,9 @@ def main():
 
 	all_opt["login_timeout"]["default"] = "15"
 	all_opt["secure"]["default"] = "1"
+	all_opt["cmd_prompt"]["default"] = [ ":~>", "]\$", "\$ " ]
 
 	options = check_input(device_opt, process_input(device_opt))
-
-	## 
-	## Fence agent specific settings and default values
-	#####
-	if 0 == options.has_key("-c"):
-		options["-c"] = [ ":~>", "]\$", "\$ " ]
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for IBM LPAR"

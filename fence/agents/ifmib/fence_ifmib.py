@@ -93,10 +93,6 @@ def get_outlets_status(conn, options):
 
 	return result
 
-# Define new options
-def ifmib_define_defaults():
-	all_opt["snmp_version"]["default"]="2c"
-
 # Main agent method
 def main():
 	global port_oid
@@ -110,6 +106,7 @@ def main():
 	atexit.register(atexit_handler)
 
 	snmp_define_defaults ()
+	all_opt["snmp_version"]["default"]="2c"
 
 	options=process_input(device_opt)
 

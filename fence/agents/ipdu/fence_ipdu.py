@@ -129,13 +129,6 @@ def get_outlets_status(conn, options):
 
         return result
 
-# Define new options
-def ipdu_snmp_define_defaults():
-	all_opt["snmp_version"]["default"]="3"
-	all_opt["community"]["default"]="private"
-	all_opt["switch"]["default"]="1"
-	device=IBMiPDU
-
 # Main agent method
 def main():
 	device_opt = [ "ipaddr", "login", "passwd", "passwd_script",
@@ -147,9 +140,12 @@ def main():
 	atexit.register(atexit_handler)
 
 	snmp_define_defaults ()
-	ipdu_snmp_define_defaults()
+	all_opt["snmp_version"]["default"] = "3"
+	all_opt["community"]["default"] = "private"
+	all_opt["switch"]["default"] = "1"
+	device = IBMiPDU
 
-	options=check_input(device_opt,process_input(device_opt))
+	options = check_input(device_opt,process_input(device_opt))
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for iPDU over SNMP"

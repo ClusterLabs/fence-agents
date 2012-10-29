@@ -48,10 +48,6 @@ def get_outlets_status(conn, options):
 
 	return result
 
-# Define new options
-def ibmblade_define_defaults():
-	all_opt["snmp_version"]["default"]="1"
-
 # Main agent method
 def main():
 	global port_oid
@@ -65,7 +61,7 @@ def main():
 	atexit.register(atexit_handler)
 
 	snmp_define_defaults ()
-	ibmblade_define_defaults()
+	all_opt["snmp_version"]["default"]="1"
 
 	options=check_input(device_opt,process_input(device_opt))
 

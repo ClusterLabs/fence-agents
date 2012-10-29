@@ -87,16 +87,11 @@ def main():
 
 	atexit.register(atexit_handler)
 
-	pinput = process_input(device_opt)
-	pinput["-x"] = 1
-	options = check_input(device_opt, pinput)
+	all_opt["secure"]["default"] = "1"
+	all_opt["cmd_prompt"]["default"] = [ "\ $" ]
 
-	## 
-	## Fence agent specific defaults
-	#####
-	if (not options.has_key("-c")):
-		options["-c"] = "\ $"
-	
+	options = check_input(device_opt, process_input(device_opt))
+
 	docs = { }
 	docs["shortdesc"] = "Fence agent for Sun LDOM"
 	docs["longdesc"] = "fence_ldom is an I/O Fencing agent \

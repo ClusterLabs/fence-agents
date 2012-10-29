@@ -43,19 +43,15 @@ def set_power_status(conn, options):
 		fail(EC_TIMED_OUT)
 		
 def main():
-	device_opt = [  "ipaddr", "login", "passwd", "passwd_script", "secure",
+	device_opt = [  "ipaddr", "login", "passwd", "passwd_script", "cmd_prompt", "secure",
 			"identity_file", "test", "inet4_only", "inet6_only", "ipport" ]
 
 	atexit.register(atexit_handler)
-	
-	pinput = process_input(device_opt)
-	pinput["-x"] = 1
-	options = check_input(device_opt, pinput)
 
-	# Default command is sc>
-	if (not options.has_key("-c")):
-		options["-c"] = "sc\>\ "
+	all_opt["secure"]["default"] = "1"
+	all_opt["cmd_prompt"]["default"] = [ "sc\>\ " ]
 
+	options = check_input(device_opt, process_input(device_opt))
 	options["telnet_over_ssh"] = 1
 	
 	docs = { }

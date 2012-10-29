@@ -113,13 +113,9 @@ def main():
 
 	atexit.register(atexit_handler)
 
-	options = check_input(device_opt, process_input(device_opt))
+	all_opt["cmd_prompt"]["default"] = [ " #> " ]
 
-	## 
-	## Fence agent specific defaults
-	#####
-	if 0 == options.has_key("-c"):
-		options["-c"] = [ " #> " ]
+	options = check_input(device_opt, process_input(device_opt))
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for QLogic SANBox2 FC switches"

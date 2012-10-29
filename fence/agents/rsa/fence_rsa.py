@@ -50,14 +50,10 @@ def main():
 	atexit.register(atexit_handler)
 
 	all_opt["login_timeout"]["default"] = 10
+	all_opt["cmd_prompt"]["default"] = [ ">" ]
+
 	options = check_input(device_opt, process_input(device_opt))
 
-	## 
-	## Fence agent specific defaults
-	#####
-	if 0 == options.has_key("-c"):
-		options["-c"] = ">"
-		
 	# This device will not allow us to login even with LANG=C
 	options["ssh_options"] = "-F /dev/null"
 
