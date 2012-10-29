@@ -33,10 +33,10 @@ def get_power_status(conn, options):
 
 		version = 0
 		admin = 0
-		switch = 0;
+		switch = 0
 
 		if (None != re.compile('.* MasterSwitch plus.*', re.IGNORECASE | re.S).match(conn.before)):
-			switch = 1;
+			switch = 1
 			if (None != re.compile('.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before)):
 				if (0 == options.has_key("-s")):
 					fail_usage("Failed: You have to enter physical switch number")
@@ -69,7 +69,7 @@ def get_power_status(conn, options):
 			
 		while True:
 			exp_result = conn.log_expect(options, [ options["-c"],  "Press <ENTER>" ], int(options["-Y"]))
-			lines = conn.before.split("\n");
+			lines = conn.before.split("\n")
 			show_re = re.compile('(^|\x0D)\s*(\d+)- (.*?)\s+(ON|OFF)\s*')
 			for x in lines:
 				res = show_re.search(x)
@@ -111,7 +111,7 @@ def set_power_status(conn, options):
 		switch = 0
 
 		if (None != re.compile('.* MasterSwitch plus.*', re.IGNORECASE | re.S).match(conn.before)):
-			switch = 1;
+			switch = 1
 			## MasterSwitch has different schema for on/off actions
 			action = {
 				'on' : "1",
@@ -206,8 +206,8 @@ will block any necessary fencing actions."
 	## Support for -n [switch]:[plug] notation that was used before
 	if (options.has_key("-n") == 1) and (-1 != options["-n"].find(":")):
 		(switch, plug) = options["-n"].split(":", 1)
-		options["-s"] = switch;
-		options["-n"] = plug;
+		options["-s"] = switch
+		options["-n"] = plug
 
 	##
 	## Operate the fencing device

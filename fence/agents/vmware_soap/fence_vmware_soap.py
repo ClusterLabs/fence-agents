@@ -1,10 +1,9 @@
 #!/usr/bin/python
 
-import sys, re, pexpect, exceptions
+import sys, exceptions
 sys.path.append("@FENCEAGENTSLIBDIR@")
 
 from suds.client import Client
-from suds import WebFault
 from suds.sudsobject import Property
 from fencing import *
 

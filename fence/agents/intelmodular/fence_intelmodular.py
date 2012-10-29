@@ -11,7 +11,7 @@
 #
 # Thanks Matthew Kent for original agent and testing.
 
-import sys, re, pexpect
+import sys
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing_snmp import *
@@ -25,37 +25,37 @@ BUILD_DATE=""
 ### CONSTANTS ###
 # From INTELCORPORATION-MULTI-FLEX-SERVER-BLADES-MIB.my that ships with
 # firmware updates
-STATUSES_OID=".1.3.6.1.4.1.343.2.19.1.2.10.202.1.1.6"
+STATUSES_OID = ".1.3.6.1.4.1.343.2.19.1.2.10.202.1.1.6"
 
 # Status constants returned as value from SNMP
-STATUS_UP=2
-STATUS_DOWN=0
+STATUS_UP = 2
+STATUS_DOWN = 0
 
 # Status constants to set as value to SNMP
-STATUS_SET_ON=2
-STATUS_SET_OFF=3
+STATUS_SET_ON = 2
+STATUS_SET_OFF = 3
 
 ### FUNCTIONS ###
 
-def get_power_status(conn,options):
-	(oid,status)=conn.get("%s.%s"%(STATUSES_OID,options["-n"]))
+def get_power_status(conn, options):
+	(oid, status) = conn.get("%s.%s"% (STATUSES_OID, options["-n"]))
 	return (status==str(STATUS_UP) and "on" or "off")
 
 def set_power_status(conn, options):
-	conn.set("%s.%s"%(STATUSES_OID,options["-n"]),(options["-o"]=="on" and STATUS_SET_ON or STATUS_SET_OFF))
+	conn.set("%s.%s"%(STATUSES_OID, options["-n"]), (options["-o"]=="on" and STATUS_SET_ON or STATUS_SET_OFF))
 
 def get_outlets_status(conn, options):
-	result={}
+	result = {}
 
-	res_blades=conn.walk(STATUSES_OID,30)
+	res_blades = conn.walk(STATUSES_OID, 30)
 
 	for x in res_blades:
-		port_num=x[0].split('.')[-1]
+		port_num = x[0].split('.')[-1]
 
-		port_alias=""
-		port_status=(x[1]==str(STATUS_UP) and "on" or "off")
+		port_alias = ""
+		port_status = (x[1]==str(STATUS_UP) and "on" or "off")
 
-		result[port_num]=(port_alias,port_status)
+		result[port_num] = (port_alias, port_status)
 
 	return result
 
@@ -73,7 +73,7 @@ def main():
 
 	snmp_define_defaults ()
 
-	options=check_input(device_opt,process_input(device_opt))
+	options = check_input(device_opt, process_input(device_opt))
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for Intel Modular"

@@ -150,8 +150,8 @@ def main():
 	if 0 == options.has_key("-s"):
 		fail_usage("Failed: You have to enter name of managed system")
 
-        if (0 == ["list", "monitor"].count(options["-o"].lower())) and (0 == options.has_key("-n")):
-                fail_usage("Failed: You have to enter name of the partition")
+	if (0 == ["list", "monitor"].count(options["-o"].lower())) and (0 == options.has_key("-n")):
+		fail_usage("Failed: You have to enter name of the partition")
 
 	if 1 == options.has_key("-H") and (options["-H"] != "3" and options["-H"] != "4"):
 		fail_usage("Failed: You have to enter valid version number: 3 or 4")

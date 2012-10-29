@@ -8,7 +8,7 @@
 ## +-----------------+---------------------------+
 #####
 
-import sys, re, pexpect
+import sys, re, pexpect, exceptions
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 
@@ -50,8 +50,8 @@ def set_power_status(conn, options):
 		'off' : "offline"
 	}[options["-o"]]
 
-        try:
-        	conn.send_eol("set port " + options["-n"] + " state " + action)
+	try:
+		conn.send_eol("set port " + options["-n"] + " state " + action)
 		conn.log_expect(options, options["-c"], int(options["-g"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)

@@ -7,7 +7,7 @@
 ## 
 #####
 
-import sys, re, pexpect
+import sys, re, pexpect, exceptions
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 
@@ -17,40 +17,40 @@ REDHAT_COPYRIGHT=""
 BUILD_DATE=""
 #END_VERSION_GENERATION
 
-COMMAND_PROMPT_REG="\[PEXPECT\]$"
-COMMAND_PROMPT_NEW="[PEXPECT]"
+COMMAND_PROMPT_REG = "\[PEXPECT\]$"
+COMMAND_PROMPT_NEW = "[PEXPECT]"
 
 # Start comunicating after login. Prepare good environment.
 def start_communication(conn, options):
 	conn.send_eol ("PS1='"+COMMAND_PROMPT_NEW+"'")
-	res=conn.expect([pexpect.TIMEOUT, COMMAND_PROMPT_REG],int(options["-Y"]))
-	if res==0:
+	res = conn.expect([pexpect.TIMEOUT, COMMAND_PROMPT_REG], int(options["-Y"]))
+	if res == 0:
 		#CSH stuff
 		conn.send_eol("set prompt='"+COMMAND_PROMPT_NEW+"'")
-		conn.log_expect(options, COMMAND_PROMPT_REG,int(options["-Y"]))
+		conn.log_expect(options, COMMAND_PROMPT_REG, int(options["-Y"]))
 	
 
 def get_power_status(conn, options):
 	try:
-		start_communication(conn,options)
+		start_communication(conn, options)
 		
 		conn.send_eol("ldm ls")
 		    
-		conn.log_expect(options,COMMAND_PROMPT_REG,int(options["-Y"]))
+		conn.log_expect(options, COMMAND_PROMPT_REG, int(options["-Y"]))
 
-		result={}
+		result = {}
 
 		#This is status of mini finite automata. 0 = we didn't found NAME and STATE, 1 = we did
-		fa_status=0
+		fa_status = 0
 		
 		for line in conn.before.splitlines():
-			domain=re.search("^(\S+)\s+(\S+)\s+.*$",line)
+			domain = re.search("^(\S+)\s+(\S+)\s+.*$", line)
 
 			if (domain!=None):
 				if ((fa_status==0) and (domain.group(1)=="NAME") and (domain.group(2)=="STATE")):
-					fa_status=1
+					fa_status = 1
 				elif (fa_status==1):
-					result[domain.group(1)]=("",(domain.group(2).lower()=="bound" and "off" or "on"))
+					result[domain.group(1)] = ("", (domain.group(2).lower()=="bound" and "off" or "on"))
 
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
@@ -67,13 +67,13 @@ def get_power_status(conn, options):
 
 def set_power_status(conn, options):
 	try:
-		start_communication(conn,options)
+		start_communication(conn, options)
          	
-		cmd_line="ldm "+(options["-o"]=="on" and "start" or "stop -f")+" \""+options["-n"]+"\""
+		cmd_line = "ldm "+(options["-o"]=="on" and "start" or "stop -f")+" \""+options["-n"]+"\""
             	
 		conn.send_eol(cmd_line)
 		    
-		conn.log_expect(options,COMMAND_PROMPT_REG,int(options["-g"]))
+		conn.log_expect(options, COMMAND_PROMPT_REG, int(options["-g"]))
 		
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
@@ -113,7 +113,7 @@ root. Than prompt is $, so again, you must use parameter -c."
 	## Operate the fencing device
 	####
 	conn = fence_login(options)
-	result = fence_action(conn, options, set_power_status, get_power_status,get_power_status)
+	result = fence_action(conn, options, set_power_status, get_power_status, get_power_status)
 
 	##
 	## Logout from system

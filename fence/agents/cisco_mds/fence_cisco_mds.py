@@ -6,7 +6,7 @@
 # - Cisco MDS 9124 (1 Slot) Chassis ("1/2/4 Gbps FC/Supervisor-2") Motorola, e500
 #   with BIOS 1.0.16, kickstart 4.1(1c), system 4.1(1c)
 
-import sys, re, pexpect
+import sys, re
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing_snmp import *
@@ -19,33 +19,33 @@ BUILD_DATE=""
 
 ### CONSTANTS ###
 # Cisco admin status
-PORT_ADMIN_STATUS_OID=".1.3.6.1.2.1.75.1.2.2.1.1"
+PORT_ADMIN_STATUS_OID = ".1.3.6.1.2.1.75.1.2.2.1.1"
 
 # IF-MIB trees for alias, status and port
-ALIASES_OID=".1.3.6.1.2.1.31.1.1.1.18"
-PORTS_OID=".1.3.6.1.2.1.2.2.1.2"
+ALIASES_OID = ".1.3.6.1.2.1.31.1.1.1.18"
+PORTS_OID = ".1.3.6.1.2.1.2.2.1.2"
 
 ### GLOBAL VARIABLES ###
 # OID converted from fc port name (fc(x)/(y))
-port_oid=""
+port_oid = ""
 
 ### FUNCTIONS ###
 
 # Convert cisco port name (fc(x)/(y)) to OID
 def cisco_port2oid(port):
-	port=port.lower()
+	port = port.lower()
 
-	nums=re.match('^fc(\d+)/(\d+)$',port)
+	nums = re.match('^fc(\d+)/(\d+)$', port)
 
 	if ((nums) and (len(nums.groups()))==2):
-		return "%s.%d.%d"%(PORT_ADMIN_STATUS_OID,int(nums.group(1))+21,int(nums.group(2))-1)
+		return "%s.%d.%d"% (PORT_ADMIN_STATUS_OID, int(nums.group(1))+21, int(nums.group(2))-1)
 	else:
 		fail_usage("Mangled port number: %s"%(port))
 
-def get_power_status(conn,options):
+def get_power_status(conn, options):
 	global port_oid
 
-	(oid,status)=conn.get(port_oid)
+	(oid, status) = conn.get(port_oid)
 	return (status=="1" and "on" or "off")
 
 def set_power_status(conn, options):
@@ -56,24 +56,24 @@ def set_power_status(conn, options):
 # Convert array of format [[key1, value1], [key2, value2], ... [keyN, valueN]] to dict, where key is
 # in format a.b.c.d...z and returned dict has key only z
 def array_to_dict(ar):
-	return dict(map(lambda y:[y[0].split('.')[-1],y[1]],ar))
+	return dict(map(lambda y:[y[0].split('.')[-1], y[1]], ar))
 
 def get_outlets_status(conn, options):
-	result={}
+	result = {}
 
-	res_fc=conn.walk(PORTS_OID,30)
-	res_aliases=array_to_dict(conn.walk(ALIASES_OID,30))
+	res_fc = conn.walk(PORTS_OID, 30)
+	res_aliases = array_to_dict(conn.walk(ALIASES_OID, 30))
 
-	fc_re=re.compile('^"fc\d+/\d+"$')
+	fc_re = re.compile('^"fc\d+/\d+"$')
 
 	for x in res_fc:
 		if fc_re.match(x[1]):
-			port_num=x[0].split('.')[-1]
+			port_num = x[0].split('.')[-1]
 
-			port_name=x[1].strip('"')
-			port_alias=(res_aliases.has_key(port_num) and res_aliases[port_num].strip('"') or "")
-			port_status=""
-			result[port_name]=(port_alias,port_status)
+			port_name = x[1].strip('"')
+			port_alias = (res_aliases.has_key(port_num) and res_aliases[port_num].strip('"') or "")
+			port_status = ""
+			result[port_name] = (port_alias, port_status)
 
 	return result
 
@@ -101,7 +101,7 @@ which can be used with any Cisco MDS 9000 series with SNMP enabled device."
 	show_docs(options, docs)
 
 	if (not (options["-o"] in ["list","monitor"])):
-		port_oid=cisco_port2oid(options["-n"])
+		port_oid = cisco_port2oid(options["-n"])
 
 	# Operate the fencing device
 	result = fence_action(FencingSnmp(options), options, set_power_status, get_power_status, get_outlets_status)

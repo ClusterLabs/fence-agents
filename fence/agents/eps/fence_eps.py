@@ -3,8 +3,8 @@
 # The Following Agent Has Been Tested On:
 # ePowerSwitch 8M+ version 1.0.0.4
 
-import sys, re, time
-import httplib, base64, string,socket
+import sys, re
+import httplib, base64, string, socket
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 
@@ -15,8 +15,8 @@ BUILD_DATE=""
 #END_VERSION_GENERATION
 
 # Log actions and results from EPS device
-def eps_log(options,str):
-	if options["log"]>=LOG_MODE_VERBOSE:
+def eps_log(options, str):
+	if options["log"] >= LOG_MODE_VERBOSE:
 		options["debug_fh"].write(str)
 
 # Run command on EPS device.
@@ -27,35 +27,35 @@ def eps_run_command(options, params):
 		# New http connection
 		conn = httplib.HTTPConnection(options["-a"])
 
-		request_str="/"+options["-c"]
+		request_str = "/"+options["-c"]
 
 		if (params!=""):
-			request_str+="?"+params
+			request_str += "?"+params
 
-		eps_log(options,"GET "+request_str+"\n")
+		eps_log(options, "GET "+request_str+"\n")
 		conn.putrequest('GET', request_str)
 
 		if (options.has_key("-l")):
 			if (not options.has_key("-p")):
-				options["-p"]="" # Default is empty password
+				options["-p"] = "" # Default is empty password
 				
 			# String for Authorization header
 			auth_str = 'Basic ' + string.strip(base64.encodestring(options["-l"]+':'+options["-p"]))
-			eps_log(options,"Authorization:"+auth_str+"\n")
-			conn.putheader('Authorization',auth_str)
+			eps_log(options, "Authorization:"+auth_str+"\n")
+			conn.putheader('Authorization', auth_str)
 
 		conn.endheaders()
 
 		response = conn.getresponse()
 
-		eps_log(options,"%d %s\n"%(response.status,response.reason))
+		eps_log(options, "%d %s\n"%(response.status, response.reason))
 
 		#Response != OK -> couldn't login
 		if (response.status!=200):
 			fail(EC_LOGIN_DENIED)
 
-		result=response.read()
-		eps_log(options,result+"\n")
+		result = response.read()
+		eps_log(options, result+"\n")
 		conn.close()
 
 	except socket.timeout:
@@ -66,12 +66,12 @@ def eps_run_command(options, params):
 	return result
 
 def get_power_status(conn, options):
-	ret_val=eps_run_command(options,"")
+	ret_val = eps_run_command(options,"")
 
-	result={}
-	status=re.findall("p(\d{2})=(0|1)\s*\<br\>",ret_val.lower())
-	for out_num,out_stat in status:
-		result[out_num]=("",(out_stat=="1" and "on" or "off"))
+	result = {}
+	status = re.findall("p(\d{2})=(0|1)\s*\<br\>", ret_val.lower())
+	for out_num, out_stat in status:
+		result[out_num] = ("",(out_stat=="1" and "on" or "off"))
 
 	if (not (options["-o"] in ['monitor','list'])):
 		if (not (options["-n"] in result)):
@@ -82,11 +82,11 @@ def get_power_status(conn, options):
 		return result
 
 def set_power_status(conn, options):
-	ret_val=eps_run_command(options,"P%s=%s"%(options["-n"],(options["-o"]=="on" and "1" or "0")))
+	ret_val = eps_run_command(options, "P%s=%s"%(options["-n"], (options["-o"]=="on" and "1" or "0")))
 
 # Define new option
 def eps_define_new_opts():
-	all_opt["hidden_page"]={
+	all_opt["hidden_page"] = {
 		"getopt" : "c:",
 		"longopt" : "page",
 		"help":"-c, --page=<page>              Name of hidden page (default hidden.htm)",
@@ -105,7 +105,7 @@ def main():
 
 	eps_define_new_opts()
 
-	options = check_input(device_opt,process_input(device_opt))
+	options = check_input(device_opt, process_input(device_opt))
 
 	docs = { }           
 	docs["shortdesc"] = "Fence agent for ePowerSwitch" 
@@ -121,7 +121,7 @@ page feature must be enabled and properly configured."
 	show_docs(options, docs)
 
 	#Run fence action. Conn is None, beacause we always need open new http connection
-	result = fence_action(None, options, set_power_status, get_power_status,get_power_status)
+	result = fence_action(None, options, set_power_status, get_power_status, get_power_status)
 
 	sys.exit(result)
 

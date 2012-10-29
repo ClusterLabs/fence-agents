@@ -30,28 +30,28 @@ def get_outlets_status(conn, options):
 	except pexpect.TIMEOUT:
 		fail(EC_TIMED_OUT)
 
-	result={}
+	result = {}
 
         #This is status of mini finite automata. 0 = we didn't found Id and Name, 1 = we did
-        fa_status=0
+	fa_status = 0
 
-        for line in conn.before.splitlines():
-	        domain=re.search("^\s*(\S+)\s+(\S+)\s+(\S+).*$",line)
+	for line in conn.before.splitlines():
+		domain = re.search("^\s*(\S+)\s+(\S+)\s+(\S+).*$", line)
 
-                if (domain!=None):
+		if (domain!=None):
 			if ((fa_status==0) and (domain.group(1).lower()=="id") and (domain.group(2).lower()=="name")):
-				fa_status=1
+				fa_status = 1
 			elif (fa_status==1):
-				result[domain.group(2)]=("",(domain.group(3).lower() in ["running","blocked","idle","no state","paused"] and "on" or "off"))
+				result[domain.group(2)] = ("", (domain.group(3).lower() in ["running", "blocked", "idle", "no state", "paused"] and "on" or "off"))
 	return result
 
 def get_power_status(conn, options):
-	outlets=get_outlets_status(conn,options)
+	outlets = get_outlets_status(conn, options)
 
-        if (not (options["-n"] in outlets)):
-                fail_usage("Failed: You have to enter existing name of virtual machine!")
-        else:
-                return outlets[options["-n"]][1]
+	if (not (options["-n"] in outlets)):
+		fail_usage("Failed: You have to enter existing name of virtual machine!")
+	else:
+		return outlets[options["-n"]][1]
 
 def set_power_status(conn, options):
 	if options.has_key("-d"):
@@ -63,7 +63,7 @@ def set_power_status(conn, options):
 		conn.sendline(prefix + "virsh %s "%(options["-o"] == "on" and "start" or "destroy")+options["-n"])
 
 		conn.log_expect(options, options["-c"], int(options["-g"]))
-                time.sleep(1)
+		time.sleep(1)
 
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
@@ -82,7 +82,7 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	options["ssh_options"]="-t '/bin/bash -c \"PS1=\[EXPECT\]#\  /bin/bash --noprofile --norc\"'"
+	options["ssh_options"] = "-t '/bin/bash -c \"PS1=\[EXPECT\]#\  /bin/bash --noprofile --norc\"'"
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for virsh"

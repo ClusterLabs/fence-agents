@@ -62,7 +62,6 @@ def get_power_status(conn, options):
 					outlets[plug_line[0]] = (plug_line[name_index], plug_line[status_index])
 		elif (plug_section == 1):
 			plug_section = 2
-			pass
 		elif (line.upper().startswith("PLUG")):
 			plug_section = 1
 			plug_header = [x.strip().lower() for x in line.split("|")]

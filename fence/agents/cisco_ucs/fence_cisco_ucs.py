@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, re, pexpect, socket
+import sys, re
 import pycurl, StringIO
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
@@ -11,8 +11,8 @@ REDHAT_COPYRIGHT=""
 BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
 
-re_cookie = re.compile("<aaaLogin .* outCookie=\"(.*?)\"", re.IGNORECASE);
-re_status = re.compile("<lsPower .*? state=\"(.*?)\"", re.IGNORECASE);
+re_cookie = re.compile("<aaaLogin .* outCookie=\"(.*?)\"", re.IGNORECASE)
+re_status = re.compile("<lsPower .*? state=\"(.*?)\"", re.IGNORECASE)
 re_get_dn = re.compile(" dn=\"(.*?)\"", re.IGNORECASE)
 re_get_desc = re.compile(" descr=\"(.*?)\"", re.IGNORECASE)
 
@@ -121,7 +121,7 @@ used with Cisco UCS to fence machines."
 		## Cookie is absenting in response
 		fail(EC_LOGIN_DENIED)
 
-	options["cookie"] = result.group(1);
+	options["cookie"] = result.group(1)
 
 	##
 	## Modify suborg to format /suborg

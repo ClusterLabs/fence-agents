@@ -5,7 +5,7 @@
 # Sun(tm) Advanced Lights Out Manager CMT v1.6.1
 # as found on SUN T2000 Niagara
 
-import sys, re, pexpect, time
+import sys, re, pexpect, time, exceptions
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 
@@ -19,9 +19,9 @@ def get_power_status(conn, options):
 	result = ""
 	try:
 		conn.send_eol("showplatform")
-                conn.log_expect(options, options["-c"], int(options["-Y"]))
-		status = re.search("standby",conn.before.lower())
-		result=(status!=None and "off" or "on")
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
+		status = re.search("standby", conn.before.lower())
+		result = (status!=None and "off" or "on")
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
@@ -31,9 +31,9 @@ def get_power_status(conn, options):
 
 def set_power_status(conn, options):
 	try:
-		cmd_line=(options["-o"]=="on" and "poweron" or "poweroff -f -y")
+		cmd_line = (options["-o"]=="on" and "poweron" or "poweroff -f -y")
 		conn.send_eol(cmd_line)
-		conn.log_expect(options, options["-c"],int(options["-g"]))
+		conn.log_expect(options, options["-c"], int(options["-g"]))
 		#Get the machine some time between poweron and poweroff
 		time.sleep(int(options["-g"]))
 		
@@ -63,7 +63,7 @@ agent which can be used with ALOM connected machines."
 		
 	# Operate the fencing device
 	conn = fence_login(options)
-	result = fence_action(conn, options, set_power_status, get_power_status,None)
+	result = fence_action(conn, options, set_power_status, get_power_status, None)
 
 	# Logout from system
 	try:

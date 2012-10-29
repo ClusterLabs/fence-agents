@@ -47,11 +47,6 @@ def get_power_status(conn, options):
 	return status.lower().strip()
 
 def set_power_status(conn, options):
-	action = {
-		'on' : "powerup",
-		'off': "powerdown"
-	}[options["-o"]]
-
 	try:
 		node_cmd = "system:blade\[" + options["-n"] + "\]>"
 

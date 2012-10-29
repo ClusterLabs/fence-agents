@@ -76,7 +76,6 @@ def get_list_devices(conn, options):
 			## when some fence devices supported by fence agent
 			## works with 'list' and other should returns 'N/A'
 			print "N/A"
-			pass
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
@@ -114,12 +113,12 @@ By default, the telnet interface is not  enabled."
 		if 0 == options.has_key("-m") and 0 == ["monitor", "list"].count(options["-o"].lower()):
 			fail_usage("Failed: You have to enter module name (-m)")
 			
-		options["model"]="DRAC CMC"		
+		options["model"] = "DRAC CMC"
 	elif conn.before.find("DRAC 5") >= 0:
-		options["model"]="DRAC 5"
+		options["model"] = "DRAC 5"
 	else:
 		## Assume this is DRAC 5 by default as we don't want to break anything
-		options["model"]="DRAC 5"
+		options["model"] = "DRAC 5"
 
 	result = fence_action(conn, options, set_power_status, get_power_status, get_list_devices)
 

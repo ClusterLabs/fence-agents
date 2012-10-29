@@ -54,12 +54,13 @@ def get_power_fn(session, options):
 		# Get a reference to the vm specified in the UUID or vm_name/port parameter
 		vm = return_vm_reference(session, options)
 		# Query the VM for its' associated parameters
-		record = session.xenapi.VM.get_record(vm);
+		record = session.xenapi.VM.get_record(vm)
 		# Check that we are not trying to manipulate a template or a control
 		# domain as they show up as VM's with specific properties.
 		if not(record["is_a_template"]) and not(record["is_control_domain"]):
 			status = record["power_state"]
-			if verbose: print "UUID:", record["uuid"], "NAME:", record["name_label"], "POWER STATUS:", record["power_state"]
+			if verbose:
+				print "UUID:", record["uuid"], "NAME:", record["name_label"], "POWER STATUS:", record["power_state"]
 			# Note that the VM can be in the following states (from the XenAPI document)
 			# Halted: VM is offline and not using any resources.
 			# Paused: All resources have been allocated but the VM itself is paused and its vCPUs are not running
@@ -100,7 +101,7 @@ def set_power_fn(session, options):
 				# Force reboot the VM
 				session.xenapi.VM.hard_reboot(vm)
 	except Exception, exn:
-		print str(exn);
+		print str(exn)
 
 # Function to populate an array of virtual machines and their status
 def get_outlet_list(session, options):
@@ -115,7 +116,7 @@ def get_outlet_list(session, options):
 		vms = session.xenapi.VM.get_all()
 		for vm in vms:
 			# Query the VM for its' associated parameters
-			record = session.xenapi.VM.get_record(vm);
+			record = session.xenapi.VM.get_record(vm)
 			# Check that we are not trying to manipulate a template or a control
 			# domain as they show up as VM's with specific properties.
 			if not(record["is_a_template"]) and not(record["is_control_domain"]):
@@ -123,9 +124,10 @@ def get_outlet_list(session, options):
 				uuid = record["uuid"]
 				status = record["power_state"]
 				result[uuid] = (name, status)
-				if verbose: print "UUID:", record["uuid"], "NAME:", name, "POWER STATUS:", record["power_state"]
+				if verbose:
+					print "UUID:", record["uuid"], "NAME:", name, "POWER STATUS:", record["power_state"]
 	except Exception, exn:
-		print str(exn);
+		print str(exn)
 
 	return result
 
@@ -137,18 +139,18 @@ def connect_and_login(options):
 
 	try:
 		# Create the XML RPC session to the specified URL.
-		session = XenAPI.Session(url);
+		session = XenAPI.Session(url)
 		# Login using the supplied credentials.
-		session.xenapi.login_with_password(username, password);
+		session.xenapi.login_with_password(username, password)
 	except Exception, exn:
-		print str(exn);
+		print str(exn)
 		# http://sources.redhat.com/cluster/wiki/FenceAgentAPI says that for no connectivity
 		# the exit value should be 1. It doesn't say anything about failed logins, so 
 		# until I hear otherwise it is best to keep this exit the same to make sure that
 		# anything calling this script (that uses the same information in the web page
 		# above) knows that this is an error condition, not a msg signifying a down port.
-		sys.exit(EC_BAD_SESSION); 
-	return session;
+		sys.exit(EC_BAD_SESSION) 
+	return session
 
 # return a reference to the VM by either using the UUID or the vm_name/port. If the UUID is set then
 # this is tried first as this is the only properly unique identifier.
@@ -167,8 +169,9 @@ def return_vm_reference(session, options):
 		# need to catch and re-raise the exception produced by get_by_uuid.
 		try:
 			return session.xenapi.VM.get_by_uuid(uuid)
-		except Exception,exn:
-			if verbose: print "No VM's found with a UUID of \"%s\"" %uuid
+		except Exception, exn:
+			if verbose:
+				print "No VM's found with a UUID of \"%s\"" % uuid
 			raise
 		
 
@@ -182,13 +185,15 @@ def return_vm_reference(session, options):
 			return vm_arr[0]
 		else:
 			if len(vm_arr) == 0:
-				if verbose: print "No VM's found with a name of \"%s\"" %vm_name
+				if verbose:
+					print "No VM's found with a name of \"%s\"" % vm_name
 				# NAME_INVALID used as the XenAPI throws a UUID_INVALID if it can't find
 				# a VM with the specified UUID. This should make the output look fairly
 				# consistent.
 				raise Exception("NAME_INVALID")
 			else:
-				if verbose: print "Multiple VM's have the name \"%s\", use UUID instead" %vm_name
+				if verbose:
+					print "Multiple VM's have the name \"%s\", use UUID instead" % vm_name
 				raise Exception("MULTIPLE_VMS_FOUND")
 
 	# We should never get to this case as the input processing checks that either the UUID or

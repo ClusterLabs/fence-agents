@@ -477,7 +477,7 @@ def metadata(avail_opt, options, docs):
 	print "<?xml version=\"1.0\" ?>"
 	print "<resource-agent name=\"" + os.path.basename(sys.argv[0]) + "\" shortdesc=\"" + docs["shortdesc"] + "\" >"
 	if "symlink" in docs:
-		for (symlink,desc) in docs["symlink"]:
+		for (symlink, desc) in docs["symlink"]:
 			print "<symlink name=\"" + symlink + "\" shortdesc=\"" + desc + "\"/>"
 	print "<longdesc>" + docs["longdesc"] + "</longdesc>"
 	if docs.has_key("vendorurl"):
@@ -816,7 +816,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 			print "Success: Already ON"
 		else:
 			power_on = False
-			for i in range(1,1 + int(options["-F"])):
+			for i in range(1, 1 + int(options["-F"])):
 				set_power_fn(tn, options)
 				time.sleep(int(options["-G"]))
 				if wait_power_status(tn, options, get_power_fn):
@@ -847,7 +847,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 		options["-o"] = "on"
 
 		power_on = False
-		for i in range(1,1 + int(options["-F"])):
+		for i in range(1, 1 + int(options["-F"])):
 			set_power_fn(tn, options)
 			time.sleep(int(options["-G"]))
 			if wait_power_status(tn, options, get_power_fn) == 1:
@@ -869,13 +869,13 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 	return result
 
 def fence_login(options):
-	force_ipvx=""
+	force_ipvx = ""
 
 	if (options.has_key("-6")):
-		force_ipvx="-6 "
+		force_ipvx = "-6 "
 
 	if (options.has_key("-4")):
-		force_ipvx="-4 "
+		force_ipvx = "-4 "
 
 	if (options.has_key("eol") == False):
 		options["eol"] = "\r\n"

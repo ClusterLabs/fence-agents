@@ -11,7 +11,7 @@
 ##  iLO2 / firmware 1.50 / RIBCL 2.22
 #####
 
-import sys, re, pexpect, socket
+import sys, re, pexpect
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 

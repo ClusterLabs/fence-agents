@@ -24,11 +24,11 @@ def get_power_status(conn, options):
 		power_re = re.compile("^\s*Power: (.*?)\s*$")
 		status = "unknown"
 		for line in conn.before.splitlines():
-		        res = power_re.search(line)
-		        if res != None:
-		                status = res.group(1)
+			res = power_re.search(line)
+			if res != None:
+				status = res.group(1)
 
-                if status == "unknown":
+		if status == "unknown":
 			if options.has_key("-M"):
 				return "off"
 			else:
@@ -42,10 +42,10 @@ def get_power_status(conn, options):
 
 def set_power_status(conn, options):
 	try:
-	        if options["-o"] == "on":
-	                conn.send_eol("poweron server " + options["-n"])
-                elif options["-o"] == "off":
-                        conn.send_eol("poweroff server " + options["-n"] + " force")
+		if options["-o"] == "on":
+			conn.send_eol("poweron server " + options["-n"])
+		elif options["-o"] == "off":
+			conn.send_eol("poweroff server " + options["-n"] + " force")
 		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)

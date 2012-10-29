@@ -5,7 +5,7 @@
 #   Firmware release OPDP_sIBM_v01.2_1
 #
 
-import sys, re, pexpect
+import sys
 sys.path.append("/usr/share/fence")
 from fencing import *
 from fencing_snmp import *
@@ -18,92 +18,92 @@ BUILD_DATE=""
 
 ### CONSTANTS ###
 # oid defining fence device
-OID_SYS_OBJECT_ID='.1.3.6.1.2.1.1.2.0'
+OID_SYS_OBJECT_ID = '.1.3.6.1.2.1.1.2.0'
 
 ### GLOBAL VARIABLES ###
 # Device - see IBM iPDU
-device=None
+device = None
 
 # Port ID
-port_id=None
+port_id = None
 # Switch ID
-switch_id=None
+switch_id = None
 
 # Classes describing Device params
 class IBMiPDU:
 	# iPDU
-	status_oid=      '.1.3.6.1.4.1.2.6.223.8.2.2.1.11.%d'
-	control_oid=     '.1.3.6.1.4.1.2.6.223.8.2.2.1.11.%d'
-	outlet_table_oid='.1.3.6.1.4.1.2.6.223.8.2.2.1.2'
-	ident_str="IBM iPDU"
-	state_on=1
-	state_off=0
-	turn_on=1
-	turn_off=0
-	has_switches=False
+	status_oid =       '.1.3.6.1.4.1.2.6.223.8.2.2.1.11.%d'
+	control_oid =      '.1.3.6.1.4.1.2.6.223.8.2.2.1.11.%d'
+	outlet_table_oid = '.1.3.6.1.4.1.2.6.223.8.2.2.1.2'
+	ident_str = "IBM iPDU"
+	state_on = 1
+	state_off = 0
+	turn_on = 1
+	turn_off = 0
+	has_switches = False
 
 ### FUNCTIONS ###
-def ipdu_set_device(conn,options):
+def ipdu_set_device(conn, options):
 	global device
 
-	agents_dir={'.1.3.6.1.4.1.2.6.223':IBMiPDU,
+	agents_dir = {'.1.3.6.1.4.1.2.6.223':IBMiPDU,
 		    None:IBMiPDU}
 
 	# First resolve type of PDU device
-	pdu_type=conn.walk(OID_SYS_OBJECT_ID)
+	pdu_type = conn.walk(OID_SYS_OBJECT_ID)
 
 	if (not ((len(pdu_type)==1) and (agents_dir.has_key(pdu_type[0][1])))):
-		pdu_type=[[None,None]]
+		pdu_type = [[None, None]]
 
-	device=agents_dir[pdu_type[0][1]]
+	device = agents_dir[pdu_type[0][1]]
 
 	conn.log_command("Trying %s"%(device.ident_str))
 
-def ipdu_resolv_port_id(conn,options):
-	global port_id,switch_id,device
+def ipdu_resolv_port_id(conn, options):
+	global port_id, switch_id, device
 
 	if (device==None):
-		ipdu_set_device(conn,options)
+		ipdu_set_device(conn, options)
 
 	# Now we resolv port_id/switch_id
 	if ((options["-n"].isdigit()) and ((not device.has_switches) or (options["-s"].isdigit()))):
-		port_id=int(options["-n"])
+		port_id = int(options["-n"])
 
 		if (device.has_switches):
-			switch_id=int(options["-s"])
+			switch_id = int(options["-s"])
 	else:
-		table=conn.walk(device.outlet_table_oid,30)
+		table = conn.walk(device.outlet_table_oid, 30)
 
 		for x in table:
 			if (x[1].strip('"')==options["-n"]):
-				t=x[0].split('.')
+				t = x[0].split('.')
 				if (device.has_switches):
-					port_id=int(t[len(t)-1])
-					switch_id=int(t[len(t)-3])
+					port_id = int(t[len(t)-1])
+					switch_id = int(t[len(t)-3])
 				else:
-					port_id=int(t[len(t)-1])
+					port_id = int(t[len(t)-1])
 
 	if (port_id==None):
 		fail_usage("Can't find port with name %s!"%(options["-n"]))
 
-def get_power_status(conn,options):
-	global port_id,switch_id,device
+def get_power_status(conn, options):
+	global port_id, switch_id, device
 
 	if (port_id==None):
-		ipdu_resolv_port_id(conn,options)
+		ipdu_resolv_port_id(conn, options)
 
-	oid=((device.has_switches) and device.status_oid%(switch_id,port_id) or device.status_oid%(port_id))
+	oid = ((device.has_switches) and device.status_oid%(switch_id, port_id) or device.status_oid%(port_id))
 
-	(oid,status)=conn.get(oid)
+	(oid, status) = conn.get(oid)
 	return (status==str(device.state_on) and "on" or "off")
 
 def set_power_status(conn, options):
-	global port_id,switch_id,device
+	global port_id, switch_id, device
 
 	if (port_id==None):
-		ipdu_resolv_port_id(conn,options)
+		ipdu_resolv_port_id(conn, options)
 
-	oid=((device.has_switches) and device.control_oid%(switch_id,port_id) or device.control_oid%(port_id))
+	oid = ((device.has_switches) and device.control_oid%(switch_id, port_id) or device.control_oid%(port_id))
 
 	conn.set(oid,(options["-o"]=="on" and device.turn_on or device.turn_off))
 
@@ -111,23 +111,23 @@ def set_power_status(conn, options):
 def get_outlets_status(conn, options):
 	global device
 
-	result={}
+	result = {}
 
 	if (device==None):
-		ipdu_set_device(conn,options)
+		ipdu_set_device(conn, options)
 
-	res_ports=conn.walk(device.outlet_table_oid,30)
+	res_ports = conn.walk(device.outlet_table_oid, 30)
 
 	for x in res_ports:
-		t=x[0].split('.')
+		t = x[0].split('.')
 
-		port_num=((device.has_switches) and "%s:%s"%(t[len(t)-3],t[len(t)-1]) or "%s"%(t[len(t)-1]))
+		port_num = ((device.has_switches) and "%s:%s"%(t[len(t)-3], t[len(t)-1]) or "%s"%(t[len(t)-1]))
 
-                port_name=x[1].strip('"')
-                port_status=""
-                result[port_num]=(port_name,port_status)
+		port_name = x[1].strip('"')
+		port_status = ""
+		result[port_num] = (port_name, port_status)
 
-        return result
+	return result
 
 # Main agent method
 def main():
@@ -145,7 +145,7 @@ def main():
 	all_opt["switch"]["default"] = "1"
 	device = IBMiPDU
 
-	options = check_input(device_opt,process_input(device_opt))
+	options = check_input(device_opt, process_input(device_opt))
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for iPDU over SNMP"
