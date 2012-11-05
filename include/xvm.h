@@ -90,9 +90,9 @@ typedef struct __attribute__ ((packed)) _fence_req {
 #if __BYTE_ORDER == __BIG_ENDIAN
 #define swab_fence_req_t(req) \
 do { \
-	(req)->seqno  = b_swap32((req)->seqno); \
-	(req)->family = b_swap32((req)->family); \
-	(req)->port   = b_swap32((req)->port); \
+	(req)->seqno  = bswap_32((req)->seqno); \
+	(req)->family = bswap_32((req)->family); \
+	(req)->port   = bswap_32((req)->port); \
 } while(0)
 #else
 #define swab_fence_req_t(req)
@@ -124,8 +124,8 @@ typedef struct __attribute__((packed)) _serial_fence_req {
 #if __BYTE_ORDER == __BIG_ENDIAN
 #define swab_serial_req_t(req) \
 do { \
-	(req)->magic = b_swap32((req)->magic); \
-	(req)->seqno = b_swap32((req)->seqno); \
+	(req)->magic = bswap_32((req)->magic); \
+	(req)->seqno = bswap_32((req)->seqno); \
 } while(0)
 #else
 #define swab_serial_req_t(req)
@@ -140,7 +140,7 @@ typedef struct __attribute__((packed)) _serial_fense_resp {
 #if __BYTE_ORDER == __BIG_ENDIAN
 #define swab_serial_resp_t(req) \
 do { \
-	(req)->magic = b_swap32((req)->magic); \
+	(req)->magic = bswap_32((req)->magic); \
 } while(0)
 #else
 #define swab_serial_resp_t(req) 
