@@ -6,7 +6,7 @@ Copyright (C) 2004-2011 Red Hat, Inc.  All rights reserved.
 Exceptions:
 
 fence/agents/hds_cb/*:
- Copyright (C) 2011 Matthew Clark.
+ Copyright (C) 2012 Matthew Clark.
  Author: Matthew Clark <mattjclark0407 at hotmail.com>
  
 fence/agents/xenapi/*:
