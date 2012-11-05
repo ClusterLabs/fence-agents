@@ -20,14 +20,16 @@ REDHAT_COPYRIGHT=""
 BUILD_DATE="November, 2012"
 #END_VERSION_GENERATION
 
+RE_STATUS_LINE = "^([0-9]+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+).*$"
+
 def get_power_status(conn, options):
 	try:
 		#### Maybe should put a conn.log_expect here to make sure
 		#### we have properly entered into the main menu
 		conn.sendline("S")	# Enter System Command Mode
-		i = conn.log_expect(options, "SVP>", int(options["-Y"]))
+		conn.log_expect(options, "SVP>", int(options["-Y"]))
 		conn.sendline("PC")	# Enter partition control
-		i = conn.log_expect(options, "\) :", int(options["-Y"]))
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 		result = {}
 		# Status can now be obtained from the output of the PC
 		# command. Line looks like the following:
@@ -36,7 +38,7 @@ def get_power_status(conn, options):
 		# "1 On           Normal        Off      Basic Synchronized"
 		for line in conn.before.splitlines():
 			# populate the relevant fields based on regex
-			partition=re.search("^([0-9]+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+).*$", line)
+			partition = re.search(RE_STATUS_LINE, line)
 			if( partition != None):
 				# find the blade number defined in args
 				if( partition.group(1) == options["-n"] ):
@@ -47,16 +49,15 @@ def get_power_status(conn, options):
 		# the partition control, but the logic is a little cleaner
 		# this way.
 		conn.sendline("Q")	# Back to system command mode
-		i = conn.log_expect(options, "SVP>", int(options["-Y"]))
+		conn.log_expect(options, "SVP>", int(options["-Y"]))
 		conn.sendline("EX")	# Back to system console main menu
-		i = conn.log_expect(options, "\) :", int(options["-Y"]))
-		return result
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
 		fail(EC_TIMED_OUT)
 
-	return status.lower().strip()
+	return result
 
 def set_power_status(conn, options):
 	action = {
@@ -68,25 +69,25 @@ def set_power_status(conn, options):
 
 	try:
 		conn.sendline("S")	# Enter System Command Mode
-		i = conn.log_expect(options, "SVP>", int(options["-Y"]))
+		conn.log_expect(options, "SVP>", int(options["-Y"]))
 		conn.sendline("PC")	# Enter partition control
-		i = conn.log_expect(options, "\) :", int(options["-Y"]))
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 		conn.sendline("P")	# Enter power control menu
-		i = conn.log_expect(options, "\) :", int(options["-Y"]))
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 		conn.sendline(action)	# Execute action from array above
-		i = conn.log_expect(options, "\) :", int(options["-Y"]))
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 		conn.sendline(options["-n"]) # Select blade number from args
-		i = conn.log_expect(options, "\) :", int(options["-Y"]))
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 		conn.sendline("Y")	# Confirm action
-		i = conn.log_expect(options, "Hit enter key.", int(options["-Y"]))
+		conn.log_expect(options, "Hit enter key.", int(options["-Y"]))
 		conn.sendline("")	# Press the any key
-		i = conn.log_expect(options, "\) :", int(options["-Y"]))
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 		conn.sendline("Q")	# Quit back to partition control
-		i = conn.log_expect(options, "\) :", int(options["-Y"]))
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 		conn.sendline("Q")	# Quit back to system command mode
-		i = conn.log_expect(options, "SVP>", int(options["-Y"]))
+		conn.log_expect(options, "SVP>", int(options["-Y"]))
 		conn.sendline("EX")	# Quit back to system console menu
-		i = conn.log_expect(options, "\) :", int(options["-Y"]))
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
@@ -96,24 +97,22 @@ def get_blades_list(conn, options):
 	outlets = { }
 	try:
 		conn.sendline("S")	# Enter System Command Mode
-		i = conn.log_expect(options, "SVP>", int(options["-Y"]))
+		conn.log_expect(options, "SVP>", int(options["-Y"]))
 		conn.sendline("PC")	# Enter partition control
-		i = conn.log_expect(options, "\) :", int(options["-Y"]))
-		result = {}
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 		# Status can now be obtained from the output of the PC
 		# command. Line looks like the following:
 		# "P Power        Condition     LID lamp Mode  Auto power on"
 		# "0 On           Normal        Off      Basic Synchronized"
 		# "1 On           Normal        Off      Basic Synchronized"
 		for line in conn.before.splitlines():
-			partition=re.search("^([0-9]+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+).*$", line)
+			partition = re.search(RE_STATUS_LINE, line)
 			if( partition != None):
 				outlets[partition.group(1)] = (partition.group(2), "")	
 		conn.sendline("Q")	# Quit back to system command mode
-		i = conn.log_expect(options, "SVP>", int(options["-Y"]))
+		conn.log_expect(options, "SVP>", int(options["-Y"]))
 		conn.sendline("EX")	# Quit back to system console menu
-		i = conn.log_expect(options, "\) :", int(options["-Y"]))
-
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
@@ -122,11 +121,9 @@ def get_blades_list(conn, options):
 	return outlets
 
 def main():
-	device_opt = [  "help", "version", "agent", "quiet", "verbose", "debug",
-			"action", "ipaddr", "login", "passwd", "passwd_script",
-			"cmd_prompt", "secure", "port", "identity_file", "separator",
-			"inet4_only", "inet6_only", "ipport",
-			"power_timeout", "shell_timeout", "login_timeout", "power_wait", "missing_as_off" ]
+	device_opt = [  "ipaddr", "login", "passwd", "passwd_script", "cmd_prompt",
+			"secure", "port", "identity_file", "separator", "inet4_only",
+			"inet6_only", "ipport", "missing_as_off" ]
 
 	atexit.register(atexit_handler)
 
@@ -135,7 +132,7 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }        
+	docs = { }
 	docs["shortdesc"] = "Fence agent for Hitachi Compute Blade systems"
 	docs["longdesc"] = "fence_hds_cb is an I/O Fencing agent \
 which can be used with Hitachi Compute Blades with recent enough firmware that \
