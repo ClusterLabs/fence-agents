@@ -27,11 +27,11 @@ STATUS_SET_ON = 1
 ### FUNCTIONS ###
 
 def get_power_status(conn, options):
-	(_, status) = conn.get("%s.%s"% (STATUSES_OID, options["-n"]))
+	(_, status) = conn.get("%s.%s"% (STATUSES_OID, options["--plug"]))
 	return (status == str(STATUS_UP) and "on" or "off")
 
 def set_power_status(conn, options):
-	conn.set("%s.%s"%(CONTROL_OID, options["-n"]), (options["-o"]=="on" and STATUS_SET_ON or STATUS_SET_OFF))
+	conn.set("%s.%s"%(CONTROL_OID, options["--plug"]), (options["--action"]=="on" and STATUS_SET_ON or STATUS_SET_OFF))
 
 def get_outlets_status(conn, _):
 	result = {}

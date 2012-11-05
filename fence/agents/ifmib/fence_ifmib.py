@@ -59,7 +59,7 @@ def get_power_status(conn, options):
 	global port_num
 
 	if (port_num==None):
-		port_num = port2index(conn, options["-n"])
+		port_num = port2index(conn, options["--plug"])
 
 	(oid, status) = conn.get("%s.%d"%(STATUSES_OID, port_num))
 	return (status==str(STATUS_UP) and "on" or "off")
@@ -68,9 +68,9 @@ def set_power_status(conn, options):
 	global port_num
 
 	if (port_num==None):
-		port_num = port2index(conn, options["-n"])
+		port_num = port2index(conn, options["--plug"])
 
-	conn.set("%s.%d"%(STATUSES_OID, port_num), (options["-o"]=="on" and STATUS_UP or STATUS_DOWN))
+	conn.set("%s.%d"%(STATUSES_OID, port_num), (options["--action"]=="on" and STATUS_UP or STATUS_DOWN))
 
 # Convert array of format [[key1, value1], [key2, value2], ... [keyN, valueN]] to dict, where key is
 # in format a.b.c.d...z and returned dict has key only z

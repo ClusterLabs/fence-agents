@@ -47,7 +47,7 @@ def get_power_status(conn, options):
 	return (status=="1" and "on" or "off")
 
 def set_power_status(conn, options):
-	conn.set(PORT_OID, (options["-o"]=="on" and 1 or 2))
+	conn.set(PORT_OID, (options["--action"]=="on" and 1 or 2))
 
 # Convert array of format [[key1, value1], [key2, value2], ... [keyN, valueN]] to dict, where key is
 # in format a.b.c.d...z and returned dict has key only z
@@ -96,8 +96,8 @@ which can be used with any Cisco MDS 9000 series with SNMP enabled device."
 	docs["vendorurl"] = "http://www.cisco.com"
 	show_docs(options, docs)
 
-	if (not (options["-o"] in ["list","monitor"])):
-		PORT_OID = cisco_port2oid(options["-n"])
+	if (not (options["--action"] in ["list","monitor"])):
+		PORT_OID = cisco_port2oid(options["--plug"])
 
 	# Operate the fencing device
 	result = fence_action(FencingSnmp(options), options, set_power_status, get_power_status, get_outlets_status)

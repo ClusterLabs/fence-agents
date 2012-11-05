@@ -31,8 +31,8 @@ class FencingSnmp:
 
 	def complete_missed_params(self):
 		mapping = [
-			[['P','p','!E'],'self.options["-E"]="authPriv"'],
-			[['!d','c','!l','!P','!p'],'self.options["-d"]="2c"']
+			[['snmp-priv-passwd','password','!snmp-sec-level'],'self.options["--snmp-sec-level"]="authPriv"'],
+			[['!snmp-version','community','!username','!snmp-priv-passwd','!password'],'self.options["--snmp-version"]="2c"']
 			]
 
 		for val in mapping:
@@ -41,11 +41,11 @@ class FencingSnmp:
 			res = True
 
 			for item in e:
-				if ((item[0]=='!') and (self.options.has_key("-"+item[1]))):
+				if ((item[0]=='!') and (self.options.has_key("--"+item[1:]))):
 					res = False
 					break
 
-				if ((item[0]!='!') and (not self.options.has_key("-"+item[0]))):
+				if ((item[0]!='!') and (not self.options.has_key("--"+item[0:]))):
 					res = False
 					break
 
@@ -58,37 +58,38 @@ class FencingSnmp:
 		self.complete_missed_params()
 
 		#mapping from our option to snmpcmd option
-		mapping = (('d', 'v'),('c', 'c'))
+		mapping = (('snmp-version', 'v'),('community', 'c'))
 
 		for item in mapping:
-			if (self.options.has_key("-"+item[0])):
-				cmd += " -%s '%s'"% (item[1], self.quote_for_run(self.options["-" + item[0]]))
+			if (self.options.has_key("--" + item[0])):
+				cmd += " -%s '%s'"% (item[1], self.quote_for_run(self.options["--" + item[0]]))
 
 		# Some options make sense only for v3 (and for v1/2c can cause "problems")
-		if (self.options.has_key("-d")) and (self.options["-d"] == "3"):
+		if (self.options.has_key("--snmp-version")) and (self.options["--snmp-version"] == "3"):
 			# Mapping from our options to snmpcmd options for v3
-			mapping_v3 = (('b','a'),('E','l'),('B','x'),('P','X'),('p','A'),('l','u'))
+			mapping_v3 = (('snmp-auth-prot','a'), ('snmp-sec-level','l'), ('snmp-priv-prot','x'), \
+				('snmp-priv-passwd','X'),('password','A'),('username','u'))
 			for item in mapping_v3:
-				if (self.options.has_key("-"+item[0])):
-					cmd += " -%s '%s'"% (item[1], self.quote_for_run(self.options["-" + item[0]]))
+				if (self.options.has_key("--"+item[0])):
+					cmd += " -%s '%s'"% (item[1], self.quote_for_run(self.options["--" + item[1]]))
 
 		force_ipvx = ""
 
-		if (self.options.has_key("-6")):
+		if (self.options.has_key("--inet6-only")):
 			force_ipvx = "udp6:"
 
-		if (self.options.has_key("-4")):
+		if (self.options.has_key("--inet4-only")):
 			force_ipvx = "udp:"
 
-		cmd += " '%s%s%s'"% (force_ipvx, self.quote_for_run(self.options["-a"]),
-				self.options.has_key("-u") and self.quote_for_run(":" + str (self.options["-u"])) or "")
+		cmd += " '%s%s%s'"% (force_ipvx, self.quote_for_run(self.options["--ip"]),
+				self.options.has_key("--udpport") and self.quote_for_run(":" + str (self.options["--udpport"])) or "")
 		return cmd
 
 	def run_command(self, command, additional_timemout=0):
 		try:
 			self.log_command(command)
 
-			(res_output, res_code) = pexpect.run(command, int(self.options["-Y"]) + int(self.options["-y"]) + additional_timemout, True)
+			(res_output, res_code) = pexpect.run(command, int(self.options["--shell-timeout"]) + int(self.options["--login-timeout"]) + additional_timemout, True)
 
 			if (res_code==None):
 				fail(EC_TIMED_OUT)
