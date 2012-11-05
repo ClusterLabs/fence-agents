@@ -80,8 +80,8 @@ def get_blades_list(conn, options):
 
 		lines = conn.before.split("\r\n")
 		filter_re = re.compile("^\s*blade\[(\d+)\]\s+(.*?)\s*$")
-		for x in lines:
-			res = filter_re.search(x)
+		for blade_line in lines:
+			res = filter_re.search(blade_line)
 			if res != None:
 				outlets[res.group(1)] = (res.group(2), "")
 

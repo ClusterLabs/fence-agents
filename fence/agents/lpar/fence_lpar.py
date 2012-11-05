@@ -99,8 +99,8 @@ def get_lpar_list(conn, options):
 				fail_usage("Unable to parse output of list command")
 		
 			lines = res.group(2).split("\n")
-			for x in lines:
-				outlets[x.rstrip()] = ("", "")
+			for outlet_line in lines:
+				outlets[outlet_line.rstrip()] = ("", "")
 		except pexpect.EOF:
 			fail(EC_CONNECTION_LOST)
 		except pexpect.TIMEOUT:
@@ -119,9 +119,9 @@ def get_lpar_list(conn, options):
 				fail_usage("Unable to parse output of list command")
 		
 			lines = res.group(1).split("\n")
-			for x in lines:
-				s = x.split(":")
-				outlets[s[0]] = ("", s[1])
+			for outlet_line in lines:
+				(port, status) = outlet_line.split(":")
+				outlets[port] = ("", status)
 		except pexpect.EOF:
 			fail(EC_CONNECTION_LOST)
 		except pexpect.TIMEOUT:

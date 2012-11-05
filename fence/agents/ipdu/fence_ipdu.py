@@ -60,7 +60,7 @@ def ipdu_set_device(conn, options):
 	conn.log_command("Trying %s"%(device.ident_str))
 
 def ipdu_resolv_port_id(conn, options):
-	global port_id, switch_id, device
+	global port_id, switch_id
 
 	if (device==None):
 		ipdu_set_device(conn, options)
@@ -87,8 +87,6 @@ def ipdu_resolv_port_id(conn, options):
 		fail_usage("Can't find port with name %s!"%(options["-n"]))
 
 def get_power_status(conn, options):
-	global port_id, switch_id, device
-
 	if (port_id==None):
 		ipdu_resolv_port_id(conn, options)
 
@@ -98,8 +96,6 @@ def get_power_status(conn, options):
 	return (status==str(device.state_on) and "on" or "off")
 
 def set_power_status(conn, options):
-	global port_id, switch_id, device
-
 	if (port_id==None):
 		ipdu_resolv_port_id(conn, options)
 
@@ -109,11 +105,9 @@ def set_power_status(conn, options):
 
 
 def get_outlets_status(conn, options):
-	global device
-
 	result = {}
 
-	if (device==None):
+	if (device == None):
 		ipdu_set_device(conn, options)
 
 	res_ports = conn.walk(device.outlet_table_oid, 30)

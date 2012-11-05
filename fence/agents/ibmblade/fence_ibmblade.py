@@ -27,22 +27,22 @@ STATUS_SET_ON = 1
 ### FUNCTIONS ###
 
 def get_power_status(conn, options):
-	(oid,status) = conn.get("%s.%s"%(STATUSES_OID, options["-n"]))
-	return (status==str(STATUS_UP) and "on" or "off")
+	(_, status) = conn.get("%s.%s"% (STATUSES_OID, options["-n"]))
+	return (status == str(STATUS_UP) and "on" or "off")
 
 def set_power_status(conn, options):
 	conn.set("%s.%s"%(CONTROL_OID, options["-n"]), (options["-o"]=="on" and STATUS_SET_ON or STATUS_SET_OFF))
 
-def get_outlets_status(conn, options):
+def get_outlets_status(conn, _):
 	result = {}
 
 	res_blades = conn.walk(STATUSES_OID, 30)
 
-	for x in res_blades:
-		port_num = x[0].split('.')[-1]
+	for blade_info in res_blades:
+		port_num = blade_info[0].split('.')[-1]
 
 		port_alias = ""
-		port_status = (x[1]==str(STATUS_UP) and "on" or "off")
+		port_status = (blade_info[1]==str(STATUS_UP) and "on" or "off")
 
 		result[port_num] = (port_alias, port_status)
 

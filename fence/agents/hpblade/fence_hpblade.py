@@ -60,9 +60,9 @@ def get_blades_list(conn, options):
 
 		list_re = re.compile("^\s*(.*?)\s+(.*?)\s+(.*?)\s+OK\s+(.*?)\s+(.*?)\s*$")
 		for line in conn.before.splitlines():
-		        res = list_re.search(line)
-		        if res != None:
-		                outlets[res.group(1)] = (res.group(2), res.group(4).lower())
+			res = list_re.search(line)
+			if res != None:
+				outlets[res.group(1)] = (res.group(2), res.group(4).lower())
 	except pexpect.EOF:
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
@@ -81,7 +81,7 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 
- 	docs = { }        
+	docs = { }        
 	docs["shortdesc"] = "Fence agent for HP BladeSystem"
 	docs["longdesc"] = "fence_hpblade is an I/O Fencing agent \
 which can be used with HP BladeSystem. It logs into an enclosure via telnet or ssh \

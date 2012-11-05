@@ -27,7 +27,7 @@ PORTS_OID = ".1.3.6.1.2.1.2.2.1.2"
 
 ### GLOBAL VARIABLES ###
 # OID converted from fc port name (fc(x)/(y))
-port_oid = ""
+PORT_OID = ""
 
 ### FUNCTIONS ###
 
@@ -43,15 +43,11 @@ def cisco_port2oid(port):
 		fail_usage("Mangled port number: %s"%(port))
 
 def get_power_status(conn, options):
-	global port_oid
-
-	(oid, status) = conn.get(port_oid)
+	(oid, status) = conn.get(PORT_OID)
 	return (status=="1" and "on" or "off")
 
 def set_power_status(conn, options):
-	global port_oid
-
-	conn.set(port_oid,(options["-o"]=="on" and 1 or 2))
+	conn.set(PORT_OID, (options["-o"]=="on" and 1 or 2))
 
 # Convert array of format [[key1, value1], [key2, value2], ... [keyN, valueN]] to dict, where key is
 # in format a.b.c.d...z and returned dict has key only z
@@ -79,7 +75,7 @@ def get_outlets_status(conn, options):
 
 # Main agent method
 def main():
-	global port_oid
+	global PORT_OID
 
 	device_opt = [ "fabric_fencing", "ipaddr", "login", "passwd", "passwd_script",
 		       "test", "port", "separator", "no_login", "no_password",
@@ -101,7 +97,7 @@ which can be used with any Cisco MDS 9000 series with SNMP enabled device."
 	show_docs(options, docs)
 
 	if (not (options["-o"] in ["list","monitor"])):
-		port_oid = cisco_port2oid(options["-n"])
+		PORT_OID = cisco_port2oid(options["-n"])
 
 	# Operate the fencing device
 	result = fence_action(FencingSnmp(options), options, set_power_status, get_power_status, get_outlets_status)

@@ -11,19 +11,22 @@ REDHAT_COPYRIGHT=""
 BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
 
-re_cookie = re.compile("<aaaLogin .* outCookie=\"(.*?)\"", re.IGNORECASE)
-re_status = re.compile("<lsPower .*? state=\"(.*?)\"", re.IGNORECASE)
-re_get_dn = re.compile(" dn=\"(.*?)\"", re.IGNORECASE)
-re_get_desc = re.compile(" descr=\"(.*?)\"", re.IGNORECASE)
+RE_COOKIE = re.compile("<aaaLogin .* outCookie=\"(.*?)\"", re.IGNORECASE)
+RE_STATUS = re.compile("<lsPower .*? state=\"(.*?)\"", re.IGNORECASE)
+RE_GET_DN = re.compile(" dn=\"(.*?)\"", re.IGNORECASE)
+RE_GET_DESC = re.compile(" descr=\"(.*?)\"", re.IGNORECASE)
 
 def get_power_status(conn, options):
 	try:
-		res = send_command(options, "<configResolveDn cookie=\"" + options["cookie"] + "\" inHierarchical=\"false\" dn=\"org-root" + options["-s"] + "/ls-" + options["-n"] + "/power\"/>", int(options["-Y"]))
+		res = send_command(options, \
+			"<configResolveDn cookie=\"" + options["cookie"] + "\" inHierarchical=\"false\" dn=\"org-root" + options["-s"] + \
+			"/ls-" + options["-n"] + "/power\"/>", \
+			 int(options["-Y"]))
 	except pycurl.error, e:
 		sys.stderr.write(e[1] + "\n")
 		fail(EC_TIMED_OUT)
 
-	result = re_status.search(res)
+	result = RE_STATUS.search(res)
 	if (result == None):
 		fail(EC_STATUS)
 	else:
@@ -41,7 +44,12 @@ def set_power_status(conn, options):
 	}[options["-o"]]
 	
 	try:
-		res = send_command(options, "<configConfMos cookie=\"" + options["cookie"] + "\" inHierarchical=\"no\"><inConfigs><pair key=\"org-root" + options["-s"] + "/ls-" + options["-n"] + "/power\"><lsPower dn=\"org-root/ls-" + options["-n"] + "/power\" state=\"" + action + "\" status=\"modified\" /></pair></inConfigs></configConfMos>", int(options["-Y"]))
+		res = send_command(options, \
+		"<configConfMos cookie=\"" + options["cookie"] + "\" inHierarchical=\"no\">" + \
+		"<inConfigs><pair key=\"org-root" + options["-s"] + "/ls-" + options["-n"] + "/power\">" + \
+		"<lsPower dn=\"org-root/ls-" + options["-n"] + "/power\" state=\"" + action + "\" status=\"modified\" />" + \
+		"</pair></inConfigs></configConfMos>", \
+		int(options["-Y"]))
 	except pycurl.error, e:
 		sys.stderr.write(e[1] + "\n")
 		fail(EC_TIMED_OUT)
@@ -53,15 +61,17 @@ def get_list(conn, options):
 
 	try:
 		try:
-			res = send_command(options, "<configResolveClass cookie=\"" + options["cookie"] + "\" inHierarchical=\"false\" classId=\"lsServer\"/>", int(options["-Y"]))
+			res = send_command(options, \
+				"<configResolveClass cookie=\"" + options["cookie"] + "\" inHierarchical=\"false\" classId=\"lsServer\"/>", \
+				int(options["-Y"]))
 		except pycurl.error, e:
 			sys.stderr.write(e[1] + "\n")
 			fail(EC_TIMED_OUT)
 
 		lines = res.split("<lsServer ")
 		for i in range(1, len(lines)):
-			dn = re_get_dn.search(lines[i]).group(1)
-			desc = re_get_desc.search(lines[i]).group(1)
+			dn = RE_GET_DN.search(lines[i]).group(1)
+			desc = RE_GET_DESC.search(lines[i]).group(1)
 			outlets[dn] = (desc, None)
 	except AttributeError:
 		return { }
@@ -116,7 +126,7 @@ used with Cisco UCS to fence machines."
 
 	### Login
 	res = send_command(options, "<aaaLogin inName=\"" + options["-l"] + "\" inPassword=\"" + options["-p"] + "\" />", int(options["-y"]))
-	result = re_cookie.search(res)
+	result = RE_COOKIE.search(res)
 	if (result == None):	
 		## Cookie is absenting in response
 		fail(EC_LOGIN_DENIED)

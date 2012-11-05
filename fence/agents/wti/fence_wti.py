@@ -58,7 +58,6 @@ def get_power_status(conn, options):
 			plug_line = [x.strip().lower() for x in line.split("|")]
 			if len(plug_line) < len(plug_header):
 				plug_section = -1
-				pass
 			if ["list", "monitor"].count(options["-o"]) == 0 and options["-n"].lower() == plug_line[plug_index]:
 				return plug_line[status_index]
 			else:

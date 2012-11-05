@@ -1,9 +1,7 @@
 #!/usr/bin/python
 
 import sys, getopt, time, os
-import pexpect, re
-import telnetlib
-import atexit
+import pexpect, re, atexit
 import __main__
 
 ## do not add code here.
@@ -403,7 +401,7 @@ all_opt = {
 		"order" : 205}
 }
 
-common_opt = [ "help", "debug", "verbose", "quiet", "version", "action", "agent", 
+COMMON_OPT = [ "help", "debug", "verbose", "quiet", "version", "action", "agent", 
 		"power_timeout", "shell_timeout", "login_timeout", "power_wait", "retry_on", "delay" ]
 
 class fspawn(pexpect.spawn):
@@ -448,15 +446,14 @@ def fail(error_code):
 		EC_WAITING_ON : "Failed: Timed out waiting to power ON",
 		EC_WAITING_OFF : "Failed: Timed out waiting to power OFF",
 		EC_STATUS : "Failed: Unable to obtain correct plug status or plug is not available",
-		EC_STATUS_HMC : "Failed: Either unable to obtaion correct plug status, partition is not available or incorrect HMC version used",
+		EC_STATUS_HMC :
+			"Failed: Either unable to obtain correct plug status, partition is not available or incorrect HMC version used",
 		EC_PASSWORD_MISSING : "Failed: You have to set login password"
 	}[error_code] + "\n"
 	sys.stderr.write(message)
 	sys.exit(EC_GENERIC_ERROR)
 
 def usage(avail_opt):
-	global all_opt
-
 	print "Usage:"
 	print "\t" + os.path.basename(sys.argv[0]) + " [options]"
 	print "Options:"
@@ -469,8 +466,6 @@ def usage(avail_opt):
 			print "   " + value["help"]
 
 def metadata(avail_opt, options, docs):
-	global all_opt
-
 	sorted_list = [ (key, all_opt[key]) for key in avail_opt ]
 	sorted_list.sort(lambda x, y: cmp(x[1]["order"], y[1]["order"]))
 
@@ -483,7 +478,7 @@ def metadata(avail_opt, options, docs):
 	if docs.has_key("vendorurl"):
 		print "<vendor-url>" + docs["vendorurl"] + "</vendor-url>"
 	print "<parameters>"
-	for option, value in sorted_list:
+	for option, _value in sorted_list:
 		if all_opt[option].has_key("shortdesc"):
 			print "\t<parameter name=\"" + option + "\" unique=\"0\" required=\"" + all_opt[option]["required"] + "\">"
 
@@ -532,13 +527,10 @@ def metadata(avail_opt, options, docs):
 	print "</resource-agent>"
 
 def process_input(avail_opt):
-	global all_opt
-	global common_opt
-
 	##
 	## Add options which are available for every fence agent
 	#####
-	avail_opt.extend(common_opt)
+	avail_opt.extend(COMMON_OPT)
 
 	##
 	## Set standard environment
@@ -573,7 +565,7 @@ def process_input(avail_opt):
 	#####
 	if len(sys.argv) > 1:
 		try:
-			opt, args = getopt.gnu_getopt(sys.argv[1:], getopt_string, longopt_list)
+			opt, _args = getopt.gnu_getopt(sys.argv[1:], getopt_string, longopt_list)
 		except getopt.GetoptError, error:
 			fail_usage("Parse error: " + error.msg)
 
@@ -644,13 +636,10 @@ def process_input(avail_opt):
 ## password script to set a correct password
 ######
 def check_input(device_opt, opt):
-	global all_opt
-	global common_opt
-
 	##
 	## Add options which are available for every fence agent
 	#####
-	device_opt.extend([x for x in common_opt if device_opt.count(x) == 0])
+	device_opt.extend([x for x in COMMON_OPT if device_opt.count(x) == 0])
 	
 	options = dict(opt)
 	options["device_opt"] = device_opt
@@ -665,15 +654,15 @@ def check_input(device_opt, opt):
 	## In special cases (show help, metadata or version) we don't need to check anything
 	#####
 	if options.has_key("-h") or options.has_key("-V") or (options.has_key("-o") and options["-o"].lower() == "metadata"):
-		return options;
+		return options
 
 	## Set default values
 	#####
 	for opt in device_opt:
 		if all_opt[opt].has_key("default"):
-			getopt = "-" + all_opt[opt]["getopt"].rstrip(":")
-			if 0 == options.has_key(getopt):
-				options[getopt] = all_opt[opt]["default"]
+			getopt_short = "-" + all_opt[opt]["getopt"].rstrip(":")
+			if 0 == options.has_key(getopt_short):
+				options[getopt_short] = all_opt[opt]["default"]
 
 	options["-o"] = options["-o"].lower()
 
@@ -721,7 +710,8 @@ def check_input(device_opt, opt):
 		if 0 == os.path.isfile(options["-k"]):
 			fail_usage("Failed: Identity file " + options["-k"] + " does not exist")
 
-	if (0 == ["list", "monitor"].count(options["-o"].lower())) and (0 == options.has_key("-n") and 0 == options.has_key("-U")) and (device_opt.count("port")):
+	if (0 == ["list", "monitor"].count(options["-o"].lower())) and \
+		(0 == options.has_key("-n") and 0 == options.has_key("-U")) and (device_opt.count("port")):
 		fail_usage("Failed: You have to enter plug number")
 
 	if options.has_key("-S"):
@@ -787,7 +777,9 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 	
 	## Process options that manipulate fencing device
 	#####
-	if (options["-o"] == "list") and (0 == options["device_opt"].count("port")) and (0 == options["device_opt"].count("partition") and 0 == options["device_opt"].count("uuid") and 0 == options["device_opt"].count("module_name")):
+	if (options["-o"] == "list") and \
+		0 == options["device_opt"].count("port") and 0 == options["device_opt"].count("partition") and \
+		0 == options["device_opt"].count("uuid") and 0 == options["device_opt"].count("module_name"):
 		print "N/A"
 		return
 	elif (options["-o"] == "list" and get_outlet_list == None):
@@ -816,7 +808,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 			print "Success: Already ON"
 		else:
 			power_on = False
-			for i in range(1, 1 + int(options["-F"])):
+			for _ in range(1, 1 + int(options["-F"])):
 				set_power_fn(tn, options)
 				time.sleep(int(options["-G"]))
 				if wait_power_status(tn, options, get_power_fn):
@@ -847,7 +839,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 		options["-o"] = "on"
 
 		power_on = False
-		for i in range(1, 1 + int(options["-F"])):
+		for _ in range(1, 1 + int(options["-F"])):
 			set_power_fn(tn, options)
 			time.sleep(int(options["-G"]))
 			if wait_power_status(tn, options, get_power_fn) == 1:
@@ -855,7 +847,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 				break
 
 		if power_on == False:
-			# this should not fail as not was fenced succesfully
+			# this should not fail as node was fenced succesfully
 			sys.stderr.write('Timed out waiting to power ON\n')
 
 		print "Success: Rebooted"
@@ -864,7 +856,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 		if status.upper() == "OFF":
 			result = 2
 	elif options["-o"] == "monitor":
-		1
+		pass
 	
 	return result
 
@@ -895,8 +887,8 @@ def fence_login(options):
 				conn = fspawn(options, command)
 			except pexpect.ExceptionPexpect, ex:
 			 	## SSL telnet is part of the fencing package
-			 	sys.stderr.write(str(ex) + "\n")
-			 	sys.exit(EC_GENERIC_ERROR)
+				sys.stderr.write(str(ex) + "\n")
+				sys.exit(EC_GENERIC_ERROR)
 		elif options.has_key("-x") and 0 == options.has_key("-k"):
 			command = '%s %s %s@%s -p %s' % (SSH_PATH, force_ipvx, options["-l"], options["-a"], options["-u"])
 			if options.has_key("ssh_options"):
@@ -938,7 +930,9 @@ def fence_login(options):
 				"are not in the spec file and must be installed separately." + "\n")
 				sys.exit(EC_GENERIC_ERROR)
 
-			result = conn.log_expect(options, [ options["-c"], "Are you sure you want to continue connecting (yes/no)?", "Enter passphrase for key '"+options["-k"]+"':" ], int(options["-y"]))
+			result = conn.log_expect(options, [ options["-c"], \
+				"Are you sure you want to continue connecting (yes/no)?", \
+				"Enter passphrase for key '" + options["-k"] + "':" ], int(options["-y"]))
 			if result == 1:
 				conn.sendline("yes")
 				conn.log_expect(options, [ options["-c"], "Enter passphrase for key '"+options["-k"]+"':"] , int(options["-y"]))

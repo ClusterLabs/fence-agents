@@ -244,7 +244,7 @@ def vmware_is_supported_vmrun_version(options):
 	vmware_help_str = vmware_run_command(options, False, "", 0)
 	version_re = re.search("vmrun version (\d\.(\d[\.]*)*)", vmware_help_str.lower())
 	if (version_re==None):
-		    return False   # Looks like this "vmrun" is not real vmrun
+		return False   # Looks like this "vmrun" is not real vmrun
 
 	version_array = version_re.group(1).split(".")
 

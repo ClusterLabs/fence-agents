@@ -82,7 +82,7 @@ def eaton_set_device(conn, options):
 	conn.log_command("Trying %s"%(device.ident_str))
 
 def eaton_resolv_port_id(conn, options):
-	global port_id, switch_id, device
+	global port_id, switch_id
 
 	if (device==None):
 		eaton_set_device(conn, options)
@@ -119,7 +119,7 @@ def eaton_resolv_port_id(conn, options):
 		fail_usage("Can't find port with name %s!"%(options["-n"]))
 
 def get_power_status(conn, options):
-	global port_id, switch_id, device, after_set
+	global port_id, after_set
 
 	if (port_id==None):
 		eaton_resolv_port_id(conn, options)
@@ -143,7 +143,7 @@ def get_power_status(conn, options):
 		return None
 
 def set_power_status(conn, options):
-	global port_id, switch_id, device, after_set
+	global port_id, after_set
 
 	after_set = True
 
@@ -160,8 +160,6 @@ def set_power_status(conn, options):
 
 
 def get_outlets_status(conn, options):
-	global device
-
 	outletCount = 0
 	result = {}
 

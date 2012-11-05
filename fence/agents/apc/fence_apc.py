@@ -153,6 +153,7 @@ def set_power_status(conn, options):
 
 		while 1 == conn.log_expect(options, [ options["-c"],  "Press <ENTER>" ], int(options["-Y"])):
 			conn.send_eol("")
+
 		conn.send_eol(options["-n"]+"")
 		conn.log_expect(options, options["-c"], int(options["-Y"]))
 
