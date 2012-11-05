@@ -88,9 +88,7 @@ will block any necessary fencing actions."
 	try:
 		conn.send_eol("0")
 		conn.close()
-	except exceptions.OSError:
-		pass
-	except pexpect.ExceptionPexpect:
+	except:
 		pass
 	
 	sys.exit(result)

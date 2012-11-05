@@ -61,9 +61,7 @@ def main():
 
 	try:
 		conn.send_eol("exit")
-	except exceptions.OSError:
-		pass
-	except pexpect.ExceptionPexpect:
+	except:
 		pass
 	
 	sys.exit(result)

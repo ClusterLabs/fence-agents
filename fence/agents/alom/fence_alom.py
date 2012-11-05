@@ -57,9 +57,7 @@ agent which can be used with ALOM connected machines."
 	try:
 		conn.send_eol("logout")
 		conn.close()
-	except exceptions.OSError:
-		pass
-	except pexpect.ExceptionPexpect:
+	except:
 		pass	                                         
 
 	sys.exit(result)

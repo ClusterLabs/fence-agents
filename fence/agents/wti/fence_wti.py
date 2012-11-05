@@ -151,9 +151,7 @@ is running because the connection will block any necessary fencing actions."
 	try:
 		conn.send("/X"+"\r\n")
 		conn.close()
-	except exceptions.OSError:
-		pass
-	except pexpect.ExceptionPexpect:
+	except:
 		pass
 		
 	sys.exit(result)

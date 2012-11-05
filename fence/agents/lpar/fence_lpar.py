@@ -138,10 +138,8 @@ def main():
 	try:
 		conn.send("quit\r\n")
 		conn.close()
-	except exceptions.OSError:
+	except:
 		pass
-	except pexpect.ExceptionPexpect:
-		pass	                                         
 
 	sys.exit(result)
 if __name__ == "__main__":

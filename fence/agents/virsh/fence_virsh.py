@@ -91,9 +91,7 @@ must allow ssh login in your sshd_config."
 	try:
 		conn.sendline("quit")
 		conn.close()
-	except exceptions.OSError:
-		pass
-	except pexpect.ExceptionPexpect:
+	except:
 		pass
 
 	sys.exit(result)
