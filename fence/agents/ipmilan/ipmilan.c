@@ -903,14 +903,14 @@ static void print_xml_metadata(char *pname) {
 
   printf("%s\n","<?xml version=\"1.0\" ?>");
   printf("%s%s%s\n","<resource-agent name=\"",pname,"\" shortdesc=\"Fence agent for IPMI over LAN\">");
-  printf("<symlink name=\"fence_ilo3\" shortdesc=\"Fence agent for HP iLO2\"/>\n");
+  printf("<symlink name=\"fence_ilo3\" shortdesc=\"Fence agent for HP iLO3\"/>\n");
   printf("<symlink name=\"fence_idrac\" shortdesc=\"Fence agent for Dell iDRAC\"/>\n");
   printf("<symlink name=\"fence_imm\" shortdesc=\"Fence agent for IBM Integrated Management Module\"/>\n");  
   printf("<longdesc>\n");
   printf("fence_ipmilan is an I/O Fencing agent which can be used with "
          "machines controlled by IPMI. This agent calls support software "
          "using ipmitool (http://ipmitool.sf.net/).\n\n"
-         "To use fence_ipmilan with HP iLO 3 you have to enable lanplus "
+         "To use fence_ipmilan with HP iLO 3 or HP iLO 4 you have to enable lanplus "
          "option (lanplus / -P) and increase wait after operation to "
          "4 seconds (power_wait=4 / -T 4)");
   printf("</longdesc>\n");
