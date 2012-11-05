@@ -11,18 +11,13 @@ BUILD_DATE=""
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):
-	try:
-		conn.send("2")
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
-		status = re.compile("Power Status : (on|off)", re.IGNORECASE).search(conn.before).group(1)
-		conn.send("0")
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.send("2")
+	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	status = re.compile("Power Status : (on|off)", re.IGNORECASE).search(conn.before).group(1)
+	conn.send("0")
+	conn.log_expect(options, options["-c"], int(options["-Y"]))
 
-		return (status.lower().strip())
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	return (status.lower().strip())
 
 def set_power_status(conn, options):
 	action = {
@@ -30,21 +25,16 @@ def set_power_status(conn, options):
 		'off': "1"
 	}[options["-o"]]
 
-	try:
-		conn.send("2")
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
-		conn.send_eol(action)
-		conn.log_expect(options, ["want to power off", "'yes' or 'no'"], int(options["-Y"]))
-		conn.send_eol("yes")
-		conn.log_expect(options, "any key to continue", int(options["-g"]))
-		conn.send_eol("")
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
-		conn.send_eol("0")
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	conn.send("2")
+	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.send_eol(action)
+	conn.log_expect(options, ["want to power off", "'yes' or 'no'"], int(options["-Y"]))
+	conn.send_eol("yes")
+	conn.log_expect(options, "any key to continue", int(options["-g"]))
+	conn.send_eol("")
+	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.send_eol("0")
+	conn.log_expect(options, options["-c"], int(options["-Y"]))
 
 def main():
 	device_opt = [  "ipaddr", "login", "passwd", "passwd_script",

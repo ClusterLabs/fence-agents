@@ -23,17 +23,12 @@ BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):
-	try:
-		if options["model"] == "DRAC CMC":
-			conn.send_eol("racadm serveraction powerstatus -m " + options["-m"])
-		elif options["model"] == "DRAC 5":
-			conn.send_eol("racadm serveraction powerstatus")
+	if options["model"] == "DRAC CMC":
+		conn.send_eol("racadm serveraction powerstatus -m " + options["-m"])
+	elif options["model"] == "DRAC 5":
+		conn.send_eol("racadm serveraction powerstatus")
 		
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	conn.log_expect(options, options["-c"], int(options["-Y"]))
 				
 	status = re.compile("(^|: )(ON|OFF|Powering ON|Powering OFF)\s*$", re.IGNORECASE | re.MULTILINE).search(conn.before).group(2)
 	if status.lower().strip() in ["on", "powering on", "powering off"]:
@@ -47,39 +42,29 @@ def set_power_status(conn, options):
 		'off': "powerdown"
 	}[options["-o"]]
 
-	try:
-		if options["model"] == "DRAC CMC":
-			conn.send_eol("racadm serveraction " + action + " -m " + options["-m"])
-		elif options["model"] == "DRAC 5":
-			conn.send_eol("racadm serveraction " + action)
-		conn.log_expect(options, options["-c"], int(options["-g"]))
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	if options["model"] == "DRAC CMC":
+		conn.send_eol("racadm serveraction " + action + " -m " + options["-m"])
+	elif options["model"] == "DRAC 5":
+		conn.send_eol("racadm serveraction " + action)
+	conn.log_expect(options, options["-c"], int(options["-g"]))
 
 def get_list_devices(conn, options):
 	outlets = { }
 
-	try:
-		if options["model"] == "DRAC CMC":
-			conn.send_eol("getmodinfo")
+	if options["model"] == "DRAC CMC":
+		conn.send_eol("getmodinfo")
 
-			list_re = re.compile("^([^\s]*?)\s+Present\s*(ON|OFF)\s*.*$")
-			conn.log_expect(options, options["-c"], int(options["-g"]))
-			for line in conn.before.splitlines():
-				if (list_re.search(line)):
-					outlets[list_re.search(line).group(1)] = ("", list_re.search(line).group(2))
-		elif options["model"] == "DRAC 5":
-			## DRAC 5 can be used only for one computer
-			## standard fence library can't handle correctly situation
-			## when some fence devices supported by fence agent
-			## works with 'list' and other should returns 'N/A'
-			print "N/A"
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+		list_re = re.compile("^([^\s]*?)\s+Present\s*(ON|OFF)\s*.*$")
+		conn.log_expect(options, options["-c"], int(options["-g"]))
+		for line in conn.before.splitlines():
+			if (list_re.search(line)):
+				outlets[list_re.search(line).group(1)] = ("", list_re.search(line).group(2))
+	elif options["model"] == "DRAC 5":
+		## DRAC 5 can be used only for one computer
+		## standard fence library can't handle correctly situation
+		## when some fence devices supported by fence agent
+		## works with 'list' and other should returns 'N/A'
+		print "N/A"
 
 	return outlets
 	

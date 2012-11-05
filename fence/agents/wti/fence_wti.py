@@ -24,27 +24,21 @@ BUILD_DATE="March, 2008"
 def get_power_status(conn, options):
 	listing = ""
 
-	try:		
-		conn.send("/S"+"\r\n")
+	conn.send("/S"+"\r\n")
 
-		if isinstance(options["-c"], list):
-			re_all = list(options["-c"])
-		else:
-			re_all = [options["-c"]]
-		re_next = re.compile("Enter: ", re.IGNORECASE)
-		re_all.append(re_next)
+	if isinstance(options["-c"], list):
+		re_all = list(options["-c"])
+	else:
+		re_all = [options["-c"]]
+	re_next = re.compile("Enter: ", re.IGNORECASE)
+	re_all.append(re_next)
 
-		result = conn.log_expect(options, re_all, int(options["-Y"]))
-		listing = conn.before
-		if result == (len(re_all) - 1):
-			conn.send("\r\n")
-			conn.log_expect(options, options["-c"], int(options["-Y"]))
-			listing += conn.before
-
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	result = conn.log_expect(options, re_all, int(options["-Y"]))
+	listing = conn.before
+	if result == (len(re_all) - 1):
+		conn.send("\r\n")
+		conn.log_expect(options, options["-c"], int(options["-Y"]))
+		listing += conn.before
 	
 	plug_section = 0
 	plug_index = -1
@@ -84,13 +78,8 @@ def set_power_status(conn, options):
 		'off': "/off"
 	}[options["-o"]]
 
-	try:
-		conn.send(action + " " + options["-n"] + ",y\r\n")
-		conn.log_expect(options, options["-c"], int(options["-g"]))
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	conn.send(action + " " + options["-n"] + ",y\r\n")
+	conn.log_expect(options, options["-c"], int(options["-g"]))
 
 def main():
 	device_opt = [  "ipaddr", "login", "passwd", "passwd_script",

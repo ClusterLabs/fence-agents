@@ -27,64 +27,60 @@ BUILD_DATE="March, 2008"
 def get_power_status(conn, options):
 	exp_result = 0
 	outlets = {}
-	try:
-		conn.send_eol("1")
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
 
-		version = 0
+	conn.send_eol("1")
+	conn.log_expect(options, options["-c"], int(options["-Y"]))
+
+	version = 0
+	admin = 0
+	switch = 0
+
+	if (None != re.compile('.* MasterSwitch plus.*', re.IGNORECASE | re.S).match(conn.before)):
+		switch = 1
+		if (None != re.compile('.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before)):
+			if (0 == options.has_key("-s")):
+				fail_usage("Failed: You have to enter physical switch number")
+		else:
+			if (0 == options.has_key("-s")):
+				options["-s"] = "1"
+
+	if (None == re.compile('.*Outlet Management.*', re.IGNORECASE | re.S).match(conn.before)):
+		version = 2
+	else:
+		version = 3
+
+	if (None == re.compile('.*Outlet Control/Configuration.*', re.IGNORECASE | re.S).match(conn.before)):
 		admin = 0
-		switch = 0
+	else:
+		admin = 1
 
-		if (None != re.compile('.* MasterSwitch plus.*', re.IGNORECASE | re.S).match(conn.before)):
-			switch = 1
-			if (None != re.compile('.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before)):
-				if (0 == options.has_key("-s")):
-					fail_usage("Failed: You have to enter physical switch number")
-			else:
-				if (0 == options.has_key("-s")):
-					options["-s"] = "1"
-
-		if (None == re.compile('.*Outlet Management.*', re.IGNORECASE | re.S).match(conn.before)):
-			version = 2
-		else:
-			version = 3
-
-		if (None == re.compile('.*Outlet Control/Configuration.*', re.IGNORECASE | re.S).match(conn.before)):
-			admin = 0
-		else:
-			admin = 1
-
-		if switch == 0:
-			if version == 2:
-				if admin == 0:
-					conn.send_eol("2")
-				else:
-					conn.send_eol("3")
-			else:
+	if switch == 0:
+		if version == 2:
+			if admin == 0:
 				conn.send_eol("2")
-				conn.log_expect(options, options["-c"], int(options["-Y"]))
-				conn.send_eol("1")
+			else:
+				conn.send_eol("3")
 		else:
-			conn.send_eol(options["-s"])
+			conn.send_eol("2")
+			conn.log_expect(options, options["-c"], int(options["-Y"]))
+			conn.send_eol("1")
+	else:
+		conn.send_eol(options["-s"])
 			
-		while True:
-			exp_result = conn.log_expect(options, [ options["-c"],  "Press <ENTER>" ], int(options["-Y"]))
-			lines = conn.before.split("\n")
-			show_re = re.compile('(^|\x0D)\s*(\d+)- (.*?)\s+(ON|OFF)\s*')
-			for x in lines:
-				res = show_re.search(x)
-				if (res != None):
-					outlets[res.group(2)] = (res.group(3), res.group(4))
-			conn.send_eol("")
-			if exp_result == 0:
-				break
-		conn.send(chr(03))		
-		conn.log_expect(options, "- Logout", int(options["-Y"]))
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	while True:
+		exp_result = conn.log_expect(options, [ options["-c"],  "Press <ENTER>" ], int(options["-Y"]))
+		lines = conn.before.split("\n")
+		show_re = re.compile('(^|\x0D)\s*(\d+)- (.*?)\s+(ON|OFF)\s*')
+		for x in lines:
+			res = show_re.search(x)
+			if (res != None):
+				outlets[res.group(2)] = (res.group(3), res.group(4))
+		conn.send_eol("")
+		if exp_result == 0:
+			break
+	conn.send(chr(03))		
+	conn.log_expect(options, "- Logout", int(options["-Y"]))
+	conn.log_expect(options, options["-c"], int(options["-Y"]))
 
 	if ["list", "monitor"].count(options["-o"]) == 1:
 		return outlets
@@ -101,86 +97,81 @@ def set_power_status(conn, options):
 		'off': "2"
 	}[options["-o"]]
 
-	try:
-		conn.send_eol("1")
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.send_eol("1")
+	conn.log_expect(options, options["-c"], int(options["-Y"]))
 
-		version = 0
+	version = 0
+	admin2 = 0
+	admin3 = 0
+	switch = 0
+
+	if (None != re.compile('.* MasterSwitch plus.*', re.IGNORECASE | re.S).match(conn.before)):
+		switch = 1
+		## MasterSwitch has different schema for on/off actions
+		action = {
+			'on' : "1",
+			'off': "3"
+		}[options["-o"]]
+		if (None != re.compile('.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before)):
+			if (0 == options.has_key("-s")):
+				fail_usage("Failed: You have to enter physical switch number")
+		else:
+			if (0 == options.has_key("-s")):
+				options["-s"] = 1
+
+	if (None == re.compile('.*Outlet Management.*', re.IGNORECASE | re.S).match(conn.before)):
+		version = 2
+	else:
+		version = 3
+
+	if (None == re.compile('.*Outlet Control/Configuration.*', re.IGNORECASE | re.S).match(conn.before)):
 		admin2 = 0
-		admin3 = 0
-		switch = 0
+	else:
+		admin2 = 1
 
-		if (None != re.compile('.* MasterSwitch plus.*', re.IGNORECASE | re.S).match(conn.before)):
-			switch = 1
-			## MasterSwitch has different schema for on/off actions
-			action = {
-				'on' : "1",
-				'off': "3"
-			}[options["-o"]]
-			if (None != re.compile('.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before)):
-				if (0 == options.has_key("-s")):
-					fail_usage("Failed: You have to enter physical switch number")
-			else:
-				if (0 == options.has_key("-s")):
-					options["-s"] = 1
-
-		if (None == re.compile('.*Outlet Management.*', re.IGNORECASE | re.S).match(conn.before)):
-			version = 2
-		else:
-			version = 3
-
-		if (None == re.compile('.*Outlet Control/Configuration.*', re.IGNORECASE | re.S).match(conn.before)):
-			admin2 = 0
-		else:
-			admin2 = 1
-
-		if switch == 0:
-			if version == 2:
-				if admin2 == 0:
-					conn.send_eol("2")
-				else:
-					conn.send_eol("3")
-			else:
+	if switch == 0:
+		if version == 2:
+			if admin2 == 0:
 				conn.send_eol("2")
-				conn.log_expect(options, options["-c"], int(options["-Y"]))
-				if (None == re.compile('.*2- Outlet Restriction.*', re.IGNORECASE | re.S).match(conn.before)):
-					admin3 = 0
-				else:
-					admin3 = 1
-				conn.send_eol("1")
+			else:
+				conn.send_eol("3")
 		else:
-			conn.send_eol(options["-s"])
+			conn.send_eol("2")
+			conn.log_expect(options, options["-c"], int(options["-Y"]))
+			if (None == re.compile('.*2- Outlet Restriction.*', re.IGNORECASE | re.S).match(conn.before)):
+				admin3 = 0
+			else:
+				admin3 = 1
+			conn.send_eol("1")
+	else:
+		conn.send_eol(options["-s"])
 
-		while 1 == conn.log_expect(options, [ options["-c"],  "Press <ENTER>" ], int(options["-Y"])):
-			conn.send_eol("")
+	while 1 == conn.log_expect(options, [ options["-c"],  "Press <ENTER>" ], int(options["-Y"])):
+		conn.send_eol("")
 
-		conn.send_eol(options["-n"]+"")
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.send_eol(options["-n"]+"")
+	conn.log_expect(options, options["-c"], int(options["-Y"]))
 
-		if switch == 0:
-			if admin2 == 1:
-				conn.send_eol("1")
-				conn.log_expect(options, options["-c"], int(options["-Y"]))
-			if admin3 == 1:
-				conn.send_eol("1")
-				conn.log_expect(options, options["-c"], int(options["-Y"]))
-		else:
+	if switch == 0:
+		if admin2 == 1:
 			conn.send_eol("1")
 			conn.log_expect(options, options["-c"], int(options["-Y"]))
-			
-		conn.send_eol(action)
-		conn.log_expect(options, "Enter 'YES' to continue or <ENTER> to cancel :", int(options["-Y"]))
-		conn.send_eol("YES")
-		conn.log_expect(options, "Press <ENTER> to continue...", int(options["-Y"]))
-		conn.send_eol("")
+		if admin3 == 1:
+			conn.send_eol("1")
+			conn.log_expect(options, options["-c"], int(options["-Y"]))
+	else:
+		conn.send_eol("1")
 		conn.log_expect(options, options["-c"], int(options["-Y"]))
-		conn.send(chr(03))
-		conn.log_expect(options, "- Logout", int(options["-Y"]))
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+		
+	conn.send_eol(action)
+	conn.log_expect(options, "Enter 'YES' to continue or <ENTER> to cancel :", int(options["-Y"]))
+	conn.send_eol("YES")
+	conn.log_expect(options, "Press <ENTER> to continue...", int(options["-Y"]))
+	conn.send_eol("")
+	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.send(chr(03))
+	conn.log_expect(options, "- Logout", int(options["-Y"]))
+	conn.log_expect(options, options["-c"], int(options["-Y"]))
 
 def main():
 	device_opt = [  "ipaddr", "login", "passwd", "passwd_script", "cmd_prompt",

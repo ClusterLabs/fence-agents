@@ -23,72 +23,57 @@ BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):
-	try:
-		node_cmd = "system:blade\[" + options["-n"] + "\]>"
+	node_cmd = "system:blade\[" + options["-n"] + "\]>"
 
-		conn.send_eol("env -T system:blade[" + options["-n"] + "]")
-		i = conn.log_expect(options, [ node_cmd, "system>" ] , int(options["-Y"]))
-		if i == 1:
-			## Given blade number does not exist
-			if options.has_key("-M"):
-				return "off"
-			else:
-				fail(EC_STATUS)
-		conn.send_eol("power -state")
-		conn.log_expect(options, node_cmd, int(options["-Y"]))
-		status = conn.before.splitlines()[-1]
-		conn.send_eol("env -T system")
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	conn.send_eol("env -T system:blade[" + options["-n"] + "]")
+	i = conn.log_expect(options, [ node_cmd, "system>" ] , int(options["-Y"]))
+	if i == 1:
+		## Given blade number does not exist
+		if options.has_key("-M"):
+			return "off"
+		else:
+			fail(EC_STATUS)
+	conn.send_eol("power -state")
+	conn.log_expect(options, node_cmd, int(options["-Y"]))
+	status = conn.before.splitlines()[-1]
+	conn.send_eol("env -T system")
+	conn.log_expect(options, options["-c"], int(options["-Y"]))
 
 	return status.lower().strip()
 
 def set_power_status(conn, options):
-	try:
-		node_cmd = "system:blade\[" + options["-n"] + "\]>"
+	node_cmd = "system:blade\[" + options["-n"] + "\]>"
 
-		conn.send_eol("env -T system:blade[" + options["-n"] + "]")
-		i = conn.log_expect(options, [ node_cmd, "system>" ] , int(options["-Y"]))
-		if i == 1:
-			## Given blade number does not exist
-			if options.has_key("-M"):
-				return
-			else:
-				fail(EC_GENERIC_ERROR)
+	conn.send_eol("env -T system:blade[" + options["-n"] + "]")
+	i = conn.log_expect(options, [ node_cmd, "system>" ] , int(options["-Y"]))
+	if i == 1:
+		## Given blade number does not exist
+		if options.has_key("-M"):
+			return
+		else:
+			fail(EC_GENERIC_ERROR)
 
-		conn.send_eol("power -"+options["-o"])
-		conn.log_expect(options, node_cmd, int(options["-Y"]))
-		conn.send_eol("env -T system")
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	conn.send_eol("power -"+options["-o"])
+	conn.log_expect(options, node_cmd, int(options["-Y"]))
+	conn.send_eol("env -T system")
+	conn.log_expect(options, options["-c"], int(options["-Y"]))
 
 def get_blades_list(conn, options):
 	outlets = { }
-	try:
-		node_cmd = "system>"
 
-		conn.send_eol("env -T system")
-		conn.log_expect(options, node_cmd, int(options["-Y"]))
-		conn.send_eol("list -l 2")
-		conn.log_expect(options, node_cmd, int(options["-Y"]))
+	node_cmd = "system>"
 
-		lines = conn.before.split("\r\n")
-		filter_re = re.compile("^\s*blade\[(\d+)\]\s+(.*?)\s*$")
-		for blade_line in lines:
-			res = filter_re.search(blade_line)
-			if res != None:
-				outlets[res.group(1)] = (res.group(2), "")
+	conn.send_eol("env -T system")
+	conn.log_expect(options, node_cmd, int(options["-Y"]))
+	conn.send_eol("list -l 2")
+	conn.log_expect(options, node_cmd, int(options["-Y"]))
 
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	lines = conn.before.split("\r\n")
+	filter_re = re.compile("^\s*blade\[(\d+)\]\s+(.*?)\s*$")
+	for blade_line in lines:
+		res = filter_re.search(blade_line)
+		if res != None:
+			outlets[res.group(1)] = (res.group(2), "")
 
 	return outlets
 

@@ -21,14 +21,8 @@ def get_outlets_status(conn, options):
 	else:
 		prefix = ""
 
-	try:
-		conn.sendline(prefix + "virsh list --all")
-		conn.interact()
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	conn.sendline(prefix + "virsh list --all")
+	conn.log_expect(options, options["-c"], int(options["-Y"]))
 
 	result = {}
 
@@ -59,16 +53,10 @@ def set_power_status(conn, options):
 	else:
 		prefix = ""
 
-	try:
-		conn.sendline(prefix + "virsh %s "%(options["-o"] == "on" and "start" or "destroy")+options["-n"])
+	conn.sendline(prefix + "virsh %s "%(options["-o"] == "on" and "start" or "destroy")+options["-n"])
 
-		conn.log_expect(options, options["-c"], int(options["-g"]))
-		time.sleep(1)
-
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	conn.log_expect(options, options["-c"], int(options["-g"]))
+	time.sleep(1)
 
 def main():
 	device_opt = [  "ipaddr", "login", "passwd", "passwd_script", "cmd_prompt",

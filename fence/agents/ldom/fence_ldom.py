@@ -31,31 +31,25 @@ def start_communication(conn, options):
 	
 
 def get_power_status(conn, options):
-	try:
-		start_communication(conn, options)
+	start_communication(conn, options)
 		
-		conn.send_eol("ldm ls")
+	conn.send_eol("ldm ls")
 		    
-		conn.log_expect(options, COMMAND_PROMPT_REG, int(options["-Y"]))
+	conn.log_expect(options, COMMAND_PROMPT_REG, int(options["-Y"]))
 
-		result = {}
+	result = {}
 
-		#This is status of mini finite automata. 0 = we didn't found NAME and STATE, 1 = we did
-		fa_status = 0
+	#This is status of mini finite automata. 0 = we didn't found NAME and STATE, 1 = we did
+	fa_status = 0
 		
-		for line in conn.before.splitlines():
-			domain = re.search("^(\S+)\s+(\S+)\s+.*$", line)
+	for line in conn.before.splitlines():
+		domain = re.search("^(\S+)\s+(\S+)\s+.*$", line)
 
-			if (domain!=None):
-				if ((fa_status==0) and (domain.group(1)=="NAME") and (domain.group(2)=="STATE")):
-					fa_status = 1
-				elif (fa_status==1):
-					result[domain.group(1)] = ("", (domain.group(2).lower()=="bound" and "off" or "on"))
-
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+		if (domain!=None):
+			if ((fa_status==0) and (domain.group(1)=="NAME") and (domain.group(2)=="STATE")):
+				fa_status = 1
+			elif (fa_status==1):
+				result[domain.group(1)] = ("", (domain.group(2).lower()=="bound" and "off" or "on"))
 
 	if (not (options["-o"] in ['monitor','list'])):
 		if (not (options["-n"] in result)):
@@ -66,19 +60,13 @@ def get_power_status(conn, options):
 		return result
 
 def set_power_status(conn, options):
-	try:
-		start_communication(conn, options)
+	start_communication(conn, options)
          	
-		cmd_line = "ldm "+(options["-o"]=="on" and "start" or "stop -f")+" \""+options["-n"]+"\""
+	cmd_line = "ldm "+(options["-o"]=="on" and "start" or "stop -f")+" \""+options["-n"]+"\""
             	
-		conn.send_eol(cmd_line)
+	conn.send_eol(cmd_line)
 		    
-		conn.log_expect(options, COMMAND_PROMPT_REG, int(options["-g"]))
-		
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	conn.log_expect(options, COMMAND_PROMPT_REG, int(options["-g"]))
 		
 def main():
 	device_opt = [  "ipaddr", "login", "passwd", "passwd_script",

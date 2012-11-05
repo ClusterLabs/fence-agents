@@ -774,89 +774,103 @@ def show_docs(options, docs = None):
 
 def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None):
 	result = 0
-	
-	## Process options that manipulate fencing device
-	#####
-	if (options["-o"] == "list") and \
-		0 == options["device_opt"].count("port") and 0 == options["device_opt"].count("partition") and \
-		0 == options["device_opt"].count("uuid") and 0 == options["device_opt"].count("module_name"):
-		print "N/A"
-		return
-	elif (options["-o"] == "list" and get_outlet_list == None):
-		## @todo: exception?
-		## This is just temporal solution, we will remove default value
-		## None as soon as all existing agent will support this operation 
-		print "NOTICE: List option is not working on this device yet"
-		return
-	elif (options["-o"] == "list") or ((options["-o"] == "monitor") and 1 == options["device_opt"].count("port")):
-		outlets = get_outlet_list(tn, options)
-		## keys can be numbers (port numbers) or strings (names of VM)
-		for o in outlets.keys():
-			(alias, status) = outlets[o]
-			if options["-o"] != "monitor":
-				print o + options["-C"] + alias	
-		return
 
-	status = get_power_fn(tn, options)
+	try:
+		## Process options that manipulate fencing device
+		#####
+		if (options["-o"] == "list") and \
+			0 == options["device_opt"].count("port") and 0 == options["device_opt"].count("partition") and \
+			0 == options["device_opt"].count("uuid") and 0 == options["device_opt"].count("module_name"):
+			print "N/A"
+			return
+		elif (options["-o"] == "list" and get_outlet_list == None):
+			## @todo: exception?
+			## This is just temporal solution, we will remove default value
+			## None as soon as all existing agent will support this operation 
+			print "NOTICE: List option is not working on this device yet"
+			return
+		elif (options["-o"] == "list") or ((options["-o"] == "monitor") and 1 == options["device_opt"].count("port")):
+			outlets = get_outlet_list(tn, options)
+			## keys can be numbers (port numbers) or strings (names of VM)
+			for o in outlets.keys():
+				(alias, status) = outlets[o]
+				if options["-o"] != "monitor":
+					print o + options["-C"] + alias	
+			return
 
-	if status != "on" and status != "off":  
-		fail(EC_STATUS)
+		status = get_power_fn(tn, options)
+
+		if status != "on" and status != "off":  
+			fail(EC_STATUS)
 
 
-	if options["-o"] == "on":
-		if status == "on":
-			print "Success: Already ON"
-		else:
-			power_on = False
-			for _ in range(1, 1 + int(options["-F"])):
+		if options["-o"] == "on":
+			if status == "on":
+				print "Success: Already ON"
+			else:
+				power_on = False
+				for _ in range(1, 1 + int(options["-F"])):
+					set_power_fn(tn, options)
+					time.sleep(int(options["-G"]))
+					if wait_power_status(tn, options, get_power_fn):
+						power_on = True
+						break
+
+				if power_on:
+					print "Success: Powered ON"
+				else:
+					fail(EC_WAITING_ON)
+		elif options["-o"] == "off":
+			if status == "off":
+				print "Success: Already OFF"
+			else:
 				set_power_fn(tn, options)
 				time.sleep(int(options["-G"]))
 				if wait_power_status(tn, options, get_power_fn):
-					power_on = True
-					break
+					print "Success: Powered OFF"
+				else:
+					fail(EC_WAITING_OFF)
+		elif options["-o"] == "reboot":
+			if status != "off":
+				options["-o"] = "off"
+				set_power_fn(tn, options)
+				time.sleep(int(options["-G"]))
+				if wait_power_status(tn, options, get_power_fn) == 0:
+					fail(EC_WAITING_OFF)
+			options["-o"] = "on"
 
-			if power_on:
-				print "Success: Powered ON"
-			else:
-				fail(EC_WAITING_ON)
-	elif options["-o"] == "off":
-		if status == "off":
-			print "Success: Already OFF"
-		else:
-			set_power_fn(tn, options)
-			time.sleep(int(options["-G"]))
-			if wait_power_status(tn, options, get_power_fn):
-				print "Success: Powered OFF"
-			else:
-				fail(EC_WAITING_OFF)
-	elif options["-o"] == "reboot":
-		if status != "off":
-			options["-o"] = "off"
-			set_power_fn(tn, options)
-			time.sleep(int(options["-G"]))
-			if wait_power_status(tn, options, get_power_fn) == 0:
-				fail(EC_WAITING_OFF)
-		options["-o"] = "on"
+			power_on = False
+			try:
+				for _ in range(1, 1 + int(options["-F"])):
+					set_power_fn(tn, options)
+					time.sleep(int(options["-G"]))
+					if wait_power_status(tn, options, get_power_fn) == 1:
+						power_on = True
+						break
+			except Exception, ex:
+				# an error occured during power ON phase in reboot
+				# fence action was completed succesfully even in that case
+				sys.stderr.write(str(ex))
+				pass
 
-		power_on = False
-		for _ in range(1, 1 + int(options["-F"])):
-			set_power_fn(tn, options)
-			time.sleep(int(options["-G"]))
-			if wait_power_status(tn, options, get_power_fn) == 1:
-				power_on = True
-				break
+			if power_on == False:
+				# this should not fail as node was fenced succesfully
+				sys.stderr.write('Timed out waiting to power ON\n')
 
-		if power_on == False:
-			# this should not fail as node was fenced succesfully
-			sys.stderr.write('Timed out waiting to power ON\n')
-
-		print "Success: Rebooted"
-	elif options["-o"] == "status":
-		print "Status: " + status.upper()
-		if status.upper() == "OFF":
-			result = 2
-	elif options["-o"] == "monitor":
-		pass
+			print "Success: Rebooted"
+		elif options["-o"] == "status":
+			print "Status: " + status.upper()
+			if status.upper() == "OFF":
+				result = 2
+		elif options["-o"] == "monitor":
+			pass
+	except pexpect.EOF:
+		fail(EC_CONNECTION_LOST)
+	except pexpect.TIMEOUT:
+		fail(EC_TIMED_OUT)
+	except pycurl.error, ex:
+		sys.stderr.write(ex[1] + "\n")
+		fail(EC_TIMED_OUT)
 	
 	return result
 

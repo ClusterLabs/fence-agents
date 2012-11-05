@@ -17,56 +17,42 @@ BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):
-	try:
-		conn.send_eol("show server status " + options["-n"])
-		conn.log_expect(options, options["-c"] , int(options["-Y"]))
+	conn.send_eol("show server status " + options["-n"])
+	conn.log_expect(options, options["-c"] , int(options["-Y"]))
 		
-		power_re = re.compile("^\s*Power: (.*?)\s*$")
-		status = "unknown"
-		for line in conn.before.splitlines():
-			res = power_re.search(line)
-			if res != None:
-				status = res.group(1)
+	power_re = re.compile("^\s*Power: (.*?)\s*$")
+	status = "unknown"
+	for line in conn.before.splitlines():
+		res = power_re.search(line)
+		if res != None:
+			status = res.group(1)
 
-		if status == "unknown":
-			if options.has_key("-M"):
-				return "off"
-			else:
-				fail(EC_STATUS)
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	if status == "unknown":
+		if options.has_key("-M"):
+			return "off"
+		else:
+			fail(EC_STATUS)
 
 	return status.lower().strip()
 
 def set_power_status(conn, options):
-	try:
-		if options["-o"] == "on":
-			conn.send_eol("poweron server " + options["-n"])
-		elif options["-o"] == "off":
-			conn.send_eol("poweroff server " + options["-n"] + " force")
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	if options["-o"] == "on":
+		conn.send_eol("poweron server " + options["-n"])
+	elif options["-o"] == "off":
+		conn.send_eol("poweroff server " + options["-n"] + " force")
+	conn.log_expect(options, options["-c"], int(options["-Y"]))
 
 def get_blades_list(conn, options):
 	outlets = { }
-	try:
-		conn.send_eol("show server list" )
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
 
-		list_re = re.compile("^\s*(.*?)\s+(.*?)\s+(.*?)\s+OK\s+(.*?)\s+(.*?)\s*$")
-		for line in conn.before.splitlines():
-			res = list_re.search(line)
-			if res != None:
-				outlets[res.group(1)] = (res.group(2), res.group(4).lower())
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	conn.send_eol("show server list" )
+	conn.log_expect(options, options["-c"], int(options["-Y"]))
+
+	list_re = re.compile("^\s*(.*?)\s+(.*?)\s+(.*?)\s+OK\s+(.*?)\s+(.*?)\s*$")
+	for line in conn.before.splitlines():
+		res = list_re.search(line)
+		if res != None:
+			outlets[res.group(1)] = (res.group(2), res.group(4).lower())
 
 	return outlets
 

@@ -22,26 +22,16 @@ BUILD_DATE=""
 
 def get_power_status(conn, options):
 	if options["-H"] == "3":
-		try:
-			conn.send("lssyscfg -r lpar -m " + options["-s"] + " -n " + options["-n"] + " -F name,state\n")
-			conn.log_expect(options, options["-c"], int(options["-g"]))
-		except pexpect.EOF:
-			fail(EC_CONNECTION_LOST)
-		except pexpect.TIMEOUT:
-			fail(EC_TIMED_OUT)
+		conn.send("lssyscfg -r lpar -m " + options["-s"] + " -n " + options["-n"] + " -F name,state\n")
+		conn.log_expect(options, options["-c"], int(options["-g"]))
 
 		try:
 			status = re.compile("^" + options["-n"] + ",(.*?),.*$", re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
 		except AttributeError:
 			fail(EC_STATUS_HMC)
 	elif options["-H"] == "4":
-		try:
-			conn.send("lssyscfg -r lpar -m "+ options["-s"] +" --filter 'lpar_names=" + options["-n"] + "'\n")
-			conn.log_expect(options, options["-c"], int(options["-g"]))
-		except pexpect.EOF:
-			fail(EC_CONNECTION_LOST)
-		except pexpect.TIMEOUT:
-			fail(EC_TIMED_OUT)
+		conn.send("lssyscfg -r lpar -m "+ options["-s"] +" --filter 'lpar_names=" + options["-n"] + "'\n")
+		conn.log_expect(options, options["-c"], int(options["-g"]))
 
 		try:				
 			status = re.compile(",state=(.*?),", re.IGNORECASE).search(conn.before).group(1)
@@ -59,73 +49,53 @@ def get_power_status(conn, options):
 
 def set_power_status(conn, options):
 	if options["-H"] == "3":
-		try:
-			conn.send("chsysstate -o " + options["-o"] + " -r lpar -m " + options["-s"]
-				+ " -n " + options["-n"] + "\n")
-			conn.log_expect(options, options["-c"], int(options["-g"]))
-		except pexpect.EOF:
-			fail(EC_CONNECTION_LOST)
-		except pexpect.TIMEOUT:
-			fail(EC_TIMED_OUT)		
+		conn.send("chsysstate -o " + options["-o"] + " -r lpar -m " + options["-s"]
+			+ " -n " + options["-n"] + "\n")
+		conn.log_expect(options, options["-c"], int(options["-g"]))
 	elif options["-H"] == "4":
-		try:
-			if options["-o"] == "on":
-				conn.send("chsysstate -o on -r lpar -m " + options["-s"] + 
-					" -n " + options["-n"] + 
-					" -f `lssyscfg -r lpar -F curr_profile " +
-					" -m " + options["-s"] +
-					" --filter \"lpar_names="+ options["-n"] +"\"`\n" )
-			else:
-				conn.send("chsysstate -o shutdown -r lpar --immed" +
-					" -m " + options["-s"] + " -n " + options["-n"] + "\n")		
-			conn.log_expect(options, options["-c"], int(options["-g"]))
-		except pexpect.EOF:
-			fail(EC_CONNECTION_LOST)
-		except pexpect.TIMEOUT:
-			fail(EC_TIMED_OUT)
+		if options["-o"] == "on":
+			conn.send("chsysstate -o on -r lpar -m " + options["-s"] + 
+				" -n " + options["-n"] + 
+				" -f `lssyscfg -r lpar -F curr_profile " +
+				" -m " + options["-s"] +
+				" --filter \"lpar_names="+ options["-n"] +"\"`\n" )
+		else:
+			conn.send("chsysstate -o shutdown -r lpar --immed" +
+				" -m " + options["-s"] + " -n " + options["-n"] + "\n")		
+		conn.log_expect(options, options["-c"], int(options["-g"]))
 
 def get_lpar_list(conn, options):
 	outlets = { }
 	if options["-H"] == "3":
-		try:
-			conn.send("query_partition_names -m " + options["-s"] + "\n")
-			conn.log_expect(options, options["-c"], int(options["-g"]))
+		conn.send("query_partition_names -m " + options["-s"] + "\n")
+		conn.log_expect(options, options["-c"], int(options["-g"]))
 
-			## We have to remove first 3 lines (command + header) and last line (part of new prompt)
-			####
-			res = re.search("^.+?\n(.+?\n){2}(.*)\n.*$", conn.before, re.S)
+		## We have to remove first 3 lines (command + header) and last line (part of new prompt)
+		####
+		res = re.search("^.+?\n(.+?\n){2}(.*)\n.*$", conn.before, re.S)
 
-			if res == None:
-				fail_usage("Unable to parse output of list command")
+		if res == None:
+			fail_usage("Unable to parse output of list command")
 		
-			lines = res.group(2).split("\n")
-			for outlet_line in lines:
-				outlets[outlet_line.rstrip()] = ("", "")
-		except pexpect.EOF:
-			fail(EC_CONNECTION_LOST)
-		except pexpect.TIMEOUT:
-			fail(EC_TIMED_OUT)		
+		lines = res.group(2).split("\n")
+		for outlet_line in lines:
+			outlets[outlet_line.rstrip()] = ("", "")
 	elif options["-H"] == "4":
-		try:
-			conn.send("lssyscfg -r lpar -m " + options["-s"] + 
-				" -F name:state\n")
-			conn.log_expect(options, options["-c"], int(options["-g"]))
+		conn.send("lssyscfg -r lpar -m " + options["-s"] + 
+			" -F name:state\n")
+		conn.log_expect(options, options["-c"], int(options["-g"]))
 
-			## We have to remove first line (command) and last line (part of new prompt)
-			####
-			res = re.search("^.+?\n(.*)\n.*$", conn.before, re.S)
+		## We have to remove first line (command) and last line (part of new prompt)
+		####
+		res = re.search("^.+?\n(.*)\n.*$", conn.before, re.S)
 
-			if res == None:
-				fail_usage("Unable to parse output of list command")
+		if res == None:
+			fail_usage("Unable to parse output of list command")
 		
-			lines = res.group(1).split("\n")
-			for outlet_line in lines:
-				(port, status) = outlet_line.split(":")
-				outlets[port] = ("", status)
-		except pexpect.EOF:
-			fail(EC_CONNECTION_LOST)
-		except pexpect.TIMEOUT:
-			fail(EC_TIMED_OUT)
+		lines = res.group(1).split("\n")
+		for outlet_line in lines:
+			(port, status) = outlet_line.split(":")
+			outlets[port] = ("", status)
 
 	return outlets
 

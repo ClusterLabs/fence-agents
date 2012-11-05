@@ -11,37 +11,27 @@ BUILD_DATE=""
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):
-	try:
-		conn.send_eol("show /system1")
+	conn.send_eol("show /system1")
 		
-		re_state = re.compile('EnabledState=(.*)', re.IGNORECASE)
-		conn.log_expect(options, re_state, int(options["-Y"]))
+	re_state = re.compile('EnabledState=(.*)', re.IGNORECASE)
+	conn.log_expect(options, re_state, int(options["-Y"]))
 
-		status = conn.match.group(1).lower()
+	status = conn.match.group(1).lower()
 
-		if status.startswith("enabled"):
-			return "on"
-		else:
-			return "off"
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	if status.startswith("enabled"):
+		return "on"
+	else:
+		return "off"
 
 def set_power_status(conn, options):
-	try:
-		if options["-o"] == "on":
-			conn.send_eol("start /system1")
-		else:
-			conn.send_eol("stop -f /system1")
+	if options["-o"] == "on":
+		conn.send_eol("start /system1")
+	else:
+		conn.send_eol("stop -f /system1")
 
-		conn.log_expect(options, options["-c"], int(options["-g"]))
+	conn.log_expect(options, options["-c"], int(options["-g"]))
 
-		return
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
-	except pexpect.TIMEOUT:
-		fail(EC_TIMED_OUT)
+	return
 
 def main():
 	device_opt = [  "ipaddr", "login", "passwd", "passwd_script",

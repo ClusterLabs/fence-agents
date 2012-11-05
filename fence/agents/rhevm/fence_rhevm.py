@@ -18,11 +18,7 @@ RE_GET_NAME = re.compile("<name>(.*?)</name>", re.IGNORECASE)
 
 def get_power_status(conn, options):
 	### Obtain real ID from name
-	try:
-		res = send_command(options, "vms/?search=name%3D" + options["-n"])
-	except pycurl.error, e:
-		sys.stderr.write(e[1] + "\n")
-		fail(EC_TIMED_OUT)
+	res = send_command(options, "vms/?search=name%3D" + options["-n"])
 
 	result = RE_GET_ID.search(res)
 	if (result == None):
@@ -52,23 +48,13 @@ def set_power_status(conn, options):
 	}[options["-o"]]
 
 	url = "vms/" + options["id"] + "/" + action
-	try:
-		res = send_command(options, url, "POST")
-	except pycurl.error, e:
-		sys.stderr.write(e[1] + "\n")
-		fail(EC_TIMED_OUT)
-	
-	return
+	res = send_command(options, url, "POST")
 
 def get_list(conn, options):
 	outlets = { }
 
 	try:
-		try:
-			res = send_command(options, "vms")
-		except pycurl.error, e:
-			sys.stderr.write(e[1] + "\n")
-			fail(EC_TIMED_OUT)	
+		res = send_command(options, "vms")
 
 		lines = res.split("<vm ")
 		for i in range(1, len(lines)):

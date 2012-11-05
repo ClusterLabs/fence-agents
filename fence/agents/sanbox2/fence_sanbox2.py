@@ -26,8 +26,6 @@ def get_power_status(conn, options):
 	try:
 		conn.send_eol("show port " + options["-n"])
 		conn.log_expect(options, options["-c"], int(options["-Y"]))
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
 		try:
 			conn.send_eol("admin end")
@@ -53,8 +51,6 @@ def set_power_status(conn, options):
 	try:
 		conn.send_eol("set port " + options["-n"] + " state " + action)
 		conn.log_expect(options, options["-c"], int(options["-g"]))
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
 		try:
 			conn.send_eol("admin end")
@@ -67,8 +63,6 @@ def set_power_status(conn, options):
 	try:
 		conn.send_eol("set port " + options["-n"] + " state " + action)
 		conn.log_expect(options, options["-c"], int(options["-g"]))
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
 		try:
 			conn.send_eol("admin end")
@@ -94,8 +88,6 @@ def get_list_devices(conn, options):
 				}[list_re.search(line).group(2).lower()]
 				outlets[list_re.search(line).group(1)] = ("", status)
 
-	except pexpect.EOF:
-		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
 		try:
 			conn.send_eol("admin end")
