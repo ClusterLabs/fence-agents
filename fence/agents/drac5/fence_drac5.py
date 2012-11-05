@@ -24,11 +24,11 @@ BUILD_DATE="March, 2008"
 
 def get_power_status(conn, options):
 	if options["model"] == "DRAC CMC":
-		conn.send_eol("racadm serveraction powerstatus -m " + options["-m"])
+		conn.send_eol("racadm serveraction powerstatus -m " + options["--module-name"])
 	elif options["model"] == "DRAC 5":
 		conn.send_eol("racadm serveraction powerstatus")
 		
-	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 				
 	status = re.compile("(^|: )(ON|OFF|Powering ON|Powering OFF)\s*$", re.IGNORECASE | re.MULTILINE).search(conn.before).group(2)
 	if status.lower().strip() in ["on", "powering on", "powering off"]:
@@ -40,13 +40,13 @@ def set_power_status(conn, options):
 	action = {
 		'on' : "powerup",
 		'off': "powerdown"
-	}[options["-o"]]
+	}[options["--action"]]
 
 	if options["model"] == "DRAC CMC":
-		conn.send_eol("racadm serveraction " + action + " -m " + options["-m"])
+		conn.send_eol("racadm serveraction " + action + " -m " + options["--module-name"])
 	elif options["model"] == "DRAC 5":
 		conn.send_eol("racadm serveraction " + action)
-	conn.log_expect(options, options["-c"], int(options["-g"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 def get_list_devices(conn, options):
 	outlets = { }
@@ -55,7 +55,7 @@ def get_list_devices(conn, options):
 		conn.send_eol("getmodinfo")
 
 		list_re = re.compile("^([^\s]*?)\s+Present\s*(ON|OFF)\s*.*$")
-		conn.log_expect(options, options["-c"], int(options["-g"]))
+		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 		for line in conn.before.splitlines():
 			if (list_re.search(line)):
 				outlets[list_re.search(line).group(1)] = ("", list_re.search(line).group(2))
@@ -95,7 +95,7 @@ By default, the telnet interface is not  enabled."
 	conn = fence_login(options)
 
 	if conn.before.find("CMC") >= 0:
-		if 0 == options.has_key("-m") and 0 == ["monitor", "list"].count(options["-o"].lower()):
+		if 0 == options.has_key("--module-name") and 0 == ["monitor", "list"].count(options["--action"].lower()):
 			fail_usage("Failed: You have to enter module name (-m)")
 			
 		options["model"] = "DRAC CMC"

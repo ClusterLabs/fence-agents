@@ -18,7 +18,7 @@ RE_GET_NAME = re.compile("<name>(.*?)</name>", re.IGNORECASE)
 
 def get_power_status(conn, options):
 	### Obtain real ID from name
-	res = send_command(options, "vms/?search=name%3D" + options["-n"])
+	res = send_command(options, "vms/?search=name%3D" + options["--plug"])
 
 	result = RE_GET_ID.search(res)
 	if (result == None):
@@ -45,7 +45,7 @@ def set_power_status(conn, options):
 	action = {
 		'on' : "start",
 		'off' : "stop"
-	}[options["-o"]]
+	}[options["--action"]]
 
 	url = "vms/" + options["id"] + "/" + action
 	res = send_command(options, url, "POST")

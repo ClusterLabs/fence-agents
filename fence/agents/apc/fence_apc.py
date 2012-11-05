@@ -29,7 +29,7 @@ def get_power_status(conn, options):
 	outlets = {}
 
 	conn.send_eol("1")
-	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 	version = 0
 	admin = 0
@@ -38,11 +38,11 @@ def get_power_status(conn, options):
 	if (None != re.compile('.* MasterSwitch plus.*', re.IGNORECASE | re.S).match(conn.before)):
 		switch = 1
 		if (None != re.compile('.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before)):
-			if (0 == options.has_key("-s")):
+			if (0 == options.has_key("--switch")):
 				fail_usage("Failed: You have to enter physical switch number")
 		else:
-			if (0 == options.has_key("-s")):
-				options["-s"] = "1"
+			if (0 == options.has_key("--switch")):
+				options["--switch"] = "1"
 
 	if (None == re.compile('.*Outlet Management.*', re.IGNORECASE | re.S).match(conn.before)):
 		version = 2
@@ -62,13 +62,13 @@ def get_power_status(conn, options):
 				conn.send_eol("3")
 		else:
 			conn.send_eol("2")
-			conn.log_expect(options, options["-c"], int(options["-Y"]))
+			conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 			conn.send_eol("1")
 	else:
-		conn.send_eol(options["-s"])
+		conn.send_eol(options["--switch"])
 			
 	while True:
-		exp_result = conn.log_expect(options, [ options["-c"],  "Press <ENTER>" ], int(options["-Y"]))
+		exp_result = conn.log_expect(options, [ options["--command-prompt"],  "Press <ENTER>" ], int(options["--shell-timeout"]))
 		lines = conn.before.split("\n")
 		show_re = re.compile('(^|\x0D)\s*(\d+)- (.*?)\s+(ON|OFF)\s*')
 		for x in lines:
@@ -79,14 +79,14 @@ def get_power_status(conn, options):
 		if exp_result == 0:
 			break
 	conn.send(chr(03))		
-	conn.log_expect(options, "- Logout", int(options["-Y"]))
-	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.log_expect(options, "- Logout", int(options["--shell-timeout"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
-	if ["list", "monitor"].count(options["-o"]) == 1:
+	if ["list", "monitor"].count(options["--action"]) == 1:
 		return outlets
 	else:
 		try:
-			(_, status) = outlets[options["-n"]]
+			(_, status) = outlets[options["--plug"]]
 			return status.lower().strip()
 		except KeyError:
 			fail(EC_STATUS)
@@ -95,10 +95,10 @@ def set_power_status(conn, options):
 	action = {
 		'on' : "1",
 		'off': "2"
-	}[options["-o"]]
+	}[options["--action"]]
 
 	conn.send_eol("1")
-	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 	version = 0
 	admin2 = 0
@@ -111,13 +111,13 @@ def set_power_status(conn, options):
 		action = {
 			'on' : "1",
 			'off': "3"
-		}[options["-o"]]
+		}[options["--action"]]
 		if (None != re.compile('.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before)):
-			if (0 == options.has_key("-s")):
+			if (0 == options.has_key("--switch")):
 				fail_usage("Failed: You have to enter physical switch number")
 		else:
-			if (0 == options.has_key("-s")):
-				options["-s"] = 1
+			if (0 == options.has_key("--switch")):
+				options["--switch"] = 1
 
 	if (None == re.compile('.*Outlet Management.*', re.IGNORECASE | re.S).match(conn.before)):
 		version = 2
@@ -137,41 +137,41 @@ def set_power_status(conn, options):
 				conn.send_eol("3")
 		else:
 			conn.send_eol("2")
-			conn.log_expect(options, options["-c"], int(options["-Y"]))
+			conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 			if (None == re.compile('.*2- Outlet Restriction.*', re.IGNORECASE | re.S).match(conn.before)):
 				admin3 = 0
 			else:
 				admin3 = 1
 			conn.send_eol("1")
 	else:
-		conn.send_eol(options["-s"])
+		conn.send_eol(options["--switch"])
 
-	while 1 == conn.log_expect(options, [ options["-c"],  "Press <ENTER>" ], int(options["-Y"])):
+	while 1 == conn.log_expect(options, [ options["--command-prompt"],  "Press <ENTER>" ], int(options["--shell-timeout"])):
 		conn.send_eol("")
 
-	conn.send_eol(options["-n"]+"")
-	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.send_eol(options["--plug"]+"")
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 	if switch == 0:
 		if admin2 == 1:
 			conn.send_eol("1")
-			conn.log_expect(options, options["-c"], int(options["-Y"]))
+			conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 		if admin3 == 1:
 			conn.send_eol("1")
-			conn.log_expect(options, options["-c"], int(options["-Y"]))
+			conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 	else:
 		conn.send_eol("1")
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
+		conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 		
 	conn.send_eol(action)
-	conn.log_expect(options, "Enter 'YES' to continue or <ENTER> to cancel :", int(options["-Y"]))
+	conn.log_expect(options, "Enter 'YES' to continue or <ENTER> to cancel :", int(options["--shell-timeout"]))
 	conn.send_eol("YES")
-	conn.log_expect(options, "Press <ENTER> to continue...", int(options["-Y"]))
+	conn.log_expect(options, "Press <ENTER> to continue...", int(options["--shell-timeout"]))
 	conn.send_eol("")
-	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 	conn.send(chr(03))
-	conn.log_expect(options, "- Logout", int(options["-Y"]))
-	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.log_expect(options, "- Logout", int(options["--shell-timeout"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 def main():
 	device_opt = [  "ipaddr", "login", "passwd", "passwd_script", "cmd_prompt",
@@ -195,11 +195,11 @@ will block any necessary fencing actions."
 	docs["vendorurl"] = "http://www.apc.com"
 	show_docs(options, docs)
 
-	## Support for -n [switch]:[plug] notation that was used before
-	if (options.has_key("-n") == 1) and (-1 != options["-n"].find(":")):
-		(switch, plug) = options["-n"].split(":", 1)
-		options["-s"] = switch
-		options["-n"] = plug
+	## Support for --plug [switch]:[plug] notation that was used before
+	if (options.has_key("--plug") == 1) and (-1 != options["--plug"].find(":")):
+		(switch, plug) = options["--plug"].split(":", 1)
+		options["--switch"] = switch
+		options["--plug"] = plug
 
 	##
 	## Operate the fencing device

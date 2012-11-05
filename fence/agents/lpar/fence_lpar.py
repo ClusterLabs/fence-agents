@@ -21,17 +21,17 @@ BUILD_DATE=""
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):
-	if options["-H"] == "3":
-		conn.send("lssyscfg -r lpar -m " + options["-s"] + " -n " + options["-n"] + " -F name,state\n")
-		conn.log_expect(options, options["-c"], int(options["-g"]))
+	if options["--hmc-version"] == "3":
+		conn.send("lssyscfg -r lpar -m " + options["--managed"] + " -n " + options["--plug"] + " -F name,state\n")
+		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 		try:
-			status = re.compile("^" + options["-n"] + ",(.*?),.*$", re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
+			status = re.compile("^" + options["--plug"] + ",(.*?),.*$", re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
 		except AttributeError:
 			fail(EC_STATUS_HMC)
-	elif options["-H"] == "4":
-		conn.send("lssyscfg -r lpar -m "+ options["-s"] +" --filter 'lpar_names=" + options["-n"] + "'\n")
-		conn.log_expect(options, options["-c"], int(options["-g"]))
+	elif options["--hmc-version"] == "4":
+		conn.send("lssyscfg -r lpar -m "+ options["--managed"] +" --filter 'lpar_names=" + options["--plug"] + "'\n")
+		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 		try:				
 			status = re.compile(",state=(.*?),", re.IGNORECASE).search(conn.before).group(1)
@@ -48,27 +48,27 @@ def get_power_status(conn, options):
 	return status
 
 def set_power_status(conn, options):
-	if options["-H"] == "3":
-		conn.send("chsysstate -o " + options["-o"] + " -r lpar -m " + options["-s"]
-			+ " -n " + options["-n"] + "\n")
-		conn.log_expect(options, options["-c"], int(options["-g"]))
-	elif options["-H"] == "4":
-		if options["-o"] == "on":
-			conn.send("chsysstate -o on -r lpar -m " + options["-s"] + 
-				" -n " + options["-n"] + 
+	if options["--hmc-version"] == "3":
+		conn.send("chsysstate -o " + options["--action"] + " -r lpar -m " + options["--managed"]
+			+ " -n " + options["--plug"] + "\n")
+		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+	elif options["--hmc-version"] == "4":
+		if options["--action"] == "on":
+			conn.send("chsysstate -o on -r lpar -m " + options["--managed"] + 
+				" -n " + options["--plug"] + 
 				" -f `lssyscfg -r lpar -F curr_profile " +
-				" -m " + options["-s"] +
-				" --filter \"lpar_names="+ options["-n"] +"\"`\n" )
+				" -m " + options["--managed"] +
+				" --filter \"lpar_names="+ options["--plug"] +"\"`\n" )
 		else:
 			conn.send("chsysstate -o shutdown -r lpar --immed" +
-				" -m " + options["-s"] + " -n " + options["-n"] + "\n")		
-		conn.log_expect(options, options["-c"], int(options["-g"]))
+				" -m " + options["--managed"] + " -n " + options["--plug"] + "\n")		
+		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 def get_lpar_list(conn, options):
 	outlets = { }
-	if options["-H"] == "3":
-		conn.send("query_partition_names -m " + options["-s"] + "\n")
-		conn.log_expect(options, options["-c"], int(options["-g"]))
+	if options["--hmc-version"] == "3":
+		conn.send("query_partition_names -m " + options["--managed"] + "\n")
+		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 		## We have to remove first 3 lines (command + header) and last line (part of new prompt)
 		####
@@ -80,10 +80,10 @@ def get_lpar_list(conn, options):
 		lines = res.group(2).split("\n")
 		for outlet_line in lines:
 			outlets[outlet_line.rstrip()] = ("", "")
-	elif options["-H"] == "4":
-		conn.send("lssyscfg -r lpar -m " + options["-s"] + 
+	elif options["--hmc-version"] == "4":
+		conn.send("lssyscfg -r lpar -m " + options["--managed"] + 
 			" -F name:state\n")
-		conn.log_expect(options, options["-c"], int(options["-g"]))
+		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 		## We have to remove first line (command) and last line (part of new prompt)
 		####
@@ -117,13 +117,13 @@ def main():
 	docs["longdesc"] = ""
 	show_docs(options, docs)
 
-	if 0 == options.has_key("-s"):
+	if 0 == options.has_key("--managed"):
 		fail_usage("Failed: You have to enter name of managed system")
 
-	if (0 == ["list", "monitor"].count(options["-o"].lower())) and (0 == options.has_key("-n")):
+	if (0 == ["list", "monitor"].count(options["--action"].lower())) and (0 == options.has_key("--plug")):
 		fail_usage("Failed: You have to enter name of the partition")
 
-	if 1 == options.has_key("-H") and (options["-H"] != "3" and options["-H"] != "4"):
+	if 1 == options.has_key("--hmc-version") and (options["--hmc-version"] != "3" and options["--hmc-version"] != "4"):
 		fail_usage("Failed: You have to enter valid version number: 3 or 4")
 
 	##

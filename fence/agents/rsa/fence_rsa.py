@@ -19,7 +19,7 @@ BUILD_DATE=""
 
 def get_power_status(conn, options):
 	conn.send_eol("power state")
-	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 				
 	match = re.compile("Power: (.*)", re.IGNORECASE).search(conn.before)
 	if (match != None):
@@ -30,8 +30,8 @@ def get_power_status(conn, options):
 	return status.lower().strip()
 
 def set_power_status(conn, options):
-	conn.send_eol("power " + options["-o"])
-	conn.log_expect(options, options["-c"], int(options["-g"]))
+	conn.send_eol("power " + options["--action"])
+	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 def main():
 	device_opt = [  "ipaddr", "login", "passwd", "passwd_script",

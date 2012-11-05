@@ -14,7 +14,7 @@ def get_power_status(conn, options):
 	conn.send_eol("show /system1")
 		
 	re_state = re.compile('EnabledState=(.*)', re.IGNORECASE)
-	conn.log_expect(options, re_state, int(options["-Y"]))
+	conn.log_expect(options, re_state, int(options["--shell-timeout"]))
 
 	status = conn.match.group(1).lower()
 
@@ -24,12 +24,12 @@ def get_power_status(conn, options):
 		return "off"
 
 def set_power_status(conn, options):
-	if options["-o"] == "on":
+	if options["--action"] == "on":
 		conn.send_eol("start /system1")
 	else:
 		conn.send_eol("stop -f /system1")
 
-	conn.log_expect(options, options["-c"], int(options["-g"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 	return
 

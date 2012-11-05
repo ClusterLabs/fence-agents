@@ -24,8 +24,8 @@ def get_power_status(conn, options):
 		'offline' : "off"
 	}
 	try:
-		conn.send_eol("show port " + options["-n"])
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
+		conn.send_eol("show port " + options["--plug"])
+		conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 	except pexpect.TIMEOUT:
 		try:
 			conn.send_eol("admin end")
@@ -46,11 +46,11 @@ def set_power_status(conn, options):
 	action = {
 		'on' : "online",
 		'off' : "offline"
-	}[options["-o"]]
+	}[options["--action"]]
 
 	try:
-		conn.send_eol("set port " + options["-n"] + " state " + action)
-		conn.log_expect(options, options["-c"], int(options["-g"]))
+		conn.send_eol("set port " + options["--plug"] + " state " + action)
+		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 	except pexpect.TIMEOUT:
 		try:
 			conn.send_eol("admin end")
@@ -61,8 +61,8 @@ def set_power_status(conn, options):
 		fail(EC_TIMED_OUT)                                                                         	
 
 	try:
-		conn.send_eol("set port " + options["-n"] + " state " + action)
-		conn.log_expect(options, options["-c"], int(options["-g"]))
+		conn.send_eol("set port " + options["--plug"] + " state " + action)
+		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 	except pexpect.TIMEOUT:
 		try:
 			conn.send_eol("admin end")
@@ -77,7 +77,7 @@ def get_list_devices(conn, options):
 
 	try:
 		conn.send_eol("show port")
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
+		conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 		list_re = re.compile("^\s+(\d+?)\s+(Online|Offline)\s+", re.IGNORECASE)
 		for line in conn.before.splitlines():
@@ -125,7 +125,7 @@ because the connection will block any necessary fencing actions."
 	conn = fence_login(options)
 
 	conn.send_eol("admin start")
-	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 	if (re.search("\(admin\)", conn.before, re.MULTILINE) == None):
 		## Someone else is in admin section, we can't enable/disable

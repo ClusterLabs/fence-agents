@@ -14,12 +14,12 @@ BUILD_DATE="April, 2011"
 #END_VERSION_GENERATION
 
 def soap_login(options):
-	if options.has_key("-z"):
+	if options.has_key("--ssl"):
 		url = "https://"
 	else:
 		url = "http://"
 	
-	url += options["-a"] + ":" + str(options["-u"]) + "/sdk"
+	url += options["--ip"] + ":" + str(options["-u"]) + "/sdk"
 	conn = Client(url + "/vimService.wsdl")
 	conn.set_options(location = url)
 
@@ -30,7 +30,7 @@ def soap_login(options):
 	mo_SessionManager._type = 'SessionManager'
 	
 	try:
-		SessionManager = conn.service.Login(mo_SessionManager, options["-l"], options["-p"])
+		SessionManager = conn.service.Login(mo_SessionManager, options["--username"], options["--password"])
 	except Exception, ex:
 		fail(EC_LOGIN_DENIED)	
 
@@ -104,22 +104,22 @@ def get_power_status(conn, options):
 		uuid.update(more_uuid)
 		mappingToUUID.update(more_mappingToUUID)
 		# Do not run unnecessary SOAP requests
-		if options.has_key("-U") and options["-U"] in uuid:
+		if options.has_key("--uuid") and options["--uuid"] in uuid:
 			break
 
-	if ["list", "monitor"].count(options["-o"]) == 1:
+	if ["list", "monitor"].count(options["--action"]) == 1:
 		return machines
 	else:
-		if options.has_key("-U") == False:
-			if options["-n"].startswith('/'):
+		if options.has_key("--uuid") == False:
+			if options["--plug"].startswith('/'):
 				## Transform InventoryPath to UUID
 				mo_SearchIndex = Property(options["ServiceContent"].searchIndex.value)
 				mo_SearchIndex._type = "SearchIndex"
 			
-				vm = conn.service.FindByInventoryPath(mo_SearchIndex, options["-n"])
+				vm = conn.service.FindByInventoryPath(mo_SearchIndex, options["--plug"])
 			
 				try:
-					options["-U"] = mappingToUUID[vm.value]
+					options["--uuid"] = mappingToUUID[vm.value]
 				except KeyError, ex:
 					fail(EC_STATUS)
 				except AttributeError, ex:
@@ -128,14 +128,14 @@ def get_power_status(conn, options):
 				## Name of virtual machine instead of path
 				## warning: if you have same names of machines this won't work correctly
 				try:
-					(options["-U"], _) = machines[options["-n"]]
+					(options["--uuid"], _) = machines[options["--plug"]]
 				except KeyError, ex:
 					fail(EC_STATUS)
 				except AttributeError, ex:
 					fail(EC_STATUS)
 
 		try:
-			if uuid[options["-U"]] == "poweredOn":
+			if uuid[options["--uuid"]] == "poweredOn":
 				return "on"
 			else:
 				return "off"
@@ -145,12 +145,12 @@ def get_power_status(conn, options):
 def set_power_status(conn, options):
 	mo_SearchIndex = Property(options["ServiceContent"].searchIndex.value)
 	mo_SearchIndex._type = "SearchIndex"
-	vm = conn.service.FindByUuid(mo_SearchIndex, vmSearch = 1, uuid = options["-U"])
+	vm = conn.service.FindByUuid(mo_SearchIndex, vmSearch = 1, uuid = options["--uuid"])
 
 	mo_machine = Property(vm.value)
 	mo_machine._type = "VirtualMachine"
 	
-	if options["-o"] == "on":
+	if options["--action"] == "on":
 		conn.service.PowerOnVM_Task(mo_machine)
 	else:
 		conn.service.PowerOffVM_Task(mo_machine)	

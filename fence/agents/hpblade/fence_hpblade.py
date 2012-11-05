@@ -17,8 +17,8 @@ BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):
-	conn.send_eol("show server status " + options["-n"])
-	conn.log_expect(options, options["-c"] , int(options["-Y"]))
+	conn.send_eol("show server status " + options["--plug"])
+	conn.log_expect(options, options["--command-prompt"] , int(options["--shell-timeout"]))
 		
 	power_re = re.compile("^\s*Power: (.*?)\s*$")
 	status = "unknown"
@@ -28,7 +28,7 @@ def get_power_status(conn, options):
 			status = res.group(1)
 
 	if status == "unknown":
-		if options.has_key("-M"):
+		if options.has_key("--missing-as-off"):
 			return "off"
 		else:
 			fail(EC_STATUS)
@@ -36,17 +36,17 @@ def get_power_status(conn, options):
 	return status.lower().strip()
 
 def set_power_status(conn, options):
-	if options["-o"] == "on":
-		conn.send_eol("poweron server " + options["-n"])
-	elif options["-o"] == "off":
-		conn.send_eol("poweroff server " + options["-n"] + " force")
-	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	if options["--action"] == "on":
+		conn.send_eol("poweron server " + options["--plug"])
+	elif options["--action"] == "off":
+		conn.send_eol("poweroff server " + options["--plug"] + " force")
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 def get_blades_list(conn, options):
 	outlets = { }
 
 	conn.send_eol("show server list" )
-	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 	list_re = re.compile("^\s*(.*?)\s+(.*?)\s+(.*?)\s+OK\s+(.*?)\s+(.*?)\s*$")
 	for line in conn.before.splitlines():

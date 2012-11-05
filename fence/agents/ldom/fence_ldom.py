@@ -23,11 +23,11 @@ COMMAND_PROMPT_NEW = "[PEXPECT]"
 # Start comunicating after login. Prepare good environment.
 def start_communication(conn, options):
 	conn.send_eol ("PS1='"+COMMAND_PROMPT_NEW+"'")
-	res = conn.expect([pexpect.TIMEOUT, COMMAND_PROMPT_REG], int(options["-Y"]))
+	res = conn.expect([pexpect.TIMEOUT, COMMAND_PROMPT_REG], int(options["--shell-timeout"]))
 	if res == 0:
 		#CSH stuff
 		conn.send_eol("set prompt='"+COMMAND_PROMPT_NEW+"'")
-		conn.log_expect(options, COMMAND_PROMPT_REG, int(options["-Y"]))
+		conn.log_expect(options, COMMAND_PROMPT_REG, int(options["--shell-timeout"]))
 	
 
 def get_power_status(conn, options):
@@ -35,7 +35,7 @@ def get_power_status(conn, options):
 		
 	conn.send_eol("ldm ls")
 		    
-	conn.log_expect(options, COMMAND_PROMPT_REG, int(options["-Y"]))
+	conn.log_expect(options, COMMAND_PROMPT_REG, int(options["--shell-timeout"]))
 
 	result = {}
 
@@ -51,22 +51,22 @@ def get_power_status(conn, options):
 			elif (fa_status==1):
 				result[domain.group(1)] = ("", (domain.group(2).lower()=="bound" and "off" or "on"))
 
-	if (not (options["-o"] in ['monitor','list'])):
-		if (not (options["-n"] in result)):
+	if (not (options["--action"] in ['monitor','list'])):
+		if (not (options["--plug"] in result)):
 			fail_usage("Failed: You have to enter existing logical domain!")
 		else:
-			return result[options["-n"]][1]
+			return result[options["--plug"]][1]
 	else:
 		return result
 
 def set_power_status(conn, options):
 	start_communication(conn, options)
          	
-	cmd_line = "ldm "+(options["-o"]=="on" and "start" or "stop -f")+" \""+options["-n"]+"\""
+	cmd_line = "ldm "+(options["--action"]=="on" and "start" or "stop -f")+" \""+options["--plug"]+"\""
             	
 	conn.send_eol(cmd_line)
 		    
-	conn.log_expect(options, COMMAND_PROMPT_REG, int(options["-g"]))
+	conn.log_expect(options, COMMAND_PROMPT_REG, int(options["--power-timeout"]))
 		
 def main():
 	device_opt = [  "ipaddr", "login", "passwd", "passwd_script",

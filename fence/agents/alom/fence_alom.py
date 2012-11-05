@@ -17,18 +17,18 @@ BUILD_DATE=""
 
 def get_power_status(conn, options):
 	conn.send_eol("showplatform")
-	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 	status = re.search("standby", conn.before.lower())
 	result = (status != None and "off" or "on")
 
 	return result
 
 def set_power_status(conn, options):
-	cmd_line = (options["-o"] == "on" and "poweron" or "poweroff -f -y")
+	cmd_line = (options["--action"] == "on" and "poweron" or "poweroff -f -y")
 	conn.send_eol(cmd_line)
-	conn.log_expect(options, options["-c"], int(options["-g"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 	# Get the machine some time between poweron and poweroff
-	time.sleep(int(options["-g"]))
+	time.sleep(int(options["--power-timeout"]))
 		
 def main():
 	device_opt = [  "ipaddr", "login", "passwd", "passwd_script", "cmd_prompt", "secure",

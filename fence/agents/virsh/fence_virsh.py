@@ -22,7 +22,7 @@ def get_outlets_status(conn, options):
 		prefix = ""
 
 	conn.sendline(prefix + "virsh list --all")
-	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 	result = {}
 
@@ -42,10 +42,10 @@ def get_outlets_status(conn, options):
 def get_power_status(conn, options):
 	outlets = get_outlets_status(conn, options)
 
-	if (not (options["-n"] in outlets)):
+	if (not (options["--plug"] in outlets)):
 		fail_usage("Failed: You have to enter existing name of virtual machine!")
 	else:
-		return outlets[options["-n"]][1]
+		return outlets[options["--plug"]][1]
 
 def set_power_status(conn, options):
 	if options.has_key("-d"):
@@ -53,9 +53,9 @@ def set_power_status(conn, options):
 	else:
 		prefix = ""
 
-	conn.sendline(prefix + "virsh %s "%(options["-o"] == "on" and "start" or "destroy")+options["-n"])
+	conn.sendline(prefix + "virsh %s "%(options["--action"] == "on" and "start" or "destroy")+options["--plug"])
 
-	conn.log_expect(options, options["-c"], int(options["-g"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 	time.sleep(1)
 
 def main():

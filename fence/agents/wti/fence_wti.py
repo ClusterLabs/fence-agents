@@ -26,18 +26,18 @@ def get_power_status(conn, options):
 
 	conn.send("/S"+"\r\n")
 
-	if isinstance(options["-c"], list):
-		re_all = list(options["-c"])
+	if isinstance(options["--command-prompt"], list):
+		re_all = list(options["--command-prompt"])
 	else:
-		re_all = [options["-c"]]
+		re_all = [options["--command-prompt"]]
 	re_next = re.compile("Enter: ", re.IGNORECASE)
 	re_all.append(re_next)
 
-	result = conn.log_expect(options, re_all, int(options["-Y"]))
+	result = conn.log_expect(options, re_all, int(options["--shell-timeout"]))
 	listing = conn.before
 	if result == (len(re_all) - 1):
 		conn.send("\r\n")
-		conn.log_expect(options, options["-c"], int(options["-Y"]))
+		conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 		listing += conn.before
 	
 	plug_section = 0
@@ -52,7 +52,7 @@ def get_power_status(conn, options):
 			plug_line = [x.strip().lower() for x in line.split("|")]
 			if len(plug_line) < len(plug_header):
 				plug_section = -1
-			if ["list", "monitor"].count(options["-o"]) == 0 and options["-n"].lower() == plug_line[plug_index]:
+			if ["list", "monitor"].count(options["--action"]) == 0 and options["--plug"].lower() == plug_line[plug_index]:
 				return plug_line[status_index]
 			else:
 				## We already believe that first column contains plug number
@@ -67,7 +67,7 @@ def get_power_status(conn, options):
 			name_index = plug_header.index("name")
 			status_index = plug_header.index("status")
 
-	if ["list", "monitor"].count(options["-o"]) == 1:
+	if ["list", "monitor"].count(options["--action"]) == 1:
 		return outlets
 	else:
 		return "PROBLEM"
@@ -76,10 +76,10 @@ def set_power_status(conn, options):
 	action = {
 		'on' : "/on",
 		'off': "/off"
-	}[options["-o"]]
+	}[options["--action"]]
 
-	conn.send(action + " " + options["-n"] + ",y\r\n")
-	conn.log_expect(options, options["-c"], int(options["-g"]))
+	conn.send(action + " " + options["--plug"] + ",y\r\n")
+	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 def main():
 	device_opt = [  "ipaddr", "login", "passwd", "passwd_script",
@@ -107,12 +107,12 @@ is running because the connection will block any necessary fencing actions."
 	##
 	## @note: if it possible that this device does not need either login, password or both of them
 	#####	
-	if 0 == options.has_key("-x"):
+	if 0 == options.has_key("--ssh"):
 		try:
 			try:
 				conn = fspawn(options, TELNET_PATH)
 				conn.send("set binary\n")
-				conn.send("open %s -%s\n"%(options["-a"], options["-u"]))
+				conn.send("open %s -%s\n"%(options["--ip"], options["-u"]))
 			except pexpect.ExceptionPexpect, ex:
 				sys.stderr.write(str(ex) + "\n")
 				sys.stderr.write("Due to limitations, binary dependencies on fence agents "
@@ -120,20 +120,20 @@ is running because the connection will block any necessary fencing actions."
 				sys.exit(EC_GENERIC_ERROR)
 			
 			re_login = re.compile("(login: )|(Login Name:  )|(username: )|(User Name :)", re.IGNORECASE)
-			re_prompt = re.compile("|".join(map (lambda x: "(" + x + ")", options["-c"])), re.IGNORECASE)
+			re_prompt = re.compile("|".join(map (lambda x: "(" + x + ")", options["--command-prompt"])), re.IGNORECASE)
 
-			result = conn.log_expect(options, [ re_login, "Password: ", re_prompt ], int(options["-Y"]))
+			result = conn.log_expect(options, [ re_login, "Password: ", re_prompt ], int(options["--shell-timeout"]))
 			if result == 0:
-				if options.has_key("-l"):
-					conn.send(options["-l"]+"\r\n")
-					result = conn.log_expect(options, [ re_login, "Password: ", re_prompt ], int(options["-Y"]))
+				if options.has_key("--username"):
+					conn.send(options["--username"]+"\r\n")
+					result = conn.log_expect(options, [ re_login, "Password: ", re_prompt ], int(options["--shell-timeout"]))
 				else:
 					fail_usage("Failed: You have to set login name")
 		
 			if result == 1:
-				if options.has_key("-p"):
-					conn.send(options["-p"]+"\r\n")
-					conn.log_expect(options, options["-c"], int(options["-Y"]))	
+				if options.has_key("--password"):
+					conn.send(options["--password"]+"\r\n")
+					conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))	
 				else:
 					fail_usage("Failed: You have to enter password or password script")
 		except pexpect.EOF:

@@ -106,28 +106,28 @@ def quote_for_run(str):
 
 # Return string with command and additional parameters (something like vmrun -h 'host'
 def vmware_prepare_command(options, add_login_params, additional_params):
-	res = options["-e"]
+	res = options["--exec"]
 
 	if (add_login_params):
 		if (vmware_internal_type==VMWARE_TYPE_ESX):
-			res += " --server '%s' --username '%s' --password '%s' "% (quote_for_run(options["-a"]),
-										quote_for_run(options["-l"]),
-										quote_for_run(options["-p"]))
+			res += " --server '%s' --username '%s' --password '%s' "% (quote_for_run(options["--ip"]),
+										quote_for_run(options["--username"]),
+										quote_for_run(options["--password"]))
 		elif (vmware_internal_type==VMWARE_TYPE_SERVER2):
-			res += " -h 'https://%s/sdk' -u '%s' -p '%s' -T server "% (quote_for_run(options["-a"]),
-										quote_for_run(options["-l"]),
-										quote_for_run(options["-p"]))
+			res += " -h 'https://%s/sdk' -u '%s' -p '%s' -T server "% (quote_for_run(options["--ip"]),
+										quote_for_run(options["--username"]),
+										quote_for_run(options["--password"]))
 		elif (vmware_internal_type==VMWARE_TYPE_SERVER1):
-			host_name_array = options["-a"].split(':')
+			host_name_array = options["--ip"].split(':')
 
 			res += " -h '%s' -u '%s' -p '%s' -T server1 "% (quote_for_run(host_name_array[0]),
-								     quote_for_run(options["-l"]),
-								     quote_for_run(options["-p"]))
+								     quote_for_run(options["--username"]),
+								     quote_for_run(options["--password"]))
 			if (len(host_name_array)>1):
 				res += "-P '%s' "% (quote_for_run(host_name_array[1]))
 
-	if ((options.has_key("-s")) and (vmware_internal_type==VMWARE_TYPE_ESX)):
-		res += "--datacenter '%s' "% (quote_for_run(options["-s"]))
+	if ((options.has_key("--vmware-datacenter")) and (vmware_internal_type==VMWARE_TYPE_ESX)):
+		res += "--datacenter '%s' "% (quote_for_run(options["--vmware-datacenter"]))
 
 	if (additional_params != ""):
 		res += additional_params
@@ -148,18 +148,18 @@ def vmware_run_command(options, add_login_params, additional_params, additional_
 	try:
 		vmware_log(options, command)
 
-		(res_output, res_code) = pexpect.run(command, int(options["-Y"])+int(options["-y"])+additional_timeout, True)
+		(res_output, res_code) = pexpect.run(command, int(options["--shell-timeout"])+int(options["--login-timeout"])+additional_timeout, True)
 
 		if (res_code==None):
 			fail(EC_TIMED_OUT)
 		if ((res_code!=0) and (add_login_params)):
 			vmware_log(options, res_output)
-			fail_usage("%s returned %s"% (options["-e"], res_output))
+			fail_usage("%s returned %s"% (options["--exec"], res_output))
 		else:
 			vmware_log(options, res_output)
 
 	except pexpect.ExceptionPexpect:
-		fail_usage("Cannot run command %s"% (options["-e"]))
+		fail_usage("Cannot run command %s"% (options["--exec"]))
 
 	return res_output
 
@@ -169,9 +169,9 @@ def vmware_get_outlets_vi(conn, options, add_vm_name):
 	outlets = {}
 
 	if (add_vm_name):
-		all_machines = vmware_run_command(options, True, ("--operation status --vmname '%s'"% (quote_for_run(options["-n"]))), 0)
+		all_machines = vmware_run_command(options, True, ("--operation status --vmname '%s'"% (quote_for_run(options["--plug"]))), 0)
 	else:
-		all_machines = vmware_run_command(options, True, "--operation list", int(options["-g"]))
+		all_machines = vmware_run_command(options, True, "--operation list", int(options["--power-timeout"]))
 
 	all_machines_array = all_machines.splitlines()
 
@@ -222,22 +222,22 @@ def get_power_status(conn, options):
 		outlets = get_outlets_status(conn, options)
 
 	if ((vmware_internal_type==VMWARE_TYPE_SERVER2) or (vmware_internal_type==VMWARE_TYPE_ESX)):
-		if (not (options["-n"] in outlets)):
+		if (not (options["--plug"] in outlets)):
 			fail_usage("Failed: You have to enter existing name of virtual machine!")
 		else:
-			return outlets[options["-n"]][1]
+			return outlets[options["--plug"]][1]
 	elif (vmware_internal_type==VMWARE_TYPE_SERVER1):
-		return ((options["-n"] in outlets) and "on" or "off")
+		return ((options["--plug"] in outlets) and "on" or "off")
 
 def set_power_status(conn, options):
 	if (vmware_internal_type==VMWARE_TYPE_ESX):
-		additional_params = "--operation %s --vmname '%s'"% ((options["-o"]=="on" and "on" or "off"), quote_for_run(options["-n"]))
+		additional_params = "--operation %s --vmname '%s'"% ((options["--action"]=="on" and "on" or "off"), quote_for_run(options["--plug"]))
 	elif ((vmware_internal_type==VMWARE_TYPE_SERVER1) or (vmware_internal_type==VMWARE_TYPE_SERVER2)):
-		additional_params = "%s '%s'"% ((options["-o"]=="on" and "start" or "stop"), quote_for_run(options["-n"]))
-		if (options["-o"]=="off"):
+		additional_params = "%s '%s'"% ((options["--action"]=="on" and "start" or "stop"), quote_for_run(options["--plug"]))
+		if (options["--action"]=="off"):
 			additional_params += " hard"
 
-	vmware_run_command(options, True, additional_params, int(options["-g"]))
+	vmware_run_command(options, True, additional_params, int(options["--power-timeout"]))
 
 # Returns True, if user uses supported vmrun version (currently >=2.0.0) otherwise False.
 def vmware_is_supported_vmrun_version(options):
@@ -257,24 +257,24 @@ def vmware_is_supported_vmrun_version(options):
 	return True
 
 # Check vmware type, set vmware_internal_type to one of VMWARE_TYPE_ value and
-# options["-e"] to path (if not specified)
+# options["--exec"] to path (if not specified)
 def vmware_check_vmware_type(options):
 	global vmware_internal_type
 
-	options["-d"] = options["-d"].lower()
+	options["--vmware-type"] = options["--vmware-type"].lower()
 
-	if (options["-d"]=="esx"):
+	if (options["--vmware-type"]=="esx"):
 		vmware_internal_type = VMWARE_TYPE_ESX
-		if (not options.has_key("-e")):
-			options["-e"] = VMHELPER_COMMAND
-	elif (options["-d"]=="server2"):
+		if (not options.has_key("--exec")):
+			options["--exec"] = VMHELPER_COMMAND
+	elif (options["--vmware-type"]=="server2"):
 		vmware_internal_type = VMWARE_TYPE_SERVER2
-		if (not options.has_key("-e")):
-			options["-e"] = VMRUN_COMMAND
-	elif (options["-d"]=="server1"):
+		if (not options.has_key("--exec")):
+			options["--exec"] = VMRUN_COMMAND
+	elif (options["--vmware-type"]=="server1"):
 		vmware_internal_type = VMWARE_TYPE_SERVER1
-		if (not options.has_key("-e")):
-			options["-e"] = VMRUN_COMMAND
+		if (not options.has_key("--exec")):
+			options["--exec"] = VMRUN_COMMAND
 	else:
 		fail_usage("vmware_type can be esx,server2 or server1!")
 

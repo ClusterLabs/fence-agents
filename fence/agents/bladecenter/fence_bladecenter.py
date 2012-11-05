@@ -23,40 +23,40 @@ BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):
-	node_cmd = "system:blade\[" + options["-n"] + "\]>"
+	node_cmd = "system:blade\[" + options["--plug"] + "\]>"
 
-	conn.send_eol("env -T system:blade[" + options["-n"] + "]")
-	i = conn.log_expect(options, [ node_cmd, "system>" ] , int(options["-Y"]))
+	conn.send_eol("env -T system:blade[" + options["--plug"] + "]")
+	i = conn.log_expect(options, [ node_cmd, "system>" ] , int(options["--shell-timeout"]))
 	if i == 1:
 		## Given blade number does not exist
-		if options.has_key("-M"):
+		if options.has_key("--missing-as-off"):
 			return "off"
 		else:
 			fail(EC_STATUS)
 	conn.send_eol("power -state")
-	conn.log_expect(options, node_cmd, int(options["-Y"]))
+	conn.log_expect(options, node_cmd, int(options["--shell-timeout"]))
 	status = conn.before.splitlines()[-1]
 	conn.send_eol("env -T system")
-	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 	return status.lower().strip()
 
 def set_power_status(conn, options):
-	node_cmd = "system:blade\[" + options["-n"] + "\]>"
+	node_cmd = "system:blade\[" + options["--plug"] + "\]>"
 
-	conn.send_eol("env -T system:blade[" + options["-n"] + "]")
-	i = conn.log_expect(options, [ node_cmd, "system>" ] , int(options["-Y"]))
+	conn.send_eol("env -T system:blade[" + options["--plug"] + "]")
+	i = conn.log_expect(options, [ node_cmd, "system>" ] , int(options["--shell-timeout"]))
 	if i == 1:
 		## Given blade number does not exist
-		if options.has_key("-M"):
+		if options.has_key("--missing-as-off"):
 			return
 		else:
 			fail(EC_GENERIC_ERROR)
 
-	conn.send_eol("power -"+options["-o"])
-	conn.log_expect(options, node_cmd, int(options["-Y"]))
+	conn.send_eol("power -"+options["--action"])
+	conn.log_expect(options, node_cmd, int(options["--shell-timeout"]))
 	conn.send_eol("env -T system")
-	conn.log_expect(options, options["-c"], int(options["-Y"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 def get_blades_list(conn, options):
 	outlets = { }
@@ -64,9 +64,9 @@ def get_blades_list(conn, options):
 	node_cmd = "system>"
 
 	conn.send_eol("env -T system")
-	conn.log_expect(options, node_cmd, int(options["-Y"]))
+	conn.log_expect(options, node_cmd, int(options["--shell-timeout"]))
 	conn.send_eol("list -l 2")
-	conn.log_expect(options, node_cmd, int(options["-Y"]))
+	conn.log_expect(options, node_cmd, int(options["--shell-timeout"]))
 
 	lines = conn.before.split("\r\n")
 	filter_re = re.compile("^\s*blade\[(\d+)\]\s+(.*?)\s*$")
