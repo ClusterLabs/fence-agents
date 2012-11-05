@@ -290,6 +290,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/wti/Makefile
 		 fence/agents/xcat/Makefile
 		 fence/agents/xenapi/Makefile
+		 fence/agents/hds_cb/Makefile
 		 fence/agents/zvm/Makefile
 		 doc/Makefile])
 
