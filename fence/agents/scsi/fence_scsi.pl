@@ -746,7 +746,7 @@ sub print_metadata ()
     print "\t</parameter>\n";
     print "</parameters>\n";
     print "<actions>\n";
-    print "\t<action name=\"on\"/>\n";
+    print "\t<action name=\"on\" on_target=\"true\"/>\n";
     print "\t<action name=\"off\"/>\n";
     print "\t<action name=\"status\"/>\n";
     print "\t<action name=\"metadata\"/>\n";
@@ -760,17 +760,16 @@ sub print_metadata ()
 
 if (@ARGV > 0) {
     getopts ("ad:f:hk:n:o:qV") or print_usage;
-
     print_usage if (defined $opt_h);
     print_version if (defined $opt_V);
-
-    ## handle the metadata action here to avoid other parameter checks
-    ##
-    if ($opt_o =~ /^metadata$/i) {
-	print_metadata;
-    }
 } else {
     get_options_stdin ();
+}
+
+## handle the metadata action here to avoid other parameter checks
+##
+if ($opt_o =~ /^metadata$/i) {
+    print_metadata;
 }
 
 ## if the logfile (-f) parameter was specified, open the logfile
