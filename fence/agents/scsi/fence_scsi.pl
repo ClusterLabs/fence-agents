@@ -746,7 +746,7 @@ sub print_metadata ()
     print "\t</parameter>\n";
     print "</parameters>\n";
     print "<actions>\n";
-    print "\t<action name=\"on\" on_target=\"true\"/>\n";
+    print "\t<action name=\"on\" on_target=\"1\"/>\n";
     print "\t<action name=\"off\"/>\n";
     print "\t<action name=\"status\"/>\n";
     print "\t<action name=\"metadata\"/>\n";
