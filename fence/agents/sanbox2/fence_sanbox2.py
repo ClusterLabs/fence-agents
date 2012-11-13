@@ -100,8 +100,7 @@ def get_list_devices(conn, options):
 	return outlets
 
 def main():
-	device_opt = [  "fabric_fencing", "ipaddr", "login", "passwd", "passwd_script",
-			"cmd_prompt", "port", "ipport", "separator" ]
+	device_opt = [ "fabric_fencing", "ipaddr", "ipport", "login", "passwd", "cmd_prompt", "port" ]
 
 	atexit.register(atexit_handler)
 

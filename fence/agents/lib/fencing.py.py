@@ -401,8 +401,17 @@ all_opt = {
 		"order" : 205}
 }
 
-COMMON_OPT = [ "help", "debug", "verbose", "quiet", "version", "action", "agent", 
-		"power_timeout", "shell_timeout", "login_timeout", "power_wait", "retry_on", "delay" ]
+# options which are added automatically if 'key' is encountered ("default" is always added)
+DEPENDENCY_OPT = {
+		"default" : [ "help", "debug", "verbose", "quiet", "version", "action", "agent", \
+			"power_timeout", "shell_timeout", "login_timeout", "power_wait", "retry_on", "delay" ],
+		"passwd" : [ "passwd_script" ],
+		"secure" : [ "identity_file" ],
+		"ipaddr" : [ "inet4_only", "inet6_only" ],
+		"port" : [ "separator" ],
+		"community" : [ "snmp_auth_prot", "snmp_sec_level", "snmp_priv_prot", \
+			"snmp_priv_passwd", "snmp_priv_passwd_script" ]
+	}
 
 class fspawn(pexpect.spawn):
 	def __init__(self, options, command):
@@ -426,6 +435,15 @@ def atexit_handler():
 	except IOError:
 		sys.stderr.write("%s failed to close standard output\n"%(sys.argv[0]))
 		sys.exit(EC_GENERIC_ERROR)
+
+def add_dependency_options(options):
+	## Add options which are available for every fence agent
+	added_opt = [] 
+	for x in options + ["default"]:
+		if DEPENDENCY_OPT.has_key(x):
+			added_opt.extend([y for y in DEPENDENCY_OPT[x] if options.count(y) == 0])
+	return added_opt
+
 
 def version(command, release, build_date, copyright_notice):
 	print command, " ", release, " ", build_date
@@ -527,10 +545,7 @@ def metadata(avail_opt, options, docs):
 	print "</resource-agent>"
 
 def process_input(avail_opt):
-	##
-	## Add options which are available for every fence agent
-	#####
-	avail_opt.extend(COMMON_OPT)
+	avail_opt.extend(add_dependency_options(avail_opt))
 
 	##
 	## Set standard environment
@@ -641,10 +656,8 @@ def process_input(avail_opt):
 ## password script to set a correct password
 ######
 def check_input(device_opt, opt):
-	##
-	## Add options which are available for every fence agent
-	#####
-	device_opt.extend([x for x in COMMON_OPT if device_opt.count(x) == 0])
+
+	device_opt.extend(add_dependency_options(device_opt))
 	
 	options = dict(opt)
 	options["device_opt"] = device_opt

@@ -156,8 +156,7 @@ def set_power_status(conn, options):
 		conn.service.PowerOffVM_Task(mo_machine)	
 
 def main():
-	device_opt = [  "ipaddr", "login", "passwd", "passwd_script",
-			"ssl", "port", "uuid", "separator", "ipport" ]
+	device_opt = [ "ipaddr", "ipport", "login", "passwd", "ssl", "port", "uuid" ]
 
 	atexit.register(atexit_handler)
 

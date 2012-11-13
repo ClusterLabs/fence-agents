@@ -69,9 +69,8 @@ def get_list_devices(conn, options):
 	return outlets
 	
 def main():
-	device_opt = [  "ipaddr", "login", "passwd", "passwd_script",
-			"cmd_prompt", "secure", "identity_file", "drac_version", "module_name",
-			"separator", "inet4_only", "inet6_only", "ipport" ]
+	device_opt = [  "ipaddr", "ipport", "login", "passwd", "cmd_prompt", "secure", \
+			"drac_version", "module_name" ]
 
 	atexit.register(atexit_handler)
 

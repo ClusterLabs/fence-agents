@@ -69,9 +69,8 @@ def set_power_status(conn, options):
 	conn.log_expect(options, COMMAND_PROMPT_REG, int(options["--power-timeout"]))
 		
 def main():
-	device_opt = [  "ipaddr", "login", "passwd", "passwd_script",
-			"secure",  "identity_file", "test" , "port", "cmd_prompt",
-			"separator", "inet4_only", "inet6_only", "ipport" ]
+	device_opt = [  "ipaddr", "ipport", "login", "passwd", "cmd_prompt", "secure", \
+			"port", "test" ]
 
 	atexit.register(atexit_handler)
 

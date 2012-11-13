@@ -280,9 +280,8 @@ def vmware_check_vmware_type(options):
 
 # Main agent method
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "passwd_script",
-		       "test", "port", "separator", "exec", "vmware_type",
-		       "vmware_datacenter", "secure", "identity_file" ]
+	device_opt = [ "ipaddr", "login", "passwd", "secure",
+		       "test", "exec", "vmware_type", "vmware_datacenter"]
 
 	atexit.register(atexit_handler)
 

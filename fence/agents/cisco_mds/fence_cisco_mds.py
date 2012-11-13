@@ -77,11 +77,8 @@ def get_outlets_status(conn, options):
 def main():
 	global PORT_OID
 
-	device_opt = [ "fabric_fencing", "ipaddr", "login", "passwd", "passwd_script",
-		       "test", "port", "separator", "no_login", "no_password",
-		       "snmp_version", "community", "snmp_auth_prot", "snmp_sec_level",
-		       "snmp_priv_prot", "snmp_priv_passwd", "snmp_priv_passwd_script",
-		       "udpport", "inet4_only", "inet6_only" ]
+	device_opt = [ "fabric_fencing", "ipaddr", "udpport", "login", "passwd", "no_login", "no_password", \
+		       "test", "port", "snmp_version", "community" ]
 
 	atexit.register(atexit_handler)
 

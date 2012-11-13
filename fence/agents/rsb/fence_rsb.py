@@ -37,9 +37,7 @@ def set_power_status(conn, options):
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 def main():
-	device_opt = [  "ipaddr", "login", "passwd", "passwd_script",
-			"secure", "identity_file", "separator", "cmd_prompt",
-			"inet4_only", "inet6_only", "ipport", "telnet_port" ]
+	device_opt = [ "ipaddr", "ipport", "telnet_port", "login", "passwd", "secure", "cmd_prompt" ]
 
 	atexit.register(atexit_handler)
 	all_opt["telnet_port"] = {

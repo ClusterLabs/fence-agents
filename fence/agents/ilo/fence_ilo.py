@@ -53,8 +53,7 @@ def set_power_status(conn, options):
 	return
 
 def main():
-	device_opt = [  "ipaddr", "login", "passwd", "passwd_script",
-			"ssl", "ribcl", "inet4_only", "inet6_only", "ipport" ]
+	device_opt = [ "ipaddr", "ipport", "login", "passwd", "ssl", "ribcl" ]
 
 	atexit.register(atexit_handler)
 

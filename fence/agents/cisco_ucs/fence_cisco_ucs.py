@@ -97,9 +97,8 @@ def send_command(opt, command, timeout):
 	return result
 
 def main():
-	device_opt = [  "ipaddr", "login", "passwd", "passwd_script",
-			"ssl", "inet4_only", "inet6_only", "ipport", "port", 
-			"web", "separator", "suborg" ]
+	device_opt = [  "ipaddr", "ipport", "login", "passwd", "ssl", \
+			"port", "web", "suborg" ]
 
 	atexit.register(atexit_handler)
 	
