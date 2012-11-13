@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, getopt, time, os
+import sys, getopt, time, os, uuid
 import pexpect, re, atexit
 import __main__
 
@@ -194,10 +194,10 @@ all_opt = {
 	"port" : {
 		"getopt" : "n:",
 		"longopt" : "plug",
-		"help" : "-n, --plug=<id>                Physical plug number on device or\n" + 
-        "                                        name of virtual machine",
+		"help" : "-n, --plug=<id>                Physical plug number on device, \n" + 
+        "                                        name of virtual machine or UUID",
 		"required" : "1",
-		"shortdesc" : "Physical plug number or name of virtual machine",
+		"shortdesc" : "Physical plug number, name of virtual machine or UUID",
 		"order" : 1 },
 	"switch" : {
 		"getopt" : "s:",
@@ -697,6 +697,17 @@ def check_input(device_opt, opt):
 		options["--action"] = "on"
 	if options["--action"] == "disable":
 		options["--action"] = "off"
+
+	# UUID is now only alias for --plug; because we can detect it automatically
+	if options.has_key("--uuid"):
+		options["--plug"] == options["--uuid"]
+		del options["--uuid"]
+
+	## automatic detection and set of valid UUID from --plug
+	try:
+		options["--uuid"] = str(uuid.UUID(options["--plug"]))
+	except ValueError:
+		pass
 		
 	if (0 == options.has_key("--username")) and device_opt.count("login") and (device_opt.count("no_login") == 0):
 		fail_usage("Failed: You have to set login name")
@@ -720,7 +731,7 @@ def check_input(device_opt, opt):
 			fail_usage("Failed: Identity file " + options["--identity-file"] + " does not exist")
 
 	if (0 == ["list", "monitor"].count(options["--action"].lower())) and \
-		(0 == options.has_key("--plug") and 0 == options.has_key("--uuid")) and (device_opt.count("port")):
+		0 == options.has_key("--plug") and device_opt.count("port"):
 		fail_usage("Failed: You have to enter plug number")
 
 	if options.has_key("--password-script"):
@@ -789,7 +800,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 		#####
 		if (options["--action"] == "list") and \
 			0 == options["device_opt"].count("port") and 0 == options["device_opt"].count("partition") and \
-			0 == options["device_opt"].count("uuid") and 0 == options["device_opt"].count("module_name"):
+			0 == options["device_opt"].count("module_name"):
 			print "N/A"
 			return
 		elif (options["--action"] == "list" and get_outlet_list == None):
