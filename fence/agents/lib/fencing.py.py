@@ -690,7 +690,7 @@ def check_input(device_opt, opt):
 		options["log"] = LOG_MODE_QUIET
 
 	acceptable_actions = [ "on", "off", "status", "list", "monitor" ]
-	if 0 == device_opt.count("fabric_fencing"):
+	if 1 == device_opt.count("fabric_fencing"):
 		## Compatibility layer
 		#####
 		acceptable_actions.extend(["enable", "disable"])
