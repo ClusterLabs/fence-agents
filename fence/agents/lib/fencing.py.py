@@ -222,7 +222,7 @@ all_opt = {
 		"order" : 1 },
 	"managed" : {
 		"getopt" : "s:",
-		"longopt" : "managed"
+		"longopt" : "managed",
 		"help" : "-s, --managed=<id>             Name of the managed system",
 		"required" : "0",
 		"shortdesc" : "Managed system name",
