@@ -123,10 +123,7 @@ used with Cisco UCS to fence machines."
 	##
 	## Modify suborg to format /suborg
 	if options["--suborg"] != "":
-		if options["--suborg"].startswith("/") == False:
-			options["--suborg"] = "/" + options["--suborg"]
-		if options["--suborg"].endswith("/") == True:
-			options["--suborg"] = options["--suborg"][0:-1]
+		options["--suborg"] = "/" + options["--suborg"].lstrip("/").rstrip("/")
 
 	##
 	## Fence operations
