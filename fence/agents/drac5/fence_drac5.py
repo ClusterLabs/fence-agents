@@ -67,12 +67,23 @@ def get_list_devices(conn, options):
 		print "N/A"
 
 	return outlets
-	
+
+def define_new_opts():
+	all_opt["drac_version"] = {
+		"getopt" : "d:",
+		"longopt" : "drac-version",
+		"help" : "-d, --drac-version=<version>   Force DRAC version to use",
+		"required" : "0",
+		"shortdesc" : "Force DRAC version to use",
+		"order" : 1 }
+
 def main():
 	device_opt = [  "ipaddr", "ipport", "login", "passwd", "cmd_prompt", "secure", \
 			"drac_version", "module_name" ]
 
 	atexit.register(atexit_handler)
+
+	define_new_opts()
 
 	all_opt["cmd_prompt"]["default"] = [ "\$" ]
 

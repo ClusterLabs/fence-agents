@@ -52,10 +52,21 @@ def set_power_status(conn, options):
 
 	return
 
+def define_new_opts():
+	all_opt["ribcl"] = {
+		"getopt" : "r:",
+		"longopt" : "ribcl-version",
+		"help" : "-r, --ribcl-version=<version>  Force ribcl version to use",
+		"required" : "0",
+		"shortdesc" : "Force ribcl version to use",
+		"order" : 1 }
+
 def main():
 	device_opt = [ "ipaddr", "ipport", "login", "passwd", "ssl", "ribcl" ]
 
 	atexit.register(atexit_handler)
+
+	define_new_opts()
 
 	all_opt["login_timeout"]["default"] = "10"
 	all_opt["retry_on"]["default"] = "3"

@@ -99,11 +99,30 @@ def get_lpar_list(conn, options):
 
 	return outlets
 
+def define_new_opts():
+	all_opt["managed"] = {
+		"getopt" : "s:",
+		"longopt" : "managed",
+		"help" : "-s, --managed=<id>             Name of the managed system",
+		"required" : "0",
+		"shortdesc" : "Managed system name",
+		"order" : 1 }
+	all_opt["hmc_version"] = {
+		"getopt" : "H:",
+		"longopt" : "hmc-version",
+		"help" : "-H, --hmc-version=<version>    Force HMC version to use: 3, 4 (default)",
+		"required" : "0",
+		"shortdesc" : "Force HMC version to use (3 or 4)",
+		"default" : "4", 
+		"order" : 1 }
+
 def main():
 	device_opt = [  "ipaddr", "ipport", "login", "passwd", "secure", "cmd_prompt", \
 	                "partition", "managed", "hmc_version" ]
 
 	atexit.register(atexit_handler)
+
+	define_new_opts()
 
 	all_opt["login_timeout"]["default"] = "15"
 	all_opt["secure"]["default"] = "1"

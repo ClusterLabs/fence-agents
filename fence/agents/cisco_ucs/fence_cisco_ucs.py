@@ -96,11 +96,23 @@ def send_command(opt, command, timeout):
 
 	return result
 
+def define_new_opts():
+	all_opt["suborg"] = {
+		"getopt" : "s:",
+		"longopt" : "suborg",
+		"help" : "--suborg=<path>                Additional path needed to access suborganization",
+		"required" : "0",
+		"shortdesc" : "Additional path needed to access suborganization",
+		"default" : "",
+		"order" : 1 }
+
 def main():
 	device_opt = [  "ipaddr", "ipport", "login", "passwd", "ssl", \
 			"port", "web", "suborg" ]
 
 	atexit.register(atexit_handler)
+
+	define_new_opts()
 	
 	options = check_input(device_opt, process_input(device_opt))
 
