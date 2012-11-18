@@ -40,11 +40,10 @@ def main():
 
 	all_opt["login_timeout"]["default"] = 10
 	all_opt["cmd_prompt"]["default"] = [ ">" ]
+	# This device will not allow us to login even with LANG=C
+	all_opt["ssh_options"]["default"] = "-F /dev/null"
 
 	options = check_input(device_opt, process_input(device_opt))
-
-	# This device will not allow us to login even with LANG=C
-	options["ssh_options"] = "-F /dev/null"
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for IBM RSA"

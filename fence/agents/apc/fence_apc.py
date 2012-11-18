@@ -180,9 +180,9 @@ def main():
 	atexit.register(atexit_handler)
 
 	all_opt["cmd_prompt"]["default"] = "\n>"
+	all_opt["ssh_options"]["default"] = "-1 -c blowfish"
 
 	options = check_input(device_opt, process_input(device_opt))
-	options["ssh_options"] = "-1 -c blowfish"
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for APC over telnet/ssh"

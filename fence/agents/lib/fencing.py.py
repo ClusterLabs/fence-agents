@@ -184,6 +184,13 @@ all_opt = {
 		"shortdesc" : "SSH connection",
 		"required" : "0",
 		"order" : 1 },
+	"ssh_options" : {
+		"getopt" : "X:",
+		"longopt" : "ssh-options",
+		"help" : "--ssh-options=<options>	SSH options to use",
+		"shortdesc" : "SSH options to use",
+		"required" : "0",
+		"order" : 1 },
 	"ssl" : {
 		"getopt" : "z",
 		"longopt" : "ssl",
@@ -408,7 +415,7 @@ DEPENDENCY_OPT = {
 		"default" : [ "help", "debug", "verbose", "quiet", "version", "action", "agent", \
 			"power_timeout", "shell_timeout", "login_timeout", "power_wait", "retry_on", "delay" ],
 		"passwd" : [ "passwd_script" ],
-		"secure" : [ "identity_file" ],
+		"secure" : [ "identity_file", "ssh_options" ],
 		"ipaddr" : [ "inet4_only", "inet6_only" ],
 		"port" : [ "separator" ],
 		"community" : [ "snmp_auth_prot", "snmp_sec_level", "snmp_priv_prot", \
@@ -942,8 +949,8 @@ def fence_login(options):
 				sys.exit(EC_GENERIC_ERROR)
 		elif options.has_key("--ssh") and 0 == options.has_key("--identity-file"):
 			command = '%s %s %s@%s -p %s' % (SSH_PATH, force_ipvx, options["--username"], options["--ip"], options["--ipport"])
-			if options.has_key("ssh_options"):
-				command += ' ' + options["ssh_options"]
+			if options.has_key("--ssh-options"):
+				command += ' ' + options["--ssh-options"]
 			try:
 				conn = fspawn(options, command)
 			except pexpect.ExceptionPexpect, ex:
@@ -971,8 +978,8 @@ def fence_login(options):
 			conn.log_expect(options, options["--command-prompt"], int(options["--login-timeout"]))
 		elif options.has_key("--ssh") and options.has_key("--identity-file"):
 			command = '%s %s %s@%s -i %s -p %s' % (SSH_PATH, force_ipvx, options["--username"], options["--ip"], options["--identity-file"], options["--ipport"])
-			if options.has_key("ssh_options"):
-				command += ' ' + options["ssh_options"]
+			if options.has_key("--ssh-options"):
+				command += ' ' + options["--ssh-options"]
 			try:
 				conn = fspawn(options, command)
 			except pexpect.ExceptionPexpect, ex:
