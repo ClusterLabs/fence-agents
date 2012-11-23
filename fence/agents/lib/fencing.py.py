@@ -222,7 +222,8 @@ all_opt = {
 		"order" : 1 },
 	"managed" : {
 		"getopt" : "s:",
-		"help" : "-s <id>                        Name of the managed system",
+		"longopt" : "managed"
+		"help" : "-s, --managed=<id>             Name of the managed system",
 		"required" : "0",
 		"shortdesc" : "Managed system name",
 		"order" : 1 },
@@ -503,15 +504,15 @@ def metadata(avail_opt, options, docs):
 			default = ""
 			if all_opt[option].has_key("default"):
 				default = "default=\""+str(all_opt[option]["default"])+"\""
-			elif options.has_key("-" + all_opt[option]["getopt"][:-1]):
-				if options["-" + all_opt[option]["getopt"][:-1]]:
+			elif options.has_key("--" + all_opt[option]["longopt"]) and all_opt[option]["getopt"].endswith(":"):
+				if options["--" + all_opt[option]["longopt"]]:
 					try:
-						default = "default=\"" + options["-" + all_opt[option]["getopt"][:-1]] + "\""
+						default = "default=\"" + options["--" + all_opt[option]["longopt"]] + "\""
 					except TypeError:
 						## @todo/@note: Currently there is no clean way how to handle lists
 						## we can create a string from it but we can't set it on command line
-						default = "default=\"" + str(options["-" + all_opt[option]["getopt"][:-1]]) +"\""
-			elif options.has_key("-" + all_opt[option]["getopt"]):
+						default = "default=\"" + str(options["--" + all_opt[option]["longopt"]]) +"\""
+			elif options.has_key("--" + all_opt[option]["longopt"]):
 				default = "default=\"true\" "
 
 			mixed = all_opt[option]["help"]
@@ -584,7 +585,7 @@ def process_input(avail_opt):
 		except getopt.GetoptError, error:
 			fail_usage("Parse error: " + error.msg)
 
-		## Transform longopt to short one which are used in fencing agents
+		## Transform short getopt to long one which are used in fencing agents
 		#####
 		old_opt = opt
 		opt = { }
@@ -592,7 +593,6 @@ def process_input(avail_opt):
 			if o.startswith("--"):
 				for x in all_opt.keys():
 					if all_opt[x].has_key("longopt") and "--" + all_opt[x]["longopt"] == o:
-						opt["-" + all_opt[x]["getopt"].rstrip(":")] = dict(old_opt)[o]
 						opt["--" + all_opt[x]["longopt"]] = dict(old_opt)[o]
 			else:
 				for x in all_opt.keys():
@@ -645,9 +645,9 @@ def process_input(avail_opt):
 				continue
 
 			if all_opt[name]["getopt"].endswith(":"):
-				opt["-"+all_opt[name]["getopt"].rstrip(":")] = value
-			elif ((value == "1") or (value.lower() == "yes") or (value.lower() == "on") or (value.lower() == "true")):
-				opt["-"+all_opt[name]["getopt"]] = "1"
+				opt["--"+all_opt[name]["longopt"].rstrip(":")] = value
+			elif value.lower() in [ "1", "yes", "on", "true" ]:
+				opt["--"+all_opt[name]["longopt"]] = "1"
 	return opt
 
 ##
@@ -671,22 +671,18 @@ def check_input(device_opt, opt):
 
 	## In special cases (show help, metadata or version) we don't need to check anything
 	#####
-	if options.has_key("-h") or options.has_key("-V") or (options.has_key("--action") and options["--action"].lower() == "metadata"):
+	if options.has_key("--help") or options.has_key("--version") or (options.has_key("--action") and options["--action"].lower() == "metadata"):
 		return options
 
 	## Set default values
 	#####
 	for opt in device_opt:
 		if all_opt[opt].has_key("default"):
-			getopt_short = "-" + all_opt[opt]["getopt"].rstrip(":")
 			getopt_long  = "--" + all_opt[opt]["longopt"]
-			if 0 == options.has_key(getopt_short):
-				options[getopt_short] = all_opt[opt]["default"]
 			if 0 == options.has_key(getopt_long):
 				options[getopt_long] = all_opt[opt]["default"]
 
 	options["--action"] = options["--action"].lower()
-	options["-o"] = options["-o"].lower()
 
 	if options.has_key("--verbose"):
 		options["log"] = LOG_MODE_VERBOSE
@@ -725,7 +721,7 @@ def check_input(device_opt, opt):
 	if (0 == options.has_key("--username")) and device_opt.count("login") and (device_opt.count("no_login") == 0):
 		fail_usage("Failed: You have to set login name")
 
-	if 0 == options.has_key("--ip") and 0 == options.has_key("-s"):
+	if 0 == options.has_key("--ip") and 0 == options.has_key("--managed"):
 		fail_usage("Failed: You have to enter fence address")
 
 	if (device_opt.count("no_password") == 0):

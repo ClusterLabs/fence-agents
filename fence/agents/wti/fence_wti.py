@@ -111,7 +111,7 @@ is running because the connection will block any necessary fencing actions."
 			try:
 				conn = fspawn(options, TELNET_PATH)
 				conn.send("set binary\n")
-				conn.send("open %s -%s\n"%(options["--ip"], options["-u"]))
+				conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
 			except pexpect.ExceptionPexpect, ex:
 				sys.stderr.write(str(ex) + "\n")
 				sys.stderr.write("Due to limitations, binary dependencies on fence agents "

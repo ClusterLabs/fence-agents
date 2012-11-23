@@ -52,11 +52,11 @@ def main():
 
 	opt = process_input(device_opt)
 	# option -n for backward compatibility (-n is normally port no)
-	if 1 == opt.has_key("-n"):
-		opt["-u"] = opt["-n"]
+	if 1 == opt.has_key("--telnet_port"):
+		opt["--port"] = opt["--telnet_port"]
 
 	# set default port for telnet only
-	if 0 == opt.has_key("-x") and 0 == opt.has_key("-u"):
+	if 0 == opt.has_key("--ssh") and 0 == opt.has_key("--ipport"):
 		opt["--ipport"] = 3172
 	options = check_input(device_opt, opt)
 

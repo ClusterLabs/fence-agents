@@ -18,7 +18,7 @@ RE_GET_DESC = re.compile(" descr=\"(.*?)\"", re.IGNORECASE)
 
 def get_power_status(conn, options):
 	res = send_command(options, \
-		"<configResolveDn cookie=\"" + options["cookie"] + "\" inHierarchical=\"false\" dn=\"org-root" + options["-s"] + \
+		"<configResolveDn cookie=\"" + options["cookie"] + "\" inHierarchical=\"false\" dn=\"org-root" + options["--suborg"] + \
 		"/ls-" + options["--plug"] + "/power\"/>", \
 		 int(options["--shell-timeout"]))
 
@@ -41,7 +41,7 @@ def set_power_status(conn, options):
 	
 	res = send_command(options, \
 		"<configConfMos cookie=\"" + options["cookie"] + "\" inHierarchical=\"no\">" + \
-		"<inConfigs><pair key=\"org-root" + options["-s"] + "/ls-" + options["--plug"] + "/power\">" + \
+		"<inConfigs><pair key=\"org-root" + options["--suborg"] + "/ls-" + options["--plug"] + "/power\">" + \
 		"<lsPower dn=\"org-root/ls-" + options["--plug"] + "/power\" state=\"" + action + "\" status=\"modified\" />" + \
 		"</pair></inConfigs></configConfMos>", \
 		int(options["--shell-timeout"]))
@@ -70,12 +70,12 @@ def get_list(conn, options):
 
 def send_command(opt, command, timeout):
 	## setup correct URL
-	if opt.has_key("-z"):
+	if opt.has_key("--ssl"):
 		url = "https:"
 	else:
 		url = "http:"
 
-	url += "//" + opt["-a"] + ":" + str(opt["-u"]) + "/nuova"
+	url += "//" + opt["--ip"] + ":" + str(opt["--ipport"]) + "/nuova"
 
 	## send command through pycurl
 	c = pycurl.Curl()
@@ -122,11 +122,11 @@ used with Cisco UCS to fence machines."
 
 	##
 	## Modify suborg to format /suborg
-	if options["-s"] != "":
-		if options["-s"].startswith("/") == False:
-			options["-s"] = "/" + options["-s"]
-		if options["-s"].endswith("/") == True:
-			options["-s"] = options["-s"][0:-1]
+	if options["--suborg"] != "":
+		if options["--suborg"].startswith("/") == False:
+			options["--suborg"] = "/" + options["--suborg"]
+		if options["--suborg"].endswith("/") == True:
+			options["--suborg"] = options["--suborg"][0:-1]
 
 	##
 	## Fence operations

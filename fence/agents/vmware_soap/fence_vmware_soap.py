@@ -19,7 +19,7 @@ def soap_login(options):
 	else:
 		url = "http://"
 	
-	url += options["--ip"] + ":" + str(options["-u"]) + "/sdk"
+	url += options["--ip"] + ":" + str(options["--ipport"]) + "/sdk"
 	conn = Client(url + "/vimService.wsdl")
 	conn.set_options(location = url)
 

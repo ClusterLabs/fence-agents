@@ -25,9 +25,9 @@ def eps_log(options, str):
 def eps_run_command(options, params):
 	try:
 		# New http connection
-		conn = httplib.HTTPConnection(options["-a"])
+		conn = httplib.HTTPConnection(options["--ip"])
 
-		request_str = "/"+options["-c"]
+		request_str = "/"+options["--page"]
 
 		if (params!=""):
 			request_str += "?"+params
@@ -35,12 +35,12 @@ def eps_run_command(options, params):
 		eps_log(options, "GET "+request_str+"\n")
 		conn.putrequest('GET', request_str)
 
-		if (options.has_key("-l")):
-			if (not options.has_key("-p")):
-				options["-p"] = "" # Default is empty password
+		if (options.has_key("--login")):
+			if (not options.has_key("--password")):
+				options["--password"] = "" # Default is empty password
 				
 			# String for Authorization header
-			auth_str = 'Basic ' + string.strip(base64.encodestring(options["-l"]+':'+options["-p"]))
+			auth_str = 'Basic ' + string.strip(base64.encodestring(options["--login"]+':'+options["--password"]))
 			eps_log(options, "Authorization:"+auth_str+"\n")
 			conn.putheader('Authorization', auth_str)
 
@@ -73,16 +73,16 @@ def get_power_status(conn, options):
 	for out_num, out_stat in status:
 		result[out_num] = ("",(out_stat=="1" and "on" or "off"))
 
-	if (not (options["-o"] in ['monitor','list'])):
-		if (not (options["-n"] in result)):
+	if (not (options["--action"] in ['monitor','list'])):
+		if (not (options["--plug"] in result)):
 			fail_usage("Failed: You have to enter existing physical plug!")
 		else:
-			return result[options["-n"]][1]
+			return result[options["--plug"]][1]
 	else:
 		return result
 
 def set_power_status(conn, options):
-	ret_val = eps_run_command(options, "P%s=%s"%(options["-n"], (options["-o"]=="on" and "1" or "0")))
+	ret_val = eps_run_command(options, "P%s=%s"%(options["--plug"], (options["--action"]=="on" and "1" or "0")))
 
 # Define new option
 def eps_define_new_opts():

@@ -16,7 +16,7 @@ BUILD_DATE=""
 #END_VERSION_GENERATION
 
 def get_outlets_status(conn, options):
-	if options.has_key("-d"):
+	if options.has_key("--use-sudo"):
 		prefix = SUDO_PATH + " "
 	else:
 		prefix = ""
@@ -48,7 +48,7 @@ def get_power_status(conn, options):
 		return outlets[options["--plug"]][1]
 
 def set_power_status(conn, options):
-	if options.has_key("-d"):
+	if options.has_key("--use-sudo"):
 		prefix = SUDO_PATH + " "
 	else:
 		prefix = ""

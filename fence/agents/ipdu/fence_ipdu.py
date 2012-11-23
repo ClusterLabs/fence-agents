@@ -66,11 +66,11 @@ def ipdu_resolv_port_id(conn, options):
 		ipdu_set_device(conn, options)
 
 	# Now we resolv port_id/switch_id
-	if ((options["--plug"].isdigit()) and ((not device.has_switches) or (options["-s"].isdigit()))):
+	if ((options["--plug"].isdigit()) and ((not device.has_switches) or (options["--switch"].isdigit()))):
 		port_id = int(options["--plug"])
 
 		if (device.has_switches):
-			switch_id = int(options["-s"])
+			switch_id = int(options["--switch"])
 	else:
 		table = conn.walk(device.outlet_table_oid, 30)
 

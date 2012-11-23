@@ -89,19 +89,19 @@ def eaton_resolv_port_id(conn, options):
 
 	# Restore the increment, that was removed in main for ePDU Managed
 	if (device.ident_str == "Eaton Switched ePDU"):
-		options["-n"] = str(int(options["-n"]) + 1)
+		options["--plug"] = str(int(options["--plug"]) + 1)
 
 	# Now we resolv port_id/switch_id
-	if ((options["-n"].isdigit()) and ((not device.has_switches) or (options["-s"].isdigit()))):
-		port_id = int(options["-n"])
+	if ((options["--plug"].isdigit()) and ((not device.has_switches) or (options["--switch"].isdigit()))):
+		port_id = int(options["--plug"])
 
 		if (device.has_switches):
-			switch_id = int(options["-s"])
+			switch_id = int(options["--switch"])
 	else:
 		table = conn.walk(device.outlet_table_oid, 30)
 
 		for x in table:
-			if (x[1].strip('"')==options["-n"]):
+			if (x[1].strip('"')==options["--plug"]):
 				t = x[0].split('.')
 				if (device.has_switches):
 					port_id = int(t[len(t)-1])
@@ -115,8 +115,8 @@ def eaton_resolv_port_id(conn, options):
 	if (port_id==None):
 		# Restore index offset, to provide a valid error output on Managed ePDU
 		if (device.ident_str != "Eaton Switched ePDU"):
-			options["-n"] = str(int(options["-n"]) + 1)
-		fail_usage("Can't find port with name %s!"%(options["-n"]))
+			options["--plug"] = str(int(options["--plug"]) + 1)
+		fail_usage("Can't find port with name %s!"%(options["--plug"]))
 
 def get_power_status(conn, options):
 	global port_id, after_set
@@ -156,7 +156,7 @@ def set_power_status(conn, options):
 
 	oid = ((device.has_switches) and device.control_oid%(switch_id, port_id) or device.control_oid%(port_id))
 
-	conn.set(oid,(options["-o"]=="on" and device.turn_on or device.turn_off))
+	conn.set(oid,(options["--action"]=="on" and device.turn_on or device.turn_off))
 
 
 def get_outlets_status(conn, options):
@@ -213,8 +213,8 @@ def main():
 	# Plug indexing start from zero on ePDU Managed, so we substract '1' from
 	# the user's given plug number.
 	# For Switched ePDU, we will add this back again later.
-	if ((options.has_key("-n")) and (options["-n"].isdigit())):
-		options["-n"] = str(int(options["-n"]) - 1)
+	if ((options.has_key("--plug")) and (options["--plug"].isdigit())):
+		options["--plug"] = str(int(options["--plug"]) - 1)
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for Eaton over SNMP"

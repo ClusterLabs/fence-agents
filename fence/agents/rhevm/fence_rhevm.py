@@ -69,12 +69,12 @@ def get_list(conn, options):
 
 def send_command(opt, command, method = "GET"):
 	## setup correct URL
-	if opt.has_key("-z"):
+	if opt.has_key("--ssl"):
 		url = "https:"
 	else:
 		url = "http:"
 
-	url += "//" + opt["-a"] + ":" + str(opt["-u"]) + "/api/" + command
+	url += "//" + opt["--ip"] + ":" + str(opt["--ipport"]) + "/api/" + command
 
 	## send command through pycurl
 	c = pycurl.Curl()
@@ -82,8 +82,8 @@ def send_command(opt, command, method = "GET"):
 	c.setopt(pycurl.URL, url)
 	c.setopt(pycurl.HTTPHEADER, [ "Content-type: application/xml", "Accept: application/xml" ])
 	c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_BASIC)
-	c.setopt(pycurl.USERPWD, opt["-l"] + ":" + opt["-p"])
-	c.setopt(pycurl.TIMEOUT, int(opt["-Y"]))
+	c.setopt(pycurl.USERPWD, opt["--login"] + ":" + opt["--password"])
+	c.setopt(pycurl.TIMEOUT, int(opt["--shell-timeout"]))
 	c.setopt(pycurl.SSL_VERIFYPEER, 0)
 	c.setopt(pycurl.SSL_VERIFYHOST, 0)
 

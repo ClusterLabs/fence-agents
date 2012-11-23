@@ -45,7 +45,7 @@ BUILD_DATE=""
 EC_BAD_SESSION 		= 1
 # Find the status of the port given in the -U flag of options.
 def get_power_fn(session, options):
-	if options.has_key("-v"):
+	if options.has_key("--verbose"):
 		verbose = True
 	else:
 		verbose = False
@@ -77,7 +77,7 @@ def get_power_fn(session, options):
 
 # Set the state of the port given in the -U flag of options.
 def set_power_fn(session, options):
-	action = options["-o"].lower()
+	action = options["--action"].lower()
 	
 	try:
 		# Get a reference to the vm specified in the UUID or vm_name/port parameter
@@ -102,7 +102,7 @@ def set_power_fn(session, options):
 # Function to populate an array of virtual machines and their status
 def get_outlet_list(session, options):
 	result = {}
-	if options.has_key("-v"):
+	if options.has_key("--verbose"):
 		verbose = True
 	else:
 		verbose = False
@@ -129,9 +129,9 @@ def get_outlet_list(session, options):
 
 # Function to initiate the XenServer session via the XenAPI library.
 def connect_and_login(options):
-	url = options["-s"]
-	username = options["-l"]
-	password = options["-p"]
+	url = options["--session-url"]
+	username = options["--login"]
+	password = options["--passwd"]
 
 	try:
 		# Create the XML RPC session to the specified URL.
@@ -152,14 +152,14 @@ def connect_and_login(options):
 # this is tried first as this is the only properly unique identifier.
 # Exceptions are not handled in this function, code that calls this must be ready to handle them.
 def return_vm_reference(session, options):
-	if options.has_key("-v"):
+	if options.has_key("--verbose"):
 		verbose = True
 	else:
 		verbose = False
 
 	# Case where the UUID has been specified
-	if options.has_key("-U"):
-		uuid = options["-U"].lower()
+	if options.has_key("--uid"):
+		uuid = options["--uid"].lower()
 		# When using the -n parameter for name, we get an error message (in verbose
 		# mode) that tells us that we didn't find a VM. To immitate that here we
 		# need to catch and re-raise the exception produced by get_by_uuid.
@@ -172,8 +172,8 @@ def return_vm_reference(session, options):
 		
 
 	# Case where the vm_name/port has been specified
-	if options.has_key("-n"):
-		vm_name = options["-n"]
+	if options.has_key("--plug"):
+		vm_name = options["--plug"]
 		vm_arr = session.xenapi.VM.get_by_name_label(vm_name)
 		# Need to make sure that we only have one result as the vm_name may
 		# not be unique. Average case, so do it first.
