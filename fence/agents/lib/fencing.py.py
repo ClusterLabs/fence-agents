@@ -503,17 +503,25 @@ def metadata(avail_opt, options, docs):
 
 			default = ""
 			if all_opt[option].has_key("default"):
-				default = "default=\""+str(all_opt[option]["default"])+"\""
+				default = str(all_opt[option]["default"])
 			elif options.has_key("--" + all_opt[option]["longopt"]) and all_opt[option]["getopt"].endswith(":"):
 				if options["--" + all_opt[option]["longopt"]]:
 					try:
-						default = "default=\"" + options["--" + all_opt[option]["longopt"]] + "\""
+						default = options["--" + all_opt[option]["longopt"]]
 					except TypeError:
 						## @todo/@note: Currently there is no clean way how to handle lists
 						## we can create a string from it but we can't set it on command line
-						default = "default=\"" + str(options["--" + all_opt[option]["longopt"]]) +"\""
+						default = str(options["--" + all_opt[option]["longopt"]])
 			elif options.has_key("--" + all_opt[option]["longopt"]):
-				default = "default=\"true\" "
+				default = "true"
+
+			if default:
+				default = default.replace("&", "&amp;" )
+				default = default.replace('"', "&quot;" )
+				default = default.replace('<', "&lt;" )
+				default = default.replace('>', "&gt;" )
+				default = default.replace("'", "&apos;" )
+				default = "default=\"" + default + "\" "
 
 			mixed = all_opt[option]["help"]
 			## split it between option and help text
