@@ -216,6 +216,7 @@ all_opt = {
 		"order" : 1 },
 	"partition" : {
 		"getopt" : "n:",
+		"longopt" : "partition",
 		"help" : "-n <id>                        Name of the partition",
 		"required" : "0",
 		"shortdesc" : "Partition name",
