@@ -769,8 +769,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 	try:
 		## Process options that manipulate fencing device
 		#####
-		if (options["--action"] == "list") and \
-			0 == options["device_opt"].count("port") and 0 == options["device_opt"].count("partition"):
+		if (options["--action"] == "list") and 0 == options["device_opt"].count("port"):
 			print "N/A"
 			return
 		elif (options["--action"] == "list" and get_outlet_list == None):
