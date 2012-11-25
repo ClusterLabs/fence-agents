@@ -696,6 +696,8 @@ def check_input(device_opt, opt):
 		options["--uuid"] = str(uuid.UUID(options["--plug"]))
 	except ValueError:
 		pass
+	except KeyError:
+		pass
 		
 	if (0 == options.has_key("--username")) and device_opt.count("login") and (device_opt.count("no_login") == 0):
 		fail_usage("Failed: You have to set login name")
