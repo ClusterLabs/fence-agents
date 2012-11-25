@@ -85,7 +85,7 @@ def define_new_opts():
 		"order" : 1 }
 
 def main():
-	device_opt = [  "ipaddr", "ipport", "login", "passwd", "cmd_prompt", "secure", \
+	device_opt = [  "ipaddr", "login", "passwd", "cmd_prompt", "secure", \
 			"drac_version", "port", "no_port" ]
 
 	atexit.register(atexit_handler)

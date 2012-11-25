@@ -95,7 +95,7 @@ def get_outlets_status(conn, options):
 
 # Main agent method
 def main():
-	device_opt = [ "fabric_fencing", "ipaddr", "udpport", "login", "passwd", "no_login", "no_password", \
+	device_opt = [ "fabric_fencing", "ipaddr", "login", "passwd", "no_login", "no_password", \
 		       "port", "snmp_version", "community" ]
 
 	atexit.register(atexit_handler)

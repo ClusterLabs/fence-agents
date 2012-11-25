@@ -14,7 +14,6 @@ BUILD_DATE = ""
 
 # Fix for RHBZ#527844
 def snmp_define_defaults ():
-	all_opt["udpport"]["default"] = "161"
 	all_opt["ipport"]["default"] = "161"
 
 class FencingSnmp:
@@ -82,7 +81,7 @@ class FencingSnmp:
 			force_ipvx = "udp:"
 
 		cmd += " '%s%s%s'"% (force_ipvx, self.quote_for_run(self.options["--ip"]),
-				self.options.has_key("--udpport") and self.quote_for_run(":" + str (self.options["--udpport"])) or "")
+				self.options.has_key("--ipport") and self.quote_for_run(":" + str (self.options["--ipport"])) or "")
 		return cmd
 
 	def run_command(self, command, additional_timemout=0):

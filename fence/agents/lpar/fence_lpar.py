@@ -117,7 +117,7 @@ def define_new_opts():
 		"order" : 1 }
 
 def main():
-	device_opt = [  "ipaddr", "ipport", "login", "passwd", "secure", "cmd_prompt", \
+	device_opt = [  "ipaddr", "login", "passwd", "secure", "cmd_prompt", \
 	                "port", "managed", "hmc_version" ]
 
 	atexit.register(atexit_handler)

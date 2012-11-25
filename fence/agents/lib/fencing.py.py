@@ -101,9 +101,9 @@ all_opt = {
 	"ipport" : {
 		"getopt" : "u:",
 		"longopt" : "ipport",
-		"help" : "-u, --ipport=<port>            TCP port to use",
+		"help" : "-u, --ipport=<port>            TCP/UDP port to use",
 		"required" : "0",
-		"shortdesc" : "TCP port to use for connection with device",
+		"shortdesc" : "TCP/UDP port to use for connection with device",
 		"order" : 1 },		
 	"login" : {
 		"getopt" : "l:",
@@ -280,13 +280,6 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "Forces agent to use IPv6 addresses only",
 		"order" : 1 },
-	"udpport" : {
-		"getopt" : "u:",
-		"longopt" : "udpport",
-		"help" : "-u, --udpport                  UDP/TCP port to use",
-		"required" : "0",
-		"shortdesc" : "UDP/TCP port to use for connection with device",
-		"order" : 1},
 	"separator" : {
 		"getopt" : "C:",
 		"longopt" : "separator",
@@ -371,7 +364,7 @@ DEPENDENCY_OPT = {
 			"power_timeout", "shell_timeout", "login_timeout", "power_wait", "retry_on", "delay" ],
 		"passwd" : [ "passwd_script" ],
 		"secure" : [ "identity_file", "ssh_options" ],
-		"ipaddr" : [ "inet4_only", "inet6_only" ],
+		"ipaddr" : [ "ipport", "inet4_only", "inet6_only" ],
 		"port" : [ "separator" ],
 		"community" : [ "snmp_auth_prot", "snmp_sec_level", "snmp_priv_prot", \
 			"snmp_priv_passwd", "snmp_priv_passwd_script" ]
