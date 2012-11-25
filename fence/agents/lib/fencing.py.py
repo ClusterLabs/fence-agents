@@ -45,10 +45,6 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "Display version information and exit",
 		"order" : 53 },
-	"quiet"   : {
-		"getopt" : "q",
-		"help" : "",
-		"order" : 50 },
 	"verbose" : {
 		"getopt" : "v",
 		"longopt" : "verbose",
@@ -360,7 +356,7 @@ all_opt = {
 
 # options which are added automatically if 'key' is encountered ("default" is always added)
 DEPENDENCY_OPT = {
-		"default" : [ "help", "debug", "verbose", "quiet", "version", "action", "agent", \
+		"default" : [ "help", "debug", "verbose", "version", "action", "agent", \
 			"power_timeout", "shell_timeout", "login_timeout", "power_wait", "retry_on", "delay" ],
 		"passwd" : [ "passwd_script" ],
 		"secure" : [ "identity_file", "ssh_options" ],
