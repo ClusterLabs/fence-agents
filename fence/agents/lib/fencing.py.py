@@ -587,19 +587,6 @@ def process_input(avail_opt):
 			(name, value) = (line + "=").split("=", 1)
 			value = value[:-1]
 
-			## Compatibility Layer
-			######
-			if name == "blade":
-				name = "port"
-			elif name == "option":
-				name = "action"
-			elif name == "fm":
-				name = "port"
-			elif name == "hostname":
-				name = "ipaddr"
-
-			##
-			######
 			if avail_opt.count(name) == 0:
 				sys.stderr.write("Parse error: Ignoring unknown option '"+line+"'\n")
 				continue
