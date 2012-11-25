@@ -175,7 +175,7 @@ def set_power_status(conn, options):
 
 def main():
 	device_opt = [  "ipaddr", "ipport", "login", "passwd", "cmd_prompt", "secure", \
-			"port", "switch", "test" ]
+			"port", "switch" ]
 
 	atexit.register(atexit_handler)
 

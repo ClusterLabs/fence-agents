@@ -60,7 +60,7 @@ def set_power_status(conn, options):
 
 def main():
 	device_opt = [  "ipaddr", "ipport", "login", "passwd", "cmd_prompt", "secure", \
-			"test", "port", "sudo" ]
+			"port", "sudo" ]
 
 	atexit.register(atexit_handler)
 

@@ -159,7 +159,7 @@ def apc_snmp_define_defaults():
 # Main agent method
 def main():
 	device_opt = [ "ipaddr", "udpport", "login", "passwd", "no_login", "no_password", \
-		       "test", "port", "snmp_version", "community" ]
+		       "port", "snmp_version", "community" ]
 
 	atexit.register(atexit_handler)
 

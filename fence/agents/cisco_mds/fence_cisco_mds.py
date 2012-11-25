@@ -78,7 +78,7 @@ def main():
 	global PORT_OID
 
 	device_opt = [ "fabric_fencing", "ipaddr", "udpport", "login", "passwd", "no_login", "no_password", \
-		       "test", "port", "snmp_version", "community" ]
+		       "port", "snmp_version", "community" ]
 
 	atexit.register(atexit_handler)
 

@@ -198,11 +198,6 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "Physical switch number on device",
 		"order" : 1 },
-	"test" : {
-		"getopt" : "T",
-		"help" : "",
-		"order" : 1,
-		"obsolete" : "use -o status instead" },
 	"exec" : {
 		"getopt" : "e:",
 		"longopt" : "exec",
@@ -584,8 +579,6 @@ def process_input(avail_opt):
 		## Compatibility Layer
 		#####
 		z = dict(opt)
-		if z.has_key("-T") == 1:
-			z["--action"] = "status"
 		if z.has_key("--plug") == 1:
 			z["-m"] = z["--plug"]
 
