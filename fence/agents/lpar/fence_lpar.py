@@ -22,15 +22,15 @@ BUILD_DATE=""
 
 def get_power_status(conn, options):
 	if options["--hmc-version"] == "3":
-		conn.send("lssyscfg -r lpar -m " + options["--managed"] + " -n " + options["--plug"] + " -F name,state\n")
+		conn.send("lssyscfg -r lpar -m " + options["--managed"] + " -n " + options["--partition"] + " -F name,state\n")
 		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 		try:
-			status = re.compile("^" + options["--plug"] + ",(.*?),.*$", re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
+			status = re.compile("^" + options["--partition"] + ",(.*?),.*$", re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
 		except AttributeError:
 			fail(EC_STATUS_HMC)
 	elif options["--hmc-version"] == "4":
-		conn.send("lssyscfg -r lpar -m "+ options["--managed"] +" --filter 'lpar_names=" + options["--plug"] + "'\n")
+		conn.send("lssyscfg -r lpar -m "+ options["--managed"] +" --filter 'lpar_names=" + options["--partition"] + "'\n")
 		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 		try:				
@@ -50,18 +50,18 @@ def get_power_status(conn, options):
 def set_power_status(conn, options):
 	if options["--hmc-version"] == "3":
 		conn.send("chsysstate -o " + options["--action"] + " -r lpar -m " + options["--managed"]
-			+ " -n " + options["--plug"] + "\n")
+			+ " -n " + options["--partition"] + "\n")
 		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 	elif options["--hmc-version"] == "4":
 		if options["--action"] == "on":
 			conn.send("chsysstate -o on -r lpar -m " + options["--managed"] + 
-				" -n " + options["--plug"] + 
+				" -n " + options["--partition"] + 
 				" -f `lssyscfg -r lpar -F curr_profile " +
 				" -m " + options["--managed"] +
-				" --filter \"lpar_names="+ options["--plug"] +"\"`\n" )
+				" --filter \"lpar_names="+ options["--partition"] +"\"`\n" )
 		else:
 			conn.send("chsysstate -o shutdown -r lpar --immed" +
-				" -m " + options["--managed"] + " -n " + options["--plug"] + "\n")		
+				" -m " + options["--managed"] + " -n " + options["--partition"] + "\n")		
 		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 def get_lpar_list(conn, options):
@@ -115,6 +115,13 @@ def define_new_opts():
 		"shortdesc" : "Force HMC version to use (3 or 4)",
 		"default" : "4", 
 		"order" : 1 }
+	all_opt["partition"] = {
+		"getopt" : "n:",
+		"longopt" : "partition",
+		"help" : "-n <id>                        Name of the partition",
+		"required" : "0",
+		"shortdesc" : "Partition name",
+		"order" : 1 }
 
 def main():
 	device_opt = [  "ipaddr", "ipport", "login", "passwd", "secure", "cmd_prompt", \
@@ -138,7 +145,7 @@ def main():
 	if 0 == options.has_key("--managed"):
 		fail_usage("Failed: You have to enter name of managed system")
 
-	if (0 == ["list", "monitor"].count(options["--action"].lower())) and (0 == options.has_key("--plug")):
+	if (0 == ["list", "monitor"].count(options["--action"].lower())) and (0 == options.has_key("--partition")):
 		fail_usage("Failed: You have to enter name of the partition")
 
 	if 1 == options.has_key("--hmc-version") and (options["--hmc-version"] != "3" and options["--hmc-version"] != "4"):
