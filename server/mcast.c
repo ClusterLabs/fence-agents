@@ -447,13 +447,13 @@ mcast_config(config_object_t *config, mcast_options *args)
 		   value, sizeof(value)-1) == 0) {
 		dbg_printf(1, "Got %s for auth\n", value);
 		if (!strcasecmp(value, "none")) {
-			args->hash = AUTH_NONE;
+			args->auth = AUTH_NONE;
 		} else if (!strcasecmp(value, "sha1")) {
-			args->hash = AUTH_SHA1;
+			args->auth = AUTH_SHA1;
 		} else if (!strcasecmp(value, "sha256")) {
-			args->hash = AUTH_SHA256;
+			args->auth = AUTH_SHA256;
 		} else if (!strcasecmp(value, "sha512")) {
-			args->hash = AUTH_SHA512;
+			args->auth = AUTH_SHA512;
 		} else {
 			dbg_printf(1, "Unsupported auth: %s\n", value);
 			++errors;
