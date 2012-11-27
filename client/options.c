@@ -582,7 +582,7 @@ args_init(fence_virt_args_t *args)
 	args->net.ipaddr = NULL;
 	args->net.port = DEFAULT_MCAST_PORT;
 	args->net.ifindex = 0;
-	args->net.family = PF_INET;
+	args->net.family = 0;  /* auto */
 	args->serial.device = NULL;
 	args->serial.speed = strdup(DEFAULT_SERIAL_SPEED);
 	args->serial.address = strdup(DEFAULT_CHANNEL_IP);
