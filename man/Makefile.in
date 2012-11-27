@@ -21,11 +21,11 @@ install: all
 	if [ ! -d ${DESTDIR}/${mandir}/man8 ]; then \
 		install -d ${DESTDIR}/${mandir}/man8 ; \
 	fi
-	install -m755 ${MAN8} ${DESTDIR}/${mandir}/man8
+	install -m655 ${MAN8} ${DESTDIR}/${mandir}/man8
 	if [ ! -d ${DESTDIR}/${mandir}/man5 ]; then \
 		install -d ${DESTDIR}/${mandir}/man5 ; \
 	fi
-	install -m755 ${MAN5} ${DESTDIR}/${mandir}/man5
+	install -m655 ${MAN5} ${DESTDIR}/${mandir}/man5
 
 
 clean:
