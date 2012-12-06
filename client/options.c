@@ -609,18 +609,25 @@ args_print(fence_virt_args_t *args)
 	printf("-- args @ %p --\n", args);
 	_pr_str(args->domain);
 	_pr_int(args->op);
-
-	_pr_str(args->net.key_file);
-	_pr_int(args->net.hash);
-	_pr_str(args->net.addr);
-	_pr_int(args->net.auth);
-	_pr_int(args->net.port);
-	_pr_int(args->net.ifindex);
-	_pr_int(args->net.family);
+	_pr_int(args->mode);
+	_pr_int(args->debug);
 	_pr_int(args->timeout);
+	_pr_int(args->delay);
 	_pr_int(args->retr_time);
 	_pr_int(args->flags);
-	_pr_int(args->debug);
+
+	_pr_str(args->net.addr);
+	_pr_str(args->net.ipaddr);
+	_pr_str(args->net.key_file);
+	_pr_int(args->net.port);
+	_pr_int(args->net.hash);
+	_pr_int(args->net.auth);
+	_pr_int(args->net.family);
+	_pr_int(args->net.ifindex);
+
+	_pr_str(args->serial.device);
+	_pr_str(args->serial.speed);
+	_pr_str(args->serial.address);
 	printf("-- end args --\n");
 }
 
