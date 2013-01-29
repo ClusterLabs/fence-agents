@@ -46,7 +46,14 @@ def set_power_status(conn, options):
 		conn.send_eol("racadm serveraction " + action + " -m " + options["--module-name"])
 	elif options["model"] == "DRAC 5":
 		conn.send_eol("racadm serveraction " + action)
+
+	## Fix issue with double-enter [CR/LF]
+	##	We need to read two additional command prompts (one from get + one from set command)
 	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+	if len(conn.before.strip()) == 0:
+		options["eol"] = options["eol"][:-1]
+		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 def get_list_devices(conn, options):
 	outlets = { }
