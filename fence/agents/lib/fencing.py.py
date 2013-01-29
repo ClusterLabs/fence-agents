@@ -381,6 +381,7 @@ DEPENDENCY_OPT = {
 		"secure" : [ "identity_file", "ssh_options" ],
 		"ipaddr" : [ "inet4_only", "inet6_only" ],
 		"port" : [ "separator" ],
+		"module_name" : [ "separator" ],
 		"community" : [ "snmp_auth_prot", "snmp_sec_level", "snmp_priv_prot", \
 			"snmp_priv_passwd", "snmp_priv_passwd_script" ]
 	}
