@@ -120,6 +120,10 @@ all_opt = {
 		"getopt" : "",
 		"help" : "",
 		"order" : 1 },
+	"no_port" : {
+		"getopt" : "",
+		"help" : "",
+		"order" : 1 },	
 	"passwd" : {
 		"getopt" : "p:",
 		"longopt" : "password",
@@ -140,13 +144,6 @@ all_opt = {
 		"help" : "-k, --identity-file=<filename> Identity file (private key) for ssh ",
 		"required" : "0",
 		"shortdesc" : "Identity file for ssh",
-		"order" : 1 },
-	"module_name" : {
-		"getopt" : "m:",
-		"longopt" : "module-name",
-		"help" : "-m, --module-name=<module>     DRAC/MC module name",
-		"required" : "0",
-		"shortdesc" : "DRAC/MC module name",
 		"order" : 1 },
 	"drac_version" : {
 		"getopt" : "d:",
@@ -186,8 +183,8 @@ all_opt = {
 	"port" : {
 		"getopt" : "n:",
 		"longopt" : "plug",
-		"help" : "-n, --plug=<id>                Physical plug number on device, \n" + 
-        "                                        name of virtual machine or UUID",
+		"help" : "-n, --plug=<id>                Physical plug number on device, UUID or\n" + 
+        "                                        identification of machine",
 		"required" : "1",
 		"shortdesc" : "Physical plug number, name of virtual machine or UUID",
 		"order" : 1 },
@@ -376,7 +373,6 @@ DEPENDENCY_OPT = {
 		"secure" : [ "identity_file", "ssh_options" ],
 		"ipaddr" : [ "inet4_only", "inet6_only" ],
 		"port" : [ "separator" ],
-		"module_name" : [ "separator" ],
 		"community" : [ "snmp_auth_prot", "snmp_sec_level", "snmp_priv_prot", \
 			"snmp_priv_passwd", "snmp_priv_passwd_script" ]
 	}
@@ -546,11 +542,6 @@ def process_input(avail_opt):
 			else:
 				longopt_list.append(all_opt[k]["longopt"])
 
-	## Compatibility layer
-	if avail_opt.count("module_name") == 1:
-		getopt_string += "n:"
-		longopt_list.append("plug=")
-	
 	##
 	## Read options from command line or standard input
 	#####
@@ -606,10 +597,6 @@ def process_input(avail_opt):
 				name = "port"
 			elif name == "hostname":
 				name = "ipaddr"
-			elif name == "modulename":
-				name = "module_name"
-			elif name == "port" and 1 == avail_opt.count("drac_version"):
-				name = "module_name"
 
 			##
 			######
@@ -715,8 +702,8 @@ def check_input(device_opt, opt):
 			fail_usage("Failed: Identity file " + options["--identity-file"] + " does not exist")
 
 	if (0 == ["list", "monitor"].count(options["--action"].lower())) and \
-		0 == options.has_key("--plug") and device_opt.count("port"):
-		fail_usage("Failed: You have to enter plug number")
+		0 == options.has_key("--plug") and device_opt.count("port") and device_opt.count("no_port") == 0:
+		fail_usage("Failed: You have to enter plug number or machine identification")
 
 	if options.has_key("--password-script"):
 		options["--password"] = os.popen(options["--password-script"]).read().rstrip()
@@ -783,8 +770,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 		## Process options that manipulate fencing device
 		#####
 		if (options["--action"] == "list") and \
-			0 == options["device_opt"].count("port") and 0 == options["device_opt"].count("partition") and \
-			0 == options["device_opt"].count("module_name"):
+			0 == options["device_opt"].count("port") and 0 == options["device_opt"].count("partition"):
 			print "N/A"
 			return
 		elif (options["--action"] == "list" and get_outlet_list == None):

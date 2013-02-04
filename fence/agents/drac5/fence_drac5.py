@@ -24,7 +24,7 @@ BUILD_DATE="March, 2008"
 
 def get_power_status(conn, options):
 	if options["model"] == "DRAC CMC":
-		conn.send_eol("racadm serveraction powerstatus -m " + options["--module-name"])
+		conn.send_eol("racadm serveraction powerstatus -m " + options["--plug"])
 	elif options["model"] == "DRAC 5":
 		conn.send_eol("racadm serveraction powerstatus")
 		
@@ -43,7 +43,7 @@ def set_power_status(conn, options):
 	}[options["--action"]]
 
 	if options["model"] == "DRAC CMC":
-		conn.send_eol("racadm serveraction " + action + " -m " + options["--module-name"])
+		conn.send_eol("racadm serveraction " + action + " -m " + options["--plug"])
 	elif options["model"] == "DRAC 5":
 		conn.send_eol("racadm serveraction " + action)
 
@@ -86,7 +86,7 @@ def define_new_opts():
 
 def main():
 	device_opt = [  "ipaddr", "ipport", "login", "passwd", "cmd_prompt", "secure", \
-			"drac_version", "module_name" ]
+			"drac_version", "port", "no_port" ]
 
 	atexit.register(atexit_handler)
 
