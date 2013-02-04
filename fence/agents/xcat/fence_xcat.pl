@@ -82,17 +82,17 @@ NOTE: It is recommended that fence_bladecenter(8) is used instead of fence_xcat 
 <vendor-url>http://www.xcat.org</vendor-url>
 <parameters>
         <parameter name="action" unique="1" required="1">
-                <getopt mixed="-o &lt;action&gt;" />
+                <getopt mixed="-o [action]" />
                 <content type="string" default="restart" />
                 <shortdesc lang="en">Fencing Action</shortdesc>
         </parameter>
         <parameter name="nodename" unique="1" required="1">
-                <getopt mixed="-n &lt;nodename&gt;" />
+                <getopt mixed="-n [nodename]" />
                 <content type="string"  />
                 <shortdesc lang="en">The nodename as defined in nodelist.tab of the xCAT setup.</shortdesc>
         </parameter>
         <parameter name="rpower" unique="1" required="0">
-                <getopt mixed="-r &lt;rpower&gt;" />
+                <getopt mixed="-r [rpower]" />
                 <content type="string"  />
                 <shortdesc lang="en">The path to the rpower binary.</shortdesc>
         </parameter>

@@ -79,7 +79,7 @@ NOTE: for fence_cpint to send a command to another virtual machine, the machine 
 <vendor-url>http://www.ibm.com</vendor-url>
 <parameters>
         <parameter name="userid" unique="1" required="1">
-                <getopt mixed="-u &lt;userid&gt;" />
+                <getopt mixed="-u [userid]" />
                 <content type="string"  />
                 <shortdesc lang="en">Userid of the virtual machine to fence</shortdesc>
         </parameter>

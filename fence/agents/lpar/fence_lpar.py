@@ -103,14 +103,14 @@ def define_new_opts():
 	all_opt["managed"] = {
 		"getopt" : "s:",
 		"longopt" : "managed",
-		"help" : "-s, --managed=<id>             Name of the managed system",
+		"help" : "-s, --managed=[id]             Name of the managed system",
 		"required" : "0",
 		"shortdesc" : "Managed system name",
 		"order" : 1 }
 	all_opt["hmc_version"] = {
 		"getopt" : "H:",
 		"longopt" : "hmc-version",
-		"help" : "-H, --hmc-version=<version>    Force HMC version to use: 3, 4 (default)",
+		"help" : "-H, --hmc-version=[version]    Force HMC version to use: 3, 4 (default)",
 		"required" : "0",
 		"shortdesc" : "Force HMC version to use (3 or 4)",
 		"default" : "4", 

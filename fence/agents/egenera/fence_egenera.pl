@@ -84,32 +84,32 @@ fence_egenera  is  an I/O Fencing agent which can be used with the Egenera Blade
 <vendor-url>http://www.bull.com</vendor-url>
 <parameters>
         <parameter name="action" unique="0" required="1">
-                <getopt mixed="-o &lt;action&gt;" />
+                <getopt mixed="-o [action]" />
                 <content type="string" default="reboot" />
                 <shortdesc lang="en">Fencing Action</shortdesc>
         </parameter>
         <parameter name="cserver" unique="0" required="1">
-                <getopt mixed="-c &lt;cserver&gt;" />
+                <getopt mixed="-c [cserver]" />
                 <content type="string"  />
                 <shortdesc lang="en">The cserver to ssh to. cserver can be in the form user@hostname to specify a different user to login as.</shortdesc>
         </parameter>
         <parameter name="pserver" unique="0" required="1">
-                <getopt mixed="-p &lt;pserver&gt;" />
+                <getopt mixed="-p [pserver]" />
                 <content type="string"  />
                 <shortdesc lang="en">The pserver to operate on.</shortdesc>
         </parameter>
         <parameter name="user" unique="0" required="1">
-                <getopt mixed="-u &lt;name&gt;" />
+                <getopt mixed="-u [name]" />
                 <content type="string" default="root" />
                 <shortdesc lang="en">Login Name</shortdesc>
         </parameter>
         <parameter name="lpan" unique="0" required="1">
-                <getopt mixed="-l &lt;lpan&gt;" />
+                <getopt mixed="-l [lpan]" />
                 <content type="string"  />
                 <shortdesc lang="en">The lpan to operate on.</shortdesc>
         </parameter>
         <parameter name="delay" unique="0" required="0">
-                <getopt mixed="-f &lt;seconds&gt;" />
+                <getopt mixed="-f [seconds]" />
                 <content type="string" default="0"/>
                 <shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
         </parameter>

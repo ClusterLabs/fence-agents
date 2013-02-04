@@ -84,22 +84,22 @@ fence_zvm is an I/O Fencing agent used on a GFS virtual machine in a s390 or zSe
 <vendor-url>http://www.ibm.com</vendor-url>
 <parameters>
         <parameter name="ipaddr" unique="1" required="1">
-                <getopt mixed="-a &lt;ip&gt;" />
+                <getopt mixed="-a [ip]" />
                 <content type="string"  />
                 <shortdesc lang="en">IP Address or Hostname</shortdesc>
         </parameter>
         <parameter name="userid" unique="1" required="1">
-                <getopt mixed="-u &lt;userid&gt;" />
+                <getopt mixed="-u [userid]" />
                 <content type="string"  />
                 <shortdesc lang="en">Userid of the virtual machine to fence</shortdesc>
         </parameter>
         <parameter name="passwd" unique="1" required="0">
-                <getopt mixed="-p &lt;password&gt;" />
+                <getopt mixed="-p [password]" />
                 <content type="string"  />
                 <shortdesc lang="en">Login password or passphrase</shortdesc>
         </parameter>
         <parameter name="passwd_script" unique="1" required="0">
-                <getopt mixed="-S &lt;script&gt;" />
+                <getopt mixed="-S [script]" />
                 <content type="string"  />
                 <shortdesc lang="en">Script to retrieve password</shortdesc>
         </parameter>
