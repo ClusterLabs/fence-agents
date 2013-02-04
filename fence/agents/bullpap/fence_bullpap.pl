@@ -94,32 +94,32 @@ fence_bullpap is an I/O Fencing agent which can be used with Bull\'s NovaScale m
 <vendor-url>http://www.bull.com</vendor-url>
 <parameters>
         <parameter name="action" unique="1" required="1">
-                <getopt mixed="-o &lt;action&gt;" />
+                <getopt mixed="-o [action]" />
                 <content type="string" default="reboot" />
                 <shortdesc lang="en">Fencing Action</shortdesc>
         </parameter>
         <parameter name="ipaddr" unique="1" required="1">
-                <getopt mixed="-a &lt;ip&gt;" />
+                <getopt mixed="-a [ip]" />
                 <content type="string"  />
                 <shortdesc lang="en">IP Address or Hostname</shortdesc>
         </parameter>
         <parameter name="login" unique="1" required="1">
-                <getopt mixed="-l &lt;name&gt;" />
+                <getopt mixed="-l [name]" />
                 <content type="string"  />
                 <shortdesc lang="en">Login Name</shortdesc>
         </parameter>
         <parameter name="passwd" unique="1" required="0">
-                <getopt mixed="-p &lt;password&gt;" />
+                <getopt mixed="-p [password]" />
                 <content type="string"  />
                 <shortdesc lang="en">Login password or passphrase</shortdesc>
         </parameter>
         <parameter name="passwd_script" unique="1" required="0">
-                <getopt mixed="-S &lt;script&gt;" />
+                <getopt mixed="-S [script]" />
                 <content type="string"  />
                 <shortdesc lang="en">Script to retrieve password</shortdesc>
         </parameter>
         <parameter name="domain" unique="1" required="1">
-                <getopt mixed="-d &lt;domain&gt;" />
+                <getopt mixed="-d [domain]" />
                 <content type="string"  />
                 <shortdesc lang="en">Domain name of the Bull machine to power-cycle</shortdesc>
         </parameter>

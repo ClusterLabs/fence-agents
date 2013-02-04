@@ -100,7 +100,7 @@ def define_new_opts():
 	all_opt["suborg"] = {
 		"getopt" : "s:",
 		"longopt" : "suborg",
-		"help" : "--suborg=<path>                Additional path needed to access suborganization",
+		"help" : "--suborg=[path]                Additional path needed to access suborganization",
 		"required" : "0",
 		"shortdesc" : "Additional path needed to access suborganization",
 		"default" : "",

@@ -91,32 +91,32 @@ After a fence operation has taken place the fenced machine can no longer connect
 <vendor-url>http://www.brocade.com</vendor-url>
 <parameters>
         <parameter name="action" unique="1" required="1">
-                <getopt mixed="-o &lt;action&gt;" />
+                <getopt mixed="-o [action]" />
                 <content type="string" default="disable" />
                 <shortdesc lang="en">Fencing Action</shortdesc>
         </parameter>
         <parameter name="ipaddr" unique="1" required="1">
-                <getopt mixed="-a &lt;ip&gt;" />
+                <getopt mixed="-a [ip]" />
                 <content type="string"  />
                 <shortdesc lang="en">IP Address or Hostname</shortdesc>
         </parameter>
         <parameter name="login" unique="1" required="1">
-                <getopt mixed="-l &lt;name&gt;" />
+                <getopt mixed="-l [name]" />
                 <content type="string"  />
                 <shortdesc lang="en">Login Name</shortdesc>
         </parameter>
         <parameter name="passwd" unique="1" required="0">
-                <getopt mixed="-p &lt;password&gt;" />
+                <getopt mixed="-p [password]" />
                 <content type="string"  />
                 <shortdesc lang="en">Login password or passphrase</shortdesc>
         </parameter>
         <parameter name="passwd_script" unique="1" required="0">
-                <getopt mixed="-S &lt;script&gt;" />
+                <getopt mixed="-S [script]" />
                 <content type="string"  />
                 <shortdesc lang="en">Script to retrieve password</shortdesc>
         </parameter>
         <parameter name="port" unique="1" required="1">
-                <getopt mixed="-n &lt;id&gt;" />
+                <getopt mixed="-n [id]" />
                 <content type="string"  />
                 <shortdesc lang="en">Physical plug number or name of virtual machine</shortdesc>
         </parameter>

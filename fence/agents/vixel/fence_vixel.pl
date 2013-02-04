@@ -76,29 +76,29 @@ fence_vixel is an I/O Fencing agent which can be used with Vixel FC switches. It
 
 After a fence operation has taken place the fenced machine can no longer connect to the Vixel FC switch. When the fenced machine is ready to be brought back into the GFS cluster (after reboot) the port on the Vixel FC switch needs to be enabled. In order to do this, log into the Vixel FC switch. Then go to:
 
-config->zones->config &lt;port&gt; &lt;comma-separated-list-of-ports-in-the-zone&gt;
+config->zones->config [port] [comma-separated-list-of-ports-in-the-zone]
 
 Then apply. Consult the Vixel manual for details.
 </longdesc>
 <vendor-url>http://www.emulex.com</vendor-url>
 <parameters>
         <parameter name="ipaddr" unique="1" required="1">
-                <getopt mixed="-a &lt;ip&gt;" />
+                <getopt mixed="-a [ip]" />
                 <content type="string"  />
                 <shortdesc lang="en">IP Address or Hostname</shortdesc>
         </parameter>
         <parameter name="passwd" unique="1" required="0">
-                <getopt mixed="-p &lt;password&gt;" />
+                <getopt mixed="-p [password]" />
                 <content type="string"  />
                 <shortdesc lang="en">Login password or passphrase</shortdesc>
         </parameter>
         <parameter name="passwd_script" unique="1" required="0">
-                <getopt mixed="-S &lt;script&gt;" />
+                <getopt mixed="-S [script]" />
                 <content type="string"  />
                 <shortdesc lang="en">Script to retrieve password</shortdesc>
         </parameter>
         <parameter name="port" unique="1" required="1">
-                <getopt mixed="-n &lt;id&gt;" />
+                <getopt mixed="-n [id]" />
                 <content type="string"  />
                 <shortdesc lang="en">Physical plug number or name of virtual machine</shortdesc>
         </parameter>

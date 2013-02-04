@@ -56,7 +56,7 @@ def define_new_opts():
 	all_opt["ribcl"] = {
 		"getopt" : "r:",
 		"longopt" : "ribcl-version",
-		"help" : "-r, --ribcl-version=<version>  Force ribcl version to use",
+		"help" : "-r, --ribcl-version=[version]  Force ribcl version to use",
 		"required" : "0",
 		"shortdesc" : "Force ribcl version to use",
 		"order" : 1 }
