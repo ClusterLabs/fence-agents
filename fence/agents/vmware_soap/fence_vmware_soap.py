@@ -20,10 +20,10 @@ def soap_login(options):
 		url = "http://"
 	
 	url += options["--ip"] + ":" + str(options["--ipport"]) + "/sdk"
-	conn = Client(url + "/vimService.wsdl")
-	conn.set_options(location = url)
-
 	try:
+		conn = Client(url + "/vimService.wsdl")
+		conn.set_options(location = url)
+
 		mo_ServiceInstance = Property('ServiceInstance')
 		mo_ServiceInstance._type = 'ServiceInstance'
 		ServiceContent = conn.service.RetrieveServiceContent(mo_ServiceInstance)
