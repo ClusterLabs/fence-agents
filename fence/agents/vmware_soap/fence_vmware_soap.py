@@ -23,13 +23,13 @@ def soap_login(options):
 	conn = Client(url + "/vimService.wsdl")
 	conn.set_options(location = url)
 
-	mo_ServiceInstance = Property('ServiceInstance')
-	mo_ServiceInstance._type = 'ServiceInstance'
-	ServiceContent = conn.service.RetrieveServiceContent(mo_ServiceInstance)
-	mo_SessionManager = Property(ServiceContent.sessionManager.value)
-	mo_SessionManager._type = 'SessionManager'
-	
 	try:
+		mo_ServiceInstance = Property('ServiceInstance')
+		mo_ServiceInstance._type = 'ServiceInstance'
+		ServiceContent = conn.service.RetrieveServiceContent(mo_ServiceInstance)
+		mo_SessionManager = Property(ServiceContent.sessionManager.value)
+		mo_SessionManager._type = 'SessionManager'
+
 		SessionManager = conn.service.Login(mo_SessionManager, options["--username"], options["--password"])
 	except Exception, ex:
 		fail(EC_LOGIN_DENIED)	
