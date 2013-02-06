@@ -128,10 +128,13 @@ used with Cisco UCS to fence machines."
 		time.sleep(int(options["--delay"]))
 
 	### Login
-	res = send_command(options, "<aaaLogin inName=\"" + options["--username"] + "\" inPassword=\"" + options["--password"] + "\" />", int(options["--login-timeout"]))
-	result = RE_COOKIE.search(res)
-	if (result == None):	
-		## Cookie is absenting in response
+	try:
+		res = send_command(options, "<aaaLogin inName=\"" + options["--username"] + "\" inPassword=\"" + options["--password"] + "\" />", int(options["--login-timeout"]))
+		result = RE_COOKIE.search(res)
+		if (result == None):	
+			## Cookie is absenting in response
+			fail(EC_LOGIN_DENIED)
+	except:
 		fail(EC_LOGIN_DENIED)
 
 	options["cookie"] = result.group(1)
