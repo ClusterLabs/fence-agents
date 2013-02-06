@@ -123,6 +123,11 @@ used with Cisco UCS to fence machines."
 	docs["vendorurl"] = "http://www.cisco.com"
 	show_docs(options, docs)
 
+	## Do the delay of the fence device before logging in
+	## Delay is important for two-node clusters fencing but we do not need to delay 'status' operations
+	if options["--action"] in ["off", "reboot"]:
+		time.sleep(int(options["--delay"]))
+
 	### Login
 	res = send_command(options, "<aaaLogin inName=\"" + options["--username"] + "\" inPassword=\"" + options["--password"] + "\" />", int(options["--login-timeout"]))
 	result = RE_COOKIE.search(res)
