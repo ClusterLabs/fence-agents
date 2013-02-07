@@ -56,7 +56,7 @@ def set_power_status(conn, options):
 	conn.sendline(prefix + "virsh %s "%(options["--action"] == "on" and "start" or "destroy")+options["--plug"])
 
 	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
-	time.sleep(1)
+	time.sleep(int(options["--power-wait"]))
 
 def main():
 	device_opt = [ "ipaddr", "login", "passwd", "cmd_prompt", "secure", "port", "sudo" ]
