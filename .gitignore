@@ -81,3 +81,4 @@ fence/agents/zvm/fence_zvm
 .fence*.tmp
 fence-agents*
 .version
+tests/devices.d/*
