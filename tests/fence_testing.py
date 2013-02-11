@@ -55,7 +55,7 @@ def _prepare_command(agent_file, method):
 
 	return (final_command, stdin_values)		
 
-def test_action(agent, action_file, method):
+def test_action(agent, action_file, method, verbose = False):
 	""" Run defined sequence of actions on a given fence agent.
 
 	This function will run one set of test on a fence agent. Test itself consists of
@@ -110,7 +110,11 @@ def test_action(agent, action_file, method):
 		if method == "stdin" and sleep_wait == None:
 			current_command = "/bin/echo -e \"" + current_stdin_options + "\" | " + current_command
 
-		result = os.system(current_command + " &> /dev/null")
+		if verbose == False:
+			result = os.system(current_command + " &> /dev/null")
+		else:
+			print current_command
+			result = os.system(current_command)
 		exitcode = (result >> 8) & 0xFF
 
 		is_valid_result_code = re.search(action["return_code"], str(exitcode), re.IGNORECASE)
