@@ -68,7 +68,7 @@ def get_power_status(conn, options):
 		conn.send_eol(options["--switch"])
 			
 	while True:
-		exp_result = conn.log_expect(options, [ options["--command-prompt"],  "Press <ENTER>" ], int(options["--shell-timeout"]))
+		exp_result = conn.log_expect(options, options["--command-prompt"] +  [ "Press <ENTER>" ], int(options["--shell-timeout"]))
 		lines = conn.before.split("\n")
 		show_re = re.compile('(^|\x0D)\s*(\d+)- (.*?)\s+(ON|OFF)\s*')
 		for x in lines:
@@ -146,7 +146,7 @@ def set_power_status(conn, options):
 	else:
 		conn.send_eol(options["--switch"])
 
-	while 1 == conn.log_expect(options, [ options["--command-prompt"],  "Press <ENTER>" ], int(options["--shell-timeout"])):
+	while 1 == conn.log_expect(options, options["--command-prompt"] + [ "Press <ENTER>" ], int(options["--shell-timeout"])):
 		conn.send_eol("")
 
 	conn.send_eol(options["--plug"]+"")
@@ -173,13 +173,47 @@ def set_power_status(conn, options):
 	conn.log_expect(options, "- Logout", int(options["--shell-timeout"]))
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
+def get_power_status5(conn, options):
+	exp_result = 0
+	outlets = {}
+
+	conn.send_eol("olStatus all")
+
+	exp_result = conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	lines = conn.before.split("\n")
+		
+	show_re = re.compile('^\s*(\d+): (.*): (On|Off)\s*$', re.IGNORECASE)
+	
+	for x in lines:
+		res = show_re.search(x)
+		if (res != None):
+			outlets[res.group(1)] = (res.group(2), res.group(3))
+
+	if ["list", "monitor"].count(options["--action"]) == 1:
+		return outlets
+	else:
+		try:
+			(_, status) = outlets[options["--plug"]]
+			return status.lower().strip()
+		except KeyError:
+			fail(EC_STATUS)
+
+def set_power_status5(conn, options):
+	action = {
+		'on' : "olOn",
+		'off': "olOff"
+	}[options["--action"]]
+
+	conn.send_eol(action + " " + options["--plug"])
+	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+
 def main():
 	device_opt = [  "ipaddr", "login", "passwd", "cmd_prompt", "secure", \
 			"port", "switch" ]
 
 	atexit.register(atexit_handler)
 
-	all_opt["cmd_prompt"]["default"] = "\n>"
+	all_opt["cmd_prompt"]["default"] = [ "\n>", "\napc>" ]
 	all_opt["ssh_options"]["default"] = "-1 -c blowfish"
 
 	options = check_input(device_opt, process_input(device_opt))
@@ -204,7 +238,16 @@ will block any necessary fencing actions."
 	## Operate the fencing device
 	####
 	conn = fence_login(options)
-	result = fence_action(conn, options, set_power_status, get_power_status, get_power_status)
+
+	## Detect firmware version (ASCII menu vs command-line interface)
+	## and continue with proper action
+	####
+	result = -1
+	firmware_version = re.compile('\s*v(\d)*\.').search(conn.before)
+	if (firmware_version != None) and (firmware_version.group(1) == "5"):
+		result = fence_action(conn, options, set_power_status5, get_power_status5, get_power_status5)
+	else:
+		result = fence_action(conn, options, set_power_status, get_power_status, get_power_status)
 
 	##
 	## Logout from system

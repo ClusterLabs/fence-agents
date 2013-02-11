@@ -862,7 +862,8 @@ def fence_login(options):
 		time.sleep(int(options["--delay"]))
 
 	try:
-		re_login = re.compile("(login\s*: )|(Login Name:  )|(username: )|(User Name :)", re.IGNORECASE)
+		re_login_string = "(login\s*: )|(Login Name:  )|(username: )|(User Name :)"
+		re_login = re.compile(re_login_string, re.IGNORECASE)
 		re_pass  = re.compile("(password)|(pass phrase)", re.IGNORECASE)
 
 		if options.has_key("--ssl"):
@@ -955,7 +956,16 @@ def fence_login(options):
 
 			try:
 				conn.send_eol(options["--password"])
-				conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+				valid_password = conn.log_expect(options, [ re_login_string ] + options["--command-prompt"], int(options["--shell-timeout"]))
+				if valid_password == 0:
+					## password is invalid or we have to change EOL separator
+					options["eol"] = "\r"
+					conn.send_eol("")
+					conn.send_eol("")
+					conn.send_eol(options["--username"])
+					conn.log_expect(options, re_pass, int(options["--login-timeout"]))
+					conn.send_eol(options["--password"])
+					conn.log_expect(options, options["--command-prompt"], int(options["--login-timeout"]))
 			except KeyError:
 				fail(EC_PASSWORD_MISSING)
 	except pexpect.EOF:
