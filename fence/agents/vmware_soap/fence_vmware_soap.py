@@ -156,7 +156,7 @@ def set_power_status(conn, options):
 		conn.service.PowerOffVM_Task(mo_machine)	
 
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "ssl", "port", "uuid" ]
+	device_opt = [ "ipaddr", "login", "passwd", "ssl", "port" ]
 
 	atexit.register(atexit_handler)
 
@@ -174,7 +174,7 @@ that have SOAP API v4.1+. \
 Name of virtual machine (-n / port) has to be used in inventory path \
 format (e.g. /datacenter/vm/Discovered virtual machine/myMachine). \
 In the cases when name of yours VM is unique you can use it instead. \
-Alternatively you can always use UUID (-U / uuid) to access virtual machine."
+Alternatively you can always use UUID to access virtual machine."
 	docs["vendorurl"] = "http://www.vmware.com"
 	show_docs(options, docs)
 
