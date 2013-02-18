@@ -165,7 +165,7 @@ all_opt = {
 	"ssh_options" : {
 		"getopt" : "X:",
 		"longopt" : "ssh-options",
-		"help" : "--ssh-options=[options]	SSH options to use",
+		"help" : "--ssh-options=[options]	  SSH options to use",
 		"shortdesc" : "SSH options to use",
 		"required" : "0",
 		"order" : 1 },
