@@ -32,9 +32,9 @@ def main():
 
 	opt = process_input(device_opt)
 	if "--username" in opt:
-		all_opt["cmd_prompt"]["default"] = "\\[" + opt["--username"] + "\\]# "
+		all_opt["cmd_prompt"]["default"] = [ "\\[" + opt["--username"] + "\\]# " ]
 	else:
-		all_opt["cmd_prompt"]["default"] = "\\[" "username" + "\\]# "
+		all_opt["cmd_prompt"]["default"] = [ "\\[" "username" + "\\]# " ]
 	
 	options = check_input(device_opt, opt)
 

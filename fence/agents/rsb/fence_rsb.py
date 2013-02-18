@@ -41,7 +41,7 @@ def main():
 
 	atexit.register(atexit_handler)
 
-	all_opt["cmd_prompt"]["default"] = "to quit:"
+	all_opt["cmd_prompt"]["default"] = [ "to quit:" ]
 
 	opt = process_input(device_opt)
 

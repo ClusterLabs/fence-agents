@@ -61,7 +61,7 @@ def main():
 
 	atexit.register(atexit_handler)
 
-	all_opt["cmd_prompt"]["default"] = "c7000oa>"
+	all_opt["cmd_prompt"]["default"] = [ "c7000oa>" ]
 
 	options = check_input(device_opt, process_input(device_opt))
 
