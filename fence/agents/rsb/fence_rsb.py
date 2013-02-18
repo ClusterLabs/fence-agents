@@ -48,7 +48,8 @@ def main():
                 "shortdesc" : "TCP port to use for connection with device (default is 3172 for telnet)",
                 "order" : 1
 	}
-	all_opt["cmd_prompt"]["default"] = "to quit:"
+
+	all_opt["cmd_prompt"]["default"] = [ "to quit:" ]
 
 	opt = process_input(device_opt)
 	# option -n for backward compatibility (-n is normally port no)
