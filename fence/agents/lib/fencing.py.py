@@ -601,11 +601,6 @@ def check_input(device_opt, opt):
 	else:
 		all_opt["login"]["required"] = "0"
 
-	## In special cases (show help, metadata or version) we don't need to check anything
-	#####
-	if options.has_key("--help") or options.has_key("--version") or (options.has_key("--action") and options["--action"].lower() == "metadata"):
-		return options
-
 	## Set default values
 	#####
 	for opt in device_opt:
@@ -613,6 +608,36 @@ def check_input(device_opt, opt):
 			getopt_long  = "--" + all_opt[opt]["longopt"]
 			if 0 == options.has_key(getopt_long):
 				options[getopt_long] = all_opt[opt]["default"]
+
+	if device_opt.count("ipport"):
+		if options.has_key("--ipport"):
+			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default "+ options["--ipport"] +")"
+		elif options.has_key("--ssh"):
+			all_opt["ipport"]["default"] = 22
+			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 22)"
+		elif options.has_key("--ssl"):
+			all_opt["ipport"]["default"] = 443
+			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 443)"
+		elif device_opt.count("web"):
+			all_opt["ipport"]["default"] = 80
+			if device_opt.count("ssl") == 0:
+				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 80)"
+			else:
+				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use\n\
+                                        (default 80, 443 if --ssl option is used)"
+		else:
+			all_opt["ipport"]["default"] = 23
+			if device_opt.count("secure") == 0:
+				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 23)"
+			else:
+				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use\n\
+                                        (default 23, 22 if --ssh option is used)"
+				
+
+	## In special cases (show help, metadata or version) we don't need to check anything
+	#####
+	if options.has_key("--help") or options.has_key("--version") or (options.has_key("--action") and options["--action"].lower() == "metadata"):
+		return options
 
 	options["--action"] = options["--action"].lower()
 
