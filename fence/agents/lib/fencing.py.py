@@ -665,13 +665,6 @@ def check_input(device_opt, opt):
 		options["--action"] = "off"
 
 	## automatic detection and set of valid UUID from --plug
-	try:
-		options["--uuid"] = str(uuid.UUID(options["--plug"]))
-	except ValueError:
-		pass
-	except KeyError:
-		pass
-		
 	if (0 == options.has_key("--username")) and device_opt.count("login") and (device_opt.count("no_login") == 0):
 		fail_usage("Failed: You have to set login name")
 
@@ -726,11 +719,44 @@ def check_input(device_opt, opt):
 	
 def wait_power_status(tn, options, get_power_fn):
 	for dummy in xrange(int(options["--power-timeout"])):
-		if get_power_fn(tn, options) != options["--action"]:
+		if get_multi_power_fn(tn, options, get_power_fn) != options["--action"]:
 			time.sleep(1)
 		else:
 			return 1
 	return 0
+
+## Obtain a power status from possibly more than one plug
+##	"on" is returned if at least one plug is ON
+######
+def get_multi_power_fn(tn, options, get_power_fn):
+	status = "off"
+
+	for plug in options["--plugs"]:
+		try:
+			options["--uuid"] = str(uuid.UUID(plug))
+		except ValueError:
+			pass
+		except KeyError:
+			pass
+
+		options["--plug"] = plug
+		plug_status = get_power_fn(tn, options)
+		if plug_status == "on":
+			status = plug_status
+	
+	return status
+
+def set_multi_power_fn(tn, options, set_power_fn):
+	for plug in options["--plugs"]:
+		try:
+			options["--uuid"] = str(uuid.UUID(plug))
+		except ValueError:
+			pass
+		except KeyError:
+			pass
+		options["--plug"] = plug
+		set_power_fn(tn, options)
+
 
 def show_docs(options, docs = None):
 	device_opt = options["device_opt"]
@@ -759,6 +785,8 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 	result = 0
 
 	try:
+		options["--plugs"] = options["--plug"].split(",")
+
 		## Process options that manipulate fencing device
 		#####
 		if (options["--action"] == "list") and 0 == options["device_opt"].count("port"):
@@ -779,7 +807,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 					print o + options["--separator"] + alias	
 			return
 
-		status = get_power_fn(tn, options)
+		status = get_multi_power_fn(tn, options, get_power_fn)
 
 		if status != "on" and status != "off":  
 			fail(EC_STATUS)
@@ -790,7 +818,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 			else:
 				power_on = False
 				for _ in range(1, 1 + int(options["--retry-on"])):
-					set_power_fn(tn, options)
+					set_multi_power_fn(tn, options, set_power_fn)
 					time.sleep(int(options["--power-wait"]))
 					if wait_power_status(tn, options, get_power_fn):
 						power_on = True
@@ -804,7 +832,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 			if status == "off":
 				print "Success: Already OFF"
 			else:
-				set_power_fn(tn, options)
+				set_multi_power_fn(tn, options, set_power_fn)
 				time.sleep(int(options["--power-wait"]))
 				if wait_power_status(tn, options, get_power_fn):
 					print "Success: Powered OFF"
@@ -813,7 +841,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 		elif options["--action"] == "reboot":
 			if status != "off":
 				options["--action"] = "off"
-				set_power_fn(tn, options)
+				set_multi_power_fn(tn, options, set_power_fn)
 				time.sleep(int(options["--power-wait"]))
 				if wait_power_status(tn, options, get_power_fn) == 0:
 					fail(EC_WAITING_OFF)
@@ -822,7 +850,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 			power_on = False
 			try:
 				for _ in range(1, 1 + int(options["--retry-on"])):
-					set_power_fn(tn, options)
+					set_multi_power_fn(tn, options, set_power_fn)
 					time.sleep(int(options["--power-wait"]))
 					if wait_power_status(tn, options, get_power_fn) == 1:
 						power_on = True
