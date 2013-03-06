@@ -1,6 +1,6 @@
 MAINTAINERCLEANFILES	  = Makefile.in
 
-sbin_PROGRAMS		  = fence_nss_wrapper
+libexec_PROGRAMS          = fence_nss_wrapper
 
 fence_nss_wrapper_CFLAGS  = $(nss_CFLAGS) $(nspr_CFLAGS)
 
