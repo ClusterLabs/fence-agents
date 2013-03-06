@@ -27,7 +27,7 @@ EC_PASSWORD_MISSING = 10
 
 TELNET_PATH = "/usr/bin/telnet"
 SSH_PATH    = "/usr/bin/ssh"
-SSL_PATH    = "@SBINDIR@/fence_nss_wrapper"
+SSL_PATH    = "@LIBEXECDIR@/fence_nss_wrapper"
 SUDO_PATH   = "/usr/bin/sudo"
 
 all_opt = {

@@ -8,4 +8,5 @@ $(TARGET): $(SRC)
 		-e 's#@''SNMPBIN@#${SNMPBIN}#g' \
 		-e 's#@''LOGDIR@#${LOGDIR}#g' \
 		-e 's#@''SBINDIR@#${sbindir}#g' \
+		-e 's#@''LIBEXECDIR@#${libexecdir}#g' \
 	> $@
