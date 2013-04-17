@@ -841,7 +841,8 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 	result = 0
 
 	try:
-		options["--plugs"] = options["--plug"].split(",")
+		if options.has_key("--plug"):
+			options["--plugs"] = options["--plug"].split(",")
 
 		## Process options that manipulate fencing device
 		#####

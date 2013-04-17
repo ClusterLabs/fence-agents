@@ -9,8 +9,8 @@ def main():
 	ACT_ONOFF = "actions.d/power-on-off.cfg"
 	ACT_LIST = "actions.d/list.cfg"
 
-	test_action(DEVICE, ACT_STATUS, "getopt")
-	test_action(DEVICE, ACT_ONOFF, "stdin")
+	test_action(DEVICE, ACT_STATUS, "getopt", verbose=1)
+#	test_action(DEVICE, ACT_ONOFF, "stdin")
 	test_action(DEVICE, ACT_LIST, "getopt")
 
 if __name__ == "__main__":
