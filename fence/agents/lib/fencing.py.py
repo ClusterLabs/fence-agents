@@ -675,9 +675,9 @@ def check_input(device_opt, opt):
 		if 0 == device_opt.count("identity_file"):
 			if 0 == (options.has_key("--password") or options.has_key("--password-script")):
 				fail_usage("Failed: You have to enter password or password script")
-			else: 
-				if 0 == (options.has_key("--password") or options.has_key("--password-script") or options.has_key("--identity-file")):
-					fail_usage("Failed: You have to enter password, password script or identity file")
+		else: 
+			if 0 == (options.has_key("--password") or options.has_key("--password-script") or options.has_key("--identity-file")):
+				fail_usage("Failed: You have to enter password, password script or identity file")
 
 	if 0 == options.has_key("--ssh") and 1 == options.has_key("--identity-file"):
 		fail_usage("Failed: You have to use identity file together with ssh connection (-x)")
