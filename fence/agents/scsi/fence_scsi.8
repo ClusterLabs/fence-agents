@@ -21,7 +21,8 @@ registrants only" reservation on the device(s). The result is that
 only registered nodes may write to the device(s). When a node failure
 occurs, the fence_scsi agent will remove the key belonging to the
 failed node from the device(s). The failed node will no longer be able
-to write to the device(s). A manual reboot is required.
+to write to the device(s). A manual reboot is required. In the cluster
+environment unfence action should be configured also.
 
 Keys are either be specified manually (see -k option) or generated
 automatically (see -n option). Automatic key generation requires that
