@@ -664,6 +664,9 @@ sub get_options_stdin ()
 	elsif ($opt eq "action") {
 	    $opt_o = $arg;
 	}
+	elsif ($opt eq "delay") {
+	    $opt_H = $arg;
+	}
     }
 }
 
@@ -677,6 +680,7 @@ sub print_usage ()
     print "  -a               Use APTPL flag\n";
     print "  -d <devices>     Devices to be used for action\n";
     print "  -f <logfile>     File to write debug/error output\n";
+    print "  -H <timeout>     Wait X seconds before fencing is started\n";
     print "  -h               Usage\n";
     print "  -k <key>         Key to be used for current action\n";
     print "  -n <nodename>    Name of node to operate on\n";
@@ -723,6 +727,14 @@ sub print_metadata ()
           "File to write error/debug messages" .
           "</shortdesc>\n";
     print "\t</parameter>\n";
+    print "\t</parameter>\n";
+    print "\t<parameter name=\"delay\" unique=\"0\" required=\"0\">\n";
+    print "\t\t<getopt mixed=\"-H\"/>\n";
+    print "\t\t<content type=\"string\"/>\n";
+    print "\t\t<shortdesc lang=\"en\">" .
+          "Wait X seconds before fencing is started" .
+          "</shortdesc>\n";
+    print "\t</parameter>\n";
     print "\t<parameter name=\"key\" unique=\"0\" required=\"0\">\n";
     print "\t\t<getopt mixed=\"-k\"/>\n";
     print "\t\t<content type=\"string\"/>\n";
@@ -759,7 +771,7 @@ sub print_metadata ()
 ################################################################################
 
 if (@ARGV > 0) {
-    getopts ("ad:f:hk:n:o:qV") or print_usage;
+    getopts ("ad:f:H:hk:n:o:qV") or print_usage;
     print_usage if (defined $opt_h);
     print_version if (defined $opt_V);
 } else {
@@ -825,6 +837,12 @@ if (scalar (@devices) == 0) {
 ##
 if (!defined $opt_o) {
     $opt_o = "off";
+}
+
+## Wait for defined period (-H / delay= )
+##
+if ((defined $opt_H) && ($opt_H =~ /^[0-9]+/)) {
+    sleep($opt_H);
 }
 
 ## determine the action to perform
