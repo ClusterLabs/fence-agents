@@ -806,14 +806,17 @@ def get_multi_power_fn(tn, options, get_power_fn):
 	return status
 
 def set_multi_power_fn(tn, options, set_power_fn):
-	for plug in options["--plugs"]:
-		try:
-			options["--uuid"] = str(uuid.UUID(plug))
-		except ValueError:
-			pass
-		except KeyError:
-			pass
-		options["--plug"] = plug
+	if options.has_key("--plugs"):
+		for plug in options["--plugs"]:
+			try:
+				options["--uuid"] = str(uuid.UUID(plug))
+			except ValueError:
+				pass
+			except KeyError:
+				pass
+			options["--plug"] = plug
+			set_power_fn(tn, options)
+	else:
 		set_power_fn(tn, options)
 
 
