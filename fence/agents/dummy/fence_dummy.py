@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, re, pexpect, exceptions
+import sys, re, pexpect, exceptions, random
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 
@@ -82,7 +82,7 @@ def main():
 		}
 
 	all_opt["random_sleep_range"] = {
-		"getopt" : "R:",
+		"getopt" : "r:",
 		"longopt" : "random_sleep_range",
 		"help":"--random_sleep_range=[seconds] Issue a sleep between 1 and [seconds]",
 		"required" : "0",
@@ -112,6 +112,13 @@ def main():
 	docs["longdesc"] = "fence_dummy"
 	docs["vendorurl"] = "http://www.example.com"
 	show_docs(options, docs)
+
+	# random sleep for testing
+	if options.has_key("--random_sleep_range"):
+		val = int(options["--random_sleep_range"])
+		ran = random.randint(1, val)
+		sys.stderr.write("random sleep for %d seconds\n" % ran)
+		time.sleep(ran)
 
 	if options["--type"] == "fail":
 		result = fence_action(None, options, set_power_status_fail, get_power_status_fail, get_outlets_fail)
