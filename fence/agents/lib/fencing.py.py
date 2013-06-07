@@ -787,18 +787,21 @@ def wait_power_status(tn, options, get_power_fn):
 def get_multi_power_fn(tn, options, get_power_fn):
 	status = "off"
 
-	for plug in options["--plugs"]:
-		try:
-			options["--uuid"] = str(uuid.UUID(plug))
-		except ValueError:
-			pass
-		except KeyError:
-			pass
+	if options.has_key("--plugs"):
+		for plug in options["--plugs"]:
+			try:
+				options["--uuid"] = str(uuid.UUID(plug))
+			except ValueError:
+				pass
+			except KeyError:
+				pass
 
-		options["--plug"] = plug
-		plug_status = get_power_fn(tn, options)
-		if plug_status == "on":
-			status = plug_status
+			options["--plug"] = plug
+			plug_status = get_power_fn(tn, options)
+			if plug_status == "on":
+				status = plug_status
+	else:
+		status = get_power_fn(tn, options)
 	
 	return status
 
