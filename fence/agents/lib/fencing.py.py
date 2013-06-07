@@ -798,7 +798,7 @@ def get_multi_power_fn(tn, options, get_power_fn):
 
 			options["--plug"] = plug
 			plug_status = get_power_fn(tn, options)
-			if plug_status == "on":
+			if plug_status != "off":
 				status = plug_status
 	else:
 		status = get_power_fn(tn, options)
