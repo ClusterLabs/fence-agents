@@ -158,8 +158,8 @@ all_opt = {
 	"cmd_prompt" : {
 		"getopt" : "c:",
 		"longopt" : "command-prompt",
-		"help" : "-c, --command-prompt=[prompt]  Force command prompt",
-		"shortdesc" : "Force command prompt",
+		"help" : "-c, --command-prompt=[prompt]  Force Python regex for command prompt",
+		"shortdesc" : "Force Python regex for command prompt",
 		"required" : "0",
 		"order" : 1 },
 	"secure" : {
