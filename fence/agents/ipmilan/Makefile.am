@@ -2,7 +2,7 @@ MAINTAINERCLEANFILES	= Makefile.in
 
 TARGET			= fence_ipmilan
 
-SYMTARGET		= fence_ilo3 fence_imm fence_idrac
+SYMTARGET		= fence_ilo3 fence_ilo4 fence_imm fence_idrac
 
 sbin_PROGRAMS		= $(TARGET)
 
