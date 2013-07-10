@@ -313,10 +313,13 @@ mcast_fence_virt(fence_virt_args_t *args)
 		if (lfd < 0) {
 			printf("Failed to listen: %s\n", strerror(errno));
 			usleep(args->retr_time * 100000);
-			--attempts;
-			continue;
+			if (--attempts > 0)
+				continue;
 		}
 	} while (0);
+
+	if (lfd < 0)
+		return -1;
 
 	gettimeofday(&tv, NULL);
 	seqno = (uint32_t)tv.tv_usec;
