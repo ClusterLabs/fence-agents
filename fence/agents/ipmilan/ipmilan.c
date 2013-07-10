@@ -904,6 +904,7 @@ static void print_xml_metadata(char *pname) {
   printf("%s\n","<?xml version=\"1.0\" ?>");
   printf("%s%s%s\n","<resource-agent name=\"",pname,"\" shortdesc=\"Fence agent for IPMI over LAN\">");
   printf("<symlink name=\"fence_ilo3\" shortdesc=\"Fence agent for HP iLO3\"/>\n");
+  printf("<symlink name=\"fence_ilo4\" shortdesc=\"Fence agent for HP iLO4\"/>\n");
   printf("<symlink name=\"fence_idrac\" shortdesc=\"Fence agent for Dell iDRAC\"/>\n");
   printf("<symlink name=\"fence_imm\" shortdesc=\"Fence agent for IBM Integrated Management Module\"/>\n");  
   printf("<longdesc>\n");
@@ -985,6 +986,8 @@ main(int argc, char **argv)
 		lanplus = 1;
 		down_sleep = 4;
 		strncpy(method, "cycle\0", 6);
+        } else if (!strcmp(pname, "fence_ilo4")) {
+		lanplus = 1;
         }
 
 	if (argc > 1) {
