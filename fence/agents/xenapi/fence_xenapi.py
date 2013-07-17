@@ -130,7 +130,7 @@ def get_outlet_list(session, options):
 # Function to initiate the XenServer session via the XenAPI library.
 def connect_and_login(options):
 	url = options["--session-url"]
-	username = options["--login"]
+	username = options["--username"]
 	password = options["--passwd"]
 
 	try:

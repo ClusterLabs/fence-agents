@@ -35,12 +35,12 @@ def eps_run_command(options, params):
 		eps_log(options, "GET "+request_str+"\n")
 		conn.putrequest('GET', request_str)
 
-		if (options.has_key("--login")):
+		if (options.has_key("--username")):
 			if (not options.has_key("--password")):
 				options["--password"] = "" # Default is empty password
 				
 			# String for Authorization header
-			auth_str = 'Basic ' + string.strip(base64.encodestring(options["--login"]+':'+options["--password"]))
+			auth_str = 'Basic ' + string.strip(base64.encodestring(options["--username"]+':'+options["--password"]))
 			eps_log(options, "Authorization:"+auth_str+"\n")
 			conn.putheader('Authorization', auth_str)
 

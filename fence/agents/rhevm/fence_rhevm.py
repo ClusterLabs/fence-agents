@@ -82,7 +82,7 @@ def send_command(opt, command, method = "GET"):
 	c.setopt(pycurl.URL, url)
 	c.setopt(pycurl.HTTPHEADER, [ "Content-type: application/xml", "Accept: application/xml" ])
 	c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_BASIC)
-	c.setopt(pycurl.USERPWD, opt["--login"] + ":" + opt["--password"])
+	c.setopt(pycurl.USERPWD, opt["--username"] + ":" + opt["--password"])
 	c.setopt(pycurl.TIMEOUT, int(opt["--shell-timeout"]))
 	c.setopt(pycurl.SSL_VERIFYPEER, 0)
 	c.setopt(pycurl.SSL_VERIFYHOST, 0)
