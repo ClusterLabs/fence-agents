@@ -167,7 +167,7 @@ struct xml_parameter_s xml_parameters[]={
   {"ipaddr","-a",1,"string",NULL,"IPMI Lan IP to talk to"},
   {"passwd","-p",0,"string",NULL,"Password (if required) to control power on IPMI device"},
   {"passwd_script","-S",0,"string",NULL,"Script to retrieve password (if required)"},
-  {"lanplus","-P",0,"boolean",NULL,"Use Lanplus"},
+  {"lanplus","-P",0,"boolean",NULL,"Use Lanplus to improve security of connection"},
   {"login","-l",0,"string",NULL,"Username/Login (if required) to control power on IPMI device"},
   {"action","-o",0,"string","reboot","Operation to perform. Valid operations: on, off, reboot, status, list, diag, monitor or metadata"},
   {"timeout","-t",0,"string",NULL,"Timeout (sec) for IPMI operation"},
@@ -859,7 +859,7 @@ printf("   -a <ipaddr>    IPMI Lan IP to talk to\n");
 printf("   -i <ipaddr>    IPMI Lan IP to talk to (deprecated, use -a)\n");
 printf("   -p <password>  Password (if required) to control power on\n"
        "                  IPMI device\n");
-printf("   -P             Use Lanplus\n");
+printf("   -P             Use Lanplus to improve security of connection\n");
 printf("   -S <path>      Script to retrieve password (if required)\n");
 printf("   -l <login>     Username/Login (if required) to control power\n"
        "                  on IPMI device\n");
