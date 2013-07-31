@@ -12,6 +12,7 @@
 #####
 
 import sys, re, pexpect
+from xml.sax.saxutils import quoteattr
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 
@@ -22,8 +23,8 @@ BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):
-	conn.send("<LOGIN USER_LOGIN = \"" + options["--username"] + "\"" + \
-		" PASSWORD = \"" + options["--password"] + "\">\r\n")
+	conn.send("<LOGIN USER_LOGIN = " + quoteattr(options["--username"]) + \
+		" PASSWORD = " + quoteattr(options["--password"]) + ">\r\n")
 	conn.send("<SERVER_INFO MODE = \"read\"><GET_HOST_POWER_STATUS/>\r\n")
 	conn.send("</SERVER_INFO></LOGIN>\r\n")
 	conn.log_expect(options, "HOST_POWER=\"(.*?)\"", int(options["--power-timeout"]))
@@ -32,8 +33,8 @@ def get_power_status(conn, options):
 	return status.lower().strip()
 
 def set_power_status(conn, options):
-	conn.send("<LOGIN USER_LOGIN = \"" + options["--username"] + "\"" + \
-		" PASSWORD = \"" + options["--password"] + "\">\r\n")
+	conn.send("<LOGIN USER_LOGIN = " + quoteattr(options["--username"]) + \
+		" PASSWORD = " + quoteattr(options["--password"]) + ">\r\n")
 	conn.send("<SERVER_INFO MODE = \"write\">")
 
 	if options.has_key("fw_processor") and options["fw_processor"] == "iLO2":
@@ -101,8 +102,8 @@ the iLO card through an XML stream."
 		else:
 			conn.send("<RIBCL VERSION=\"1.2\">\r\n")
 
-		conn.send("<LOGIN USER_LOGIN = \"" + options["--username"] + "\"" + \
-			" PASSWORD = \"" + options["--password"] + "\">\r\n")
+		conn.send("<LOGIN USER_LOGIN = " + quoteattr(options["--username"]) + \
+			" PASSWORD = " + quoteattr(options["--password"]) + ">\r\n")
 		if options["--ribcl-version"] >= 2:
 			conn.send("<RIB_INFO MODE=\"read\"><GET_FW_VERSION />\r\n")
 			conn.send("</RIB_INFO>\r\n")
