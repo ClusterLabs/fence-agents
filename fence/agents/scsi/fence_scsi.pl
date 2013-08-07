@@ -727,7 +727,6 @@ sub print_metadata ()
           "File to write error/debug messages" .
           "</shortdesc>\n";
     print "\t</parameter>\n";
-    print "\t</parameter>\n";
     print "\t<parameter name=\"delay\" unique=\"0\" required=\"0\">\n";
     print "\t\t<getopt mixed=\"-H\"/>\n";
     print "\t\t<content type=\"string\"/>\n";
