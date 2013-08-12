@@ -71,6 +71,10 @@ node. For the "on" action, the key specifies the key use to register
 the local node. For the "off" action, this key specifies the key to be
 removed from the device(s).
 .TP
+\fB-H\fP \fIdelay\fR
+Wait X seconds before fencing is started (Default Value: 0)
+
+.TP
 \fB-a\fP
 Use the APTPL flag for registrations. This option is only used for the
 "on" action.
@@ -103,6 +107,9 @@ Same as -f option
 .TP
 \fIkey = "param"\fR
 Same as -k option.
+.TP
+\fIdelay = "param"\fR
+Same as -H option.
 .TP
 \fIaptpl = "1"
 Enable the APTPL flag. Default is 0 (disable).
