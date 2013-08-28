@@ -71,7 +71,7 @@ class FencingSnmp:
 				('snmp-priv-passwd','X'),('password','A'),('username','u'))
 			for item in mapping_v3:
 				if (self.options.has_key("--"+item[0])):
-					cmd += " -%s '%s'"% (item[1], self.quote_for_run(self.options["--" + item[1]]))
+					cmd += " -%s '%s'"% (item[1], self.quote_for_run(self.options["--" + item[0]]))
 
 		force_ipvx = ""
 
