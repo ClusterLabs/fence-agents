@@ -950,8 +950,8 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 	
 	return result
 
-def fence_login(options):
-	force_ipvx = ""
+def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(username: )|(User Name :)"):
+	force_ipvx=""
 
 	if (options.has_key("--inet6-only")):
 		force_ipvx = "-6 "
@@ -971,7 +971,6 @@ def fence_login(options):
 		time.sleep(int(options["--delay"]))
 
 	try:
-		re_login_string = "(login\s*: )|(Login Name:  )|(username: )|(User Name :)"
 		re_login = re.compile(re_login_string, re.IGNORECASE)
 		re_pass  = re.compile("(password)|(pass phrase)", re.IGNORECASE)
 
