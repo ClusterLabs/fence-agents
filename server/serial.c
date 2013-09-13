@@ -275,7 +275,9 @@ serial_dispatch(listener_context_t c, struct timeval *timeout)
 
 	n = select(max+1, &rfds, NULL, NULL, timeout);
 	if (n < 0) {
-		perror("select");
+		if (errno == ETIMEDOUT || errno == EINTR || errno == EAGAIN)
+			return 0;
+		dbg_printf(2, "select: %s\n", strerror(errno));
 		return n;
 	}
 
@@ -306,7 +308,7 @@ serial_dispatch(listener_context_t c, struct timeval *timeout)
 			ret = _read_retry(x, &data, sizeof(data), &tv);
 
 			if (ret != sizeof(data)) {
-				if (--n)
+				if (--n > 0)
 					continue;
 				else
 					return 0;

@@ -432,8 +432,9 @@ event_thread(void *arg)
 		dbg_printf(3," * URI: %s\n", args->uri);
 	if (args->path)
 		dbg_printf(3," * Socket path: %s\n", args->path);
-	dbg_printf(3," * Mode: %s\n", args->mode?"VMChannel":"Serial");
+	dbg_printf(3," * Mode: %s\n", args->mode ? "VMChannel" : "Serial");
 
+top:
 	virEventRegisterImpl(myEventAddHandleFunc,
 			     myEventUpdateHandleFunc,
 			     myEventRemoveHandleFunc,
@@ -451,14 +452,13 @@ event_thread(void *arg)
 
 	registerExisting(dconn, args->path, args->mode);
 
-	/* Add 2 callbacks to prove this works with more than just one */
 	callback1ret =
-	    virConnectDomainEventRegister(dconn, myDomainEventCallback1,
-					  arg, NULL);
+	    virConnectDomainEventRegister(dconn, myDomainEventCallback1, arg, NULL);
 
-	if ((callback1ret == 0)) {
+	if (callback1ret == 0) {
 		while (run) {
-			struct pollfd pfd = {.fd = h_fd,
+			struct pollfd pfd = {
+				.fd = h_fd,
 				.events = h_event,
 				.revents = 0
 			};
@@ -481,13 +481,16 @@ event_thread(void *arg)
 
 			if (pfd.revents & POLLHUP) {
 				DEBUG0("Reset by peer");
-				goto out;
+				virConnectDomainEventDeregister(dconn, myDomainEventCallback1);
+				if (dconn && virConnectClose(dconn) < 0)
+					dbg_printf(1, "error closing libvirt connection\n");
+				DEBUG0("Attempting to reinitialize libvirt connection");
+				goto top;
 			}
 
 			if (h_cb) {
 				h_cb(0, h_fd,
-				     myPollEventToEventHandleType(pfd.revents &
-								  h_event),
+				     myPollEventToEventHandleType(pfd.revents & h_event),
 				     h_opaque);
 			}
 		}
