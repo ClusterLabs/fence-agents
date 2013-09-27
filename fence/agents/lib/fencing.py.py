@@ -487,7 +487,11 @@ def metadata(avail_opt, options, docs):
 			print "\t</parameter>"
 	print "</parameters>"
 	print "<actions>"
-	print "\t<action name=\"on\" />"
+	if avail_opt.count("fabric_fencing") == 1:
+		## do 'unfence' at the start
+		print "\t<action name=\"on\" automatic=\"1\"/>"
+	else:
+		print "\t<action name=\"on\" automatic=\"0\"/>"
 	print "\t<action name=\"off\" />"
 
 	if avail_opt.count("fabric_fencing") == 0:
