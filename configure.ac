@@ -276,6 +276,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/lpar/Makefile
 		 fence/agents/manual/Makefile
 		 fence/agents/mcdata/Makefile
+		 fence/agents/netio/Makefile
 		 fence/agents/nss_wrapper/Makefile
 		 fence/agents/rackswitch/Makefile
 		 fence/agents/ovh/Makefile

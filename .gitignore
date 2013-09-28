@@ -59,6 +59,7 @@ fence/agents/lib/fencing_snmp.pyc
 fence/agents/lpar/fence_lpar
 fence/agents/manual/fence_ack_manual
 fence/agents/mcdata/fence_mcdata
+fence/agents/netio/fence_netio
 fence/agents/node_assassin/fence_na
 fence/agents/node_assassin/fence_na.conf
 fence/agents/node_assassin/fence_na.lib
