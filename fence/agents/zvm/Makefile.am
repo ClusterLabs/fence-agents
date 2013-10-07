@@ -1,17 +1,13 @@
 MAINTAINERCLEANFILES	= Makefile.in
 
-TARGET			= fence_zvm
+sbin_PROGRAMS		= fence_zvm fence_zvmip
 
-SRC			= $(TARGET).pl
+noinst_HEADERS		= fence_zvm.h
 
-EXTRA_DIST		= $(SRC)
+fence_zvm_SOURCES	= fence_zvm.c
+fence_zvm_CFLAGS	= -D_GNU_SOURCE
 
-sbin_SCRIPTS		= $(TARGET)
+fence_zvmip_SOURCES	= fence_zvmip.c
+fence_zvmip_CFLAGS	= -D_GNU_SOURCE
 
-man_MANS		= $(TARGET).8
-
-include $(top_srcdir)/make/fencebuild.mk
-include $(top_srcdir)/make/fencemanperl.mk
-
-clean-local: clean-man
-	rm -f $(TARGET)
+man_MANS		= fence_zvm.8 fence_zvmip.8
