@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import sys, exceptions
+import shutil, tempfile
 sys.path.append("@FENCEAGENTSLIBDIR@")
 
 from suds.client import Client
@@ -20,6 +21,11 @@ def soap_login(options):
 		url = "http://"
 	
 	url += options["--ip"] + ":" + str(options["--ipport"]) + "/sdk"
+
+	tmp_dir = tempfile.mkdtemp()
+	tempfile.tempdir = tmp_dir
+	atexit.register(remove_tmp_dir, tmp_dir)
+	
 	try:
 		conn = Client(url + "/vimService.wsdl")
 		conn.set_options(location = url)
@@ -154,6 +160,9 @@ def set_power_status(conn, options):
 		conn.service.PowerOnVM_Task(mo_machine)
 	else:
 		conn.service.PowerOffVM_Task(mo_machine)	
+
+def remove_tmp_dir(tmp_dir):
+	shutil.rmtree(tmp_dir)
 
 def main():
 	device_opt = [ "ipaddr", "login", "passwd", "web", "ssl", "port" ]

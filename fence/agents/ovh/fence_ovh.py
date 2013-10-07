@@ -9,6 +9,7 @@
 # This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 Unported License.
 
 import sys, time
+import shutil, tempfile
 from datetime import datetime
 from suds.client import Client
 from suds.xsd.doctor import ImportDoctor, Import
@@ -61,6 +62,10 @@ def soap_login(options):
 	imp.filter.add('http://soapi.ovh.com/manager')
 	d = ImportDoctor(imp)
 
+	tmp_dir = tempfile.mkdtemp()
+	tempfile.tempdir = tmp_dir
+	atexit.register(remove_tmp_dir, tmp_dir)
+
 	try:
 		soap = Client(url, doctor=d)
 		session = soap.service.login(options["--username"], options["--password"], 'en', 0)
@@ -69,6 +74,9 @@ def soap_login(options):
 
 	options["session"] = session
 	return soap
+
+def remove_tmp_dir(tmp_dir):
+	shutil.rmtree(tmp_dir)
 	
 def main():
 	device_opt = [ "login", "passwd", "port", "email" ]
