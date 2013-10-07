@@ -79,6 +79,7 @@ fence/agents/vmware/fence_vmware_helper
 fence/agents/wti/fence_wti
 fence/agents/xcat/fence_xcat
 fence/agents/zvm/fence_zvm
+fence/agents/zvm/fence_zvmip
 .fence*.tmp
 fence-agents*
 .version
