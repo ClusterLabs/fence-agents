@@ -140,6 +140,7 @@ def main():
 	docs = { }
 	docs["shortdesc"] = "Fence agent for IBM LPAR"
 	docs["longdesc"] = ""
+	docs["vendorurl"] = "http://www.ibm.com"
 	show_docs(options, docs)
 
 	if 0 == options.has_key("--managed"):

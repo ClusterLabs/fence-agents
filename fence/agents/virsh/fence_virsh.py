@@ -79,6 +79,7 @@ all work. \
 \n.P\n\
 By default, virsh needs root account to do properly work. So you \
 must allow ssh login in your sshd_config."
+	docs["vendorurl"] = "http://libvirt.org"
 	show_docs(options, docs)
 
 	## Operate the fencing device
