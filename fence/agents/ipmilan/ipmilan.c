@@ -915,10 +915,11 @@ static void print_xml_metadata(char *pname) {
          "option (lanplus / -P) and increase wait after operation to "
          "4 seconds (power_wait=4 / -T 4)");
   printf("</longdesc>\n");
+  printf("<vendor-url>http://www.intel.com</vendor-url>\n");
   printf("%s\n","<parameters>");
 
   for (i=0;i<(sizeof(xml_parameters)/sizeof(struct xml_parameter_s));i++) {
-    printf("\t<parameter name=\"%s\" unique=\"0\">\n",xml_parameters[i].name);
+    printf("\t<parameter name=\"%s\" unique=\"0\" required=\"%d\">\n",xml_parameters[i].name, xml_parameters[i].required);
 
     printf("\t\t<getopt mixed=\"%s\" />\n",xml_parameters[i].getopt);
     if (xml_parameters[i].default_value == NULL) {

@@ -214,6 +214,7 @@ It uses the XenAPI, supplied by Citrix, to establish an XML-RPC sesssion \
 to a XenServer host. Once the session is established, further XML-RPC \
 commands are issued in order to switch on, switch off, restart and query \
 the status of virtual machines running on the host." 
+	docs["vendorurl"] = "http://www.xenproject.org"
 	show_docs(options, docs)
 
 	xenSession = connect_and_login(options)

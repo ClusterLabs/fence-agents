@@ -705,6 +705,7 @@ sub print_metadata ()
     print "<resource-agent name=\"fence_scsi\"" .
           " shortdesc=\"fence agent for SCSI-3 persistent reservations\">\n";
     print "<longdesc>fence_scsi</longdesc>\n";
+    print "<vendor-url>http://www.t10.org</vendor-url>\n";
     print "<parameters>\n";
     print "\t<parameter name=\"aptpl\" unique=\"0\" required=\"0\">\n";
     print "\t\t<getopt mixed=\"-a\"/>\n";
