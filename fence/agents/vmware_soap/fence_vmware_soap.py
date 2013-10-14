@@ -156,10 +156,19 @@ def set_power_status(conn, options):
 	mo_machine = Property(vm.value)
 	mo_machine._type = "VirtualMachine"
 	
-	if options["--action"] == "on":
-		conn.service.PowerOnVM_Task(mo_machine)
-	else:
-		conn.service.PowerOffVM_Task(mo_machine)	
+	try:
+		if options["--action"] == "on":
+			conn.service.PowerOnVM_Task(mo_machine)
+		else:
+			conn.service.PowerOffVM_Task(mo_machine)
+	except WebFault, ex:
+		if ((str(ex).find("Permission to perform this operation was denied")) >= 0):
+			fail(EC_INVALID_PRIVILEGES)
+		else:
+			if options["--action"] == "on":
+				fail(EC_WAITING_ON)
+			else:
+				fail(EC_WAITING_OFF)
 
 def remove_tmp_dir(tmp_dir):
 	shutil.rmtree(tmp_dir)
