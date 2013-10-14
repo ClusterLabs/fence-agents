@@ -24,6 +24,7 @@ EC_WAITING_OFF     = 7
 EC_STATUS          = 8
 EC_STATUS_HMC      = 9
 EC_PASSWORD_MISSING = 10
+EC_INVALID_PRIVILEGES = 11
 
 TELNET_PATH = "/usr/bin/telnet"
 SSH_PATH    = "/usr/bin/ssh"
@@ -440,7 +441,8 @@ def fail(error_code):
 		EC_STATUS : "Failed: Unable to obtain correct plug status or plug is not available",
 		EC_STATUS_HMC :
 			"Failed: Either unable to obtain correct plug status, partition is not available or incorrect HMC version used",
-		EC_PASSWORD_MISSING : "Failed: You have to set login password"
+		EC_PASSWORD_MISSING : "Failed: You have to set login password",
+		EC_INVALID_PRIVILEGES : "Failed: The user does not have the correct privileges to do the requested action."
 	}[error_code] + "\n"
 	sys.stderr.write(message)
 	syslog.syslog(syslog.LOG_ERR, message)
