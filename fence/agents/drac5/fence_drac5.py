@@ -112,8 +112,8 @@ By default, the telnet interface is not  enabled."
 	conn = fence_login(options)
 
 	if conn.before.find("CMC") >= 0:
-		if 0 == options.has_key("--module-name") and 0 == ["monitor", "list"].count(options["--action"].lower()):
-			fail_usage("Failed: You have to enter module name (-m)")
+		if 0 == options.has_key("--plug") and 0 == ["monitor", "list"].count(options["--action"].lower()):
+			fail_usage("Failed: You have to enter module name (-n)")
 			
 		options["model"] = "DRAC CMC"
 	elif conn.before.find("DRAC 5") >= 0:
