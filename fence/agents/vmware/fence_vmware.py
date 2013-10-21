@@ -261,17 +261,17 @@ def vmware_is_supported_vmrun_version(options):
 def vmware_check_vmware_type(options):
 	global vmware_internal_type
 
-	options["--vmware-type"] = options["--vmware-type"].lower()
+	options["--vmware_type"] = options["--vmware_type"].lower()
 
-	if (options["--vmware-type"]=="esx"):
+	if (options["--vmware_type"]=="esx"):
 		vmware_internal_type = VMWARE_TYPE_ESX
 		if (not options.has_key("--exec")):
 			options["--exec"] = VMHELPER_COMMAND
-	elif (options["--vmware-type"]=="server2"):
+	elif (options["--vmware_type"]=="server2"):
 		vmware_internal_type = VMWARE_TYPE_SERVER2
 		if (not options.has_key("--exec")):
 			options["--exec"] = VMRUN_COMMAND
-	elif (options["--vmware-type"]=="server1"):
+	elif (options["--vmware_type"]=="server1"):
 		vmware_internal_type = VMWARE_TYPE_SERVER1
 		if (not options.has_key("--exec")):
 			options["--exec"] = VMRUN_COMMAND
