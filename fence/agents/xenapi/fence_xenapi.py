@@ -131,7 +131,7 @@ def get_outlet_list(session, options):
 def connect_and_login(options):
 	url = options["--session-url"]
 	username = options["--username"]
-	password = options["--passwd"]
+	password = options["--password"]
 
 	try:
 		# Create the XML RPC session to the specified URL.
@@ -158,8 +158,8 @@ def return_vm_reference(session, options):
 		verbose = False
 
 	# Case where the UUID has been specified
-	if options.has_key("--uid"):
-		uuid = options["--uid"].lower()
+	if options.has_key("--uuid"):
+		uuid = options["--uuid"].lower()
 		# When using the -n parameter for name, we get an error message (in verbose
 		# mode) that tells us that we didn't find a VM. To immitate that here we
 		# need to catch and re-raise the exception produced by get_by_uuid.
