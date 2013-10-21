@@ -21,10 +21,10 @@ REDHAT_COPYRIGHT=""
 BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
 
-def get_power_status(conn, options):
+def get_listing(conn, options, listing_command):
 	listing = ""
 
-	conn.send("/S"+"\r\n")
+	conn.send(listing_command + "\r\n")
 
 	if isinstance(options["--command-prompt"], list):
 		re_all = list(options["--command-prompt"])
@@ -39,7 +39,12 @@ def get_power_status(conn, options):
 		conn.send("\r\n")
 		conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 		listing += conn.before
-	
+
+	return listing
+
+def get_plug_status(conn, options):
+	listing = get_listing(conn, options, "/S")
+
 	plug_section = 0
 	plug_index = -1
 	name_index = -1
@@ -71,6 +76,82 @@ def get_power_status(conn, options):
 		return outlets
 	else:
 		return "PROBLEM"
+
+def get_plug_group_status_from_list(status_list):
+	for status in status_list:
+		if status == "on":
+		      return status
+	return "off"
+
+def get_plug_group_status(conn, options):
+	listing = get_listing(conn, options, "/SG")
+
+	plug_section = 0
+	outlets = {}
+	current_outlet = ""
+	line_index = 0
+	lines = listing.splitlines()
+	while line_index < len(lines) and line_index >= 0:
+		line = lines[line_index]
+		if (line.find("|") >= 0 and line.lstrip().startswith("GROUP NAME") == False):
+			plug_line = [x.strip().lower() for x in line.split("|")]
+			if ["list", "monitor"].count(options["--action"]) == 0 and options["--plug"].lower() == plug_line[name_index]:
+				line_index += 1
+				plug_status = []
+				while line_index < len(lines) and line_index >= 0:
+					plug_line = [x.strip().lower() for x in lines[line_index].split("|")]
+					if len(plug_line[plug_index]) > 0 and len(plug_line[name_index]) == 0:
+						plug_status.append(plug_line[status_index])
+						line_index += 1
+					else:
+						line_index = -1
+
+				return get_plug_group_status_from_list(plug_status)
+ 
+			else:
+				## We already believe that first column contains plug number
+				if len(plug_line[0]) != 0:
+					group_name = plug_line[0]
+					plug_line_index = line_index + 1
+					plug_status = []
+					while plug_line_index < len(lines) and plug_line_index >= 0:
+						plug_line = [x.strip().lower() for x in lines[plug_line_index].split("|")]
+						if len(plug_line[name_index]) > 0:
+							plug_line_index = -1
+							break
+						if len(plug_line[plug_index]) > 0:
+							plug_status.append(plug_line[status_index])
+							plug_line_index += 1
+						else:
+							plug_line_index = -1
+					outlets[group_name] = (group_name, get_plug_group_status_from_list(plug_status))
+				line_index += 1
+
+		elif (line.upper().lstrip().startswith("GROUP NAME")):
+			plug_header = [x.strip().lower() for x in line.split("|")]
+			name_index = plug_header.index("group name")
+			plug_index = plug_header.index("plug")
+			status_index = plug_header.index("status")
+			line_index += 2
+		else:
+			line_index += 1
+
+
+	if ["list", "monitor"].count(options["--action"]) == 1:
+		for group, status in outlet_groups:
+			outlets[group] = (group, status[0])
+
+		return outlets
+	else:
+		return "PROBLEM"
+
+def get_power_status(conn, options):
+	ret = get_plug_status(conn, options)
+	
+	if ret == "PROBLEM":
+		ret = get_plug_group_status(conn, options)
+
+	return ret
 
 def set_power_status(conn, options):
 	action = {
