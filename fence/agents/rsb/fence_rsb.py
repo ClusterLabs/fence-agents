@@ -13,7 +13,7 @@ BUILD_DATE=""
 def get_power_status(conn, options):
 	conn.send("2")
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
-	status = re.compile("Power Status : (on|off)", re.IGNORECASE).search(conn.before).group(1)
+	status = re.compile("Power Status[\s]*: (on|off)", re.IGNORECASE).search(conn.before).group(1)
 	conn.send("0")
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
