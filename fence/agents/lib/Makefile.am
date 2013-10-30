@@ -6,11 +6,11 @@ if BUILD_XENAPILIB
 TARGET			+= XenAPI.py
 endif
 
-SRC			= fencing.py.py fencing_snmp.py.py XenAPI.py.py
+SRC			= fencing.py.py fencing_snmp.py.py XenAPI.py.py check_used_options.py
 
 XSL			= fence2man.xsl fence2rng.xsl
 
-FASRNG			= fence.rng.head fence.rng.tail
+FASRNG			= fence.rng.head fence.rng.tail metadata.rng
 
 EXTRA_DIST		= $(SRC) $(XSL) $(FASRNG)
 

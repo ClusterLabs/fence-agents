@@ -2,7 +2,7 @@
 	set -e && \
 	PYTHONPATH=$(abs_srcdir)/../lib:$(abs_builddir)/../lib \
 		python $^ -o metadata > .$@.tmp && \
-	xmllint --noout --relaxng $(top_srcdir)/fence/agents/lib/metadata.rng .$@.tmp && \
+	xmllint --noout --relaxng $(abs_srcdir)/../lib/metadata.rng .$@.tmp && \
 	xsltproc $(top_srcdir)/fence/agents/lib/fence2man.xsl .$@.tmp > $@
 
 clean-man:
