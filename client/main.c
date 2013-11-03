@@ -138,7 +138,12 @@ main(int argc, char **argv)
 
 	switch(ret) {
 	case RESP_OFF:
+		if (args.op == FENCE_STATUS)
+			printf("Status: OFF\n");
+		break;
 	case 0:
+		if (args.op == FENCE_STATUS)
+			printf("Status: ON\n");
 		break;
 	case RESP_FAIL:
 		printf("Operation failed\n");
