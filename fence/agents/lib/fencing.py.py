@@ -1012,12 +1012,15 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 
 			try:
 				conn.send_eol(options["--password"])
-				valid_password = conn.log_expect(options, [ re_login_string ] + options["--command-prompt"], int(options["--shell-timeout"]))
+				valid_password = conn.log_expect(options, [ re_login ] + options["--command-prompt"], int(options["--shell-timeout"]))
 				if valid_password == 0:
 					## password is invalid or we have to change EOL separator
 					options["eol"] = "\r"
 					conn.send_eol("")
-					conn.send_eol("")
+					screen = conn.read_nonblocking(size=100, timeout=int(options["--shell-timeout"]))
+					## after sending EOL the fence device can either show 'Login' or 'Password'
+					if (re_login.search(screen) != None):
+						conn.send_eol("")
 					conn.send_eol(options["--username"])
 					conn.log_expect(options, re_pass, int(options["--login-timeout"]))
 					conn.send_eol(options["--password"])
