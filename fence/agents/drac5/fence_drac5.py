@@ -23,14 +23,18 @@ BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):
-	if options["model"] == "DRAC CMC":
-		conn.send_eol("racadm serveraction powerstatus -m " + options["--plug"])
-	elif options["model"] == "DRAC 5":
-		conn.send_eol("racadm serveraction powerstatus")
+	if options["--drac-version"] == "DRAC MC":
+		(_, status) = get_list_devices(conn,options)[options["--plug"]]
+	else:
+		if options["--drac-version"] == "DRAC CMC":
+			conn.send_eol("racadm serveraction powerstatus -m " + options["--plug"])
+		elif options["--drac-version"] == "DRAC 5":
+			conn.send_eol("racadm serveraction powerstatus")
 		
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+		conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 				
-	status = re.compile("(^|: )(ON|OFF|Powering ON|Powering OFF)\s*$", re.IGNORECASE | re.MULTILINE).search(conn.before).group(2)
+		status = re.compile("(^|: )(ON|OFF|Powering ON|Powering OFF)\s*$", re.IGNORECASE | re.MULTILINE).search(conn.before).group(2)
+
 	if status.lower().strip() in ["on", "powering on", "powering off"]:
 		return "on"
 	else:
@@ -42,10 +46,12 @@ def set_power_status(conn, options):
 		'off': "powerdown"
 	}[options["--action"]]
 
-	if options["model"] == "DRAC CMC":
+	if options["--drac-version"] == "DRAC CMC":
 		conn.send_eol("racadm serveraction " + action + " -m " + options["--plug"])
-	elif options["model"] == "DRAC 5":
+	elif options["--drac-version"] == "DRAC 5":
 		conn.send_eol("racadm serveraction " + action)
+	elif options["--drac-version"] == "DRAC MC":
+		conn.send_eol("racadm serveraction -s " + options["--plug"] + " " + action)
 
 	## Fix issue with double-enter [CR/LF]
 	##	We need to read two additional command prompts (one from get + one from set command)
@@ -58,7 +64,7 @@ def set_power_status(conn, options):
 def get_list_devices(conn, options):
 	outlets = { }
 
-	if options["model"] == "DRAC CMC":
+	if options["--drac-version"] == "DRAC CMC":
 		conn.send_eol("getmodinfo")
 
 		list_re = re.compile("^([^\s]*?)\s+Present\s*(ON|OFF)\s*.*$")
@@ -66,7 +72,15 @@ def get_list_devices(conn, options):
 		for line in conn.before.splitlines():
 			if (list_re.search(line)):
 				outlets[list_re.search(line).group(1)] = ("", list_re.search(line).group(2))
-	elif options["model"] == "DRAC 5":
+	elif options["--drac-version"] == "DRAC MC":
+		conn.send_eol("getmodinfo")
+
+		list_re = re.compile("^\s*([^\s]*)\s*---->\s*(.*?)\s+Present\s*(ON|OFF)\s*.*$")
+		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+		for line in conn.before.splitlines():
+			if (list_re.search(line)):
+				outlets[list_re.search(line).group(2)] = ("", list_re.search(line).group(3))
+	elif options["--drac-version"] == "DRAC 5":
 		## DRAC 5 can be used only for one computer
 		## standard fence library can't handle correctly situation
 		## when some fence devices supported by fence agent
@@ -79,9 +93,9 @@ def define_new_opts():
 	all_opt["drac_version"] = {
 		"getopt" : "d:",
 		"longopt" : "drac-version",
-		"help" : "-d, --drac-version=[version]   Force DRAC version to use",
+		"help" : "-d, --drac-version=[version]   Force DRAC version to use (DRAC 5, DRAC CMC, DRAC MC)",
 		"required" : "0",
-		"shortdesc" : "Force DRAC version to use",
+		"shortdesc" : "Force DRAC version to use (DRAC 5, DRAC CMC, DRAC MC)",
 		"order" : 1 }
 
 def main():
@@ -92,7 +106,7 @@ def main():
 
 	define_new_opts()
 
-	all_opt["cmd_prompt"]["default"] = [ "\$" ]
+	all_opt["cmd_prompt"]["default"] = [ "\$", "DRAC\/MC:" ]
 
 	options = check_input(device_opt, process_input(device_opt))
 
@@ -111,16 +125,22 @@ By default, the telnet interface is not  enabled."
 	######
 	conn = fence_login(options)
 
-	if conn.before.find("CMC") >= 0:
+	if options.has_key("--drac-version") == False:
+		print conn
+		## autodetect from text issued by fence device
+		if conn.before.find("CMC") >= 0:
+	  		options["--drac-version"] = "DRAC CMC"
+		elif conn.before.find("DRAC 5") >= 0:
+			options["--drac-version"] = "DRAC 5"
+		elif conn.after.find("DRAC/MC") >= 0:
+			options["--drac-version"] = "DRAC MC"
+		else:
+			## Assume this is DRAC 5 by default as we don't want to break anything
+			options["--drac-version"] = "DRAC 5"
+
+	if options["--drac-version"] in ["DRAC MC", "DRAC CMC"]:
 		if 0 == options.has_key("--plug") and 0 == ["monitor", "list"].count(options["--action"].lower()):
 			fail_usage("Failed: You have to enter module name (-n)")
-			
-		options["model"] = "DRAC CMC"
-	elif conn.before.find("DRAC 5") >= 0:
-		options["model"] = "DRAC 5"
-	else:
-		## Assume this is DRAC 5 by default as we don't want to break anything
-		options["model"] = "DRAC 5"
 
 	result = fence_action(conn, options, set_power_status, get_power_status, get_list_devices)
 
