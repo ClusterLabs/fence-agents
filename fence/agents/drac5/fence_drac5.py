@@ -126,7 +126,6 @@ By default, the telnet interface is not  enabled."
 	conn = fence_login(options)
 
 	if options.has_key("--drac-version") == False:
-		print conn
 		## autodetect from text issued by fence device
 		if conn.before.find("CMC") >= 0:
 	  		options["--drac-version"] = "DRAC CMC"
