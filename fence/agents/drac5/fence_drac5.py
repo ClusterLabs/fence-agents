@@ -96,6 +96,7 @@ def define_new_opts():
 		"help" : "-d, --drac-version=[version]   Force DRAC version to use (DRAC 5, DRAC CMC, DRAC MC)",
 		"required" : "0",
 		"shortdesc" : "Force DRAC version to use (DRAC 5, DRAC CMC, DRAC MC)",
+		"choices" : [ "DRAC CMC", "DRAC MC", "DRAC 5" ],
 		"order" : 1 }
 
 def main():
