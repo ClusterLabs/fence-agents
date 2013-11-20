@@ -114,6 +114,7 @@ def define_new_opts():
 		"required" : "0",
 		"shortdesc" : "Force HMC version to use (3 or 4)",
 		"default" : "4", 
+		"choices" : [ "3", "4" ],
 		"order" : 1 }
 	all_opt["partition"] = {
 		"getopt" : "n:",
@@ -148,9 +149,6 @@ def main():
 
 	if (0 == ["list", "monitor"].count(options["--action"].lower())) and (0 == options.has_key("--partition")):
 		fail_usage("Failed: You have to enter name of the partition")
-
-	if 1 == options.has_key("--hmc-version") and (options["--hmc-version"] != "3" and options["--hmc-version"] != "4"):
-		fail_usage("Failed: You have to enter valid version number: 3 or 4")
 
 	##
 	## Operate the fencing device

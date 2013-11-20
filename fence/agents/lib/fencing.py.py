@@ -149,13 +149,6 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "DRAC/MC module name",
 		"order" : 1 },
-	"drac_version" : {
-		"getopt" : "d:",
-		"longopt" : "drac-version",
-		"help" : "-d, --drac-version=[version]   Force DRAC version to use",
-		"required" : "0",
-		"shortdesc" : "Force DRAC version to use",
-		"order" : 1 },
 	"cmd_prompt" : {
 		"getopt" : "c:",
 		"longopt" : "command-prompt",
@@ -231,6 +224,7 @@ all_opt = {
 		"help" : "-d, --snmp-version=[version]   Specifies SNMP version to use",
 		"required" : "0",
 		"shortdesc" : "Specifies SNMP version to use (1,2c,3)",
+		"choices" : [ "1", "2c", "3" ],
 		"order" : 1 },
 	"community" : {
 		"getopt" : "c:",
@@ -245,6 +239,7 @@ all_opt = {
 		"help" : "-b, --snmp-auth-prot=[prot]    Set authentication protocol (MD5|SHA)",
 		"required" : "0",
 		"shortdesc" : "Set authentication protocol (MD5|SHA)",
+		"choices" : [ "MD5" , "SHA" ],
 		"order" : 1},
 	"snmp_sec_level" : {
 		"getopt" : "E:",
@@ -253,6 +248,7 @@ all_opt = {
 		"                                  (noAuthNoPriv|authNoPriv|authPriv)",
 		"required" : "0",
 		"shortdesc" : "Set security level (noAuthNoPriv|authNoPriv|authPriv)",
+		"choices" : [ "noAuthNoPriv", "authNoPriv", "authPriv" ],
 		"order" : 1},
 	"snmp_priv_prot" : {
 		"getopt" : "B:",
@@ -260,6 +256,7 @@ all_opt = {
 		"help" : "-B, --snmp-priv-prot=[prot]    Set privacy protocol (DES|AES)",
 		"required" : "0",
 		"shortdesc" : "Set privacy protocol (DES|AES)",
+		"choices" : [ "DES", "AES" ],
 		"order" : 1},
 	"snmp_priv_passwd" : {
 		"getopt" : "P:",
@@ -776,6 +773,15 @@ def check_input(device_opt, opt):
 			options["--ipport"] = 80
 		else:
 			options["--ipport"] = 23
+
+	for opt in device_opt:
+		if all_opt[opt].has_key("choices"):
+			long = "--" + all_opt[opt]["longopt"]
+			possible_values_upper = map (lambda y : y.upper(), all_opt[opt]["choices"])
+			if options.has_key(long):
+				options[long] = options[long].upper()
+				if not options["--" + all_opt[opt]["longopt"]] in possible_values_upper:
+					fail_usage("Failed: You have to enter a valid choice for %s from the valid values: %s" % ("--" + all_opt[opt]["longopt"] , str(all_opt[opt]["choices"])))
 
 	return options
 	

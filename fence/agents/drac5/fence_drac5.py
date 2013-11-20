@@ -81,7 +81,8 @@ def define_new_opts():
 		"longopt" : "drac-version",
 		"help" : "-d, --drac-version=[version]   Force DRAC version to use",
 		"required" : "0",
-		"shortdesc" : "Force DRAC version to use",
+		"shortdesc" : "Force DRAC version to use (DRAC 5, DRAC CMC)",
+		"choices" : [ "DRAC CMC", "DRAC 5" ],
 		"order" : 1 }
 
 def main():
