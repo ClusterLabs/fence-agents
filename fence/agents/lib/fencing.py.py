@@ -504,7 +504,12 @@ def metadata(avail_opt, options, docs):
 			mixed = mixed.replace("<", "&lt;").replace(">", "&gt;")
 			print "\t\t<getopt mixed=\"" + mixed + "\" />"
 
-			if all_opt[option]["getopt"].count(":") > 0:
+			if all_opt[option].has_key("choices"):
+				print "\t\t<content type=\"select\" "+default+" >"
+				for choice in all_opt[option]["choices"]:
+					print "\t\t\t<option value=\"%s\" />" % (choice)
+				print "\t\t</content>"
+			elif all_opt[option]["getopt"].count(":") > 0:
 				print "\t\t<content type=\"string\" "+default+" />"
 			else:
 				print "\t\t<content type=\"boolean\" "+default+" />"

@@ -24,12 +24,24 @@
 				<attribute name="mixed" />
 			</element>
 			<element name="content">
-				<attribute name="type">
-					<choice>
-						<value>boolean</value>
-						<value>string</value>
-					</choice>
-				</attribute>
+				<choice>
+					<attribute name="type">
+						<choice>
+							<value>boolean</value>
+							<value>string</value>
+						</choice>
+					</attribute>
+					<group>
+						<attribute name="type">
+							<value>select</value>
+						</attribute>
+						<zeroOrMore>
+							<element name="option">
+								<attribute name="value" />
+							</element>
+						</zeroOrMore>
+					</group>
+				</choice>
 				<optional>
 					<attribute name="default"> <text /> </attribute>
 				</optional>
