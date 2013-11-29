@@ -342,7 +342,16 @@ all_opt = {
 		"help" : "--use-sudo                     Use sudo (without password) when calling 3rd party software",
 		"required" : "0",
 		"shortdesc" : "Use sudo (without password) when calling 3rd party sotfware.",
-		"order" : 205}
+		"order" : 205},
+	"method" : {
+		"getopt" : "m:",
+		"longopt" : "method",
+		"help" : "-m, --method=[method]          Method to fence (onoff|cycle) (Default: onoff)",
+		"required" : "0",
+		"shortdesc" : "Method to fence (onoff|cycle) (Default: onoff)",
+		"default" : "onoff",
+		"choices" : [ "onoff", "cycle" ],
+		"order" : 1}
 }
 
 # options which are added automatically if 'key' is encountered ("default" is always added)
@@ -780,6 +789,23 @@ def set_multi_power_fn(tn, options, set_power_fn):
 	else:
 		set_power_fn(tn, options)
 
+def multi_reboot_cycle_fn(tn, options, reboot_cycle_fn):
+	success = False;
+	if options.has_key("--plugs"):
+		for plug in options["--plugs"]:
+			try:
+				options["--uuid"] = str(uuid.UUID(plug))
+			except ValueError:
+				pass
+			except KeyError:
+				pass
+			options["--plug"] = plug
+			plug_status = reboot_cycle_fn(tn, options)
+			if plug_status:
+				success = plug_status
+	else:
+		success = reboot_cycle_fn(tn, options)
+	return success
 
 def show_docs(options, docs = None):
 	device_opt = options["device_opt"]
@@ -804,7 +830,7 @@ def show_docs(options, docs = None):
 		print __main__.REDHAT_COPYRIGHT
 		sys.exit(0)
 
-def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None):
+def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None, reboot_cycle_fn = None):
 	result = 0
 
 	try:
@@ -863,28 +889,38 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 				else:
 					fail(EC_WAITING_OFF)
 		elif options["--action"] == "reboot":
-			if status != "off":
-				options["--action"] = "off"
-				set_multi_power_fn(tn, options, set_power_fn)
-				time.sleep(int(options["--power-wait"]))
-				if wait_power_status(tn, options, get_power_fn) == 0:
-					fail(EC_WAITING_OFF)
-			options["--action"] = "on"
-
 			power_on = False
-			try:
+			if options.has_key("--method") and options["--method"].lower() == "cycle":
 				for _ in range(1, 1 + int(options["--retry-on"])):
-					set_multi_power_fn(tn, options, set_power_fn)
-					time.sleep(int(options["--power-wait"]))
-					if wait_power_status(tn, options, get_power_fn) == 1:
+					if multi_reboot_cycle_fn(tn, options, reboot_cycle_fn):
 						power_on = True
 						break
-			except Exception, ex:
-				# an error occured during power ON phase in reboot
-				# fence action was completed succesfully even in that case
-				sys.stderr.write(str(ex))
-				syslog.syslog(syslog.LOG_NOTICE, str(ex))
-				pass
+
+				if not power_on:
+					fail(EC_TIMED_OUT)
+
+			else:
+				if status != "off":
+					options["--action"] = "off"
+					set_multi_power_fn(tn, options, set_power_fn)
+					time.sleep(int(options["--power-wait"]))
+					if wait_power_status(tn, options, get_power_fn) == 0:
+						fail(EC_WAITING_OFF)
+				options["--action"] = "on"
+
+				try:
+					for _ in range(1, 1 + int(options["--retry-on"])):
+						set_multi_power_fn(tn, options, set_power_fn)
+						time.sleep(int(options["--power-wait"]))
+						if wait_power_status(tn, options, get_power_fn) == 1:
+							power_on = True
+							break
+				except Exception, ex:
+					# an error occured during power ON phase in reboot
+					# fence action was completed succesfully even in that case
+					sys.stderr.write(str(ex))
+					syslog.syslog(syslog.LOG_NOTICE, str(ex))
+					pass
 
 			if power_on == False:
 				# this should not fail as node was fenced succesfully
