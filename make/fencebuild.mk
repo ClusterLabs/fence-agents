@@ -9,6 +9,8 @@ $(TARGET): $(SRC)
 		-e 's#@''LOGDIR@#${LOGDIR}#g' \
 		-e 's#@''SBINDIR@#${sbindir}#g' \
 		-e 's#@''LIBEXECDIR@#${libexecdir}#g' \
+		-e 's#@''IPMITOOL_PATH#${IPMITOOL_PATH}#g' \
+		-e 's#@''AMTTOOL_PATH#${AMTTOOL_PATH}#g' \
 	> $@
 
 	if [ 0 -eq `echo "$(SRC)" | grep fence_ &> /dev/null; echo $$?` ]; then \
