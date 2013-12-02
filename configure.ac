@@ -163,6 +163,9 @@ LOGDIR=${localstatedir}/log/cluster
 CLUSTERVARRUN=${localstatedir}/run/cluster
 CLUSTERDATA=${datadir}/cluster
 
+## path to 3rd-party binaries
+AC_PATH_PROG([IPMITOOL_PATH], [ipmitool], [/usr/bin/ipmitool])
+AC_PATH_PROG([AMTTOOL_PATH], [amttool], [/usr/bin/amttool])
 ## do subst
 
 AC_SUBST([DEFAULT_CONFIG_DIR])
@@ -186,6 +189,9 @@ AC_SUBST([FENCEAGENTSLIBDIR])
 AC_SUBST([SNMPBIN])
 AC_SUBST([AGENTS_LIST])
 AM_CONDITIONAL(BUILD_XENAPILIB, test $XENAPILIB -eq 1)
+
+AC_SUBST([IPMITOOL_PATH])
+AC_SUBST([AMTTOOL_PATH])
 
 ## *FLAGS handling
 
