@@ -15,6 +15,9 @@ REDHAT_COPYRIGHT=""
 BUILD_DATE=""
 #END_VERSION_GENERATION
 
+def get_name_or_uuid(options):
+	return options["--uuid"] if options.has_key("--uuid") else options["--plug"]
+
 def get_outlets_status(conn, options):
 	if options.has_key("--use-sudo"):
 		prefix = SUDO_PATH + " "
@@ -40,20 +43,21 @@ def get_outlets_status(conn, options):
 	return result
 
 def get_power_status(conn, options):
-	outlets = get_outlets_status(conn, options)
+	prefix = SUDO_PATH + " " if options.has_key("--use-sudo") else ""
+	conn.sendline(prefix + "virsh domstate %s" % (get_name_or_uuid(options)))
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
-	if (not (options["--plug"] in outlets)):
-		fail_usage("Failed: You have to enter existing name of virtual machine!")
-	else:
-		return outlets[options["--plug"]][1]
+	for line in conn.before.splitlines():
+		if line.strip() in ["running", "blocked", "idle", "no state", "paused"]:
+			return "on"
+		if "error:" in line.strip():
+			fail_usage("Failed: You have to enter existing name/UUID of virtual machine!")
+
+	return "off"
 
 def set_power_status(conn, options):
-	if options.has_key("--use-sudo"):
-		prefix = SUDO_PATH + " "
-	else:
-		prefix = ""
-
-	conn.sendline(prefix + "virsh %s "%(options["--action"] == "on" and "start" or "destroy")+options["--plug"])
+	prefix = SUDO_PATH + " " if options.has_key("--use-sudo") else ""
+	conn.sendline(prefix + "virsh %s "%(options["--action"] == "on" and "start" or "destroy") + get_name_or_uuid(options))
 
 	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 	time.sleep(int(options["--power-wait"]))
