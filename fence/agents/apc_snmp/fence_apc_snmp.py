@@ -7,6 +7,7 @@
 #    AF1:v3.5.7 AN1:apc_hw02_rpdu_357.bin MN:AP7900 HR:B2) - SNMP v1 and v3 (noAuthNoPrivacy,authNoPrivacy, authPrivacy)
 # - APC Switched Rack PDU (MB:v3.7.0 PF:v2.7.0 PN:apc_hw02_aos_270.bin AF1:v2.7.3 AN1:apc_hw02_rpdu_273.bin
 #    MN:AP7951 HR:B2) - SNMP v1
+# - Tripplite PDUMH20HVNET 12.04.0055 - SNMP v1, v2c, v3
 
 import sys
 sys.path.append("@FENCEAGENTSLIBDIR@")
@@ -24,7 +25,7 @@ BUILD_DATE=""
 OID_SYS_OBJECT_ID = '.1.3.6.1.2.1.1.2.0'
 
 ### GLOBAL VARIABLES ###
-# Device - see ApcRPDU, ApcMSP, ApcMS
+# Device - see ApcRPDU, ApcMSP, ApcMS, TripplitePDU
 device = None
 
 # Port ID
@@ -33,6 +34,18 @@ port_id = None
 switch_id = None
 
 # Classes describing Device params
+class TripplitePDU:
+        # Rack PDU
+        status_oid=      '.1.3.6.1.4.1.850.10.2.3.5.1.2.1.%d'
+        control_oid=     '.1.3.6.1.4.1.850.10.2.3.5.1.4.1.%d'
+        outlet_table_oid='.1.3.6.1.4.1.850.10.2.3.5.1.5'
+        ident_str="Tripplite"
+        state_on=2
+        state_off=1
+        turn_on=2
+        turn_off=1
+        has_switches=False
+
 class ApcRPDU:
 	# Rack PDU
 	status_oid =       '.1.3.6.1.4.1.318.1.1.12.3.5.1.1.4.%d'
@@ -74,8 +87,9 @@ def apc_set_device(conn, options):
 	global device
 
 	agents_dir = {'.1.3.6.1.4.1.318.1.3.4.5':ApcRPDU,
-		     '.1.3.6.1.4.1.318.1.3.4.4':ApcMSP,
-		     None:ApcMS}
+		    '.1.3.6.1.4.1.318.1.3.4.4':ApcMSP,
+                    '.1.3.6.1.4.1.850.1':TripplitePDU,
+		    None:ApcMS}
 
 	# First resolve type of APC
 	apc_type = conn.walk(OID_SYS_OBJECT_ID)
@@ -179,11 +193,11 @@ def main():
 		options["--switch"] = "1"
 
 	docs = { }
-	docs["shortdesc"] = "Fence agent for APC over SNMP"
+	docs["shortdesc"] = "Fence agent for APC, Tripplite PDU over SNMP"
 	docs["longdesc"] = "fence_apc_snmp is an I/O Fencing agent \
-which can be used with the APC network power switch. It logs \
-into a device via SNMP and reboots a specified outlet. It supports \
-SNMP v1 and v3 with all combinations of  authenticity/privacy settings."
+which can be used with the APC network power switch or Tripplite PDU devices.\
+It logs into a device via SNMP and reboots a specified outlet. It supports \
+SNMP v1, v2c, v3 with all combinations of  authenticity/privacy settings."
 	docs["vendorurl"] = "http://www.apc.com"
 	show_docs(options, docs)
 
