@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, getopt, time, os, uuid, pycurl
+import sys, getopt, time, os, uuid, pycurl, stat
 import pexpect, re, atexit, syslog
 import __main__
 
@@ -1079,3 +1079,10 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 	except pexpect.TIMEOUT:
 		fail(EC_LOGIN_DENIED)
 	return conn
+
+def is_executable(path):
+	if os.path.exists(path):
+		stats = os.stat(path)
+		if stat.S_ISREG(stats.st_mode) and os.access(path, os.X_OK):
+			return True
+	return False
