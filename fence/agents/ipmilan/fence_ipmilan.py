@@ -156,7 +156,7 @@ def define_new_opts():
         "help" : "--ipmitool-path=[path]         Path to ipmitool binary",
         "required" : "0",
         "shortdesc" : "Path to ipmitool binary",
-        "default" : "#@IPMITOOL_PATH@",
+        "default" : "@IPMITOOL_PATH@",
         "order": 200
         }
 
