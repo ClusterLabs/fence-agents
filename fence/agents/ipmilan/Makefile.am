@@ -4,20 +4,19 @@ TARGET			= fence_ipmilan
 
 SYMTARGET		= fence_ilo3 fence_ilo4 fence_imm fence_idrac
 
-sbin_PROGRAMS		= $(TARGET)
+SRC			= $(TARGET).py
 
-sbin_SCRIPTS		= $(SYMTARGET)
+EXTRA_DIST		= $(SRC)
 
-noinst_HEADERS		= expect.h
-
-fence_ipmilan_SOURCES	= expect.c ipmilan.c
+sbin_SCRIPTS		= $(TARGET) $(SYMTARGET)
 
 man_MANS		= $(TARGET).8 $(SYMTARGET:%=%.8)
 
 $(SYMTARGET): $(TARGET)
 	cp $^ $@
 
-include $(top_srcdir)/make/fencemanc.mk
+include $(top_srcdir)/make/fencebuild.mk
+include $(top_srcdir)/make/fenceman.mk
 
 clean-local: clean-man
 	rm -f $(TARGET) $(SYMTARGET)
