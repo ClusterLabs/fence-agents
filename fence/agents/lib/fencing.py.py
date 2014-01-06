@@ -979,7 +979,7 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 				syslog.syslog(syslog.LOG_ERR, str(ex))
 				sys.exit(EC_GENERIC_ERROR)
 		elif options.has_key("--ssh") and 0 == options.has_key("--identity-file"):
-			command = '%s %s %s@%s -p %s' % (SSH_PATH, force_ipvx, options["--username"], options["--ip"], options["--ipport"])
+			command = '%s %s %s@%s -p %s -o PubkeyAuthentication=no' % (SSH_PATH, force_ipvx, options["--username"], options["--ip"], options["--ipport"])
 			if options.has_key("--ssh-options"):
 				command += ' ' + options["--ssh-options"]
 			try:
