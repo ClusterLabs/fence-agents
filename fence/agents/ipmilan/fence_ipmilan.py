@@ -27,7 +27,7 @@ def get_power_status(_, options):
 
     out = process.communicate()
     process.stdout.close()
-    options["debug_fh"].write(out)
+    options["debug_fh"].write(str(out) + "\n")
 
     match = re.search('[Cc]hassis [Pp]ower is [\\s]*([a-zA-Z]{2,3})', str(out))
     status = match.group(1) if match else None
@@ -65,7 +65,7 @@ def reboot_cycle(_, options):
 
     out = process.communicate()
     process.stdout.close()
-    options["debug_fh"].write(out)
+    options["debug_fh"].write(str(out) + "\n")
 
     return bool(re.search('chassis power control: cycle', str(out).lower()))
 
