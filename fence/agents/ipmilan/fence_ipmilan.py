@@ -127,7 +127,6 @@ def define_new_opts():
         "help" : "-A, --auth=[auth]              IPMI Lan Auth type (md5|password|none)",
         "required" : "0",
         "shortdesc" : "IPMI Lan Auth type.",
-        "default" : "none",
         "choices" : ["md5", "password", "none"],
         "order": 1
         }
