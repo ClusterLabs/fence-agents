@@ -772,7 +772,7 @@ def check_input(device_opt, opt):
 		except IOError:
 			fail_usage("Failed: Unable to create file " + options["--debug-file"])
 
-	if options.has_key("--verbose") and options.has_key("debug_fh") == 0:
+	if options.has_key("debug_fh") == 0:
 		options["debug_fh"] = sys.stderr
 
 	if options.has_key("--snmp-priv-passwd-script"):
