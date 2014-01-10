@@ -348,7 +348,7 @@ all_opt = {
 		"longopt" : "method",
 		"help" : "-m, --method=[method]          Method to fence (onoff|cycle) (Default: onoff)",
 		"required" : "0",
-		"shortdesc" : "Method to fence (onoff|cycle) (Default: onoff)",
+		"shortdesc" : "Method to fence (onoff|cycle)",
 		"default" : "onoff",
 		"choices" : [ "onoff", "cycle" ],
 		"order" : 1}
@@ -732,6 +732,9 @@ def check_input(device_opt, opt):
 		else:
 			options["--ipport"] = 23
 
+	if options.has_key("--plug") and len(options["--plug"].split(",")) > 1 and options.has_key("--method") and options["--method"] == "cycle":
+		fail_usage("Failed: Cannot use --method cycle for more than 1 plug")
+
 	for opt in device_opt:
 		if all_opt[opt].has_key("choices"):
 			long = "--" + all_opt[opt]["longopt"]
@@ -788,24 +791,6 @@ def set_multi_power_fn(tn, options, set_power_fn):
 			set_power_fn(tn, options)
 	else:
 		set_power_fn(tn, options)
-
-def multi_reboot_cycle_fn(tn, options, reboot_cycle_fn):
-	success = False;
-	if options.has_key("--plugs"):
-		for plug in options["--plugs"]:
-			try:
-				options["--uuid"] = str(uuid.UUID(plug))
-			except ValueError:
-				pass
-			except KeyError:
-				pass
-			options["--plug"] = plug
-			plug_status = reboot_cycle_fn(tn, options)
-			if plug_status:
-				success = plug_status
-	else:
-		success = reboot_cycle_fn(tn, options)
-	return success
 
 def show_docs(options, docs = None):
 	device_opt = options["device_opt"]
@@ -890,9 +875,9 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 					fail(EC_WAITING_OFF)
 		elif options["--action"] == "reboot":
 			power_on = False
-			if options.has_key("--method") and options["--method"].lower() == "cycle":
+			if options.has_key("--method") and options["--method"].lower() == "cycle" and reboot_cycle_fn is not None:
 				for _ in range(1, 1 + int(options["--retry-on"])):
-					if multi_reboot_cycle_fn(tn, options, reboot_cycle_fn):
+					if reboot_cycle_fn(tn, options):
 						power_on = True
 						break
 
