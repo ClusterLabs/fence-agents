@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, exceptions
+import sys, exceptions, time
 import shutil, tempfile
 sys.path.append("@FENCEAGENTSLIBDIR@")
 
@@ -15,6 +15,9 @@ BUILD_DATE="April, 2011"
 #END_VERSION_GENERATION
 
 def soap_login(options):
+	if options["-o"] in ["off", "reboot"]:
+		time.sleep(int(options["--delay"]))
+
 	if options.has_key("--ssl"):
 		url = "https://"
 	else:
