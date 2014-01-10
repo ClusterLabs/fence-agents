@@ -134,7 +134,9 @@ def main():
 
     docs = { }
     docs["shortdesc"] = "Fence agent for AMT"
-    docs["longdesc"] = "Fence agent for AMT"
+    docs["longdesc"] = "fence_amt is an I/O Fencing agent \
+which can be used with Intel AMT. This agent calls support software amttool\
+(http://www.kraxel.org/cgit/amtterm/)."
     docs["vendorurl"] = "http://www.intel.com/"
     show_docs(options, docs)
 
