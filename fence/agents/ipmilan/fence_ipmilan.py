@@ -180,7 +180,9 @@ def main():
 
     docs = { }
     docs["shortdesc"] = "Fence agent for IPMI"
-    docs["longdesc"] = "Fence agent for IPMI"
+    docs["longdesc"] = "fence_ipmilan is an I/O Fencing agent\
+which can be used with machines controlled by IPMI.\
+This agent calls support software ipmitool (http://ipmitool.sf.net/)."
     docs["vendorurl"] = ""
     docs["symlink"] = [("fence_ilo3", "Fence agent for HP iLO3"),
                        ("fence_ilo4", "Fence agent for HP iLO4"),
