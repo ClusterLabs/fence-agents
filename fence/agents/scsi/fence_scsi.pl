@@ -5,6 +5,7 @@ use File::Basename;
 use File::Path;
 use Getopt::Std;
 use POSIX;
+use B;
 
 #BEGIN_VERSION_GENERATION
 $RELEASE_VERSION="";
@@ -426,31 +427,9 @@ sub get_key ($)
 sub get_node_id ($)
 {
     my $self = (caller(0))[3];
-    my $node_id;
+    my $node = $_[0];
 
-    my $cmd = "cman_tool nodes -n $_[0] -F id";
-    my $out = qx { $cmd 2> /dev/null };
-    my $err = ($?>>8);
-
-    if ($err != 0) {
-	log_error ("$self (err=$err)");
-    }
-
-    # die "[error]: $self\n" if ($?>>8);
-
-    chomp ($out);
-
-    $node_id = $out;
-
-    return ($node_id);
-}
-
-sub get_cluster_id ()
-{
-    my $self = (caller(0))[3];
-    my $cluster_id;
-
-    my $cmd = "cman_tool status";
+    my $cmd = "/sbin/corosync-cmapctl nodelist.";
     my @out = qx { $cmd 2> /dev/null };
     my $err = ($?>>8);
 
@@ -460,12 +439,39 @@ sub get_cluster_id ()
 
     # die "[error]: $self\n" if ($?>>8);
 
-    foreach (@out) {
-	chomp;
-	my ($param, $value) = split (/\s*:\s*/, $_);
-	if ($param =~ /^cluster\s+id/i) {
-	    $cluster_id = $value;
-	}
+    foreach my $line (@out) {
+        chomp($line);
+        if ($line =~ /.(\d+?).ring._addr \(str\) = ${node}$/) {
+            return $1;
+        }
+    }
+                                        
+    log_error("$self (unable to parse output of corosync-cmapctl or node does not exist)");
+}
+
+sub get_cluster_id ()
+{
+    my $self = (caller(0))[3];
+    my $cluster_id;
+
+    my $cmd = "/sbin/corosync-cmapctl totem.cluster_name";
+    my $out = qx { $cmd 2> /dev/null };
+    my $err = ($?>>8);
+
+    if ($err != 0) {
+	log_error ("$self (err=$err)");
+    }
+
+    # die "[error]: $self\n" if ($?>>8);
+
+    chomp($out);
+
+    if ($out =~ /=\s(.*?)$/) {
+        my $cluster_name = $1;
+        # tranform string to a number
+        $cluster_id = (hex B::hash($cluster_name)) % 65536;
+    } else {
+        log_error("$self (unable to parse output of corosync-cmapctl)");
     }
 
     return ($cluster_id);
