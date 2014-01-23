@@ -178,6 +178,7 @@ do_action_metadata (const char *self)
     fprintf (stdout, "<longdesc>");
     fprintf (stdout, "The fence_kdump agent is intended to be used with with kdump service.");
     fprintf (stdout, "</longdesc>\n");
+    fprintf (stdout, "<vendor-url>http://www.kernel.org/pub/linux/utils/kernel/kexec/</vendor-url>\n");
 
     fprintf (stdout, "<parameters>\n");
 
