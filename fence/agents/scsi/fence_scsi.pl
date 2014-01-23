@@ -429,7 +429,7 @@ sub get_node_id ($)
     my $self = (caller(0))[3];
     my $node = $_[0];
 
-    my $cmd = "/sbin/corosync-cmapctl nodelist.";
+    my $cmd = "/usr/sbin/corosync-cmapctl nodelist.";
     my @out = qx { $cmd 2> /dev/null };
     my $err = ($?>>8);
 
@@ -454,7 +454,7 @@ sub get_cluster_id ()
     my $self = (caller(0))[3];
     my $cluster_id;
 
-    my $cmd = "/sbin/corosync-cmapctl totem.cluster_name";
+    my $cmd = "/usr/sbin/corosync-cmapctl totem.cluster_name";
     my $out = qx { $cmd 2> /dev/null };
     my $err = ($?>>8);
 
