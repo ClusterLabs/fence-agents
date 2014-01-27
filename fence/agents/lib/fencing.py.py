@@ -467,7 +467,8 @@ def usage(avail_opt):
 			print "   " + value["help"]
 
 def metadata(avail_opt, options, docs):
-	sorted_list = [ (key, all_opt[key]) for key in avail_opt ]
+	# avail_opt has to be unique, if there are duplicities then they should be removed
+	sorted_list = [ (key, all_opt[key]) for key in list(set(avail_opt)) ]
 	sorted_list.sort(lambda x, y: cmp(x[1]["order"], y[1]["order"]))
 
 	print "<?xml version=\"1.0\" ?>"
