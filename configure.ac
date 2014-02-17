@@ -83,10 +83,6 @@ check_lib_no_libs() {
 	LIBS=$ac_check_lib_save_LIBS
 }
 
-# external libs
-PKG_CHECK_MODULES([nss],[nss])
-PKG_CHECK_MODULES([nspr],[nspr])
-
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h libintl.h limits.h netdb.h stddef.h sys/socket.h sys/time.h syslog.h])
 
