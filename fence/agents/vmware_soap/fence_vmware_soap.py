@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 import sys, exceptions, time
-import shutil, tempfile
+import shutil, tempfile, suds
 sys.path.append("@FENCEAGENTSLIBDIR@")
 
 from suds.client import Client
@@ -164,7 +164,7 @@ def set_power_status(conn, options):
 			conn.service.PowerOnVM_Task(mo_machine)
 		else:
 			conn.service.PowerOffVM_Task(mo_machine)
-	except WebFault, ex:
+	except suds.WebFault, ex:
 		if ((str(ex).find("Permission to perform this operation was denied")) >= 0):
 			fail(EC_INVALID_PRIVILEGES)
 		else:
