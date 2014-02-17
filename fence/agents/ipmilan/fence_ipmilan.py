@@ -113,9 +113,9 @@ def create_command(options, action):
 
 def define_new_opts():
     all_opt["lanplus"] = {
-        "getopt" : "L",
+        "getopt" : "P",
         "longopt" : "lanplus",
-        "help" : "-L, --lanplus                  Use Lanplus to improve security of connection",
+        "help" : "-P, --lanplus                  Use Lanplus to improve security of connection",
         "required" : "0",
         "default" : "0",
         "shortdesc" : "Use Lanplus to improve security of connection",
@@ -140,9 +140,9 @@ def define_new_opts():
         "order": 1
         }
     all_opt["privlvl"] = {
-        "getopt" : "P:",
+        "getopt" : "L:",
         "longopt" : "privlvl",
-        "help" : "-P, --privlvl=[level]          Privilege level on IPMI device (callback|user|operator|administrator)",
+        "help" : "-L, --privlvl=[level]          Privilege level on IPMI device (callback|user|operator|administrator)",
         "required" : "0",
         "shortdesc" : "Privilege level on IPMI device",
         "default" : "administrator",
