@@ -28,7 +28,7 @@ EC_INVALID_PRIVILEGES = 11
 
 TELNET_PATH = "/usr/bin/telnet"
 SSH_PATH    = "/usr/bin/ssh"
-SSL_PATH    = "@LIBEXECDIR@/fence_nss_wrapper"
+SSL_PATH    = "@GNUTLSCLI_PATH@"
 SUDO_PATH   = "/usr/bin/sudo"
 
 all_opt = {
@@ -960,11 +960,10 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 		re_pass  = re.compile("(password)|(pass phrase)", re.IGNORECASE)
 
 		if options.has_key("--ssl"):
-			command = '%s %s %s %s' % (SSL_PATH, force_ipvx, options["--ip"], options["--ipport"])
+			command = '%s --insecure --crlf -p %s %s' % (SSL_PATH, options["--ipport"], options["--ip"])
 			try:
 				conn = fspawn(options, command)
 			except pexpect.ExceptionPexpect, ex:
-			 	## SSL telnet is part of the fencing package
 				sys.stderr.write(str(ex) + "\n")
 				syslog.syslog(syslog.LOG_ERR, str(ex))
 				sys.exit(EC_GENERIC_ERROR)

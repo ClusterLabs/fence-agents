@@ -166,6 +166,7 @@ CLUSTERDATA=${datadir}/cluster
 ## path to 3rd-party binaries
 AC_PATH_PROG([IPMITOOL_PATH], [ipmitool], [/usr/bin/ipmitool])
 AC_PATH_PROG([AMTTOOL_PATH], [amttool], [/usr/bin/amttool])
+AC_PATH_PROG([GNUTLSCLI_PATH], [gnutlscli], [/usr/bin/gnutls-cli])
 ## do subst
 
 AC_SUBST([DEFAULT_CONFIG_DIR])
@@ -284,7 +285,6 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/manual/Makefile
 		 fence/agents/mcdata/Makefile
 		 fence/agents/netio/Makefile
-		 fence/agents/nss_wrapper/Makefile
 		 fence/agents/rackswitch/Makefile
 		 fence/agents/ovh/Makefile
 		 fence/agents/rhevm/Makefile
