@@ -101,7 +101,7 @@ def send_command(opt, command, method = "GET"):
 	return result
 
 def main():
-	device_opt = [ "ipaddr", "ipport", "login", "passwd", "ssl", "web", "port" ]
+	device_opt = [ "ipaddr", "ipport", "login", "passwd", "ssl", "notls", "web", "port" ]
 
 	atexit.register(atexit_handler)
 

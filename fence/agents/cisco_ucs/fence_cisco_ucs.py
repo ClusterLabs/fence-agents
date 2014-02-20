@@ -107,7 +107,7 @@ def define_new_opts():
 		"order" : 1 }
 
 def main():
-	device_opt = [  "ipaddr", "ipport", "login", "passwd", "ssl", \
+	device_opt = [  "ipaddr", "ipport", "login", "passwd", "ssl", "notls", \
 			"port", "web", "suborg" ]
 
 	atexit.register(atexit_handler)
