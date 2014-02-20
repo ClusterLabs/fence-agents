@@ -170,6 +170,14 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "SSL connection",
 		"order" : 1 },
+	"notls" : {
+		"getopt" : "t",
+		"longopt" : "notls",
+		"help" : "-t, --notls                    Disable TLS negotiation and force SSL3.0.\n" +
+	"                                        This should only be used for devices that do not support TLS1.0 and up.",
+		"required" : "0",
+		"shortdesc" : "Disable TLS negotiation",
+		"order" : 1 },
 	"port" : {
 		"getopt" : "n:",
 		"longopt" : "plug",
@@ -960,7 +968,11 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 		re_pass  = re.compile("(password)|(pass phrase)", re.IGNORECASE)
 
 		if options.has_key("--ssl"):
-			command = '%s --insecure --crlf -p %s %s' % (SSL_PATH, options["--ipport"], options["--ip"])
+			gnutls_opts=""
+			if options.has_key("--notls"):
+				gnutls_opts = "--priority \"NORMAL:-VERS-TLS1.2:-VERS-TLS1.1:-VERS-TLS1.0:+VERS-SSL3.0\""
+
+			command = '%s %s --insecure --crlf -p %s %s' % (SSL_PATH, gnutls_opts, options["--ipport"], options["--ip"])
 			try:
 				conn = fspawn(options, command)
 			except pexpect.ExceptionPexpect, ex:

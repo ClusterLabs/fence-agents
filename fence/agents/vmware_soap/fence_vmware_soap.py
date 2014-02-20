@@ -177,7 +177,7 @@ def remove_tmp_dir(tmp_dir):
 	shutil.rmtree(tmp_dir)
 
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "web", "ssl", "port" ]
+	device_opt = [ "ipaddr", "login", "passwd", "web", "ssl", "notls", "port" ]
 
 	atexit.register(atexit_handler)
 
