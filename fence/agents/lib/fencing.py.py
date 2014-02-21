@@ -604,7 +604,7 @@ def process_input(avail_opt):
 						opt["--" + all_opt[x]["longopt"]] = dict(old_opt)[o]
 			else:
 				for x in all_opt.keys():
-					if all_opt[x].has_key("getopt") and all_opt[x].has_key("longopt") and \
+					if x in avail_opt and all_opt[x].has_key("getopt") and all_opt[x].has_key("longopt") and \
 						("-" + all_opt[x]["getopt"] == o or "-" + all_opt[x]["getopt"].rstrip(":") == o):
 						opt["--" + all_opt[x]["longopt"]] = dict(old_opt)[o]
 				opt[o] = dict(old_opt)[o]
