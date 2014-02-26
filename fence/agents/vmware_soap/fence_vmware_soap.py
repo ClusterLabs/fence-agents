@@ -2,6 +2,7 @@
 
 import sys, exceptions, time
 import shutil, tempfile, suds
+import logging
 sys.path.append("@FENCEAGENTSLIBDIR@")
 
 from suds.client import Client
@@ -198,6 +199,9 @@ In the cases when name of yours VM is unique you can use it instead. \
 Alternatively you can always use UUID to access virtual machine."
 	docs["vendorurl"] = "http://www.vmware.com"
 	show_docs(options, docs)
+
+	logging.basicConfig(level=logging.INFO)
+	logging.getLogger('suds.client').setLevel(logging.CRITICAL)
 
 	##
 	## Operate the fencing device
