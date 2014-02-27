@@ -16,7 +16,7 @@ BUILD_DATE="April, 2011"
 #END_VERSION_GENERATION
 
 def soap_login(options):
-	if options["-o"] in ["off", "reboot"]:
+	if options["--action"] in ["off", "reboot"]:
 		time.sleep(int(options["--delay"]))
 
 	if options.has_key("--ssl"):
