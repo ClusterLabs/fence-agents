@@ -38,8 +38,8 @@ def main():
 
 	## check if all options are defined
 	agent_file = open(agent)
-	option_use_re = re.compile("options\[\"(--[^\"]*)\"\]")
-	option_has_re = re.compile("options.has_key\(\"(--[^\"]*)\"\)")
+	option_use_re = re.compile("options\[\"(-[^\"]*)\"\]")
+	option_has_re = re.compile("options.has_key\(\"(-[^\"]*)\"\)")
 
 	counter = 0
 	without_errors = True
