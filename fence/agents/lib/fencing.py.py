@@ -1080,13 +1080,12 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 				"are not in the spec file and must be installed separately." + "\n")
 				sys.exit(EC_GENERIC_ERROR)
 
-			result = conn.log_expect(options, [ options["--command-prompt"], \
-				"Are you sure you want to continue connecting (yes/no)?", \
-				"Enter passphrase for key '" + options["--identity-file"] + "':" ], int(options["--login-timeout"]))
+			result = conn.log_expect(options, [ "Enter passphrase for key '" + options["--identity-file"] + "':",\
+				"Are you sure you want to continue connecting (yes/no)?" ] + options["--command-prompt"], int(options["--login-timeout"]))
 			if result == 1:
 				conn.sendline("yes")
-				conn.log_expect(options, [ options["--command-prompt"], "Enter passphrase for key '"+options["--identity-file"]+"':"] , int(options["--login-timeout"]))
-			if result != 0:
+				result = conn.log_expect(options, [ "Enter passphrase for key '"+options["--identity-file"]+"':"] + options["--command-prompt"], int(options["--login-timeout"]))
+			if result == 0:
 				if options.has_key("--password"):
 					conn.sendline(options["--password"])
 					conn.log_expect(options, options["--command-prompt"], int(options["--login-timeout"]))
