@@ -190,6 +190,9 @@ is running because the connection will block any necessary fencing actions."
 	#####	
 	if 0 == options.has_key("--ssh"):
 		try:
+			if options["--action"] in ["off", "reboot"]:
+				time.sleep(int(options["--delay"]))
+
 			try:
 				conn = fspawn(options, TELNET_PATH)
 				conn.send("set binary\n")
