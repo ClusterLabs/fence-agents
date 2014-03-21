@@ -193,15 +193,9 @@ is running because the connection will block any necessary fencing actions."
 			if options["--action"] in ["off", "reboot"]:
 				time.sleep(int(options["--delay"]))
 
-			try:
-				conn = fspawn(options, TELNET_PATH)
-				conn.send("set binary\n")
-				conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
-			except pexpect.ExceptionPexpect, ex:
-				sys.stderr.write(str(ex) + "\n")
-				sys.stderr.write("Due to limitations, binary dependencies on fence agents "
-				"are not in the spec file and must be installed separately." + "\n")
-				sys.exit(EC_GENERIC_ERROR)
+			conn = fspawn(options, TELNET_PATH)
+			conn.send("set binary\n")
+			conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
 			
 			re_login = re.compile("(login: )|(Login Name:  )|(username: )|(User Name :)", re.IGNORECASE)
 			re_prompt = re.compile("|".join(map (lambda x: "(" + x + ")", options["--command-prompt"])), re.IGNORECASE)

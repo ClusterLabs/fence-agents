@@ -79,15 +79,9 @@ block any necessary fencing actions."
 	## We can not use fence_login(), username and passwd are sent on one line
 	####
 	try:
-		try:
-			conn = fspawn(options, TELNET_PATH)
-			conn.send("set binary\n")
-			conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
-		except pexpect.ExceptionPexpect, ex:
-			sys.stderr.write(str(ex) + "\n")
-			sys.stderr.write("Due to limitations, binary dependencies on fence agents "
-			"are not in the spec file and must be installed separately." + "\n")
-			sys.exit(EC_GENERIC_ERROR)
+		conn = fspawn(options, TELNET_PATH)
+		conn.send("set binary\n")
+		conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
 
 		screen = conn.read_nonblocking(size=100, timeout=int(options["--shell-timeout"]))
 		conn.log_expect(options, "100 HELLO .*", int(options["--shell-timeout"]))

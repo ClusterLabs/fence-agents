@@ -983,14 +983,8 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 			command = '%s %s %s@%s -p %s -o PubkeyAuthentication=no' % (SSH_PATH, force_ipvx, options["--username"], options["--ip"], options["--ipport"])
 			if options.has_key("--ssh-options"):
 				command += ' ' + options["--ssh-options"]
-			try:
-				conn = fspawn(options, command)
-			except pexpect.ExceptionPexpect, ex:
-				sys.stderr.write(str(ex) + "\n")
-				syslog.syslog(syslog.LOG_ERR, str(ex))
-				sys.stderr.write("Due to limitations, binary dependencies on fence agents "
-				"are not in the spec file and must be installed separately." + "\n")
-				sys.exit(EC_GENERIC_ERROR)
+
+			conn = fspawn(options, command)
 				
 			if options.has_key("telnet_over_ssh"):
 				#This is for stupid ssh servers (like ALOM) which behave more like telnet (ignore name and display login prompt)
@@ -1013,14 +1007,8 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 			command = '%s %s %s@%s -i %s -p %s' % (SSH_PATH, force_ipvx, options["--username"], options["--ip"], options["--identity-file"], options["--ipport"])
 			if options.has_key("--ssh-options"):
 				command += ' ' + options["--ssh-options"]
-			try:
-				conn = fspawn(options, command)
-			except pexpect.ExceptionPexpect, ex:
-				sys.stderr.write(str(ex) + "\n")
-				syslog.syslog(syslog.LOG_ERR, str(ex))
-				sys.stderr.write("Due to limitations, binary dependencies on fence agents "
-				"are not in the spec file and must be installed separately." + "\n")
-				sys.exit(EC_GENERIC_ERROR)
+
+			conn = fspawn(options, command)
 
 			result = conn.log_expect(options, [ "Enter passphrase for key '" + options["--identity-file"] + "':",\
 				"Are you sure you want to continue connecting (yes/no)?" ] + options["--command-prompt"], int(options["--login-timeout"]))
@@ -1034,16 +1022,9 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 				else:
 					fail_usage("Failed: You have to enter passphrase (-p) for identity file")
 		else:
-			try:
-				conn = fspawn(options, TELNET_PATH)
-				conn.send("set binary\n")
-				conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
-			except pexpect.ExceptionPexpect, ex:
-				sys.stderr.write(str(ex) + "\n")
-				syslog.syslog(syslog.LOG_ERR, str(ex))
-				sys.stderr.write("Due to limitations, binary dependencies on fence agents "
-				"are not in the spec file and must be installed separately." + "\n")
-				sys.exit(EC_GENERIC_ERROR)
+			conn = fspawn(options, TELNET_PATH)
+			conn.send("set binary\n")
+			conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
 
 			result = conn.log_expect(options, re_login, int(options["--login-timeout"]))
 			conn.send_eol(options["--username"])
