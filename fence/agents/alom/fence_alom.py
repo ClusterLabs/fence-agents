@@ -6,6 +6,7 @@
 # as found on SUN T2000 Niagara
 
 import sys, re, pexpect, time, exceptions
+import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 

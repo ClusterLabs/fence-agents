@@ -12,6 +12,7 @@
 # Thanks Matthew Kent for original agent and testing.
 
 import sys
+import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing_snmp import *

@@ -6,6 +6,7 @@
 import sys, re
 import httplib, base64, string, socket
 import logging
+import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 

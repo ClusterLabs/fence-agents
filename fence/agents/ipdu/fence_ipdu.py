@@ -6,6 +6,7 @@
 #
 
 import sys
+import atexit
 sys.path.append("/usr/share/fence")
 from fencing import *
 from fencing_snmp import *

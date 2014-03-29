@@ -7,6 +7,7 @@
 #   EATON | Powerware ePDU model: Switched ePDU (IPV3600), firmware: 2.0.K
 
 import sys
+import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing_snmp import *

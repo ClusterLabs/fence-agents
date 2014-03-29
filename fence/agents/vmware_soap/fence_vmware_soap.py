@@ -3,6 +3,7 @@
 import sys, exceptions, time
 import shutil, tempfile, suds
 import logging
+import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 
 from suds.client import Client

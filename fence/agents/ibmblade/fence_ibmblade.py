@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import sys
+import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing_snmp import *

@@ -11,6 +11,7 @@
 import sys, time
 import shutil, tempfile
 import logging
+import atexit
 from datetime import datetime
 from suds.client import Client
 from suds.xsd.doctor import ImportDoctor, Import

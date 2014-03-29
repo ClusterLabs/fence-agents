@@ -2,6 +2,7 @@
 
 import sys, subprocess, re, os, stat
 import logging
+import atexit
 from pipes import quote
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *

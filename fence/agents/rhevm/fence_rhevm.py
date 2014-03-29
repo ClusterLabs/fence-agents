@@ -3,6 +3,7 @@
 import sys, re
 import pycurl, StringIO
 import logging
+import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 

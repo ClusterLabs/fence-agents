@@ -32,6 +32,7 @@
 # whether I should continue support for it. mattjclark0407 at hotmail dot com
 
 import sys
+import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 import XenAPI

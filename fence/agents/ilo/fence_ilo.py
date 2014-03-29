@@ -12,6 +12,7 @@
 #####
 
 import sys, re, pexpect
+import atexit
 from xml.sax.saxutils import quoteattr
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *

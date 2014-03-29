@@ -2,6 +2,7 @@
 
 import sys, re, pexpect, exceptions, random
 import logging
+import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 

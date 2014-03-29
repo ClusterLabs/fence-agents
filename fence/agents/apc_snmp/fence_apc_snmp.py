@@ -10,6 +10,7 @@
 # - Tripplite PDUMH20HVNET 12.04.0055 - SNMP v1, v2c, v3
 
 import sys
+import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing_snmp import *
