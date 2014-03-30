@@ -12,7 +12,7 @@
 ## @note: drac_version was removed
 #####
 
-import sys, re, pexpect, exceptions, time
+import sys, re, time
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *

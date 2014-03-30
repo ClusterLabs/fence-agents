@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, re, pexpect, exceptions, random
+import sys, random
 import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")

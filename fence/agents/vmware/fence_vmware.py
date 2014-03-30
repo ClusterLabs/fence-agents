@@ -22,7 +22,7 @@
 #	VMware vCenter 4.0.0
 #
 
-import sys, re, pexpect, exceptions
+import sys, re, pexpect
 import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")

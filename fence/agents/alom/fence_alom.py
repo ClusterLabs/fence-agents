@@ -5,7 +5,7 @@
 # Sun(tm) Advanced Lights Out Manager CMT v1.6.1
 # as found on SUN T2000 Niagara
 
-import sys, re, pexpect, time, exceptions
+import sys, re, time
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *

@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, exceptions, time
+import sys, time
 import shutil, tempfile, suds
 import logging
 import atexit

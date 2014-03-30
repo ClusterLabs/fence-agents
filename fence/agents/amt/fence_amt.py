@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, subprocess, re, os, stat
+import sys, subprocess, re
 import logging
 import atexit
 from pipes import quote
