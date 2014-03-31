@@ -9,7 +9,7 @@ import sys
 import atexit
 sys.path.append("/usr/share/fence")
 from fencing import *
-from fencing_snmp import *
+from fencing_snmp import FencingSnmp
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="IBM iPDU SNMP fence agent"
@@ -133,7 +133,6 @@ def main():
 
 	atexit.register(atexit_handler)
 
-	snmp_define_defaults ()
 	all_opt["snmp_version"]["default"] = "3"
 	all_opt["community"]["default"] = "private"
 	all_opt["switch"]["default"] = "1"

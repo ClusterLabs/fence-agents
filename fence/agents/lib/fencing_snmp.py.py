@@ -7,7 +7,7 @@ import logging
 from fencing import *
 from fencing import fail, fail_usage, EC_TIMED_OUT, LOG_MODE_VERBOSE
 
-__all__ = [ 'FencingSnmp', 'snmp_define_defaults' ]
+__all__ = [ 'FencingSnmp' ]
 
 ## do not add code here.
 #BEGIN_VERSION_GENERATION
@@ -15,10 +15,6 @@ RELEASE_VERSION = ""
 REDHAT_COPYRIGHT = ""
 BUILD_DATE = ""
 #END_VERSION_GENERATION
-
-# Fix for RHBZ#527844
-def snmp_define_defaults ():
-	all_opt["ipport"]["default"] = "161"
 
 class FencingSnmp:
 	def __init__(self, options):

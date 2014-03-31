@@ -16,7 +16,7 @@ import sys
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing_snmp import *
+from fencing_snmp import FencingSnmp
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="APC SNMP fence agent"
@@ -169,11 +169,6 @@ def get_outlets_status(conn, options):
 
 	return result
 
-# Define new options
-def apc_snmp_define_defaults():
-	all_opt["snmp_version"]["default"] = "1"
-	all_opt["community"]["default"] = "private"
-
 # Main agent method
 def main():
 	device_opt = [ "ipaddr", "login", "passwd", "no_login", "no_password", \
@@ -181,8 +176,8 @@ def main():
 
 	atexit.register(atexit_handler)
 
-	snmp_define_defaults ()
-	apc_snmp_define_defaults()
+	all_opt["snmp_version"]["default"] = "1"
+	all_opt["community"]["default"] = "private"
 
 	options = check_input(device_opt, process_input(device_opt))
 

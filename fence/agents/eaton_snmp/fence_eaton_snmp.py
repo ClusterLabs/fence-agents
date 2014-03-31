@@ -10,7 +10,7 @@ import sys
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing_snmp import *
+from fencing_snmp import FencingSnmp
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="Eaton SNMP fence agent"
@@ -203,8 +203,6 @@ def main():
 		       "port", "snmp_version", "community" ]
 
 	atexit.register(atexit_handler)
-
-	snmp_define_defaults ()
 
 	all_opt["switch"]["default"] = 1
 	all_opt["power_wait"]["default"] = 2

@@ -13,7 +13,7 @@ import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail_usage
-from fencing_snmp import *
+from fencing_snmp import FencingSnmp
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="IF:MIB SNMP fence agent"
@@ -102,7 +102,6 @@ def main():
 
 	atexit.register(atexit_handler)
 
-	snmp_define_defaults ()
 	all_opt["snmp_version"]["default"] = "2c"
 
 	options = check_input(device_opt, process_input(device_opt))

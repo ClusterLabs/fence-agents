@@ -648,6 +648,9 @@ def check_input(device_opt, opt):
 		if options.has_key("--ipport"):
 			all_opt["ipport"]["help"] = "-u, --ipport=[port]            " + \
 					"TCP/UDP port to use (default " + options["--ipport"] +")"
+		elif device_opt.count("snmp_version"):
+			all_opt["ipport"]["default"] = "161"
+			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 161)"
 		elif options.has_key("--ssh"):
 			all_opt["ipport"]["default"] = 22
 			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 22)"
