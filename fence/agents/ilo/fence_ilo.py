@@ -16,6 +16,7 @@ import atexit
 from xml.sax.saxutils import quoteattr
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
+from fencing import fail, EC_LOGIN_DENIED
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New ILO Agent - test release on steroids"

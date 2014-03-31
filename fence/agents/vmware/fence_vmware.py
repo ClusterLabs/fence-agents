@@ -27,6 +27,7 @@ import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
+from fencing import fail, fail_usage, EC_TIMED_OUT, LOG_MODE_VERBOSE
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="VMware Agent using VI Perl API and/or VIX vmrun command"

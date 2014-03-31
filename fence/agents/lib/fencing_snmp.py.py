@@ -5,6 +5,7 @@
 import re, pexpect
 import logging
 from fencing import *
+from fencing import fail, fail_usage, EC_TIMED_OUT, LOG_MODE_VERBOSE
 
 ## do not add code here.
 #BEGIN_VERSION_GENERATION

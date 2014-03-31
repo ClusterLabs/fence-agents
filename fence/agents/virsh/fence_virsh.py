@@ -6,9 +6,11 @@
 #
 
 import sys, re
+import time
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
+from fencing import fail_usage, SUDO_PATH
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="Virsh fence agent"

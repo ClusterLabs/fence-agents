@@ -6,6 +6,7 @@ import atexit
 from pipes import quote
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
+from fencing import SUDO_PATH, LOG_MODE_VERBOSE, fail_usage, is_executable
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION=""

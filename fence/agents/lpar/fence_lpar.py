@@ -14,6 +14,7 @@ import sys, re
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
+from fencing import fail, fail_usage, EC_STATUS_HMC
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION=""

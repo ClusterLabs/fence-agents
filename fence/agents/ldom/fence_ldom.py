@@ -11,6 +11,7 @@ import sys, re, pexpect, exceptions
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
+from fencing import fail_usage
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="Logical Domains (LDoms) fence Agent"

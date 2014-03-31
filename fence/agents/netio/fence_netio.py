@@ -4,6 +4,7 @@ import sys, re, pexpect
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
+from fencing import fspawn, fail, EC_LOGIN_DENIED, TELNET_PATH
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION=""

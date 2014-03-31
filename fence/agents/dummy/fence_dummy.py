@@ -2,9 +2,11 @@
 
 import sys, random
 import logging
+import time
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
+from fencing import fail_usage
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New Dummy Agent - test release on steroids"

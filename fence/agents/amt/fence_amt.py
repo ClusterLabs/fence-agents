@@ -6,6 +6,7 @@ import atexit
 from pipes import quote
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
+from fencing import fail_usage, is_executable, SUDO_PATH, LOG_MODE_VERBOSE
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="Fence agent for Intel AMT"

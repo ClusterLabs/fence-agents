@@ -13,8 +13,10 @@
 
 import sys, re, pexpect
 import atexit
+import time
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
+from fencing import fspawn, fail, fail_usage, TELNET_PATH, EC_LOGIN_DENIED
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New WTI Agent - test release on steroids"

@@ -10,6 +10,7 @@ import sys, re
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
+from fencing import fail, EC_STATUS
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New Bladecenter Agent - test release on steroids"

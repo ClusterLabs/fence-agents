@@ -13,6 +13,7 @@ import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
+from fencing import fail, EC_TIMED_OUT, EC_GENERIC_ERROR
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New Sanbox2 Agent - test release on steroids"

@@ -12,6 +12,7 @@ import sys
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
+from fencing import fail_usage
 from fencing_snmp import *
 
 #BEGIN_VERSION_GENERATION

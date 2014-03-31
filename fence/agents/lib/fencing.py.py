@@ -12,6 +12,9 @@ REDHAT_COPYRIGHT = ""
 BUILD_DATE = "March, 2008"
 #END_VERSION_GENERATION
 
+__all__ = [ 'atexit_handler', 'check_input', 'process_input', 'all_opt', 'show_docs',
+		'fence_login', 'fence_action' ]
+
 LOG_MODE_VERBOSE = 100
 LOG_MODE_QUIET = 0
 

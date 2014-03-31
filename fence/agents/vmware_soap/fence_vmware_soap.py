@@ -9,6 +9,7 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from suds.client import Client
 from suds.sudsobject import Property
 from fencing import *
+from fencing import fail, EC_STATUS, EC_LOGIN_DENIED, EC_INVALID_PRIVILEGES, EC_WAITING_ON, EC_WAITING_OFF
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New VMWare Agent - test release on steroids"
