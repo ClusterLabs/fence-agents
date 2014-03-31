@@ -413,11 +413,6 @@ def add_dependency_options(options):
 			added_opt.extend([y for y in DEPENDENCY_OPT[x] if options.count(y) == 0])
 	return added_opt
 
-def version(command, release, build_date, copyright_notice):
-	print command, " ", release, " ", build_date
-	if len(copyright_notice) > 0:
-		print copyright_notice
-
 def fail_usage(message = ""):
 	if len(message) > 0:
 		logging.error("%s\n" % message)
@@ -760,10 +755,10 @@ def check_input(device_opt, opt):
 
 	for opt in device_opt:
 		if all_opt[opt].has_key("choices"):
-			long = "--" + all_opt[opt]["longopt"]
+			longopt = "--" + all_opt[opt]["longopt"]
 			possible_values_upper = map (lambda y : y.upper(), all_opt[opt]["choices"])
-			if options.has_key(long):
-				options[long] = options[long].upper()
+			if options.has_key(longopt):
+				options[longopt] = options[longopt].upper()
 				if not options["--" + all_opt[opt]["longopt"]] in possible_values_upper:
 					fail_usage("Failed: You have to enter a valid choice " + \
 							"for %s from the valid values: %s" % \

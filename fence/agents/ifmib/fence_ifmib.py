@@ -85,10 +85,10 @@ def get_outlets_status(conn, options):
 	res_aliases = array_to_dict(conn.walk(ALIASES_OID, 30))
 
 	for x in res_fc:
-		port_num = x[0].split('.')[-1]
+		port_number = x[0].split('.')[-1]
 
 		port_name = x[1].strip('"')
-		port_alias = (res_aliases.has_key(port_num) and res_aliases[port_num].strip('"') or "")
+		port_alias = (res_aliases.has_key(port_number) and res_aliases[port_number].strip('"') or "")
 		port_status = ""
 		result[port_name] = (port_alias, port_status)
 

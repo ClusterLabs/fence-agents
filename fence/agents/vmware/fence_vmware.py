@@ -95,10 +95,10 @@ def dsv_split(dsv_str):
 
 # Quote string for proper existence in quoted string used for pexpect.run function
 # Ex. test'this will return test'\''this. So pexpect run will really pass ' to argument
-def quote_for_run(str):
+def quote_for_run(text):
 	dstr = ''
 
-	for c in str:
+	for c in text:
 		if c == r"'":
 			dstr += "'\\''"
 		else:
