@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python -tt
 
 ##
 ## The Following Agent Has Been Tested On - LDOM 1.0.3

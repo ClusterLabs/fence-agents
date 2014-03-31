@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python -tt
 
 ## Check if fence agent uses only options["--??"] which are defined in fencing library or
 ## fence agent itself

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python -tt
 
 # The Following Agent Has Been Tested On:
 # ePowerSwitch 8M+ version 1.0.0.4

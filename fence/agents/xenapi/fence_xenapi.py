@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python -tt
 #
 #############################################################################
 # Copyright 2011 Matthew Clark

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python -tt
 
 import sys, shlex, subprocess, re, os
 import logging

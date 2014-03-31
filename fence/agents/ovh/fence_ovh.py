@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python -tt
 # Copyright 2013 Adrian Gibanel Lopez (bTactic)
 # Adrian Gibanel improved this script at 2013 to add verification of success and to output metadata
 

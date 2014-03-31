@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python -tt
 
 import sys, getopt, time, os, uuid, pycurl, stat
 import pexpect, re, atexit, syslog
