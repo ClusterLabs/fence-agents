@@ -66,7 +66,7 @@ def get_power_status(conn, options):
 	ret_val = eps_run_command(options,"")
 
 	result = {}
-	status = re.findall("p(\d{2})=(0|1)\s*\<br\>", ret_val.lower())
+	status = re.findall(r"p(\d{2})=(0|1)\s*\<br\>", ret_val.lower())
 	for out_num, out_stat in status:
 		result[out_num] = ("",(out_stat=="1" and "on" or "off"))
 

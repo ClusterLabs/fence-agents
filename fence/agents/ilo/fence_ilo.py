@@ -109,11 +109,11 @@ the iLO card through an XML stream."
 		if options["--ribcl-version"] >= 2:
 			conn.send("<RIB_INFO MODE=\"read\"><GET_FW_VERSION />\r\n")
 			conn.send("</RIB_INFO>\r\n")
-			conn.log_expect(options, "<GET_FW_VERSION\s*\n", int(options["--shell-timeout"]))
+			conn.log_expect(options, r"<GET_FW_VERSION\s*\n", int(options["--shell-timeout"]))
 			conn.log_expect(options, "/>", int(options["--shell-timeout"]))
-			options["fw_version"] = float(re.compile("FIRMWARE_VERSION\s*=\s*\"(.*?)\"",
+			options["fw_version"] = float(re.compile(r"FIRMWARE_VERSION\s*=\s*\"(.*?)\"",
 					re.IGNORECASE).search(conn.before).group(1))
-			options["fw_processor"] = re.compile("MANAGEMENT_PROCESSOR\s*=\s*\"(.*?)\"",
+			options["fw_processor"] = re.compile(r"MANAGEMENT_PROCESSOR\s*=\s*\"(.*?)\"",
 					re.IGNORECASE).search(conn.before).group(1)
 		conn.send("</LOGIN>\r\n")
 	except pexpect.TIMEOUT:

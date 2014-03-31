@@ -37,7 +37,7 @@ def main():
 	atexit.register(atexit_handler)
 
 	all_opt["secure"]["default"] = "1"
-	all_opt["cmd_prompt"]["default"] = [ "sc\>\ " ]
+	all_opt["cmd_prompt"]["default"] = [ r"sc\>\ " ]
 
 	options = check_input(device_opt, process_input(device_opt))
 	options["telnet_over_ssh"] = 1

@@ -25,7 +25,7 @@ BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):
-	node_cmd = "system:blade\[" + options["--plug"] + "\]>"
+	node_cmd = r"system:blade\[" + options["--plug"] + r"\]>"
 
 	conn.send_eol("env -T system:blade[" + options["--plug"] + "]")
 	i = conn.log_expect(options, [ node_cmd, "system>" ] , int(options["--shell-timeout"]))
@@ -44,7 +44,7 @@ def get_power_status(conn, options):
 	return status.lower().strip()
 
 def set_power_status(conn, options):
-	node_cmd = "system:blade\[" + options["--plug"] + "\]>"
+	node_cmd = r"system:blade\[" + options["--plug"] + r"\]>"
 
 	conn.send_eol("env -T system:blade[" + options["--plug"] + "]")
 	i = conn.log_expect(options, [ node_cmd, "system>" ] , int(options["--shell-timeout"]))
@@ -71,7 +71,7 @@ def get_blades_list(conn, options):
 	conn.log_expect(options, node_cmd, int(options["--shell-timeout"]))
 
 	lines = conn.before.split("\r\n")
-	filter_re = re.compile("^\s*blade\[(\d+)\]\s+(.*?)\s*$")
+	filter_re = re.compile(r"^\s*blade\[(\d+)\]\s+(.*?)\s*$")
 	for blade_line in lines:
 		res = filter_re.search(blade_line)
 		if res != None:

@@ -19,7 +19,7 @@ REDHAT_COPYRIGHT=""
 BUILD_DATE=""
 #END_VERSION_GENERATION
 
-COMMAND_PROMPT_REG = "\[PEXPECT\]$"
+COMMAND_PROMPT_REG = r"\[PEXPECT\]$"
 COMMAND_PROMPT_NEW = "[PEXPECT]"
 
 # Start comunicating after login. Prepare good environment.
@@ -44,7 +44,7 @@ def get_power_status(conn, options):
 	fa_status = 0
 
 	for line in conn.before.splitlines():
-		domain = re.search("^(\S+)\s+(\S+)\s+.*$", line)
+		domain = re.search(r"^(\S+)\s+(\S+)\s+.*$", line)
 
 		if (domain!=None):
 			if ((fa_status==0) and (domain.group(1)=="NAME") and (domain.group(2)=="STATE")):
@@ -75,7 +75,7 @@ def main():
 	atexit.register(atexit_handler)
 
 	all_opt["secure"]["default"] = "1"
-	all_opt["cmd_prompt"]["default"] = [ "\ $" ]
+	all_opt["cmd_prompt"]["default"] = [ r"\ $" ]
 
 	options = check_input(device_opt, process_input(device_opt))
 

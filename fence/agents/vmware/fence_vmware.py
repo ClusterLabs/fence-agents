@@ -248,7 +248,7 @@ def set_power_status(conn, options):
 # Returns True, if user uses supported vmrun version (currently >=2.0.0) otherwise False.
 def vmware_is_supported_vmrun_version(options):
 	vmware_help_str = vmware_run_command(options, False, "", 0)
-	version_re = re.search("vmrun version (\d\.(\d[\.]*)*)", vmware_help_str.lower())
+	version_re = re.search(r"vmrun version (\d\.(\d[\.]*)*)", vmware_help_str.lower())
 	if (version_re==None):
 		return False   # Looks like this "vmrun" is not real vmrun
 

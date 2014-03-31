@@ -73,7 +73,7 @@ def get_power_status(conn, options):
 		exp_result = conn.log_expect(options,
 				["Press <ENTER>" ] + options["--command-prompt"], int(options["--shell-timeout"]))
 		lines = conn.before.split("\n")
-		show_re = re.compile('(^|\x0D)\s*(\d+)- (.*?)\s+(ON|OFF)\s*')
+		show_re = re.compile(r'(^|\x0D)\s*(\d+)- (.*?)\s+(ON|OFF)\s*')
 		for x in lines:
 			res = show_re.search(x)
 			if (res != None):
@@ -185,7 +185,7 @@ def get_power_status5(conn, options):
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 	lines = conn.before.split("\n")
 
-	show_re = re.compile('^\s*(\d+): (.*): (On|Off)\s*$', re.IGNORECASE)
+	show_re = re.compile(r'^\s*(\d+): (.*): (On|Off)\s*$', re.IGNORECASE)
 
 	for x in lines:
 		res = show_re.search(x)
@@ -246,7 +246,7 @@ will block any necessary fencing actions."
 	## and continue with proper action
 	####
 	result = -1
-	firmware_version = re.compile('\s*v(\d)*\.').search(conn.before)
+	firmware_version = re.compile(r'\s*v(\d)*\.').search(conn.before)
 	if (firmware_version != None) and (firmware_version.group(1) == "5"):
 		result = fence_action(conn, options, set_power_status5, get_power_status5, get_power_status5)
 	else:

@@ -36,7 +36,7 @@ def get_outlets_status(conn, options):
 	fa_status = 0
 
 	for line in conn.before.splitlines():
-		domain = re.search("^\s*(\S+)\s+(\S+)\s+(\S+).*$", line)
+		domain = re.search(r"^\s*(\S+)\s+(\S+)\s+(\S+).*$", line)
 
 		if (domain!=None):
 			if ((fa_status==0) and (domain.group(1).lower()=="id") and (domain.group(2).lower()=="name")):

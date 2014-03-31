@@ -35,7 +35,7 @@ def get_power_status(conn, options):
 
 		conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
-		status = re.compile("(^|: )(ON|OFF|Powering ON|Powering OFF)\s*$",
+		status = re.compile(r"(^|: )(ON|OFF|Powering ON|Powering OFF)\s*$",
 				re.IGNORECASE | re.MULTILINE).search(conn.before).group(2)
 
 	if status.lower().strip() in ["on", "powering on", "powering off"]:
@@ -70,7 +70,7 @@ def get_list_devices(conn, options):
 	if options["--drac-version"] == "DRAC CMC":
 		conn.send_eol("getmodinfo")
 
-		list_re = re.compile("^([^\s]*?)\s+Present\s*(ON|OFF)\s*.*$")
+		list_re = re.compile(r"^([^\s]*?)\s+Present\s*(ON|OFF)\s*.*$")
 		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 		for line in conn.before.splitlines():
 			if (list_re.search(line)):
@@ -78,7 +78,7 @@ def get_list_devices(conn, options):
 	elif options["--drac-version"] == "DRAC MC":
 		conn.send_eol("getmodinfo")
 
-		list_re = re.compile("^\s*([^\s]*)\s*---->\s*(.*?)\s+Present\s*(ON|OFF)\s*.*$")
+		list_re = re.compile(r"^\s*([^\s]*)\s*---->\s*(.*?)\s+Present\s*(ON|OFF)\s*.*$")
 		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 		for line in conn.before.splitlines():
 			if (list_re.search(line)):
@@ -110,7 +110,7 @@ def main():
 
 	define_new_opts()
 
-	all_opt["cmd_prompt"]["default"] = [ "\$", "DRAC\/MC:" ]
+	all_opt["cmd_prompt"]["default"] = [ r"\$", r"DRAC\/MC:" ]
 
 	options = check_input(device_opt, process_input(device_opt))
 

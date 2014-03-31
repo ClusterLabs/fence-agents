@@ -22,7 +22,7 @@ def get_power_status(conn, options):
 	conn.send_eol("show server status " + options["--plug"])
 	conn.log_expect(options, options["--command-prompt"] , int(options["--shell-timeout"]))
 
-	power_re = re.compile("^\s*Power: (.*?)\s*$")
+	power_re = re.compile(r"^\s*Power: (.*?)\s*$")
 	status = "unknown"
 	for line in conn.before.splitlines():
 		res = power_re.search(line)
@@ -50,7 +50,7 @@ def get_blades_list(conn, options):
 	conn.send_eol("show server list" )
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
-	list_re = re.compile("^\s*(.*?)\s+(.*?)\s+(.*?)\s+OK\s+(.*?)\s+(.*?)\s*$")
+	list_re = re.compile(r"^\s*(.*?)\s+(.*?)\s+(.*?)\s+OK\s+(.*?)\s+(.*?)\s*$")
 	for line in conn.before.splitlines():
 		res = list_re.search(line)
 		if res != None:

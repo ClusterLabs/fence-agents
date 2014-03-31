@@ -37,7 +37,7 @@ PORT_OID = ""
 def cisco_port2oid(port):
 	port = port.lower()
 
-	nums = re.match('^fc(\d+)/(\d+)$', port)
+	nums = re.match(r'^fc(\d+)/(\d+)$', port)
 
 	if ((nums) and (len(nums.groups()))==2):
 		return "%s.%d.%d"% (PORT_ADMIN_STATUS_OID, int(nums.group(1))+21, int(nums.group(2))-1)
@@ -62,7 +62,7 @@ def get_outlets_status(conn, options):
 	res_fc = conn.walk(PORTS_OID, 30)
 	res_aliases = array_to_dict(conn.walk(ALIASES_OID, 30))
 
-	fc_re = re.compile('^"fc\d+/\d+"$')
+	fc_re = re.compile(r'^"fc\d+/\d+"$')
 
 	for x in res_fc:
 		if fc_re.match(x[1]):

@@ -21,7 +21,7 @@ REDHAT_COPYRIGHT=""
 BUILD_DATE="November, 2012"
 #END_VERSION_GENERATION
 
-RE_STATUS_LINE = "^([0-9]+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+).*$"
+RE_STATUS_LINE = r"^([0-9]+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+).*$"
 
 def get_power_status(conn, options):
 	#### Maybe should put a conn.log_expect here to make sure
@@ -113,7 +113,7 @@ def main():
 	atexit.register(atexit_handler)
 
 	all_opt["power_wait"]["default"] = "5"
-	all_opt["cmd_prompt"]["default"] = [ "\) :" ]
+	all_opt["cmd_prompt"]["default"] = [ r"\) :" ]
 
 	options = check_input(device_opt, process_input(device_opt))
 

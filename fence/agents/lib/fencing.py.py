@@ -494,7 +494,7 @@ def metadata(avail_opt, options, docs):
 
 			mixed = all_opt[option]["help"]
 			## split it between option and help text
-			res = re.compile("^(.*--\S+)\s+", re.IGNORECASE | re.S).search(mixed)
+			res = re.compile(r"^(.*--\S+)\s+", re.IGNORECASE | re.S).search(mixed)
 			if (None != res):
 				mixed = res.group(1)
 			mixed = mixed.replace("<", "&lt;").replace(">", "&gt;")
@@ -953,7 +953,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 
 	return result
 
-def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(username: )|(User Name :)"):
+def fence_login(options, re_login_string = r"(login\s*: )|(Login Name:  )|(username: )|(User Name :)"):
 	force_ipvx = ""
 
 	if (options.has_key("--inet6-only")):

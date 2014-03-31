@@ -131,7 +131,7 @@ def main():
 
 	all_opt["login_timeout"]["default"] = "15"
 	all_opt["secure"]["default"] = "1"
-	all_opt["cmd_prompt"]["default"] = [ ":~>", "]\$", "\$ " ]
+	all_opt["cmd_prompt"]["default"] = [ r":~>", r"]\$", r"\$ " ]
 
 	options = check_input(device_opt, process_input(device_opt))
 

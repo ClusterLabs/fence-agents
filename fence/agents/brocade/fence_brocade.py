@@ -17,7 +17,7 @@ def get_power_status(conn, options):
 
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
-	show_re = re.compile('^\s*Persistent Disable\s*(ON|OFF)\s*$', re.IGNORECASE)
+	show_re = re.compile(r'^\s*Persistent Disable\s*(ON|OFF)\s*$', re.IGNORECASE)
 	lines = conn.before.split("\n")
 
 	for x in lines:

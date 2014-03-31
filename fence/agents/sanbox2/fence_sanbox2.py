@@ -38,7 +38,7 @@ def get_power_status(conn, options):
 			pass
 		fail(EC_TIMED_OUT)
 
-	status = re.compile(".*AdminState\s+(online|offline)\s+",
+	status = re.compile(r".*AdminState\s+(online|offline)\s+",
 			re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
 
 	try:
@@ -83,7 +83,7 @@ def get_list_devices(conn, options):
 		conn.send_eol("show port")
 		conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
-		list_re = re.compile("^\s+(\d+?)\s+(Online|Offline)\s+", re.IGNORECASE)
+		list_re = re.compile(r"^\s+(\d+?)\s+(Online|Offline)\s+", re.IGNORECASE)
 		for line in conn.before.splitlines():
 			if (list_re.search(line)):
 				status = {
@@ -130,7 +130,7 @@ because the connection will block any necessary fencing actions."
 	conn.send_eol("admin start")
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
-	if (re.search("\(admin\)", conn.before, re.MULTILINE) == None):
+	if (re.search(r"\(admin\)", conn.before, re.MULTILINE) == None):
 		## Someone else is in admin section, we can't enable/disable
 		## ports so we will rather exit
 		logging.error("Failed: Unable to switch to admin section\n")

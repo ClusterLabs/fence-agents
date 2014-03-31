@@ -25,8 +25,8 @@ def main():
 
 	## all_opt defined in fence agent are found
 	agent_file = open(agent)
-	opt_re = re.compile("\s*all_opt\[\"([^\"]*)\"\] = {")
-	opt_longopt_re = re.compile("\s*\"longopt\" : \"([^\"]*)\"")
+	opt_re = re.compile(r"\s*all_opt\[\"([^\"]*)\"\] = {")
+	opt_longopt_re = re.compile(r"\s*\"longopt\" : \"([^\"]*)\"")
 
 	in_opt = False
 	for line in agent_file:
@@ -38,8 +38,8 @@ def main():
 
 	## check if all options are defined
 	agent_file = open(agent)
-	option_use_re = re.compile("options\[\"(-[^\"]*)\"\]")
-	option_has_re = re.compile("options.has_key\(\"(-[^\"]*)\"\)")
+	option_use_re = re.compile(r"options\[\"(-[^\"]*)\"\]")
+	option_has_re = re.compile(r"options.has_key\(\"(-[^\"]*)\"\)")
 
 	counter = 0
 	without_errors = True
