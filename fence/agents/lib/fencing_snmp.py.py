@@ -7,6 +7,8 @@ import logging
 from fencing import *
 from fencing import fail, fail_usage, EC_TIMED_OUT, LOG_MODE_VERBOSE
 
+__all__ = [ 'FencingSnmp', 'snmp_define_defaults' ]
+
 ## do not add code here.
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION = ""
