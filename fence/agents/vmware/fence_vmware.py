@@ -168,7 +168,7 @@ def vmware_run_command(options, add_login_params, additional_params, additional_
 
 # Get outlet list with status as hash table. If you will use add_vm_name, only VM with vmname is
 # returned. This is used in get_status function
-def vmware_get_outlets_vi(conn, options, add_vm_name):
+def vmware_get_outlets_vi(options, add_vm_name):
 	outlets = {}
 
 	if (add_vm_name):
@@ -195,7 +195,7 @@ def vmware_get_outlets_vi(conn, options, add_vm_name):
 	return outlets
 
 # Get outlet list with status as hash table.
-def vmware_get_outlets_vix(conn, options):
+def vmware_get_outlets_vix(options):
 	outlets = {}
 
 	running_machines = vmware_run_command(options, True, "list", 0)
@@ -214,10 +214,12 @@ def vmware_get_outlets_vix(conn, options):
 	return outlets
 
 def get_outlets_status(conn, options):
+	del conn
+
 	if (vmware_internal_type==VMWARE_TYPE_ESX):
-		return vmware_get_outlets_vi(conn, options, False)
+		return vmware_get_outlets_vi(options, False)
 	if ((vmware_internal_type==VMWARE_TYPE_SERVER1) or (vmware_internal_type==VMWARE_TYPE_SERVER2)):
-		return vmware_get_outlets_vix(conn, options)
+		return vmware_get_outlets_vix(options)
 
 def get_power_status(conn, options):
 	if (vmware_internal_type==VMWARE_TYPE_ESX):
@@ -234,6 +236,8 @@ def get_power_status(conn, options):
 		return ((options["--plug"] in outlets) and "on" or "off")
 
 def set_power_status(conn, options):
+	del conn
+
 	if (vmware_internal_type==VMWARE_TYPE_ESX):
 		additional_params = "--operation %s --vmname '%s'" % \
 				((options["--action"]=="on" and "on" or "off"), quote_for_run(options["--plug"]))

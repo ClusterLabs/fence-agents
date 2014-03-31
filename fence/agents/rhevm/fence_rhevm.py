@@ -20,6 +20,8 @@ RE_STATUS = re.compile("<state>(.*?)</state>", re.IGNORECASE)
 RE_GET_NAME = re.compile("<name>(.*?)</name>", re.IGNORECASE)
 
 def get_power_status(conn, options):
+	del conn
+
 	### Obtain real ID from name
 	res = send_command(options, "vms/?search=name%3D" + options["--plug"])
 
@@ -45,6 +47,7 @@ def get_power_status(conn, options):
 		return "on"
 
 def set_power_status(conn, options):
+	del conn
 	action = {
 		'on' : "start",
 		'off' : "stop"
@@ -54,6 +57,7 @@ def set_power_status(conn, options):
 	send_command(options, url, "POST")
 
 def get_list(conn, options):
+	del conn
 	outlets = { }
 
 	try:

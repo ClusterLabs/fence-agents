@@ -17,6 +17,8 @@ BUILD_DATE=""
 plug_status = "on"
 
 def get_power_status_file(conn, options):
+	del conn
+
 	try:
 		status_file = open(options["--status-file"], 'r')
 	except:
@@ -28,6 +30,8 @@ def get_power_status_file(conn, options):
 	return status.lower()
 
 def set_power_status_file(conn, options):
+	del conn
+
 	if not (options["--action"] in [ "on", "off" ]):
 		return
 
@@ -45,12 +49,15 @@ def get_power_status_fail(conn, options):
 
 def set_power_status_fail(conn, options):
 	global plug_status
+	del conn
 
 	plug_status = "unknown"
 	if options["--action"] == "on":
 		plug_status = "off"
 
 def get_outlets_fail(conn, options):
+	del conn
+
 	result = {}
 	global plug_status
 

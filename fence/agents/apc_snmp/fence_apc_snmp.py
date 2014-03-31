@@ -87,7 +87,7 @@ class ApcMS:
 	has_switches = False
 
 ### FUNCTIONS ###
-def apc_set_device(conn, options):
+def apc_set_device(conn):
 	global device
 
 	agents_dir = {'.1.3.6.1.4.1.318.1.3.4.5':ApcRPDU,
@@ -109,7 +109,7 @@ def apc_resolv_port_id(conn, options):
 	global port_id, switch_id
 
 	if (device == None):
-		apc_set_device(conn, options)
+		apc_set_device(conn)
 
 	# Now we resolv port_id/switch_id
 	if ((options["--plug"].isdigit()) and ((not device.has_switches) or (options["--switch"].isdigit()))):
@@ -154,7 +154,7 @@ def get_outlets_status(conn, options):
 	result = {}
 
 	if (device == None):
-		apc_set_device(conn, options)
+		apc_set_device(conn)
 
 	res_ports = conn.walk(device.outlet_table_oid, 30)
 

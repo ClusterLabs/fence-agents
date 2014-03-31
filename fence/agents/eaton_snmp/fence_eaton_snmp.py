@@ -65,7 +65,7 @@ class EatonSwitchedePDU:
 	has_switches = False
 
 ### FUNCTIONS ###
-def eaton_set_device(conn, options):
+def eaton_set_device(conn):
 	global device
 
 	agents_dir = {'.1.3.6.1.4.1.534.6.6.6':EatonManagedePDU,
@@ -86,7 +86,7 @@ def eaton_resolv_port_id(conn, options):
 	global port_id, switch_id
 
 	if (device==None):
-		eaton_set_device(conn, options)
+		eaton_set_device(conn)
 
 	# Restore the increment, that was removed in main for ePDU Managed
 	if (device.ident_str == "Eaton Switched ePDU"):
@@ -165,7 +165,7 @@ def get_outlets_status(conn, options):
 	result = {}
 
 	if (device==None):
-		eaton_set_device(conn, options)
+		eaton_set_device(conn)
 
 	res_ports = conn.walk(device.outlet_table_oid, 30)
 

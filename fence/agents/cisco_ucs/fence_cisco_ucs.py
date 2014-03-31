@@ -21,6 +21,8 @@ RE_GET_DN = re.compile(" dn=\"(.*?)\"", re.IGNORECASE)
 RE_GET_DESC = re.compile(" descr=\"(.*?)\"", re.IGNORECASE)
 
 def get_power_status(conn, options):
+	del conn
+
 	res = send_command(options, "<configResolveDn cookie=\"" + options["cookie"] +
 			"\" inHierarchical=\"false\" dn=\"org-root" + options["--suborg"] + "/ls-" +
 			options["--plug"] + "/power\"/>", int(options["--shell-timeout"]))
@@ -37,6 +39,8 @@ def get_power_status(conn, options):
 		return "off"
 
 def set_power_status(conn, options):
+	del conn
+
 	action = {
 		'on' : "up",
 		'off' : "down"
@@ -51,6 +55,7 @@ def set_power_status(conn, options):
 	return
 
 def get_list(conn, options):
+	del conn
 	outlets = { }
 
 	try:
