@@ -73,8 +73,8 @@ def main():
 	atexit.register(atexit_handler)
 
 	all_opt["secure"]["default"] = "1"
-	all_opt["cmd_prompt"]["default"] = [ "\[EXPECT\]#\ " ]
-	all_opt["ssh_options"]["default"] = "-t '/bin/bash -c \"PS1=\[EXPECT\]#\  /bin/bash --noprofile --norc\"'"
+	all_opt["cmd_prompt"]["default"] = [ r"\[EXPECT\]#\ " ]
+	all_opt["ssh_options"]["default"] = "-t '/bin/bash -c \"" + r"PS1=\[EXPECT\]#\  " + "/bin/bash --noprofile --norc\"'"
 
 	options = check_input(device_opt, process_input(device_opt))
 
