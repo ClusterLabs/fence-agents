@@ -67,6 +67,7 @@ fence/agents/node_assassin/fence_na.pod
 fence/agents/nss_wrapper/fence_nss_wrapper
 fence/agents/rackswitch/fence_rackswitch
 fence/agents/rhevm/fence_rhevm
+fence/agents/raritan/fence_raritan
 fence/agents/rsa/fence_rsa
 fence/agents/rsb/fence_rsb
 fence/agents/sanbox2/fence_sanbox2
