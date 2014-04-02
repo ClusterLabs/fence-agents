@@ -71,8 +71,8 @@ def soap_login(options):
 	try:
 		soap = Client(url, doctor=d)
 		session = soap.service.login(options["--username"], options["--password"], 'en', 0)
-	except Exception, ex:
-		fail(EC_LOGIN_DENIED)   
+	except Exception:
+		fail(EC_LOGIN_DENIED)
 
 	options["session"] = session
 	return soap

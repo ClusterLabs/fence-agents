@@ -78,7 +78,7 @@ def get_power_status(conn, options):
 		return result
 
 def set_power_status(conn, options):
-	ret_val = eps_run_command(options, "P%s=%s"%(options["--plug"], (options["--action"]=="on" and "1" or "0")))
+	eps_run_command(options, "P%s=%s"%(options["--plug"], (options["--action"]=="on" and "1" or "0")))
 
 # Define new option
 def eps_define_new_opts():

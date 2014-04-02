@@ -466,7 +466,7 @@ def metadata(avail_opt, options, docs):
 	if docs.has_key("vendorurl"):
 		print "<vendor-url>" + docs["vendorurl"] + "</vendor-url>"
 	print "<parameters>"
-	for option, _value in sorted_list:
+	for option, _ in sorted_list:
 		if all_opt[option].has_key("shortdesc"):
 			print "\t<parameter name=\"" + option + "\" unique=\"0\" required=\"" + all_opt[option]["required"] + "\">"
 
@@ -921,7 +921,6 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 					# fence action was completed succesfully even in that case
 					logging.error("%s\n", str(ex))
 					syslog.syslog(syslog.LOG_NOTICE, str(ex))
-					pass
 
 			if power_on == False:
 				# this should not fail as node was fenced succesfully

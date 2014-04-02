@@ -84,7 +84,7 @@ block any necessary fencing actions."
 		conn.send("set binary\n")
 		conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
 
-		screen = conn.read_nonblocking(size=100, timeout=int(options["--shell-timeout"]))
+		conn.read_nonblocking(size=100, timeout=int(options["--shell-timeout"]))
 		conn.log_expect(options, "100 HELLO .*", int(options["--shell-timeout"]))
 		conn.send_eol("login %s %s" % (options["--username"], options["--password"]))
 		conn.log_expect(options, "250 OK", int(options["--shell-timeout"]))

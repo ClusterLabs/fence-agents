@@ -44,7 +44,7 @@ def cisco_port2oid(port):
 		fail_usage("Mangled port number: %s"%(port))
 
 def get_power_status(conn, options):
-	(oid, status) = conn.get(PORT_OID)
+	(_, status) = conn.get(PORT_OID)
 	return (status=="1" and "on" or "off")
 
 def set_power_status(conn, options):

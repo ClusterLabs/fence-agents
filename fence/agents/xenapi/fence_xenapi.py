@@ -166,7 +166,7 @@ def return_vm_reference(session, options):
 		# need to catch and re-raise the exception produced by get_by_uuid.
 		try:
 			return session.xenapi.VM.get_by_uuid(uuid)
-		except Exception, exn:
+		except Exception:
 			if verbose:
 				print "No VM's found with a UUID of \"%s\"" % uuid
 			raise

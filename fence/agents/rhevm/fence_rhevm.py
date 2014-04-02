@@ -50,7 +50,7 @@ def set_power_status(conn, options):
 	}[options["--action"]]
 
 	url = "vms/" + options["id"] + "/" + action
-	res = send_command(options, url, "POST")
+	send_command(options, url, "POST")
 
 def get_list(conn, options):
 	outlets = { }

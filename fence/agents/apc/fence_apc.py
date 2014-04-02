@@ -175,12 +175,11 @@ def set_power_status(conn, options):
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 def get_power_status5(conn, options):
-	exp_result = 0
 	outlets = {}
 
 	conn.send_eol("olStatus all")
 
-	exp_result = conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 	lines = conn.before.split("\n")
 
 	show_re = re.compile('^\s*(\d+): (.*): (On|Off)\s*$', re.IGNORECASE)

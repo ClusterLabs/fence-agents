@@ -41,7 +41,7 @@ def set_power_status(conn, options):
 		'off' : "down"
 	}[options["--action"]]
 
-	res = send_command(options, \
+	send_command(options, \
 		"<configConfMos cookie=\"" + options["cookie"] + "\" inHierarchical=\"no\">" + \
 		"<inConfigs><pair key=\"org-root" + options["--suborg"] + "/ls-" + options["--plug"] + "/power\">" + \
 		"<lsPower dn=\"org-root/ls-" + options["--plug"] + "/power\" state=\"" + action + "\" status=\"modified\" />" + \

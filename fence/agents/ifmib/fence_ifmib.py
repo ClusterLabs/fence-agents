@@ -62,7 +62,7 @@ def get_power_status(conn, options):
 	if (port_num==None):
 		port_num = port2index(conn, options["--plug"])
 
-	(oid, status) = conn.get("%s.%d"%(STATUSES_OID, port_num))
+	(_, status) = conn.get("%s.%d"%(STATUSES_OID, port_num))
 	return (status==str(STATUS_UP) and "on" or "off")
 
 def set_power_status(conn, options):

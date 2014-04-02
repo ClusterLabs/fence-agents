@@ -39,7 +39,7 @@ STATUS_SET_OFF = 3
 ### FUNCTIONS ###
 
 def get_power_status(conn, options):
-	(oid, status) = conn.get("%s.%s"% (STATUSES_OID, options["--plug"]))
+	(_, status) = conn.get("%s.%s"% (STATUSES_OID, options["--plug"]))
 	return (status==str(STATUS_UP) and "on" or "off")
 
 def set_power_status(conn, options):

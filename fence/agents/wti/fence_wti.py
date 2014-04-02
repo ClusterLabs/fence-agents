@@ -87,9 +87,7 @@ def get_plug_group_status_from_list(status_list):
 def get_plug_group_status(conn, options):
 	listing = get_listing(conn, options, "/SG")
 
-	plug_section = 0
 	outlets = {}
-	current_outlet = ""
 	line_index = 0
 	lines = listing.splitlines()
 	while line_index < len(lines) and line_index >= 0:

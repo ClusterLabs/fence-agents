@@ -14,7 +14,7 @@ BUILD_DATE="March, 20013"
 def get_power_status(conn, options):
 	conn.send_eol("portCfgShow " + options["--plug"])
 
-	exp_result = conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 	show_re = re.compile('^\s*Persistent Disable\s*(ON|OFF)\s*$', re.IGNORECASE)
 	lines = conn.before.split("\n")

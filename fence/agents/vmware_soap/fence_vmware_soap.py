@@ -41,8 +41,8 @@ def soap_login(options):
 		mo_SessionManager = Property(ServiceContent.sessionManager.value)
 		mo_SessionManager._type = 'SessionManager'
 
-		SessionManager = conn.service.Login(mo_SessionManager, options["--username"], options["--password"])
-	except Exception, ex:
+		conn.service.Login(mo_SessionManager, options["--username"], options["--password"])
+	except Exception:
 		fail(EC_LOGIN_DENIED)
 
 	options["ServiceContent"] = ServiceContent
@@ -99,7 +99,7 @@ def get_power_status(conn, options):
 
 	try:
 		raw_machines = conn.service.RetrievePropertiesEx(mo_PropertyCollector, propFilterSpec)
-	except Exception, ex:
+	except Exception:
 		fail(EC_STATUS)
 
 	(machines, uuid, mappingToUUID) = process_results(raw_machines, {}, {}, {})
@@ -108,7 +108,7 @@ def get_power_status(conn, options):
 	while (hasattr(raw_machines, 'token') == True):
 		try:
 			raw_machines = conn.service.ContinueRetrievePropertiesEx(mo_PropertyCollector, raw_machines.token)
-		except Exception, ex:
+		except Exception:
 			fail(EC_STATUS)
 		(more_machines, more_uuid, more_mappingToUUID) = process_results(raw_machines, {}, {}, {})
 		machines.update(more_machines)
@@ -131,18 +131,18 @@ def get_power_status(conn, options):
 
 				try:
 					options["--uuid"] = mappingToUUID[vm.value]
-				except KeyError, ex:
+				except KeyError:
 					fail(EC_STATUS)
-				except AttributeError, ex:
+				except AttributeError:
 					fail(EC_STATUS)
 			else:
 				## Name of virtual machine instead of path
 				## warning: if you have same names of machines this won't work correctly
 				try:
 					(options["--uuid"], _) = machines[options["--plug"]]
-				except KeyError, ex:
+				except KeyError:
 					fail(EC_STATUS)
-				except AttributeError, ex:
+				except AttributeError:
 					fail(EC_STATUS)
 
 		try:
@@ -150,7 +150,7 @@ def get_power_status(conn, options):
 				return "on"
 			else:
 				return "off"
-		except KeyError, ex:
+		except KeyError:
 			fail(EC_STATUS)
 
 def set_power_status(conn, options):
@@ -216,7 +216,7 @@ Alternatively you can always use UUID to access virtual machine."
 	#####
 	try:
 		conn.service.Logout(options["mo_SessionManager"])
-	except Exception, ex:
+	except Exception:
 		pass
 
 	sys.exit(result)
