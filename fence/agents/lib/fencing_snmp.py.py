@@ -3,6 +3,7 @@
 # For example of use please see fence_cisco_mds
 
 import re, pexpect
+import logging
 from fencing import *
 
 ## do not add code here.
@@ -23,8 +24,7 @@ class FencingSnmp:
 
 	# Log message if user set verbose option
 	def log_command(self, message):
-		if self.options["log"] >= LOG_MODE_VERBOSE:
-			self.options["debug_fh"].write(message+"\n")
+		logging.debug("%s\n" % message)
 
 	def quote_for_run(self, string):
 		return ''.join(map(lambda x:x==r"'" and "'\\''" or x, string))

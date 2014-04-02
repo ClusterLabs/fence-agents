@@ -2,6 +2,7 @@
 
 import sys, getopt, time, os, uuid, pycurl, stat
 import pexpect, re, atexit, syslog
+import logging
 import __main__
 
 ## do not add code here.
@@ -403,14 +404,18 @@ DEPENDENCY_OPT = {
 
 class fspawn(pexpect.spawn):
 	def __init__(self, options, command):
+		logging.info("Running command: %s" % command)
 		pexpect.spawn.__init__(self, command)
 		self.opt = options
 		
 	def log_expect(self, options, pattern, timeout):
 		result = self.expect(pattern, timeout)
-		if options["log"] >= LOG_MODE_VERBOSE:
-			options["debug_fh"].write(self.before + self.after)
+		logging.debug("Received: %s" % (self.before + self.after))
 		return result
+
+	def send(self, message):
+		logging.debug("Sent: %s" % message)
+		pexpect.spawn.send(self,message)
 
 	# send EOL according to what was detected in login process (telnet)
 	def send_eol(self, message):
@@ -421,7 +426,7 @@ def atexit_handler():
 		sys.stdout.close()
 		os.close(1)
 	except IOError:
-		sys.stderr.write("%s failed to close standard output\n"%(sys.argv[0]))
+		logging.error("%s failed to close standard output\n" % (sys.argv[0]))
 		syslog.syslog(syslog.LOG_ERR, "Failed to close standard output")
 		sys.exit(EC_GENERIC_ERROR)
 
@@ -441,8 +446,8 @@ def version(command, release, build_date, copyright_notice):
 
 def fail_usage(message = ""):
 	if len(message) > 0:
-		sys.stderr.write(message+"\n")
-	sys.stderr.write("Please use '-h' for usage\n")
+		logging.error("%s\n" % message)
+	logging.error("Please use '-h' for usage\n")
 	sys.exit(EC_GENERIC_ERROR)
 
 def fail(error_code):
@@ -458,7 +463,7 @@ def fail(error_code):
 		EC_PASSWORD_MISSING : "Failed: You have to set login password",
 		EC_INVALID_PRIVILEGES : "Failed: The user does not have the correct privileges to do the requested action."
 	}[error_code] + "\n"
-	sys.stderr.write(message)
+	logging.error("%s\n" % message)
 	syslog.syslog(syslog.LOG_ERR, message)
 	sys.exit(EC_GENERIC_ERROR)
 
@@ -649,7 +654,7 @@ def process_input(avail_opt):
 			##
 			######
 			if avail_opt.count(name) == 0:
-				sys.stderr.write("Parse error: Ignoring unknown option '"+line+"'\n")
+				logging.warning("Parse error: Ignoring unknown option '%s'\n" % line)
 				syslog.syslog(syslog.LOG_WARNING, "Parse error: Ignoring unknown option '"+line)
 				continue
 
@@ -723,9 +728,7 @@ def check_input(device_opt, opt):
 	options["--action"] = options["--action"].lower()
 
 	if options.has_key("--verbose"):
-		options["log"] = LOG_MODE_VERBOSE
-	else:
-		options["log"] = LOG_MODE_QUIET
+		logging.getLogger().setLevel(logging.DEBUG)
 
 	acceptable_actions = [ "on", "off", "status", "list", "monitor" ]
 	if 1 == device_opt.count("fabric_fencing"):
@@ -781,12 +784,12 @@ def check_input(device_opt, opt):
 
 	if options.has_key("--debug-file"):
 		try:
-			options["debug_fh"] = file (options["--debug-file"], "w")
+			fh = logging.FileHandler(options["--debug-file"])
+			fh.setLevel(logging.DEBUG)
+			logging.getLogger().addHandler(fh)
 		except IOError:
+			logging.error("Unable to create file %s" % options["--debug-file"])
 			fail_usage("Failed: Unable to create file " + options["--debug-file"])
-
-	if options.has_key("debug_fh") == 0:
-		options["debug_fh"] = sys.stderr
 
 	if options.has_key("--snmp-priv-passwd-script"):
 		options["--snmp-priv-passwd"] = os.popen(options["--snmp-priv-passwd-script"]).read().rstrip()
@@ -974,13 +977,13 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 				except Exception, ex:
 					# an error occured during power ON phase in reboot
 					# fence action was completed succesfully even in that case
-					sys.stderr.write(str(ex))
+					logging.error("%s\n", str(ex))
 					syslog.syslog(syslog.LOG_NOTICE, str(ex))
 					pass
 
 			if power_on == False:
 				# this should not fail as node was fenced succesfully
-				sys.stderr.write('Timed out waiting to power ON\n')
+				logging.error('Timed out waiting to power ON\n')
 				syslog.syslog(syslog.LOG_NOTICE, "Timed out waiting to power ON")
 
 			print "Success: Rebooted"
@@ -995,7 +998,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 	except pexpect.TIMEOUT:
 		fail(EC_TIMED_OUT)
 	except pycurl.error, ex:
-		sys.stderr.write(ex[1] + "\n")
+		logging.error("%s\n" % str(ex))
 		syslog.syslog(syslog.LOG_ERR, ex[1])
 		fail(EC_TIMED_OUT)
 	
@@ -1019,6 +1022,7 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 	## Do the delay of the fence device before logging in
 	## Delay is important for two-node clusters fencing but we do not need to delay 'status' operations
 	if options["--action"] in ["off", "reboot"]:
+		logging.info("Delay %s second(s) before logging in to the fence device" % options["--delay"])
 		time.sleep(int(options["--delay"]))
 
 	try:
@@ -1034,7 +1038,7 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 			try:
 				conn = fspawn(options, command)
 			except pexpect.ExceptionPexpect, ex:
-				sys.stderr.write(str(ex) + "\n")
+				logging.error("%s\n" % str(ex))
 				syslog.syslog(syslog.LOG_ERR, str(ex))
 				sys.exit(EC_GENERIC_ERROR)
 		elif options.has_key("--ssh") and 0 == options.has_key("--identity-file"):
