@@ -20,8 +20,8 @@ def get_power_status(conn, options):
 	show_re = re.compile(r'^\s*Persistent Disable\s*(ON|OFF)\s*$', re.IGNORECASE)
 	lines = conn.before.split("\n")
 
-	for x in lines:
-		res = show_re.search(x)
+	for line in lines:
+		res = show_re.search(line)
 		if (res != None):
 			# We queried if it is disabled, so we have to negate answer
 			if res.group(1) == "ON":

@@ -409,11 +409,11 @@ def atexit_handler():
 		sys.exit(EC_GENERIC_ERROR)
 
 def add_dependency_options(options):
-	## Add options which are available for every fence agent
+	## Add also options which are available for every fence agent
 	added_opt = []
-	for x in options + ["default"]:
-		if DEPENDENCY_OPT.has_key(x):
-			added_opt.extend([y for y in DEPENDENCY_OPT[x] if options.count(y) == 0])
+	for opt in options + ["default"]:
+		if DEPENDENCY_OPT.has_key(opt):
+			added_opt.extend([y for y in DEPENDENCY_OPT[opt] if options.count(y) == 0])
 	return added_opt
 
 def fail_usage(message = ""):
@@ -863,10 +863,10 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 				((options["--action"] == "monitor") and 1 == options["device_opt"].count("port")):
 			outlets = get_outlet_list(tn, options)
 			## keys can be numbers (port numbers) or strings (names of VM)
-			for o in outlets.keys():
-				(alias, status) = outlets[o]
+			for outlet_id in outlets.keys():
+				(alias, status) = outlets[outlet_id]
 				if options["--action"] != "monitor":
-					print o + options["--separator"] + alias
+					print outled_id + options["--separator"] + alias
 			return
 
 		status = get_multi_power_fn(tn, options, get_power_fn)

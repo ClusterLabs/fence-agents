@@ -217,10 +217,10 @@ the status of virtual machines running on the host."
 	docs["vendorurl"] = "http://www.xenproject.org"
 	show_docs(options, docs)
 
-	xenSession = connect_and_login(options)
+	xen_session = connect_and_login(options)
 
 	# Operate the fencing device
-	result = fence_action(xenSession, options, set_power_fn, get_power_fn, get_outlet_list)
+	result = fence_action(xen_session, options, set_power_fn, get_power_fn, get_outlet_list)
 
 	sys.exit(result)
 

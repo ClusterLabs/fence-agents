@@ -46,13 +46,13 @@ def main():
 	for line in agent_file:
 		counter += 1
 
-		for x in option_use_re.findall(line):
-			if not available.has_key(x):
+		for option in option_use_re.findall(line):
+			if not available.has_key(option):
 				print "ERROR on line %d in %s: option %s is not defined" % (counter, agent, option_use_re.search(line).group(1))
 				without_errors = False
 
-		for x in option_has_re.findall(line):
-			if not available.has_key(x):
+		for option in option_has_re.findall(line):
+			if not available.has_key(option):
 				print "ERROR on line %d in %s: option %s is not defined" % (counter, agent, option_has_re.search(line).group(1))
 				without_errors = False
 

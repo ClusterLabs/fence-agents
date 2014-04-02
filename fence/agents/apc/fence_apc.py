@@ -74,8 +74,8 @@ def get_power_status(conn, options):
 				["Press <ENTER>" ] + options["--command-prompt"], int(options["--shell-timeout"]))
 		lines = conn.before.split("\n")
 		show_re = re.compile(r'(^|\x0D)\s*(\d+)- (.*?)\s+(ON|OFF)\s*')
-		for x in lines:
-			res = show_re.search(x)
+		for line in lines:
+			res = show_re.search(line)
 			if (res != None):
 				outlets[res.group(2)] = (res.group(3), res.group(4))
 		conn.send_eol("")
@@ -187,8 +187,8 @@ def get_power_status5(conn, options):
 
 	show_re = re.compile(r'^\s*(\d+): (.*): (On|Off)\s*$', re.IGNORECASE)
 
-	for x in lines:
-		res = show_re.search(x)
+	for line in lines:
+		res = show_re.search(line)
 		if (res != None):
 			outlets[res.group(1)] = (res.group(2), res.group(3))
 

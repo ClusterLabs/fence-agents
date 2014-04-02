@@ -84,22 +84,22 @@ def send_command(opt, command, method = "GET"):
 	url += "//" + opt["--ip"] + ":" + str(opt["--ipport"]) + "/api/" + command
 
 	## send command through pycurl
-	c = pycurl.Curl()
-	b = StringIO.StringIO()
-	c.setopt(pycurl.URL, url)
-	c.setopt(pycurl.HTTPHEADER, [ "Content-type: application/xml", "Accept: application/xml" ])
-	c.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_BASIC)
-	c.setopt(pycurl.USERPWD, opt["--username"] + ":" + opt["--password"])
-	c.setopt(pycurl.TIMEOUT, int(opt["--shell-timeout"]))
-	c.setopt(pycurl.SSL_VERIFYPEER, 0)
-	c.setopt(pycurl.SSL_VERIFYHOST, 0)
+	conn = pycurl.Curl()
+	web_buffer = StringIO.StringIO()
+	conn.setopt(pycurl.URL, url)
+	conn.setopt(pycurl.HTTPHEADER, [ "Content-type: application/xml", "Accept: application/xml" ])
+	conn.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_BASIC)
+	conn.setopt(pycurl.USERPWD, opt["--username"] + ":" + opt["--password"])
+	conn.setopt(pycurl.TIMEOUT, int(opt["--shell-timeout"]))
+	conn.setopt(pycurl.SSL_VERIFYPEER, 0)
+	conn.setopt(pycurl.SSL_VERIFYHOST, 0)
 
 	if (method == "POST"):
-		c.setopt(pycurl.POSTFIELDS, "<action />")
+		conn.setopt(pycurl.POSTFIELDS, "<action />")
 
-	c.setopt(pycurl.WRITEFUNCTION, b.write)
-	c.perform()
-	result = b.getvalue()
+	conn.setopt(pycurl.WRITEFUNCTION, web_buffer.write)
+	conn.perform()
+	result = web_buffer.getvalue()
 
 	logging.debug("%s\n" % command)
 	logging.debug("%s\n" % result)

@@ -64,9 +64,9 @@ def get_list(conn, options):
 
 		lines = res.split("<lsServer ")
 		for i in range(1, len(lines)):
-			dn = RE_GET_DN.search(lines[i]).group(1)
+			node_name = RE_GET_DN.search(lines[i]).group(1)
 			desc = RE_GET_DESC.search(lines[i]).group(1)
-			outlets[dn] = (desc, None)
+			outlets[node_name] = (desc, None)
 	except AttributeError:
 		return { }
 	except IndexError:
@@ -84,17 +84,17 @@ def send_command(opt, command, timeout):
 	url += "//" + opt["--ip"] + ":" + str(opt["--ipport"]) + "/nuova"
 
 	## send command through pycurl
-	c = pycurl.Curl()
-	b = StringIO.StringIO()
-	c.setopt(pycurl.URL, url)
-	c.setopt(pycurl.HTTPHEADER, [ "Content-type: text/xml" ])
-	c.setopt(pycurl.POSTFIELDS, command)
-	c.setopt(pycurl.WRITEFUNCTION, b.write)
-	c.setopt(pycurl.TIMEOUT, timeout)
-	c.setopt(pycurl.SSL_VERIFYPEER, 0)
-	c.setopt(pycurl.SSL_VERIFYHOST, 0)
-	c.perform()
-	result = b.getvalue()
+	conn = pycurl.Curl()
+	web_buffer = StringIO.StringIO()
+	conn.setopt(pycurl.URL, url)
+	conn.setopt(pycurl.HTTPHEADER, [ "Content-type: text/xml" ])
+	conn.setopt(pycurl.POSTFIELDS, command)
+	conn.setopt(pycurl.WRITEFUNCTION, web_buffer.write)
+	conn.setopt(pycurl.TIMEOUT, timeout)
+	conn.setopt(pycurl.SSL_VERIFYPEER, 0)
+	conn.setopt(pycurl.SSL_VERIFYHOST, 0)
+	conn.perform()
+	result = web_buffer.getvalue()
 
 	logging.debug("%s\n" % command)
 	logging.debug("%s\n" % results)
