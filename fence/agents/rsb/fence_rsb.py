@@ -70,8 +70,8 @@ will block any necessary fencing actions."
 	##
 	## Logout from system
 	##
-	## In some special unspecified cases it is possible that 
-	## connection will be closed before we run close(). This is not 
+	## In some special unspecified cases it is possible that
+	## connection will be closed before we run close(). This is not
 	## a problem because everything is checked before.
 	######
 	try:
@@ -79,7 +79,7 @@ will block any necessary fencing actions."
 		conn.close()
 	except:
 		pass
-	
+
 	sys.exit(result)
 
 if __name__ == "__main__":

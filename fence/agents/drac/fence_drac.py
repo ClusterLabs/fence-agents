@@ -35,7 +35,7 @@ def main():
 		all_opt["cmd_prompt"]["default"] = [ "\\[" + opt["--username"] + "\\]# " ]
 	else:
 		all_opt["cmd_prompt"]["default"] = [ "\\[" "username" + "\\]# " ]
-	
+
 	options = check_input(device_opt, opt)
 
 	docs = { }
@@ -64,8 +64,8 @@ To enable telnet on the DRAC: \
 	##
 	## Logout from system
 	##
-	## In some special unspecified cases it is possible that 
-	## connection will be closed before we run close(). This is not 
+	## In some special unspecified cases it is possible that
+	## connection will be closed before we run close(). This is not
 	## a problem because everything is checked before.
 	######
 	try:
@@ -73,7 +73,7 @@ To enable telnet on the DRAC: \
 		conn.close()
 	except:
 		pass
-	
+
 	sys.exit(result)
 
 if __name__ == "__main__":

@@ -11,7 +11,7 @@ REDHAT_COPYRIGHT=""
 BUILD_DATE=""
 #END_VERSION_GENERATION
 
-plug_status="on"
+plug_status = "on"
 
 def get_power_status_file(conn, options):
 	try:
@@ -33,7 +33,7 @@ def set_power_status_file(conn, options):
 	status_file.close()
 
 def get_power_status_fail(conn, options):
-	outlets = get_outlets_fail(conn,options)
+	outlets = get_outlets_fail(conn, options)
 
 	if len(outlets) == 0 or options.has_key("--plug") == 0:
 		fail_usage("Failed: You have to enter existing machine!")
@@ -125,7 +125,7 @@ def main():
 		result = fence_action(None, options, set_power_status_fail, get_power_status_fail, get_outlets_fail)
 	else:
 		result = fence_action(None, options, set_power_status_file, get_power_status_file, None)
-		
+
 	sys.exit(result)
 
 if __name__ == "__main__":

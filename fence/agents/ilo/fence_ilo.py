@@ -7,7 +7,7 @@
 ##  iLO Version
 ## +---------------------------------------------+
 ##  iLO  / firmware 1.91 / RIBCL 2.22
-##  iLO2 / firmware 1.22 / RIBCL 2.22 
+##  iLO2 / firmware 1.22 / RIBCL 2.22
 ##  iLO2 / firmware 1.50 / RIBCL 2.22
 #####
 
@@ -121,7 +121,7 @@ the iLO card through an XML stream."
 	## Fence operations
 	####
 	result = fence_action(conn, options, set_power_status, get_power_status, None)
-	
+
 	sys.exit(result)
 
 if __name__ == "__main__":

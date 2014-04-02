@@ -2,9 +2,9 @@
 
 ##
 ## The Following Agent Has Been Tested On - LDOM 1.0.3
-## The interface is backward compatible so it will work 
+## The interface is backward compatible so it will work
 ## with 1.0, 1.0.1 and .2 too.
-## 
+##
 #####
 
 import sys, re, pexpect, exceptions
@@ -28,20 +28,19 @@ def start_communication(conn, options):
 		#CSH stuff
 		conn.send_eol("set prompt='"+COMMAND_PROMPT_NEW+"'")
 		conn.log_expect(options, COMMAND_PROMPT_REG, int(options["--shell-timeout"]))
-	
 
 def get_power_status(conn, options):
 	start_communication(conn, options)
-		
+
 	conn.send_eol("ldm ls")
-		    
+
 	conn.log_expect(options, COMMAND_PROMPT_REG, int(options["--shell-timeout"]))
 
 	result = {}
 
 	#This is status of mini finite automata. 0 = we didn't found NAME and STATE, 1 = we did
 	fa_status = 0
-		
+
 	for line in conn.before.splitlines():
 		domain = re.search("^(\S+)\s+(\S+)\s+.*$", line)
 
@@ -61,13 +60,13 @@ def get_power_status(conn, options):
 
 def set_power_status(conn, options):
 	start_communication(conn, options)
-         	
+
 	cmd_line = "ldm "+(options["--action"]=="on" and "start" or "stop -f")+" \""+options["--plug"]+"\""
-            	
+
 	conn.send_eol(cmd_line)
-		    
+
 	conn.log_expect(options, COMMAND_PROMPT_REG, int(options["--power-timeout"]))
-		
+
 def main():
 	device_opt = [ "ipaddr", "login", "passwd", "cmd_prompt", "secure", "port" ]
 
@@ -112,7 +111,7 @@ root. Than prompt is $, so again, you must use parameter -c."
 	except pexpect.ExceptionPexpect:
 		pass
 
-	sys.exit(result)		
+	sys.exit(result)
 
 if __name__ == "__main__":
 	main()

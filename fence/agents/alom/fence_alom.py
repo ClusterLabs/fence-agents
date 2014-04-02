@@ -29,7 +29,7 @@ def set_power_status(conn, options):
 	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 	# Get the machine some time between poweron and poweroff
 	time.sleep(int(options["--power-timeout"]))
-		
+
 def main():
 	device_opt = [ "ipaddr", "login", "passwd", "cmd_prompt", "secure" ]
 
@@ -40,14 +40,14 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 	options["telnet_over_ssh"] = 1
-	
+
 	docs = { }
 	docs["shortdesc"] = "Fence agent for Sun ALOM"
 	docs["longdesc"] = "fence_alom is an I/O Fencing \
 agent which can be used with ALOM connected machines."
 	docs["vendorurl"] = "http://www.sun.com"
 	show_docs(options, docs)
-		
+
 	# Operate the fencing device
 	conn = fence_login(options)
 	result = fence_action(conn, options, set_power_status, get_power_status, None)
@@ -57,7 +57,7 @@ agent which can be used with ALOM connected machines."
 		conn.send_eol("logout")
 		conn.close()
 	except:
-		pass	                                         
+		pass
 
 	sys.exit(result)
 

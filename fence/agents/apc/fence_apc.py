@@ -10,7 +10,7 @@
 ##  AP7941      AOS v3.5.7, PDU APP v3.5.6
 ##  AP9606	AOS v2.5.4, PDU APP v2.7.3
 ##
-## @note: ssh is very slow on AP79XX devices protocol (1) and 
+## @note: ssh is very slow on AP79XX devices protocol (1) and
 ##        cipher (des/blowfish) have to be defined
 #####
 
@@ -66,7 +66,7 @@ def get_power_status(conn, options):
 			conn.send_eol("1")
 	else:
 		conn.send_eol(options["--switch"])
-			
+
 	while True:
 		exp_result = conn.log_expect(options, ["Press <ENTER>" ] + options["--command-prompt"], int(options["--shell-timeout"]))
 		lines = conn.before.split("\n")
@@ -78,7 +78,7 @@ def get_power_status(conn, options):
 		conn.send_eol("")
 		if exp_result != 0:
 			break
-	conn.send(chr(03))		
+	conn.send(chr(03))
 	conn.log_expect(options, "- Logout", int(options["--shell-timeout"]))
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
@@ -162,7 +162,7 @@ def set_power_status(conn, options):
 	else:
 		conn.send_eol("1")
 		conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
-		
+
 	conn.send_eol(action)
 	conn.log_expect(options, "Enter 'YES' to continue or <ENTER> to cancel :", int(options["--shell-timeout"]))
 	conn.send_eol("YES")
@@ -181,9 +181,9 @@ def get_power_status5(conn, options):
 
 	exp_result = conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 	lines = conn.before.split("\n")
-		
+
 	show_re = re.compile('^\s*(\d+): (.*): (On|Off)\s*$', re.IGNORECASE)
-	
+
 	for x in lines:
 		res = show_re.search(x)
 		if (res != None):
@@ -252,8 +252,8 @@ will block any necessary fencing actions."
 	##
 	## Logout from system
 	##
-	## In some special unspecified cases it is possible that 
-	## connection will be closed before we run close(). This is not 
+	## In some special unspecified cases it is possible that
+	## connection will be closed before we run close(). This is not
 	## a problem because everything is checked before.
 	######
 	try:
@@ -261,7 +261,7 @@ will block any necessary fencing actions."
 		conn.close()
 	except:
 		pass
-	
+
 	sys.exit(result)
 
 if __name__ == "__main__":

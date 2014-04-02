@@ -137,6 +137,5 @@ Poweroff is simulated with a reboot into rescue-pro mode."
 
 	sys.exit(result)
 
-
 if __name__ == "__main__":
 	main()

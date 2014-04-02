@@ -70,8 +70,8 @@ FC switch needs to be enabled. This can be done by running fence_brocade and spe
 	##
 	## Logout from system
 	##
-	## In some special unspecified cases it is possible that 
-	## connection will be closed before we run close(). This is not 
+	## In some special unspecified cases it is possible that
+	## connection will be closed before we run close(). This is not
 	## a problem because everything is checked before.
 	######
 	try:
@@ -79,7 +79,7 @@ FC switch needs to be enabled. This can be done by running fence_brocade and spe
 		conn.close()
 	except:
 		pass
-	
+
 	sys.exit(result)
 
 if __name__ == "__main__":

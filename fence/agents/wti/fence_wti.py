@@ -51,7 +51,7 @@ def get_plug_status(conn, options):
 	status_index = -1
 	plug_header = list()
 	outlets = {}
-	
+
 	for line in listing.splitlines():
 		if (plug_section == 2) and line.find("|") >= 0 and line.startswith("PLUG") == False:
 			plug_line = [x.strip().lower() for x in line.split("|")]
@@ -80,7 +80,7 @@ def get_plug_status(conn, options):
 def get_plug_group_status_from_list(status_list):
 	for status in status_list:
 		if status == "on":
-		      return status
+			return status
 	return "off"
 
 def get_plug_group_status(conn, options):
@@ -108,7 +108,7 @@ def get_plug_group_status(conn, options):
 						line_index = -1
 
 				return get_plug_group_status_from_list(plug_status)
- 
+
 			else:
 				## We already believe that first column contains plug number
 				if len(plug_line[0]) != 0:
@@ -148,7 +148,7 @@ def get_plug_group_status(conn, options):
 
 def get_power_status(conn, options):
 	ret = get_plug_status(conn, options)
-	
+
 	if ret == "PROBLEM":
 		ret = get_plug_group_status(conn, options)
 
@@ -182,12 +182,12 @@ Lengthy telnet connections to the NPS should be avoided while a GFS cluster \
 is running because the connection will block any necessary fencing actions."
 	docs["vendorurl"] = "http://www.wti.com"
 	show_docs(options, docs)
-	
+
 	##
 	## Operate the fencing device
 	##
 	## @note: if it possible that this device does not need either login, password or both of them
-	#####	
+	#####
 	if 0 == options.has_key("--ssh"):
 		try:
 			if options["--action"] in ["off", "reboot"]:
@@ -196,7 +196,7 @@ is running because the connection will block any necessary fencing actions."
 			conn = fspawn(options, TELNET_PATH)
 			conn.send("set binary\n")
 			conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
-			
+
 			re_login = re.compile("(login: )|(Login Name:  )|(username: )|(User Name :)", re.IGNORECASE)
 			re_prompt = re.compile("|".join(map (lambda x: "(" + x + ")", options["--command-prompt"])), re.IGNORECASE)
 
@@ -207,17 +207,17 @@ is running because the connection will block any necessary fencing actions."
 					result = conn.log_expect(options, [ re_login, "Password: ", re_prompt ], int(options["--shell-timeout"]))
 				else:
 					fail_usage("Failed: You have to set login name")
-		
+
 			if result == 1:
 				if options.has_key("--password"):
 					conn.send(options["--password"]+"\r\n")
-					conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))	
+					conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 				else:
 					fail_usage("Failed: You have to enter password or password script")
 		except pexpect.EOF:
-			fail(EC_LOGIN_DENIED) 
+			fail(EC_LOGIN_DENIED)
 		except pexpect.TIMEOUT:
-			fail(EC_LOGIN_DENIED)		
+			fail(EC_LOGIN_DENIED)
 	else:
 		conn = fence_login(options)
 
@@ -231,7 +231,7 @@ is running because the connection will block any necessary fencing actions."
 		conn.close()
 	except:
 		pass
-		
+
 	sys.exit(result)
 
 if __name__ == "__main__":

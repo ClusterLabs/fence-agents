@@ -23,13 +23,13 @@ def soap_login(options):
 		url = "https://"
 	else:
 		url = "http://"
-	
+
 	url += options["--ip"] + ":" + str(options["--ipport"]) + "/sdk"
 
 	tmp_dir = tempfile.mkdtemp()
 	tempfile.tempdir = tmp_dir
 	atexit.register(remove_tmp_dir, tmp_dir)
-	
+
 	try:
 		conn = Client(url + "/vimService.wsdl")
 		conn.set_options(location = url)
@@ -42,7 +42,7 @@ def soap_login(options):
 
 		SessionManager = conn.service.Login(mo_SessionManager, options["--username"], options["--password"])
 	except Exception, ex:
-		fail(EC_LOGIN_DENIED)	
+		fail(EC_LOGIN_DENIED)
 
 	options["ServiceContent"] = ServiceContent
 	options["mo_SessionManager"] = mo_SessionManager
@@ -125,9 +125,9 @@ def get_power_status(conn, options):
 				## Transform InventoryPath to UUID
 				mo_SearchIndex = Property(options["ServiceContent"].searchIndex.value)
 				mo_SearchIndex._type = "SearchIndex"
-			
+
 				vm = conn.service.FindByInventoryPath(mo_SearchIndex, options["--plug"])
-			
+
 				try:
 					options["--uuid"] = mappingToUUID[vm.value]
 				except KeyError, ex:
@@ -159,7 +159,7 @@ def set_power_status(conn, options):
 
 	mo_machine = Property(vm.value)
 	mo_machine._type = "VirtualMachine"
-	
+
 	try:
 		if options["--action"] == "on":
 			conn.service.PowerOnVM_Task(mo_machine)
@@ -184,7 +184,7 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	## 
+	##
 	## Fence agent specific defaults
 	#####
 	docs = { }
@@ -207,7 +207,7 @@ Alternatively you can always use UUID to access virtual machine."
 	## Operate the fencing device
 	####
 	conn = soap_login(options)
-		
+
 	result = fence_action(conn, options, set_power_status, get_power_status, get_power_status)
 
 	##

@@ -40,7 +40,7 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "Display help and exit",
 		"order" : 54 },
-	"version" : { 
+	"version" : {
 		"getopt" : "V",
 		"longopt" : "version",
 		"help" : "-V, --version                  Output version information and exit",
@@ -56,7 +56,7 @@ all_opt = {
 		"order" : 51 },
 	"debug" : {
 		"getopt" : "D:",
-		"longopt" : "debug-file", 
+		"longopt" : "debug-file",
 		"help" : "-D, --debug-file=[debugfile]   Debugging to output file",
 		"required" : "0",
 		"shortdesc" : "Write debug information to given file",
@@ -102,7 +102,7 @@ all_opt = {
 		"help" : "-u, --ipport=[port]            TCP/UDP port to use",
 		"required" : "0",
 		"shortdesc" : "TCP/UDP port to use for connection with device",
-		"order" : 1 },		
+		"order" : 1 },
 	"login" : {
 		"getopt" : "l:",
 		"longopt" : "username",
@@ -121,7 +121,7 @@ all_opt = {
 	"no_port" : {
 		"getopt" : "",
 		"help" : "",
-		"order" : 1 },	
+		"order" : 1 },
 	"passwd" : {
 		"getopt" : "p:",
 		"longopt" : "password",
@@ -182,7 +182,7 @@ all_opt = {
 	"port" : {
 		"getopt" : "n:",
 		"longopt" : "plug",
-		"help" : "-n, --plug=[id]                Physical plug number on device, UUID or\n" + 
+		"help" : "-n, --plug=[id]                Physical plug number on device, UUID or\n" +
         "                                        identification of machine",
 		"required" : "1",
 		"shortdesc" : "Physical plug number, name of virtual machine or UUID",
@@ -287,7 +287,7 @@ all_opt = {
 		"getopt" : "C:",
 		"longopt" : "separator",
 		"help" : "-C, --separator=[char]         Separator for CSV created by 'list' operation",
-		"default" : ",", 
+		"default" : ",",
 		"required" : "0",
 		"shortdesc" : "Separator for CSV created by operation list",
 		"order" : 100 },
@@ -295,7 +295,7 @@ all_opt = {
 		"getopt" : "y:",
 		"longopt" : "login-timeout",
 		"help" : "--login-timeout=[seconds]      Wait X seconds for cmd prompt after login",
-		"default" : "5", 
+		"default" : "5",
 		"required" : "0",
 		"shortdesc" : "Wait X seconds for cmd prompt after login",
 		"order" : 200 },
@@ -303,7 +303,7 @@ all_opt = {
 		"getopt" : "Y:",
 		"longopt" : "shell-timeout",
 		"help" : "--shell-timeout=[seconds]      Wait X seconds for cmd prompt after issuing command",
-		"default" : "3", 
+		"default" : "3",
 		"required" : "0",
 		"shortdesc" : "Wait X seconds for cmd prompt after issuing command",
 		"order" : 200 },
@@ -311,7 +311,7 @@ all_opt = {
 		"getopt" : "g:",
 		"longopt" : "power-timeout",
 		"help" : "--power-timeout=[seconds]      Test X seconds for status change after ON/OFF",
-		"default" : "20", 
+		"default" : "20",
 		"required" : "0",
 		"shortdesc" : "Test X seconds for status change after ON/OFF",
 		"order" : 200 },
@@ -319,7 +319,7 @@ all_opt = {
 		"getopt" : "G:",
 		"longopt" : "power-wait",
 		"help" : "--power-wait=[seconds]         Wait X seconds after issuing ON/OFF",
-		"default" : "0", 
+		"default" : "0",
 		"required" : "0",
 		"shortdesc" : "Wait X seconds after issuing ON/OFF",
 		"order" : 200 },
@@ -380,7 +380,7 @@ class fspawn(pexpect.spawn):
 		logging.info("Running command: %s" % command)
 		pexpect.spawn.__init__(self, command)
 		self.opt = options
-		
+
 	def log_expect(self, options, pattern, timeout):
 		result = self.expect(pattern, timeout)
 		logging.debug("Received: %s" % (self.before + self.after))
@@ -405,7 +405,7 @@ def atexit_handler():
 
 def add_dependency_options(options):
 	## Add options which are available for every fence agent
-	added_opt = [] 
+	added_opt = []
 	for x in options + ["default"]:
 		if DEPENDENCY_OPT.has_key(x):
 			added_opt.extend([y for y in DEPENDENCY_OPT[x] if options.count(y) == 0])
@@ -509,7 +509,7 @@ def metadata(avail_opt, options, docs):
 				print "\t\t<content type=\"string\" "+default+" />"
 			else:
 				print "\t\t<content type=\"boolean\" "+default+" />"
-				
+
 			print "\t\t<shortdesc lang=\"en\">" + all_opt[option]["shortdesc"] + "</shortdesc>"
 			print "\t</parameter>"
 	print "</parameters>"
@@ -527,7 +527,7 @@ def metadata(avail_opt, options, docs):
 	print "\t<action name=\"status\" />"
 	print "\t<action name=\"list\" />"
 	print "\t<action name=\"monitor\" />"
-	print "\t<action name=\"metadata\" />"	
+	print "\t<action name=\"metadata\" />"
 	print "</actions>"
 	print "</resource-agent>"
 
@@ -614,14 +614,14 @@ def process_input(avail_opt):
 	return opt
 
 ##
-## This function checks input and answers if we want to have same answers 
+## This function checks input and answers if we want to have same answers
 ## in each of the fencing agents. It looks for possible errors and run
 ## password script to set a correct password
 ######
 def check_input(device_opt, opt):
 
 	device_opt.extend(add_dependency_options(device_opt))
-	
+
 	options = dict(opt)
 	options["device_opt"] = device_opt
 
@@ -667,7 +667,7 @@ def check_input(device_opt, opt):
 			else:
 				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use\n\
                                         (default 23, 22 if --ssh option is used)"
-				
+
 
 	## In special cases (show help, metadata or version) we don't need to check anything
 	#####
@@ -690,7 +690,7 @@ def check_input(device_opt, opt):
 	if 0 == acceptable_actions.count(options["--action"]):
 		fail_usage("Failed: Unrecognised action '" + options["--action"] + "'")
 
-	## Compatibility layer 
+	## Compatibility layer
 	#####
 	if options["--action"] == "enable":
 		options["--action"] = "on"
@@ -708,7 +708,7 @@ def check_input(device_opt, opt):
 		if 0 == device_opt.count("identity_file"):
 			if 0 == (options.has_key("--password") or options.has_key("--password-script")):
 				fail_usage("Failed: You have to enter password or password script")
-		else: 
+		else:
 			if 0 == (options.has_key("--password") or options.has_key("--password-script") or options.has_key("--identity-file")):
 				fail_usage("Failed: You have to enter password, password script or identity file")
 
@@ -761,7 +761,7 @@ def check_input(device_opt, opt):
 					fail_usage("Failed: You have to enter a valid choice for %s from the valid values: %s" % ("--" + all_opt[opt]["longopt"] , str(all_opt[opt]["choices"])))
 
 	return options
-	
+
 def wait_power_status(tn, options, get_power_fn):
 	for dummy in xrange(int(options["--power-timeout"])):
 		if get_multi_power_fn(tn, options, get_power_fn) != options["--action"]:
@@ -791,7 +791,7 @@ def get_multi_power_fn(tn, options, get_power_fn):
 				status = plug_status
 	else:
 		status = get_power_fn(tn, options)
-	
+
 	return status
 
 def set_multi_power_fn(tn, options, set_power_fn):
@@ -815,10 +815,10 @@ def show_docs(options, docs = None):
 		docs = { }
 		docs["shortdesc"] = "Fence agent"
 		docs["longdesc"] = ""
-	
+
 	## Process special options (and exit)
 	#####
-	if options.has_key("--help"): 
+	if options.has_key("--help"):
 		usage(device_opt)
 		sys.exit(0)
 
@@ -846,7 +846,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 		elif (options["--action"] == "list" and get_outlet_list == None):
 			## @todo: exception?
 			## This is just temporal solution, we will remove default value
-			## None as soon as all existing agent will support this operation 
+			## None as soon as all existing agent will support this operation
 			print "NOTICE: List option is not working on this device yet"
 			return
 		elif (options["--action"] == "list") or ((options["--action"] == "monitor") and 1 == options["device_opt"].count("port")):
@@ -855,12 +855,12 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 			for o in outlets.keys():
 				(alias, status) = outlets[o]
 				if options["--action"] != "monitor":
-					print o + options["--separator"] + alias	
+					print o + options["--separator"] + alias
 			return
 
 		status = get_multi_power_fn(tn, options, get_power_fn)
 
-		if status != "on" and status != "off":  
+		if status != "on" and status != "off":
 			fail(EC_STATUS)
 
 		if options["--action"] == "on":
@@ -943,11 +943,11 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 		logging.error("%s\n" % str(ex))
 		syslog.syslog(syslog.LOG_ERR, ex[1])
 		fail(EC_TIMED_OUT)
-	
+
 	return result
 
 def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(username: )|(User Name :)"):
-	force_ipvx=""
+	force_ipvx = ""
 
 	if (options.has_key("--inet6-only")):
 		force_ipvx = "-6 "
@@ -972,7 +972,7 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 		re_pass  = re.compile("(password)|(pass phrase)", re.IGNORECASE)
 
 		if options.has_key("--ssl"):
-			gnutls_opts=""
+			gnutls_opts = ""
 			if options.has_key("--notls"):
 				gnutls_opts = "--priority \"NORMAL:-VERS-TLS1.2:-VERS-TLS1.1:-VERS-TLS1.0:+VERS-SSL3.0\""
 
@@ -989,7 +989,7 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 				command += ' ' + options["--ssh-options"]
 
 			conn = fspawn(options, command)
-				
+
 			if options.has_key("telnet_over_ssh"):
 				#This is for stupid ssh servers (like ALOM) which behave more like telnet (ignore name and display login prompt)
 				result = conn.log_expect(options, [ re_login, "Are you sure you want to continue connecting (yes/no)?" ], int(options["--login-timeout"]))
@@ -1014,7 +1014,7 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 
 			conn = fspawn(options, command)
 
-			result = conn.log_expect(options, [ "Enter passphrase for key '" + options["--identity-file"] + "':",\
+			result = conn.log_expect(options, [ "Enter passphrase for key '" + options["--identity-file"] + "':", \
 				"Are you sure you want to continue connecting (yes/no)?" ] + options["--command-prompt"], int(options["--login-timeout"]))
 			if result == 1:
 				conn.sendline("yes")
@@ -1060,7 +1060,7 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 			except KeyError:
 				fail(EC_PASSWORD_MISSING)
 	except pexpect.EOF:
-		fail(EC_LOGIN_DENIED) 
+		fail(EC_LOGIN_DENIED)
 	except pexpect.TIMEOUT:
 		fail(EC_LOGIN_DENIED)
 	return conn

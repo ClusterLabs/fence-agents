@@ -35,7 +35,7 @@ def get_power_status(conn, options):
 		except:
 			pass
 		fail(EC_TIMED_OUT)
-	
+
 	status = re.compile(".*AdminState\s+(online|offline)\s+", re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
 
 	try:
@@ -59,7 +59,7 @@ def set_power_status(conn, options):
 			conn.close()
 		except:
 			pass
-		fail(EC_TIMED_OUT)                                                                         	
+		fail(EC_TIMED_OUT)
 
 	try:
 		conn.send_eol("set port " + options["--plug"] + " state " + action)
@@ -97,7 +97,7 @@ def get_list_devices(conn, options):
 		except:
 			pass
 		fail(EC_TIMED_OUT)
-		
+
 	return outlets
 
 def main():

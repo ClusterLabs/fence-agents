@@ -85,7 +85,7 @@ for command line and snmp_version option for your cluster.conf."
 
 	# Operate the fencing device
 	result = fence_action(FencingSnmp(options), options, set_power_status, get_power_status, get_outlets_status)
-	
+
 	sys.exit(result)
 
 if __name__ == "__main__":

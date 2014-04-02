@@ -15,7 +15,7 @@ BUILD_DATE="March, 2008"
 
 RE_GET_ID = re.compile("<vm( .*)? id=\"(.*?)\"", re.IGNORECASE)
 RE_STATUS = re.compile("<state>(.*?)</state>", re.IGNORECASE)
-RE_GET_NAME = re.compile("<name>(.*?)</name>", re.IGNORECASE) 
+RE_GET_NAME = re.compile("<name>(.*?)</name>", re.IGNORECASE)
 
 def get_power_status(conn, options):
 	### Obtain real ID from name
@@ -27,7 +27,7 @@ def get_power_status(conn, options):
 		fail(EC_STATUS)
 
 	options["id"] = result.group(2)
-	
+
 	result = RE_STATUS.search(res)
 	if (result == None):
 		# We were able to parse ID so output is correct
@@ -106,7 +106,7 @@ def main():
 	atexit.register(atexit_handler)
 
 	all_opt["power_wait"]["default"] = "1"
-	
+
 	options = check_input(device_opt, process_input(device_opt))
 
 	docs = { }

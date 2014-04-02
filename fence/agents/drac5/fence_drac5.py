@@ -24,15 +24,15 @@ BUILD_DATE="March, 2008"
 
 def get_power_status(conn, options):
 	if options["--drac-version"] == "DRAC MC":
-		(_, status) = get_list_devices(conn,options)[options["--plug"]]
+		(_, status) = get_list_devices(conn, options)[options["--plug"]]
 	else:
 		if options["--drac-version"] == "DRAC CMC":
 			conn.send_eol("racadm serveraction powerstatus -m " + options["--plug"])
 		elif options["--drac-version"] == "DRAC 5":
 			conn.send_eol("racadm serveraction powerstatus")
-		
+
 		conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
-				
+
 		status = re.compile("(^|: )(ON|OFF|Powering ON|Powering OFF)\s*$", re.IGNORECASE | re.MULTILINE).search(conn.before).group(2)
 
 	if status.lower().strip() in ["on", "powering on", "powering off"]:
@@ -111,8 +111,8 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }           
-	docs["shortdesc"] = "Fence agent for Dell DRAC CMC/5" 
+	docs = { }
+	docs["shortdesc"] = "Fence agent for Dell DRAC CMC/5"
 	docs["longdesc"] = "fence_drac5 is an I/O Fencing agent \
 which can be used with the Dell Remote Access Card v5 or CMC (DRAC). \
 This device provides remote access to controlling  power to a server. \
@@ -129,7 +129,7 @@ By default, the telnet interface is not  enabled."
 	if options.has_key("--drac-version") == False:
 		## autodetect from text issued by fence device
 		if conn.before.find("CMC") >= 0:
-	  		options["--drac-version"] = "DRAC CMC"
+			options["--drac-version"] = "DRAC CMC"
 		elif conn.before.find("DRAC 5") >= 0:
 			options["--drac-version"] = "DRAC 5"
 		elif conn.after.find("DRAC/MC") >= 0:
@@ -153,7 +153,7 @@ By default, the telnet interface is not  enabled."
 		conn.close()
 	except:
 		pass
-	
+
 	sys.exit(result)
 
 if __name__ == "__main__":

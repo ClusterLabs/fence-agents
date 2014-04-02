@@ -4,7 +4,7 @@
 ##
 ## The Following Agent Has Been Tested On:
 ##
-##  Version       
+##  Version
 ## +---------------------------------------------+
 ##  Tested on HMC
 ##
@@ -33,7 +33,7 @@ def get_power_status(conn, options):
 		conn.send("lssyscfg -r lpar -m "+ options["--managed"] +" --filter 'lpar_names=" + options["--plug"] + "'\n")
 		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
-		try:				
+		try:
 			status = re.compile(",state=(.*?),", re.IGNORECASE).search(conn.before).group(1)
 		except AttributeError:
 			fail(EC_STATUS_HMC)
@@ -54,14 +54,14 @@ def set_power_status(conn, options):
 		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 	elif options["--hmc-version"] == "4":
 		if options["--action"] == "on":
-			conn.send("chsysstate -o on -r lpar -m " + options["--managed"] + 
-				" -n " + options["--plug"] + 
+			conn.send("chsysstate -o on -r lpar -m " + options["--managed"] +
+				" -n " + options["--plug"] +
 				" -f `lssyscfg -r lpar -F curr_profile " +
 				" -m " + options["--managed"] +
 				" --filter \"lpar_names="+ options["--plug"] +"\"`\n" )
 		else:
 			conn.send("chsysstate -o shutdown -r lpar --immed" +
-				" -m " + options["--managed"] + " -n " + options["--plug"] + "\n")		
+				" -m " + options["--managed"] + " -n " + options["--plug"] + "\n")
 		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 def get_lpar_list(conn, options):
@@ -76,12 +76,12 @@ def get_lpar_list(conn, options):
 
 		if res == None:
 			fail_usage("Unable to parse output of list command")
-		
+
 		lines = res.group(2).split("\n")
 		for outlet_line in lines:
 			outlets[outlet_line.rstrip()] = ("", "")
 	elif options["--hmc-version"] == "4":
-		conn.send("lssyscfg -r lpar -m " + options["--managed"] + 
+		conn.send("lssyscfg -r lpar -m " + options["--managed"] +
 			" -F name:state\n")
 		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
@@ -91,7 +91,7 @@ def get_lpar_list(conn, options):
 
 		if res == None:
 			fail_usage("Unable to parse output of list command")
-		
+
 		lines = res.group(1).split("\n")
 		for outlet_line in lines:
 			(port, status) = outlet_line.split(":")
@@ -113,7 +113,7 @@ def define_new_opts():
 		"help" : "-H, --hmc-version=[version]    Force HMC version to use: 3, 4 (default)",
 		"required" : "0",
 		"shortdesc" : "Force HMC version to use (3 or 4)",
-		"default" : "4", 
+		"default" : "4",
 		"choices" : [ "3", "4" ],
 		"order" : 1 }
 

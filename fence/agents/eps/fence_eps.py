@@ -34,7 +34,7 @@ def eps_run_command(options, params):
 		if (options.has_key("--username")):
 			if (not options.has_key("--password")):
 				options["--password"] = "" # Default is empty password
-				
+
 			# String for Authorization header
 			auth_str = 'Basic ' + string.strip(base64.encodestring(options["--username"]+':'+options["--password"]))
 			logging.debug("Authorization: %s\n" % auth_str)
@@ -102,8 +102,8 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }           
-	docs["shortdesc"] = "Fence agent for ePowerSwitch" 
+	docs = { }
+	docs["shortdesc"] = "Fence agent for ePowerSwitch"
 	docs["longdesc"] = "fence_eps  is an I/O Fencing agent \
 which can be used with the ePowerSwitch 8M+ power switch to fence \
 connected machines. Fence agent works ONLY on 8M+ device, because \

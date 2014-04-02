@@ -8,12 +8,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 2 of the License, or
 # (at your option) any later version.
-# 
+#
 # fence-xenserver is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -49,7 +49,7 @@ def get_power_fn(session, options):
 		verbose = True
 	else:
 		verbose = False
-		
+
 	try:
 		# Get a reference to the vm specified in the UUID or vm_name/port parameter
 		vm = return_vm_reference(session, options)
@@ -78,7 +78,7 @@ def get_power_fn(session, options):
 # Set the state of the port given in the -U flag of options.
 def set_power_fn(session, options):
 	action = options["--action"].lower()
-	
+
 	try:
 		# Get a reference to the vm specified in the UUID or vm_name/port parameter
 		vm = return_vm_reference(session, options)
@@ -88,7 +88,7 @@ def set_power_fn(session, options):
 		# domain as they show up as VM's with specific properties.
 		if not(record["is_a_template"]) and not(record["is_control_domain"]):
 			if( action == "on" ):
-				# Start the VM 
+				# Start the VM
 				session.xenapi.VM.start(vm, False, True)
 			elif( action == "off" ):
 				# Force shutdown the VM
@@ -141,11 +141,11 @@ def connect_and_login(options):
 	except Exception, exn:
 		print str(exn)
 		# http://sources.redhat.com/cluster/wiki/FenceAgentAPI says that for no connectivity
-		# the exit value should be 1. It doesn't say anything about failed logins, so 
+		# the exit value should be 1. It doesn't say anything about failed logins, so
 		# until I hear otherwise it is best to keep this exit the same to make sure that
 		# anything calling this script (that uses the same information in the web page
 		# above) knows that this is an error condition, not a msg signifying a down port.
-		sys.exit(EC_BAD_SESSION) 
+		sys.exit(EC_BAD_SESSION)
 	return session
 
 # return a reference to the VM by either using the UUID or the vm_name/port. If the UUID is set then
@@ -169,7 +169,6 @@ def return_vm_reference(session, options):
 			if verbose:
 				print "No VM's found with a UUID of \"%s\"" % uuid
 			raise
-		
 
 	# Case where the vm_name/port has been specified
 	if options.has_key("--plug"):
@@ -213,12 +212,12 @@ fence_cxs is an I/O Fencing agent used on Citrix XenServer hosts. \
 It uses the XenAPI, supplied by Citrix, to establish an XML-RPC sesssion \
 to a XenServer host. Once the session is established, further XML-RPC \
 commands are issued in order to switch on, switch off, restart and query \
-the status of virtual machines running on the host." 
+the status of virtual machines running on the host."
 	docs["vendorurl"] = "http://www.xenproject.org"
 	show_docs(options, docs)
 
 	xenSession = connect_and_login(options)
-	
+
 	# Operate the fencing device
 	result = fence_action(xenSession, options, set_power_fn, get_power_fn, get_outlet_list)
 

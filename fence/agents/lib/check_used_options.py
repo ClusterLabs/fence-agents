@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-## Check if fence agent uses only options["--??"] which are defined in fencing library or 
+## Check if fence agent uses only options["--??"] which are defined in fencing library or
 ## fence agent itself
 ##
 ## Usage: ./check_used_options.py fence-agent (e.g. lpar/fence_lpar.py)

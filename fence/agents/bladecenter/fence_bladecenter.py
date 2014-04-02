@@ -6,7 +6,7 @@
 ##
 ##  Model                 Firmware
 ## +--------------------+---------------------------+
-## (1) Main application	  BRET85K, rev 16  
+## (1) Main application	  BRET85K, rev 16
 ##     Boot ROM           BRBR67D, rev 16
 ##     Remote Control     BRRG67D, rev 16
 ##
@@ -88,7 +88,7 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }        
+	docs = { }
 	docs["shortdesc"] = "Fence agent for IBM BladeCenter"
 	docs["longdesc"] = "fence_bladecenter is an I/O Fencing agent \
 which can be used with IBM Bladecenters with recent enough firmware that \
@@ -96,7 +96,7 @@ includes telnet support. It logs into a Brocade chasis via telnet or ssh \
 and uses the command line interface to power on and off blades."
 	docs["vendorurl"] = "http://www.ibm.com"
 	show_docs(options, docs)
-	
+
 	##
 	## Operate the fencing device
 	######
@@ -111,7 +111,7 @@ and uses the command line interface to power on and off blades."
 		conn.close()
 	except:
 		pass
-	
+
 	sys.exit(result)
 
 if __name__ == "__main__":

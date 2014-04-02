@@ -39,14 +39,14 @@ def set_power_status(conn, options):
 		'on' : "up",
 		'off' : "down"
 	}[options["--action"]]
-	
+
 	res = send_command(options, \
 		"<configConfMos cookie=\"" + options["cookie"] + "\" inHierarchical=\"no\">" + \
 		"<inConfigs><pair key=\"org-root" + options["--suborg"] + "/ls-" + options["--plug"] + "/power\">" + \
 		"<lsPower dn=\"org-root/ls-" + options["--plug"] + "/power\" state=\"" + action + "\" status=\"modified\" />" + \
 		"</pair></inConfigs></configConfMos>", \
 		int(options["--shell-timeout"]))
-	
+
 	return
 
 def get_list(conn, options):
@@ -112,7 +112,7 @@ def main():
 	atexit.register(atexit_handler)
 
 	define_new_opts()
-	
+
 	options = check_input(device_opt, process_input(device_opt))
 
 	docs = { }
@@ -131,7 +131,7 @@ used with Cisco UCS to fence machines."
 	try:
 		res = send_command(options, "<aaaLogin inName=\"" + options["--username"] + "\" inPassword=\"" + options["--password"] + "\" />", int(options["--login-timeout"]))
 		result = RE_COOKIE.search(res)
-		if (result == None):	
+		if (result == None):
 			## Cookie is absenting in response
 			fail(EC_LOGIN_DENIED)
 	except:
@@ -151,7 +151,7 @@ used with Cisco UCS to fence machines."
 
 	### Logout; we do not care about result as we will end in any case
 	send_command(options, "<aaaLogout inCookie=\"" + options["cookie"] + "\" />", int(options["--shell-timeout"]))
-	
+
 	sys.exit(result)
 
 if __name__ == "__main__":

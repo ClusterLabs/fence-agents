@@ -119,7 +119,7 @@ to control the state of an interface."
 
 	# Operate the fencing device
 	result = fence_action(FencingSnmp(options), options, set_power_status, get_power_status, get_outlets_status)
-	
+
 	sys.exit(result)
 
 if __name__ == "__main__":

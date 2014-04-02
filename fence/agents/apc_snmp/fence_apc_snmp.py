@@ -36,15 +36,15 @@ switch_id = None
 # Classes describing Device params
 class TripplitePDU:
         # Rack PDU
-        status_oid=      '.1.3.6.1.4.1.850.10.2.3.5.1.2.1.%d'
-        control_oid=     '.1.3.6.1.4.1.850.10.2.3.5.1.4.1.%d'
-        outlet_table_oid='.1.3.6.1.4.1.850.10.2.3.5.1.5'
-        ident_str="Tripplite"
-        state_on=2
-        state_off=1
-        turn_on=2
-        turn_off=1
-        has_switches=False
+	status_oid =       '.1.3.6.1.4.1.850.10.2.3.5.1.2.1.%d'
+	control_oid =      '.1.3.6.1.4.1.850.10.2.3.5.1.4.1.%d'
+	outlet_table_oid = '.1.3.6.1.4.1.850.10.2.3.5.1.5'
+	ident_str = "Tripplite"
+	state_on = 2
+	state_off = 1
+	turn_on = 2
+	turn_off = 1
+	has_switches = False
 
 class ApcRPDU:
 	# Rack PDU

@@ -19,7 +19,7 @@ BUILD_DATE="March, 2008"
 def get_power_status(conn, options):
 	conn.send_eol("show server status " + options["--plug"])
 	conn.log_expect(options, options["--command-prompt"] , int(options["--shell-timeout"]))
-		
+
 	power_re = re.compile("^\s*Power: (.*?)\s*$")
 	status = "unknown"
 	for line in conn.before.splitlines():
@@ -65,14 +65,14 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }        
+	docs = { }
 	docs["shortdesc"] = "Fence agent for HP BladeSystem"
 	docs["longdesc"] = "fence_hpblade is an I/O Fencing agent \
 which can be used with HP BladeSystem. It logs into an enclosure via telnet or ssh \
 and uses the command line interface to power on and off blades."
 	docs["vendorurl"] = "http://www.hp.com"
 	show_docs(options, docs)
-	
+
 	##
 	## Operate the fencing device
 	######
@@ -88,7 +88,7 @@ and uses the command line interface to power on and off blades."
 		conn.close()
 	except:
 		pass
-	
+
 	sys.exit(result)
 
 if __name__ == "__main__":

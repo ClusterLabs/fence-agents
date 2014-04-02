@@ -326,7 +326,7 @@ This agent supports only vmrun from version 2.0.0 (VIX API 1.6.0)."
 
 	# Operate the fencing device
 	result = fence_action(None, options, set_power_status, get_power_status, get_outlets_status)
-	
+
 	sys.exit(result)
 
 if __name__ == "__main__":

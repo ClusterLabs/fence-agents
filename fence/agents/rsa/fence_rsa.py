@@ -20,7 +20,7 @@ BUILD_DATE=""
 def get_power_status(conn, options):
 	conn.send_eol("power state")
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
-				
+
 	match = re.compile("Power: (.*)", re.IGNORECASE).search(conn.before)
 	if (match != None):
 		status = match.group(1)
@@ -55,7 +55,7 @@ be avoided while a GFS cluster is running because the connection \
 will block any necessary fencing actions."
 	docs["vendorurl"] = "http://www.ibm.com"
 	show_docs(options, docs)
-	
+
 	##
 	## Operate the fencing device
 	######
@@ -70,7 +70,7 @@ will block any necessary fencing actions."
 		conn.close()
 	except:
 		pass
-	
+
 	sys.exit(result)
 
 if __name__ == "__main__":

@@ -12,7 +12,7 @@ BUILD_DATE=""
 
 def get_power_status(conn, options):
 	conn.send_eol("show /system1")
-		
+
 	re_state = re.compile('EnabledState=(.*)', re.IGNORECASE)
 	conn.log_expect(options, re_state, int(options["--shell-timeout"]))
 
@@ -37,18 +37,18 @@ def main():
 	device_opt = [  "ipaddr", "login", "passwd", "secure", "cmd_prompt" ]
 
 	atexit.register(atexit_handler)
-	
+
 	all_opt["cmd_prompt"]["default"] = [ "MP>", "hpiLO->" ]
 	all_opt["power_wait"]["default"] = 5
-	
+
 	options = check_input(device_opt, process_input(device_opt))
-		
+
 	docs = { }
 	docs["shortdesc"] = "Fence agent for HP iLO MP"
 	docs["longdesc"] = ""
 	docs["vendorurl"] = "http://www.hp.com"
 	show_docs(options, docs)
-	
+
 	conn = fence_login(options)
 	conn.send_eol("SMCLP")
 
@@ -61,7 +61,7 @@ def main():
 		conn.send_eol("exit")
 	except:
 		pass
-	
+
 	sys.exit(result)
 
 if __name__ == "__main__":

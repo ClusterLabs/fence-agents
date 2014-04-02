@@ -60,7 +60,6 @@ def set_power_status(conn, options):
 		'off': "F",
 		'reboot' : "H",
 	}[options["--action"]]
-	
 
 	conn.sendline("S")	# Enter System Command Mode
 	conn.log_expect(options, "SVP>", int(options["--shell-timeout"]))
@@ -98,7 +97,7 @@ def get_blades_list(conn, options):
 	for line in conn.before.splitlines():
 		partition = re.search(RE_STATUS_LINE, line)
 		if( partition != None):
-			outlets[partition.group(1)] = (partition.group(2), "")	
+			outlets[partition.group(1)] = (partition.group(2), "")
 	conn.sendline("Q")	# Quit back to system command mode
 	conn.log_expect(options, "SVP>", int(options["--shell-timeout"]))
 	conn.sendline("EX")	# Quit back to system console menu
@@ -124,7 +123,7 @@ which can be used with Hitachi Compute Blades with recent enough firmware that \
 includes telnet support."
 	docs["vendorurl"] = "http://www.hds.com"
 	show_docs(options, docs)
-	
+
 	##
 	## Operate the fencing device
 	######
@@ -139,7 +138,7 @@ includes telnet support."
 		conn.close()
 	except:
 		pass
-	
+
 	sys.exit(result)
 
 if __name__ == "__main__":
