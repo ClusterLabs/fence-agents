@@ -34,7 +34,8 @@ def get_power_status(conn, options):
 
 		conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
-		status = re.compile("(^|: )(ON|OFF|Powering ON|Powering OFF)\s*$", re.IGNORECASE | re.MULTILINE).search(conn.before).group(2)
+		status = re.compile("(^|: )(ON|OFF|Powering ON|Powering OFF)\s*$",
+				re.IGNORECASE | re.MULTILINE).search(conn.before).group(2)
 
 	if status.lower().strip() in ["on", "powering on", "powering off"]:
 		return "on"

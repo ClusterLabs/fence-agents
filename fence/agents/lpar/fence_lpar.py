@@ -27,11 +27,13 @@ def get_power_status(conn, options):
 		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 		try:
-			status = re.compile("^" + options["--plug"] + ",(.*?),.*$", re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
+			status = re.compile("^" + options["--plug"] + ",(.*?),.*$",
+					re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
 		except AttributeError:
 			fail(EC_STATUS_HMC)
 	elif options["--hmc-version"] == "4":
-		conn.send("lssyscfg -r lpar -m "+ options["--managed"] +" --filter 'lpar_names=" + options["--plug"] + "'\n")
+		conn.send("lssyscfg -r lpar -m "+ options["--managed"] +
+				" --filter 'lpar_names=" + options["--plug"] + "'\n")
 		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 		try:

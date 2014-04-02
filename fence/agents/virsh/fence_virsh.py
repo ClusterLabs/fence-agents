@@ -40,7 +40,8 @@ def get_outlets_status(conn, options):
 			if ((fa_status==0) and (domain.group(1).lower()=="id") and (domain.group(2).lower()=="name")):
 				fa_status = 1
 			elif (fa_status==1):
-				result[domain.group(2)] = ("", (domain.group(3).lower() in ["running", "blocked", "idle", "no state", "paused"] and "on" or "off"))
+				result[domain.group(2)] = ("",
+						(domain.group(3).lower() in ["running", "blocked", "idle", "no state", "paused"] and "on" or "off"))
 	return result
 
 def get_power_status(conn, options):
@@ -58,7 +59,8 @@ def get_power_status(conn, options):
 
 def set_power_status(conn, options):
 	prefix = SUDO_PATH + " " if options.has_key("--use-sudo") else ""
-	conn.sendline(prefix + "virsh %s "%(options["--action"] == "on" and "start" or "destroy") + get_name_or_uuid(options))
+	conn.sendline(prefix + "virsh %s " %
+			(options["--action"] == "on" and "start" or "destroy") + get_name_or_uuid(options))
 
 	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 	time.sleep(int(options["--power-wait"]))

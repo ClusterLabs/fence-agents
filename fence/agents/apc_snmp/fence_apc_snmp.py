@@ -1,12 +1,15 @@
 #!/usr/bin/python
 
 # The Following agent has been tested on:
-# - APC Switched Rack PDU (MB:v3.7.0 PF:v2.7.0 PN:apc_hw02_aos_270.bin AF1:v2.7.3 AN1:apc_hw02_aos_270.bin
-#    AF1:v2.7.3 AN1:apc_hw02_rpdu_273.bin MN:AP7930 HR:B2) - SNMP v1
-# - APC Web/SNMP Management Card (MB:v3.8.6 PF:v3.5.8 PN:apc_hw02_aos_358.bin AF1:v3.5.7 AN1:apc_hw02_aos_358.bin
-#    AF1:v3.5.7 AN1:apc_hw02_rpdu_357.bin MN:AP7900 HR:B2) - SNMP v1 and v3 (noAuthNoPrivacy,authNoPrivacy, authPrivacy)
-# - APC Switched Rack PDU (MB:v3.7.0 PF:v2.7.0 PN:apc_hw02_aos_270.bin AF1:v2.7.3 AN1:apc_hw02_rpdu_273.bin
-#    MN:AP7951 HR:B2) - SNMP v1
+# - APC Switched Rack PDU - SNMP v1
+#	(MB:v3.7.0 PF:v2.7.0 PN:apc_hw02_aos_270.bin AF1:v2.7.3
+#	AN1:apc_hw02_aos_270.bin AF1:v2.7.3 AN1:apc_hw02_rpdu_273.bin MN:AP7930 HR:B2)
+# - APC Web/SNMP Management Card - SNMP v1 and v3 (noAuthNoPrivacy,authNoPrivacy, authPrivacy)
+#	(MB:v3.8.6 PF:v3.5.8 PN:apc_hw02_aos_358.bin AF1:v3.5.7
+#       AN1:apc_hw02_aos_358.bin AF1:v3.5.7 AN1:apc_hw02_rpdu_357.bin MN:AP7900 HR:B2)
+# - APC Switched Rack PDU - SNMP v1
+#       (MB:v3.7.0 PF:v2.7.0 PN:apc_hw02_aos_270.bin AF1:v2.7.3
+#       AN1:apc_hw02_rpdu_273.bin MN:AP7951 HR:B2)
 # - Tripplite PDUMH20HVNET 12.04.0055 - SNMP v1, v2c, v3
 
 import sys

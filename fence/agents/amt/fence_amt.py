@@ -109,7 +109,8 @@ def define_new_opts():
 	all_opt["boot_option"] = {
 		"getopt" : "b:",
 		"longopt" : "boot-option",
-		"help" : "-b, --boot-option=[option]     Change the default boot behavior of the machine. (pxe|hd|hdsafe|cd|diag)",
+		"help" : "-b, --boot-option=[option]     "
+				"Change the default boot behavior of the machine. (pxe|hd|hdsafe|cd|diag)",
 		"required" : "0",
 		"shortdesc" : "Change the default boot behavior of the machine.",
 		"choices" : ["pxe", "hd", "hdsafe", "cd", "diag"],

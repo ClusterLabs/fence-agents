@@ -143,7 +143,8 @@ def define_new_opts():
 	all_opt["privlvl"] = {
 		"getopt" : "L:",
 		"longopt" : "privlvl",
-		"help" : "-L, --privlvl=[level]          Privilege level on IPMI device (callback|user|operator|administrator)",
+		"help" : "-L, --privlvl=[level]          "
+				"Privilege level on IPMI device (callback|user|operator|administrator)",
 		"required" : "0",
 		"shortdesc" : "Privilege level on IPMI device",
 		"default" : "administrator",

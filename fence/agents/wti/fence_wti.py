@@ -58,7 +58,8 @@ def get_plug_status(conn, options):
 			plug_line = [x.strip().lower() for x in line.split("|")]
 			if len(plug_line) < len(plug_header):
 				plug_section = -1
-			if ["list", "monitor"].count(options["--action"]) == 0 and options["--plug"].lower() == plug_line[plug_index]:
+			if ["list", "monitor"].count(options["--action"]) == 0 and \
+					options["--plug"].lower() == plug_line[plug_index]:
 				return plug_line[status_index]
 			else:
 				## We already believe that first column contains plug number
@@ -94,11 +95,14 @@ def get_plug_group_status(conn, options):
 		line = lines[line_index]
 		if (line.find("|") >= 0 and line.lstrip().startswith("GROUP NAME") == False):
 			plug_line = [x.strip().lower() for x in line.split("|")]
-			if ["list", "monitor"].count(options["--action"]) == 0 and options["--plug"].lower() == plug_line[name_index]:
+			if ["list", "monitor"].count(options["--action"]) == 0 and \
+					options["--plug"].lower() == plug_line[name_index]:
 				plug_status = []
 				while line_index < len(lines) and line_index >= 0:
 					plug_line = [x.strip().lower() for x in lines[line_index].split("|")]
-					if len(plug_line) >= max(name_index, status_index) and len(plug_line[plug_index]) > 0 and (len(plug_line[name_index]) == 0 or options["--plug"].lower() == plug_line[name_index]):
+					if len(plug_line) >= max(name_index, status_index) and \
+							len(plug_line[plug_index]) > 0 and \
+							(len(plug_line[name_index]) == 0 or options["--plug"].lower() == plug_line[name_index]):
 						## Firmware 1.43 does not have a valid value of plug on first line as only name is defined on that line
 						if not "---" in plug_line[status_index]:
 							plug_status.append(plug_line[status_index])

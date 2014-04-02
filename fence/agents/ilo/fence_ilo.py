@@ -110,8 +110,10 @@ the iLO card through an XML stream."
 			conn.send("</RIB_INFO>\r\n")
 			conn.log_expect(options, "<GET_FW_VERSION\s*\n", int(options["--shell-timeout"]))
 			conn.log_expect(options, "/>", int(options["--shell-timeout"]))
-			options["fw_version"] = float(re.compile("FIRMWARE_VERSION\s*=\s*\"(.*?)\"", re.IGNORECASE).search(conn.before).group(1))
-			options["fw_processor"] = re.compile("MANAGEMENT_PROCESSOR\s*=\s*\"(.*?)\"", re.IGNORECASE).search(conn.before).group(1)
+			options["fw_version"] = float(re.compile("FIRMWARE_VERSION\s*=\s*\"(.*?)\"",
+					re.IGNORECASE).search(conn.before).group(1))
+			options["fw_processor"] = re.compile("MANAGEMENT_PROCESSOR\s*=\s*\"(.*?)\"",
+					re.IGNORECASE).search(conn.before).group(1)
 		conn.send("</LOGIN>\r\n")
 	except pexpect.TIMEOUT:
 		fail(EC_LOGIN_DENIED)

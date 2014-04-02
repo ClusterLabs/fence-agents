@@ -19,10 +19,9 @@ RE_GET_DN = re.compile(" dn=\"(.*?)\"", re.IGNORECASE)
 RE_GET_DESC = re.compile(" descr=\"(.*?)\"", re.IGNORECASE)
 
 def get_power_status(conn, options):
-	res = send_command(options, \
-		"<configResolveDn cookie=\"" + options["cookie"] + "\" inHierarchical=\"false\" dn=\"org-root" + options["--suborg"] + \
-		"/ls-" + options["--plug"] + "/power\"/>", \
-		 int(options["--shell-timeout"]))
+	res = send_command(options, "<configResolveDn cookie=\"" + options["cookie"] +
+			"\" inHierarchical=\"false\" dn=\"org-root" + options["--suborg"] + "/ls-" +
+			options["--plug"] + "/power\"/>", int(options["--shell-timeout"]))
 
 	result = RE_STATUS.search(res)
 	if (result == None):
@@ -41,12 +40,11 @@ def set_power_status(conn, options):
 		'off' : "down"
 	}[options["--action"]]
 
-	send_command(options, \
-		"<configConfMos cookie=\"" + options["cookie"] + "\" inHierarchical=\"no\">" + \
-		"<inConfigs><pair key=\"org-root" + options["--suborg"] + "/ls-" + options["--plug"] + "/power\">" + \
-		"<lsPower dn=\"org-root/ls-" + options["--plug"] + "/power\" state=\"" + action + "\" status=\"modified\" />" + \
-		"</pair></inConfigs></configConfMos>", \
-		int(options["--shell-timeout"]))
+	send_command(options, "<configConfMos cookie=\"" + options["cookie"] + "\" inHierarchical=\"no\">" +
+			"<inConfigs><pair key=\"org-root" + options["--suborg"] + "/ls-" + options["--plug"] +
+			"/power\">" + "<lsPower dn=\"org-root/ls-" + options["--plug"] + "/power\" state=\"" +
+			action + "\" status=\"modified\" />" + "</pair></inConfigs></configConfMos>",
+			int(options["--shell-timeout"]))
 
 	return
 
@@ -54,9 +52,8 @@ def get_list(conn, options):
 	outlets = { }
 
 	try:
-		res = send_command(options, \
-			"<configResolveClass cookie=\"" + options["cookie"] + "\" inHierarchical=\"false\" classId=\"lsServer\"/>", \
-			int(options["--shell-timeout"]))
+		res = send_command(options, "<configResolveClass cookie=\"" + options["cookie"] +
+				"\" inHierarchical=\"false\" classId=\"lsServer\"/>", int(options["--shell-timeout"]))
 
 		lines = res.split("<lsServer ")
 		for i in range(1, len(lines)):
@@ -130,7 +127,8 @@ used with Cisco UCS to fence machines."
 
 	### Login
 	try:
-		res = send_command(options, "<aaaLogin inName=\"" + options["--username"] + "\" inPassword=\"" + options["--password"] + "\" />", int(options["--login-timeout"]))
+		res = send_command(options, "<aaaLogin inName=\"" + options["--username"] +
+				"\" inPassword=\"" + options["--password"] + "\" />", int(options["--login-timeout"]))
 		result = RE_COOKIE.search(res)
 		if (result == None):
 			## Cookie is absenting in response
@@ -151,7 +149,8 @@ used with Cisco UCS to fence machines."
 	result = fence_action(None, options, set_power_status, get_power_status, get_list)
 
 	### Logout; we do not care about result as we will end in any case
-	send_command(options, "<aaaLogout inCookie=\"" + options["cookie"] + "\" />", int(options["--shell-timeout"]))
+	send_command(options, "<aaaLogout inCookie=\"" + options["cookie"] + "\" />",
+			int(options["--shell-timeout"]))
 
 	sys.exit(result)
 

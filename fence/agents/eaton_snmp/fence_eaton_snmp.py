@@ -177,7 +177,8 @@ def get_outlets_status(conn, options):
 		# Plug indexing start from zero, so we substract '1' from the
 		# user's given plug number
 		if (device.ident_str == "Eaton Managed ePDU"):
-			port_num = str(int(((device.has_switches) and "%s:%s"%(t[len(t)-3], t[len(t)-1]) or "%s"%(t[len(t)-1]))) + 1)
+			port_num = str(int(((device.has_switches) and
+					"%s:%s"%(t[len(t)-3], t[len(t)-1]) or "%s"%(t[len(t)-1]))) + 1)
 
 			# Plug indexing start from zero, so we add '1'
 			# for the user's exposed plug number

@@ -29,10 +29,13 @@ class FencingSnmp:
 		return ''.join(map(lambda x:x==r"'" and "'\\''" or x, string))
 
 	def complete_missed_params(self):
-		mapping = [
-			[['snmp-priv-passwd','password','!snmp-sec-level'],'self.options["--snmp-sec-level"]="authPriv"'],
-			[['!snmp-version','community','!username','!snmp-priv-passwd','!password'],'self.options["--snmp-version"]="2c"']
-			]
+		mapping = [[
+					['snmp-priv-passwd','password','!snmp-sec-level'],
+					'self.options["--snmp-sec-level"]="authPriv"'
+				],[
+					['!snmp-version','community','!username','!snmp-priv-passwd','!password'],
+					'self.options["--snmp-version"]="2c"'
+				]]
 
 		for val in mapping:
 			e = val[0]
@@ -88,7 +91,10 @@ class FencingSnmp:
 		try:
 			self.log_command(command)
 
-			(res_output, res_code) = pexpect.run(command, int(self.options["--shell-timeout"]) + int(self.options["--login-timeout"]) + additional_timemout, True)
+			(res_output, res_code) = pexpect.run(command,
+					int(self.options["--shell-timeout"]) +
+					int(self.options["--login-timeout"]) +
+					additional_timemout, True)
 
 			if (res_code==None):
 				fail(EC_TIMED_OUT)
@@ -119,7 +125,8 @@ class FencingSnmp:
 				type_of_value = item[1]
 				break
 
-		cmd = "%s '%s' %s '%s'"% (self.prepare_cmd("snmpset"), self.quote_for_run(oid), type_of_value, self.quote_for_run(str(value)))
+		cmd = "%s '%s' %s '%s'" % (self.prepare_cmd("snmpset"),
+				self.quote_for_run(oid), type_of_value, self.quote_for_run(str(value)))
 
 		self.run_command(cmd, additional_timemout)
 

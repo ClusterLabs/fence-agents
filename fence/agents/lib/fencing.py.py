@@ -174,8 +174,10 @@ all_opt = {
 	"notls" : {
 		"getopt" : "t",
 		"longopt" : "notls",
-		"help" : "-t, --notls                    Disable TLS negotiation and force SSL3.0.\n" +
-	"                                        This should only be used for devices that do not support TLS1.0 and up.",
+		"help" : "-t, --notls                    "
+				"Disable TLS negotiation and force SSL3.0.\n"
+				"                                        "
+				"This should only be used for devices that do not support TLS1.0 and up.",
 		"required" : "0",
 		"shortdesc" : "Disable TLS negotiation",
 		"order" : 1 },
@@ -411,7 +413,6 @@ def add_dependency_options(options):
 			added_opt.extend([y for y in DEPENDENCY_OPT[x] if options.count(y) == 0])
 	return added_opt
 
-
 def version(command, release, build_date, copyright_notice):
 	print command, " ", release, " ", build_date
 	if len(copyright_notice) > 0:
@@ -431,8 +432,8 @@ def fail(error_code):
 		EC_WAITING_ON : "Failed: Timed out waiting to power ON",
 		EC_WAITING_OFF : "Failed: Timed out waiting to power OFF",
 		EC_STATUS : "Failed: Unable to obtain correct plug status or plug is not available",
-		EC_STATUS_HMC :
-			"Failed: Either unable to obtain correct plug status, partition is not available or incorrect HMC version used",
+		EC_STATUS_HMC : "Failed: Either unable to obtain correct plug status, "
+				"partition is not available or incorrect HMC version used",
 		EC_PASSWORD_MISSING : "Failed: You have to set login password",
 		EC_INVALID_PRIVILEGES : "Failed: The user does not have the correct privileges to do the requested action."
 	}[error_code] + "\n"
@@ -458,7 +459,8 @@ def metadata(avail_opt, options, docs):
 	sorted_list.sort(lambda x, y: cmp(x[1]["order"], y[1]["order"]))
 
 	print "<?xml version=\"1.0\" ?>"
-	print "<resource-agent name=\"" + os.path.basename(sys.argv[0]) + "\" shortdesc=\"" + docs["shortdesc"] + "\" >"
+	print "<resource-agent name=\"" + os.path.basename(sys.argv[0]) + \
+			"\" shortdesc=\"" + docs["shortdesc"] + "\" >"
 	if "symlink" in docs:
 		for (symlink, desc) in docs["symlink"]:
 			print "<symlink name=\"" + symlink + "\" shortdesc=\"" + desc + "\"/>"
@@ -646,7 +648,8 @@ def check_input(device_opt, opt):
 
 	if device_opt.count("ipport"):
 		if options.has_key("--ipport"):
-			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default "+ options["--ipport"] +")"
+			all_opt["ipport"]["help"] = "-u, --ipport=[port]            " + \
+					"TCP/UDP port to use (default " + options["--ipport"] +")"
 		elif options.has_key("--ssh"):
 			all_opt["ipport"]["default"] = 22
 			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 22)"
@@ -671,7 +674,8 @@ def check_input(device_opt, opt):
 
 	## In special cases (show help, metadata or version) we don't need to check anything
 	#####
-	if options.has_key("--help") or options.has_key("--version") or (options.has_key("--action") and options["--action"].lower() == "metadata"):
+	if options.has_key("--help") or options.has_key("--version") or \
+			(options.has_key("--action") and options["--action"].lower() == "metadata"):
 		return options
 
 	options["--action"] = options["--action"].lower()
@@ -698,7 +702,8 @@ def check_input(device_opt, opt):
 		options["--action"] = "off"
 
 	## automatic detection and set of valid UUID from --plug
-	if (0 == options.has_key("--username")) and device_opt.count("login") and (device_opt.count("no_login") == 0):
+	if (0 == options.has_key("--username")) and \
+			device_opt.count("login") and (device_opt.count("no_login") == 0):
 		fail_usage("Failed: You have to set login name")
 
 	if device_opt.count("ipaddr") and 0 == options.has_key("--ip") and 0 == options.has_key("--managed"):
@@ -709,7 +714,8 @@ def check_input(device_opt, opt):
 			if 0 == (options.has_key("--password") or options.has_key("--password-script")):
 				fail_usage("Failed: You have to enter password or password script")
 		else:
-			if 0 == (options.has_key("--password") or options.has_key("--password-script") or options.has_key("--identity-file")):
+			if 0 == (options.has_key("--password") or \
+					options.has_key("--password-script") or options.has_key("--identity-file")):
 				fail_usage("Failed: You have to enter password, password script or identity file")
 
 	if 0 == options.has_key("--ssh") and 1 == options.has_key("--identity-file"):
@@ -748,7 +754,8 @@ def check_input(device_opt, opt):
 		else:
 			options["--ipport"] = 23
 
-	if options.has_key("--plug") and len(options["--plug"].split(",")) > 1 and options.has_key("--method") and options["--method"] == "cycle":
+	if options.has_key("--plug") and len(options["--plug"].split(",")) > 1 and \
+			options.has_key("--method") and options["--method"] == "cycle":
 		fail_usage("Failed: Cannot use --method cycle for more than 1 plug")
 
 	for opt in device_opt:
@@ -758,7 +765,9 @@ def check_input(device_opt, opt):
 			if options.has_key(long):
 				options[long] = options[long].upper()
 				if not options["--" + all_opt[opt]["longopt"]] in possible_values_upper:
-					fail_usage("Failed: You have to enter a valid choice for %s from the valid values: %s" % ("--" + all_opt[opt]["longopt"] , str(all_opt[opt]["choices"])))
+					fail_usage("Failed: You have to enter a valid choice " + \
+							"for %s from the valid values: %s" % \
+							("--" + all_opt[opt]["longopt"] , str(all_opt[opt]["choices"])))
 
 	return options
 
@@ -849,7 +858,8 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 			## None as soon as all existing agent will support this operation
 			print "NOTICE: List option is not working on this device yet"
 			return
-		elif (options["--action"] == "list") or ((options["--action"] == "monitor") and 1 == options["device_opt"].count("port")):
+		elif (options["--action"] == "list") or \
+				((options["--action"] == "monitor") and 1 == options["device_opt"].count("port")):
 			outlets = get_outlet_list(tn, options)
 			## keys can be numbers (port numbers) or strings (names of VM)
 			for o in outlets.keys():
@@ -975,7 +985,8 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 			if options.has_key("--notls"):
 				gnutls_opts = "--priority \"NORMAL:-VERS-TLS1.2:-VERS-TLS1.1:-VERS-TLS1.0:+VERS-SSL3.0\""
 
-			command = '%s %s --insecure --crlf -p %s %s' % (SSL_PATH, gnutls_opts, options["--ipport"], options["--ip"])
+			command = '%s %s --insecure --crlf -p %s %s' % \
+					(SSL_PATH, gnutls_opts, options["--ipport"], options["--ip"])
 			try:
 				conn = fspawn(options, command)
 			except pexpect.ExceptionPexpect, ex:
@@ -983,15 +994,19 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 				syslog.syslog(syslog.LOG_ERR, str(ex))
 				sys.exit(EC_GENERIC_ERROR)
 		elif options.has_key("--ssh") and 0 == options.has_key("--identity-file"):
-			command = '%s %s %s@%s -p %s -o PubkeyAuthentication=no' % (SSH_PATH, force_ipvx, options["--username"], options["--ip"], options["--ipport"])
+			command = '%s %s %s@%s -p %s -o PubkeyAuthentication=no' % \
+					(SSH_PATH, force_ipvx, options["--username"], options["--ip"], options["--ipport"])
 			if options.has_key("--ssh-options"):
 				command += ' ' + options["--ssh-options"]
 
 			conn = fspawn(options, command)
 
 			if options.has_key("telnet_over_ssh"):
-				#This is for stupid ssh servers (like ALOM) which behave more like telnet (ignore name and display login prompt)
-				result = conn.log_expect(options, [ re_login, "Are you sure you want to continue connecting (yes/no)?" ], int(options["--login-timeout"]))
+				# This is for stupid ssh servers (like ALOM) which behave more like telnet
+				# (ignore name and display login prompt)
+				result = conn.log_expect(options, \
+						[ re_login, "Are you sure you want to continue connecting (yes/no)?" ],
+						int(options["--login-timeout"]))
 				if result == 1:
 					conn.sendline("yes") # Host identity confirm
 					conn.log_expect(options, re_login, int(options["--login-timeout"]))
@@ -999,7 +1014,9 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 				conn.sendline(options["--username"])
 				conn.log_expect(options, re_pass, int(options["--login-timeout"]))
 			else:
-				result = conn.log_expect(options, [ "ssword:", "Are you sure you want to continue connecting (yes/no)?" ], int(options["--login-timeout"]))
+				result = conn.log_expect(options, \
+						[ "ssword:", "Are you sure you want to continue connecting (yes/no)?" ],
+						int(options["--login-timeout"]))
 				if result == 1:
 					conn.sendline("yes")
 					conn.log_expect(options, "ssword:", int(options["--login-timeout"]))
@@ -1007,17 +1024,22 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 			conn.sendline(options["--password"])
 			conn.log_expect(options, options["--command-prompt"], int(options["--login-timeout"]))
 		elif options.has_key("--ssh") and options.has_key("--identity-file"):
-			command = '%s %s %s@%s -i %s -p %s' % (SSH_PATH, force_ipvx, options["--username"], options["--ip"], options["--identity-file"], options["--ipport"])
+			command = '%s %s %s@%s -i %s -p %s' % \
+					(SSH_PATH, force_ipvx, options["--username"], options["--ip"], \
+					options["--identity-file"], options["--ipport"])
 			if options.has_key("--ssh-options"):
 				command += ' ' + options["--ssh-options"]
 
 			conn = fspawn(options, command)
 
 			result = conn.log_expect(options, [ "Enter passphrase for key '" + options["--identity-file"] + "':", \
-				"Are you sure you want to continue connecting (yes/no)?" ] + options["--command-prompt"], int(options["--login-timeout"]))
+					"Are you sure you want to continue connecting (yes/no)?" ] + \
+					options["--command-prompt"], int(options["--login-timeout"]))
 			if result == 1:
 				conn.sendline("yes")
-				result = conn.log_expect(options, [ "Enter passphrase for key '"+options["--identity-file"]+"':"] + options["--command-prompt"], int(options["--login-timeout"]))
+				result = conn.log_expect(options,
+					[ "Enter passphrase for key '" + options["--identity-file"]+"':"] + \
+					options["--command-prompt"], int(options["--login-timeout"]))
 			if result == 0:
 				if options.has_key("--password"):
 					conn.sendline(options["--password"])
@@ -1043,7 +1065,8 @@ def fence_login(options, re_login_string = "(login\s*: )|(Login Name:  )|(userna
 
 			try:
 				conn.send_eol(options["--password"])
-				valid_password = conn.log_expect(options, [ re_login ] + options["--command-prompt"], int(options["--shell-timeout"]))
+				valid_password = conn.log_expect(options, [ re_login ] + \
+						options["--command-prompt"], int(options["--shell-timeout"]))
 				if valid_password == 0:
 					## password is invalid or we have to change EOL separator
 					options["eol"] = "\r"

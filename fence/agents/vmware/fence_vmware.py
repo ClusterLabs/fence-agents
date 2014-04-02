@@ -149,7 +149,8 @@ def vmware_run_command(options, add_login_params, additional_params, additional_
 	try:
 		vmware_log(options, command)
 
-		(res_output, res_code) = pexpect.run(command, int(options["--shell-timeout"])+int(options["--login-timeout"])+additional_timeout, True)
+		(res_output, res_code) = pexpect.run(command,
+				int(options["--shell-timeout"]) + int(options["--login-timeout"]) + additional_timeout, True)
 
 		if (res_code==None):
 			fail(EC_TIMED_OUT)
@@ -170,7 +171,8 @@ def vmware_get_outlets_vi(conn, options, add_vm_name):
 	outlets = {}
 
 	if (add_vm_name):
-		all_machines = vmware_run_command(options, True, ("--operation status --vmname '%s'"% (quote_for_run(options["--plug"]))), 0)
+		all_machines = vmware_run_command(options, True,
+				("--operation status --vmname '%s'"% (quote_for_run(options["--plug"]))), 0)
 	else:
 		all_machines = vmware_run_command(options, True, "--operation list", int(options["--power-timeout"]))
 
@@ -232,9 +234,11 @@ def get_power_status(conn, options):
 
 def set_power_status(conn, options):
 	if (vmware_internal_type==VMWARE_TYPE_ESX):
-		additional_params = "--operation %s --vmname '%s'"% ((options["--action"]=="on" and "on" or "off"), quote_for_run(options["--plug"]))
+		additional_params = "--operation %s --vmname '%s'" % \
+				((options["--action"]=="on" and "on" or "off"), quote_for_run(options["--plug"]))
 	elif ((vmware_internal_type==VMWARE_TYPE_SERVER1) or (vmware_internal_type==VMWARE_TYPE_SERVER2)):
-		additional_params = "%s '%s'"% ((options["--action"]=="on" and "start" or "stop"), quote_for_run(options["--plug"]))
+		additional_params = "%s '%s'" % \
+				((options["--action"]=="on" and "start" or "stop"), quote_for_run(options["--plug"]))
 		if (options["--action"]=="off"):
 			additional_params += " hard"
 
@@ -323,7 +327,8 @@ This agent supports only vmrun from version 2.0.0 (VIX API 1.6.0)."
 	# Test user vmrun command version
 	if ((vmware_internal_type==VMWARE_TYPE_SERVER1) or (vmware_internal_type==VMWARE_TYPE_SERVER2)):
 		if (not (vmware_is_supported_vmrun_version(options))):
-			fail_usage("Unsupported version of vmrun command! You must use at least version %d!"%(VMRUN_MINIMUM_REQUIRED_VERSION))
+			fail_usage("Unsupported version of vmrun command! You must use at least version %d!" %
+					(VMRUN_MINIMUM_REQUIRED_VERSION))
 
 	# Operate the fencing device
 	result = fence_action(None, options, set_power_status, get_power_status, get_outlets_status)

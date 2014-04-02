@@ -37,7 +37,8 @@ def get_power_status(conn, options):
 			pass
 		fail(EC_TIMED_OUT)
 
-	status = re.compile(".*AdminState\s+(online|offline)\s+", re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
+	status = re.compile(".*AdminState\s+(online|offline)\s+",
+			re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
 
 	try:
 		return status_trans[status.lower().strip()]

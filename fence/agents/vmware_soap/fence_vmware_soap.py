@@ -73,7 +73,8 @@ def get_power_status(conn, options):
 	mo_PropertyCollector = Property(options["ServiceContent"].propertyCollector.value)
 	mo_PropertyCollector._type = 'PropertyCollector'
 
-	ContainerView = conn.service.CreateContainerView(mo_ViewManager, recursive = 1, container = mo_RootFolder, type = ['VirtualMachine'])
+	ContainerView = conn.service.CreateContainerView(mo_ViewManager, recursive = 1,
+			container = mo_RootFolder, type = ['VirtualMachine'])
 	mo_ContainerView = Property(ContainerView.value)
 	mo_ContainerView._type = "ContainerView"
 
