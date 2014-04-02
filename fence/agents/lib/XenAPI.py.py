@@ -48,6 +48,7 @@ import gettext
 import xmlrpclib
 import httplib
 import socket
+import logging
 
 translation = gettext.translation('xen-xm', fallback = True)
 
@@ -72,8 +73,7 @@ class Failure(Exception):
 			return "Message database broken: %s.\nXen-API failure: %s" % \
 				   (exn, str(self.details))
 		except Exception, exn:
-			import sys
-			print >> sys.stderr, exn
+			logging.error("%s\n" % str(exn))
 			return "Xen-API failure: %s" % str(self.details)
 
 	def _details_map(self):

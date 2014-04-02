@@ -2,6 +2,7 @@
 
 import sys, re
 import pycurl, StringIO
+import logging
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 
@@ -90,9 +91,8 @@ def send_command(opt, command, timeout):
 	c.perform()
 	result = b.getvalue()
 
-	if opt["log"] >= LOG_MODE_VERBOSE:
-		opt["debug_fh"].write(command + "\n")
-		opt["debug_fh"].write(result + "\n")
+	logging.debug("%s\n" % command)
+	logging.debug("%s\n" % results)
 
 	return result
 

@@ -10,6 +10,7 @@
 
 import sys, time
 import shutil, tempfile
+import logging
 from datetime import datetime
 from suds.client import Client
 from suds.xsd.doctor import ImportDoctor, Import
@@ -122,20 +123,17 @@ Poweroff is simulated with a reboot into rescue-pro mode."
 	# Verify that action was completed sucesfully
 	reboot_t = reboot_time(options)
 
-	if options.has_key("--verbose"):
-		options["debug_fh"].write("reboot_start_end.start: "+ reboot_t.start.strftime('%Y-%m-%d %H:%M:%S')+"\n")         
-		options["debug_fh"].write("before_netboot_reboot: " + before_netboot_reboot.strftime('%Y-%m-%d %H:%M:%S')+"\n")
-		options["debug_fh"].write("reboot_start_end.end: "  + reboot_t.end.strftime('%Y-%m-%d %H:%M:%S')+"\n")        
-		options["debug_fh"].write("after_netboot_reboot: "  + after_netboot_reboot.strftime('%Y-%m-%d %H:%M:%S')+"\n")  
+	logging.debug("reboot_start_end.start: %s\n" % reboot_t.start.strftime('%Y-%m-%d %H:%M:%S'))
+	logging.debug("before_netboot_reboot: %s\n" % before_netboot_reboot.strftime('%Y-%m-%d %H:%M:%S'))
+	logging.debug("reboot_start_end.end: %s\n" % reboot_t.end.strftime('%Y-%m-%d %H:%M:%S'))
+	logging.debug("after_netboot_reboot: %s\n" % after_netboot_reboot.strftime('%Y-%m-%d %H:%M:%S'))
                 
 	if reboot_t.start < after_netboot_reboot < reboot_t.end:
 		result = 0
-		if options.has_key("--verbose"):
-			options["debug_fh"].write("Netboot reboot went OK.\n")
+		logging.debug("Netboot reboot went OK.\n")
 	else:
 		result = 1
-		if options.has_key("--verbose"):
-			options["debug_fh"].write("ERROR: Netboot reboot wasn't OK.\n")
+		logging.debug("ERROR: Netboot reboot wasn't OK.\n")
 
 	sys.exit(result)
 

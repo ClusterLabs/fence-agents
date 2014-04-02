@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import sys, shlex, stat, subprocess, re, os
+import logging
 from pipes import quote
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
@@ -15,10 +16,8 @@ def get_power_status(_, options):
 
     cmd = create_command(options, "status")
 
-    if options["log"] >= LOG_MODE_VERBOSE:
-        options["debug_fh"].write("executing: " + cmd + "\n")
-
     try:
+        logging.info("Executing: %s\n" % cmd)
         process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except OSError:
         fail_usage("Ipmitool not found or not accessible")
@@ -27,7 +26,8 @@ def get_power_status(_, options):
 
     out = process.communicate()
     process.stdout.close()
-    options["debug_fh"].write(str(out) + "\n")
+    process.stderr.close()
+    logging.debug("%s\n" % str(out))
 
     match = re.search('[Cc]hassis [Pp]ower is [\\s]*([a-zA-Z]{2,3})', str(out))
     status = match.group(1) if match else None
@@ -38,25 +38,8 @@ def set_power_status(_, options):
 
     cmd = create_command(options, options["--action"])
 
-    if options["log"] >= LOG_MODE_VERBOSE:
-        options["debug_fh"].write("executing: " + cmd + "\n")
-
     try:
-        process = subprocess.Popen(shlex.split(cmd), stdout=options["debug_fh"], stderr=options["debug_fh"])
-    except OSError:
-        fail_usage("Ipmitool not found or not accessible")
-
-    process.wait()
-
-    return
-
-def reboot_cycle(_, options):
-    cmd = create_command(options, "cycle")
-
-    if options["log"] >= LOG_MODE_VERBOSE:
-        options["debug_fh"].write("executing: " + cmd + "\n")
-
-    try:
+        logging.debug("Executing: %s\n" % cmd)
         process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     except OSError:
         fail_usage("Ipmitool not found or not accessible")
@@ -65,7 +48,26 @@ def reboot_cycle(_, options):
 
     out = process.communicate()
     process.stdout.close()
-    options["debug_fh"].write(str(out) + "\n")
+    process.stderr.close()
+    logging.debug("%s\n" % str(out))
+
+    return
+
+def reboot_cycle(_, options):
+    cmd = create_command(options, "cycle")
+
+    try:
+        logging.debug("Executing: %s\n" % cmd)
+        process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    except OSError:
+        fail_usage("Ipmitool not found or not accessible")
+
+    process.wait()
+
+    out = process.communicate()
+    process.stdout.close()
+    process.stderr.close()
+    logging.debug("%s\n" % str(out))
 
     return bool(re.search('chassis power control: cycle', str(out).lower()))
 

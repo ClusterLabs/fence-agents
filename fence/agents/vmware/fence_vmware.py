@@ -23,6 +23,7 @@
 #
 
 import sys, re, pexpect, exceptions
+import logging
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 
@@ -136,8 +137,7 @@ def vmware_prepare_command(options, add_login_params, additional_params):
 
 # Log message if user set verbose option
 def vmware_log(options, message):
-	if options["log"] >= LOG_MODE_VERBOSE:
-		options["debug_fh"].write(message+"\n")
+	logging.debug("%s\n" % message)
 
 # Run command with timeout and parameters. Internaly uses vmware_prepare_command. Returns string
 # with output from vmrun command. If something fails (command not found, exit code is not 0), fail_usage

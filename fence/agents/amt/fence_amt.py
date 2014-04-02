@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import sys, subprocess, re, os, stat
+import logging
 from pipes import quote
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
@@ -15,19 +16,19 @@ def get_power_status(_, options):
 
     cmd = create_command(options, "status")
 
-    if options["log"] >= LOG_MODE_VERBOSE:
-        options["debug_fh"].write("executing: " + cmd + "\n")
-
     try:
+        logging.debug("Running: %s" % cmd)
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     except OSError:
         fail_usage("Amttool not found or not accessible")
 
     process.wait()
 
-    output = process.communicate()
+    out = process.communicate()
     process.stdout.close()
-    options["debug_fh"].write(output)
+    process.stderr.close()
+    logging.debug("%s\n" % str(out))
+
 
     match = re.search('Powerstate:[\\s]*(..)', str(output))
     status = match.group(1) if match else None
@@ -43,30 +44,36 @@ def set_power_status(_, options):
 
     cmd = create_command(options, options["--action"])
 
-    if options["log"] >= LOG_MODE_VERBOSE:
-        options["debug_fh"].write("executing: " + cmd + "\n")
-
     try:
-        process = subprocess.Popen(cmd, stdout=options["debug_fh"], stderr=options["debug_fh"], shell=True)
+        logging.debug("Running: %s" % cmd)
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     except OSError:
         fail_usage("Amttool not found or not accessible")
 
     process.wait()
+
+    out = process.communicate()
+    process.stdout.close()
+    process.stderr.close()
+    logging.debug("%s\n" % str(out))
 
     return
 
 def reboot_cycle(_, options):
     cmd = create_command(options, "cycle")
 
-    if options["log"] >= LOG_MODE_VERBOSE:
-        options["debug_fh"].write("executing: " + cmd + "\n")
-
     try:
-        process = subprocess.Popen(cmd, stdout=options["debug_fh"], stderr=options["debug_fh"], shell=True)
+        logging.debug("Running: %s" % cmd)
+        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     except OSError:
         fail_usage("Amttool not found or not accessible")
 
     status = process.wait()
+
+    out = process.communicate()
+    process.stdout.close()
+    process.stderr.close()
+    logging.debug("%s\n" % str(out))
     
     return not bool(status)
 

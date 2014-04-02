@@ -5,6 +5,7 @@
 
 import sys, re
 import httplib, base64, string, socket
+import logging
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 
@@ -13,11 +14,6 @@ RELEASE_VERSION="ePowerSwitch 8M+ (eps)"
 REDHAT_COPYRIGHT=""
 BUILD_DATE=""
 #END_VERSION_GENERATION
-
-# Log actions and results from EPS device
-def eps_log(options, str):
-	if options["log"] >= LOG_MODE_VERBOSE:
-		options["debug_fh"].write(str)
 
 # Run command on EPS device.
 # @param options Device options
@@ -32,7 +28,7 @@ def eps_run_command(options, params):
 		if (params!=""):
 			request_str += "?"+params
 
-		eps_log(options, "GET "+request_str+"\n")
+		logging.debug("GET %s\n" % request_str)
 		conn.putrequest('GET', request_str)
 
 		if (options.has_key("--username")):
@@ -41,23 +37,22 @@ def eps_run_command(options, params):
 				
 			# String for Authorization header
 			auth_str = 'Basic ' + string.strip(base64.encodestring(options["--username"]+':'+options["--password"]))
-			eps_log(options, "Authorization:"+auth_str+"\n")
+			logging.debug("Authorization: %s\n" % auth_str)
 			conn.putheader('Authorization', auth_str)
 
 		conn.endheaders()
 
 		response = conn.getresponse()
 
-		eps_log(options, "%d %s\n"%(response.status, response.reason))
+		logging.debug("%d %s\n"%(response.status, response.reason))
 
 		#Response != OK -> couldn't login
 		if (response.status!=200):
 			fail(EC_LOGIN_DENIED)
 
 		result = response.read()
-		eps_log(options, result+"\n")
+		logging.debug("%s \n" % result)
 		conn.close()
-
 	except socket.timeout:
 		fail(EC_TIMED_OUT)
 	except socket.error:

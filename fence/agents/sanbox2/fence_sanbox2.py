@@ -9,6 +9,7 @@
 #####
 
 import sys, re, pexpect, exceptions
+import logging
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 
@@ -129,7 +130,7 @@ because the connection will block any necessary fencing actions."
 	if (re.search("\(admin\)", conn.before, re.MULTILINE) == None):
 		## Someone else is in admin section, we can't enable/disable
 		## ports so we will rather exit
-		sys.stderr.write("Failed: Unable to switch to admin section\n")
+		logging.error("Failed: Unable to switch to admin section\n")
 		sys.exit(EC_GENERIC_ERROR)
 
 	result = fence_action(conn, options, set_power_status, get_power_status, get_list_devices)
