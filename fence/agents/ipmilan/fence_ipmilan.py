@@ -93,6 +93,8 @@ def create_command(options, action):
 	# --password / -p
 	if options.has_key("--password"):
 		cmd += " -P " + quote(options["--password"])
+	else:
+		cmd += " -P ''"
 
 	# --cipher / -C
 	cmd += " -C " + options["--cipher"]
