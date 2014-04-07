@@ -18,6 +18,7 @@ $(SYMTARGET): $(TARGET)
 
 include $(top_srcdir)/make/fencebuild.mk
 include $(top_srcdir)/make/fenceman.mk
+include $(top_srcdir)/make/agentpycheck.mk
 
 clean-local: clean-man
 	rm -f $(TARGET) $(SYMTARGET)
