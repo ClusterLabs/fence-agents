@@ -144,18 +144,23 @@ def get_plug_group_status(conn, options):
 
 
 	if ["list", "monitor"].count(options["--action"]) == 1:
-		for group, status in outlet_groups:
-			outlets[group] = (group, status[0])
+		results = {}
+		for group, status in outlets.items():
+			results[group] = (group, status[0])
 
-		return outlets
+		return results
 	else:
 		return "PROBLEM"
 
 def get_power_status(conn, options):
-	ret = get_plug_status(conn, options)
+	if ["list"].count(options["--action"]) == 0:
+		ret = get_plug_status(conn, options)
 
-	if ret == "PROBLEM":
-		ret = get_plug_group_status(conn, options)
+		if ret == "PROBLEM":
+			ret = get_plug_group_status(conn, options)
+	else:
+		ret = dict(get_plug_status(conn, options).items() + \
+			get_plug_group_status(conn, options).items())
 
 	return ret
 
