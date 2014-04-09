@@ -9,6 +9,7 @@ import sys
 import atexit
 sys.path.append("/usr/share/fence")
 from fencing import *
+from fencing import fail_usage
 from fencing_snmp import FencingSnmp
 
 #BEGIN_VERSION_GENERATION

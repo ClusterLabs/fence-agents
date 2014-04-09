@@ -30,7 +30,7 @@ def get_power_status(_, options):
 	process.stderr.close()
 	logging.debug("%s\n" % str(out))
 
-	match = re.search('Powerstate:[\\s]*(..)', str(output))
+	match = re.search('Powerstate:[\\s]*(..)', str(out))
 	status = match.group(1) if match else None
 
 	if (status == None):

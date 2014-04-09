@@ -866,7 +866,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 			for outlet_id in outlets.keys():
 				(alias, status) = outlets[outlet_id]
 				if options["--action"] != "monitor":
-					print outled_id + options["--separator"] + alias
+					print outlet_id + options["--separator"] + alias
 			return
 
 		status = get_multi_power_fn(tn, options, get_power_fn)

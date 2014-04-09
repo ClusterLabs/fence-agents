@@ -97,7 +97,7 @@ def send_command(opt, command, timeout):
 	result = web_buffer.getvalue()
 
 	logging.debug("%s\n" % command)
-	logging.debug("%s\n" % results)
+	logging.debug("%s\n" % result)
 
 	return result
 
