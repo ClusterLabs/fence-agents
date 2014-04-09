@@ -1,0 +1,42 @@
+<?xml version="1.0" ?>
+<resource-agent name="fence_zvmip" shortdesc="Fence agent for use with z/VM Virtual Machines">
+<longdesc>The fence_zvm agent is intended to be used with with z/VM SMAPI service via TCP/IP</longdesc>
+<parameters>
+	<parameter name="port" unique="1" required="1">
+		<getopt mixed="-n, --plug" />
+		<content type="string" />
+		<shortdesc lang="en">Name of the Virtual Machine to be fenced</shortdesc>
+	</parameter>
+	<parameter name="ipaddr" unique="1" required="1">
+		<getopt mixed="-i, --ip" />
+		<content type="string" />
+		<shortdesc lang="en">IP Name or Address of SMAPI Server</shortdesc>
+	</parameter>
+	<parameter name="login" unique="1" required="1">
+		<getopt mixed="-u, --username" />
+		<content type="string" />
+		<shortdesc lang="en">Name of authorized SMAPI user
+</shortdesc>
+	</parameter>
+	<parameter name="passwd" unique="1" required="1">
+		<getopt mixed="-p, --password" />
+		<content type="string" />
+		<shortdesc lang="en">Password of authorized SMAPI user
+</shortdesc>
+	</parameter>
+	<parameter name="action" unique="1" required="0">
+		<getopt mixed="-o, --action" />
+		<content type="string" default="off" />
+		<shortdesc lang="en">Fencing action</shortdesc>
+	</parameter>
+	<parameter name="usage" unique="1" required="0">
+		<getopt mixed="-h, --help" />
+		<content type="boolean" />
+		<shortdesc lang="en">Print usage</shortdesc>
+	</parameter>
+</parameters>
+<actions>
+	<action name="off" />
+	<action name="metadata" />
+</actions>
+</resource-agent>

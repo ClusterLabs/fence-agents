@@ -11,6 +11,7 @@ fence_rackswitch_SOURCES = do_rack.c
 man_MANS		 = $(TARGET).8
 
 include $(top_srcdir)/make/fencemanc.mk
+include $(top_srcdir)/make/agentccheck.mk
 
 clean-local: clean-man
 	rm -f $(TARGET)

@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<resource-agent name="fence_kdump" shortdesc="Fence agent for use with kdump">
+<longdesc>The fence_kdump agent is intended to be used with with kdump service.</longdesc>
+<vendor-url>http://www.kernel.org/pub/linux/utils/kernel/kexec/</vendor-url>
+<parameters>
+	<parameter name="nodename" unique="0" required="0">
+		<getopt mixed="-n, --nodename" />
+		<content type="string" />
+		<shortdesc lang="en">Name or IP address of node to be fenced</shortdesc>
+	</parameter>
+	<parameter name="ipport" unique="0" required="0">
+		<getopt mixed="-p, --ipport" />
+		<content type="string" default="7410" />
+		<shortdesc lang="en">Port number</shortdesc>
+	</parameter>
+	<parameter name="family" unique="0" required="0">
+		<getopt mixed="-f, --family" />
+		<content type="string" default="auto" />
+		<shortdesc lang="en">Network family</shortdesc>
+	</parameter>
+	<parameter name="action" unique="0" required="0">
+		<getopt mixed="-o, --action" />
+		<content type="string" default="off" />
+		<shortdesc lang="en">Fencing action</shortdesc>
+	</parameter>
+	<parameter name="timeout" unique="0" required="0">
+		<getopt mixed="-t, --timeout" />
+		<content type="string" default="60" />
+		<shortdesc lang="en">Timeout in seconds</shortdesc>
+	</parameter>
+	<parameter name="verbose" unique="0" required="0">
+		<getopt mixed="-v, --verbose" />
+		<content type="boolean" />
+		<shortdesc lang="en">Print verbose output</shortdesc>
+	</parameter>
+	<parameter name="version" unique="0" required="0">
+		<getopt mixed="-V, --version" />
+		<content type="boolean" />
+		<shortdesc lang="en">Print version</shortdesc>
+	</parameter>
+	<parameter name="usage" unique="0" required="0">
+		<getopt mixed="-h, --help" />
+		<content type="boolean" />
+		<shortdesc lang="en">Print usage</shortdesc>
+	</parameter>
+</parameters>
+<actions>
+	<action name="off" />
+	<action name="metadata" />
+</actions>
+</resource-agent>
