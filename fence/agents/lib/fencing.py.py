@@ -392,7 +392,7 @@ class fspawn(pexpect.spawn):
 
 	def send(self, message):
 		logging.debug("Sent: %s" % message)
-		pexpect.spawn.send(self,message)
+		pexpect.spawn.send(self, message)
 
 	# send EOL according to what was detected in login process (telnet)
 	def send_eol(self, message):

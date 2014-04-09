@@ -113,11 +113,11 @@ Poweroff is simulated with a reboot into rescue-pro mode."
 
 	if options["--action"] == 'off':
 		# Reboot in Rescue-pro
-		netboot_reboot(options,OVH_RESCUE_PRO_NETBOOT_ID)
+		netboot_reboot(options, OVH_RESCUE_PRO_NETBOOT_ID)
 		time.sleep(STATUS_RESCUE_PRO_SLEEP)
 	elif options["--action"] in  ['on', 'reboot' ]:
 		# Reboot from HD
-		netboot_reboot(options,OVH_HARD_DISK_NETBOOT_ID)
+		netboot_reboot(options, OVH_HARD_DISK_NETBOOT_ID)
 		time.sleep(STATUS_HARD_DISK_SLEEP)
 
 	# Save datetime just after reboot
