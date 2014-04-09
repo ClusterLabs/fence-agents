@@ -92,6 +92,10 @@ def get_plug_group_status(conn, options):
 
 	outlets = {}
 	line_index = 0
+	status_index = -1
+	plug_index = -1
+	name_index = -1
+
 	lines = listing.splitlines()
 	while line_index < len(lines) and line_index >= 0:
 		line = lines[line_index]
