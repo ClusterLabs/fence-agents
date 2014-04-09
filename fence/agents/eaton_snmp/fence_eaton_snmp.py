@@ -37,7 +37,7 @@ after_set = False
 
 # Classes describing Device params
 # Managed ePDU
-class EatonManagedePDU:
+class EatonManagedePDU(object):
 	status_oid =       '.1.3.6.1.4.1.534.6.6.6.1.2.2.1.3.%d'
 	control_oid =      '.1.3.6.1.4.1.534.6.6.6.1.2.2.1.3.%d'
 	outlet_table_oid = '.1.3.6.1.4.1.534.6.6.6.1.2.2.1.1'
@@ -52,7 +52,7 @@ class EatonManagedePDU:
 
 # Switched ePDU (Pulizzi 2)
 # NOTE: sysOID reports "20677.1", while data are actually at "20677.2"
-class EatonSwitchedePDU:
+class EatonSwitchedePDU(object):
 	status_oid =       '.1.3.6.1.4.1.20677.2.6.3.%d.0'
 	control_oid =      '.1.3.6.1.4.1.20677.2.6.2.%d.0'
 	outlet_table_oid = '.1.3.6.1.4.1.20677.2.6.3'

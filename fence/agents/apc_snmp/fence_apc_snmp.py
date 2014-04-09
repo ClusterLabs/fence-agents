@@ -39,7 +39,7 @@ port_id = None
 switch_id = None
 
 # Classes describing Device params
-class TripplitePDU:
+class TripplitePDU(object):
         # Rack PDU
 	status_oid =       '.1.3.6.1.4.1.850.10.2.3.5.1.2.1.%d'
 	control_oid =      '.1.3.6.1.4.1.850.10.2.3.5.1.4.1.%d'
@@ -51,7 +51,7 @@ class TripplitePDU:
 	turn_off = 1
 	has_switches = False
 
-class ApcRPDU:
+class ApcRPDU(object):
 	# Rack PDU
 	status_oid =       '.1.3.6.1.4.1.318.1.1.12.3.5.1.1.4.%d'
 	control_oid =      '.1.3.6.1.4.1.318.1.1.12.3.3.1.1.4.%d'
@@ -63,7 +63,7 @@ class ApcRPDU:
 	turn_off = 2
 	has_switches = False
 
-class ApcMSP:
+class ApcMSP(object):
 	# Master Switch+
 	status_oid =       '.1.3.6.1.4.1.318.1.1.6.7.1.1.5.%d.1.%d'
 	control_oid =      '.1.3.6.1.4.1.318.1.1.6.5.1.1.5.%d.1.%d'
@@ -75,7 +75,7 @@ class ApcMSP:
 	turn_off = 3
 	has_switches = True
 
-class ApcMS:
+class ApcMS(object):
 	# Master Switch - seems oldest, but supported on every APC PDU
 	status_oid =       '.1.3.6.1.4.1.318.1.1.4.4.2.1.3.%d'
 	control_oid =      '.1.3.6.1.4.1.318.1.1.4.4.2.1.3.%d'

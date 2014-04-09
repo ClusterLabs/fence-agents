@@ -32,7 +32,7 @@ port_id = None
 switch_id = None
 
 # Classes describing Device params
-class IBMiPDU:
+class IBMiPDU(object):
 	# iPDU
 	status_oid =       '.1.3.6.1.4.1.2.6.223.8.2.2.1.11.%d'
 	control_oid =      '.1.3.6.1.4.1.2.6.223.8.2.2.1.11.%d'
