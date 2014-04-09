@@ -15,9 +15,6 @@ BUILD_DATE = "March, 2008"
 __all__ = [ 'atexit_handler', 'check_input', 'process_input', 'all_opt', 'show_docs',
 		'fence_login', 'fence_action' ]
 
-LOG_MODE_VERBOSE = 100
-LOG_MODE_QUIET = 0
-
 EC_GENERIC_ERROR   = 1
 EC_BAD_ARGS        = 2
 EC_LOGIN_DENIED    = 3

@@ -5,7 +5,7 @@
 import re, pexpect
 import logging
 from fencing import *
-from fencing import fail, fail_usage, EC_TIMED_OUT, LOG_MODE_VERBOSE
+from fencing import fail, fail_usage, EC_TIMED_OUT
 
 __all__ = [ 'FencingSnmp' ]
 

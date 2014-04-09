@@ -7,7 +7,7 @@ import time
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, EC_STATUS, EC_LOGIN_DENIED, LOG_MODE_VERBOSE
+from fencing import fail, EC_STATUS, EC_LOGIN_DENIED
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New Cisco UCS Agent - test release on steroids"

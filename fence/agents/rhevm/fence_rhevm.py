@@ -6,7 +6,7 @@ import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, EC_STATUS, LOG_MODE_VERBOSE
+from fencing import fail, EC_STATUS
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New RHEV-M Agent - test release on steroids"
