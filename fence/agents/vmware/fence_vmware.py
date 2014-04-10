@@ -223,7 +223,7 @@ def get_outlets_status(conn, options):
 
 def get_power_status(conn, options):
 	if (vmware_internal_type==VMWARE_TYPE_ESX):
-		outlets = vmware_get_outlets_vi(conn, options, True)
+		outlets = vmware_get_outlets_vi(options, True)
 	else:
 		outlets = get_outlets_status(conn, options)
 
