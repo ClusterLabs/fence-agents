@@ -1,6 +1,6 @@
-#!/usr/bin/python
+#!/usr/bin/python -tt
 
-import sys, re, pexpect, exceptions
+import sys, re, pexpect
 import atexit
 import time
 sys.path.append("@FENCEAGENTSLIBDIR@")
@@ -60,7 +60,7 @@ block any necessary fencing actions."
 
 	#  add support also for delay before login which is very useful for 2-node clusters
 	if options["--action"] in ["off", "reboot"]:
-                time.sleep(int(options["--delay"]))
+		time.sleep(int(options["--delay"]))
 
 	##
 	## Operate the fencing device
@@ -70,7 +70,7 @@ block any necessary fencing actions."
 		conn = fspawn(options, TELNET_PATH)
 		conn.send("set binary\n")
 		conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
-		screen = conn.read_nonblocking(size=100, timeout=int(options["--shell-timeout"]))
+		conn.read_nonblocking(size=100, timeout=int(options["--shell-timeout"]))
 		conn.log_expect(options, "Login.*", int(options["--shell-timeout"]))
 		conn.send_eol("%s" % (options["--username"]))
 		conn.log_expect(options, "Password.*", int(options["--shell-timeout"]))
