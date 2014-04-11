@@ -1,6 +1,6 @@
 #!/usr/bin/python -tt
 
-import sys, re
+import sys, re, os
 import atexit
 from pipes import quote
 sys.path.append("@FENCEAGENTSLIBDIR@")
@@ -14,7 +14,7 @@ BUILD_DATE=""
 #END_VERSION_GENERATION
 
 def get_power_status(_, options):
-	output = run_command(options, create_command(options, "status"))
+	output = amt_run_command(options, create_command(options, "status"))
 	match = re.search('Powerstate:[\\s]*(..)', str(output))
 	status = match.group(1) if match else None
 
@@ -26,18 +26,20 @@ def get_power_status(_, options):
 		return "off"
 
 def set_power_status(_, options):
-	run_command(options, create_command(options, options["--action"]))
+	amt_run_command(options, create_command(options, options["--action"]))
 	return
 
 def reboot_cycle(_, options):
 	(status, _, _) = run_command(options, create_command(options, "cycle"))
 	return not bool(status)
 
-def create_command(options, action):
-	# --password / -p
-	cmd = "AMT_PASSWORD=" + quote(options["--password"])
+def amt_run_command(options, command, timeout = None):
+	env = os.environ.copy()
+	env["AMT_PASSWORD"] = quote(options["--password"])
+	return run_command(options, command, timeout, env)
 
-	cmd += " " + options["--amttool-path"]
+def create_command(options, action):
+	cmd = options["--amttool-path"]
 
 	# --ip / -a
 	cmd += " " + options["--ip"]
