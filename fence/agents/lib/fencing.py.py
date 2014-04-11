@@ -4,6 +4,7 @@ import sys, getopt, time, os, uuid, pycurl, stat
 import pexpect, re, atexit, syslog
 import logging
 import subprocess
+import threading
 import shlex
 import __main__
 
@@ -1094,20 +1095,32 @@ def is_executable(path):
 			return True
 	return False
 
-def run_command(options, command):
-	# @todo: Use timeouts from options[]
+def run_command(options, command, timeout = None, env = None):
+	if timeout is None and "--power-timeout" in options:
+		timeout = options["--power-timeout"]
+	if timeout is not None:
+		timeout = float(timeout)
+
 	logging.info("Executing: %s\n" % command)
 
 	try:
-		process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
 	except OSError, ex:
 		fail_usage("Unable to run %s\n" % command)
 
+	thread = threading.Thread(target = process.wait)
+	thread.start()
+	thread.join(timeout)
+	if (thread.is_alive()):
+		process.kill()
+		fail(EC_TIMED_OUT)
+
 	status = process.wait()
+
 	(pipe_stdout, pipe_stderr) = process.communicate()
 	process.stdout.close()
 	process.stderr.close()
 
-	logging.debug("%s %s %s\n" % str(status), str(pipe_stdout), str(pipe_stderr))
+	logging.debug("%s %s %s\n" % (str(status), str(pipe_stdout), str(pipe_stderr)))
 
 	return (status, pipe_stdout, pipe_stderr)
