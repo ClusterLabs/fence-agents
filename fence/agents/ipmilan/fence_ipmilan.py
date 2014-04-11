@@ -1,12 +1,11 @@
 #!/usr/bin/python -tt
 
-import sys, shlex, subprocess, re, os
-import logging
+import sys, re, os
 import atexit
 from pipes import quote
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import SUDO_PATH, fail_usage, is_executable
+from fencing import SUDO_PATH, fail_usage, is_executable, run_command
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION=""
@@ -15,61 +14,18 @@ BUILD_DATE=""
 #END_VERSION_GENERATION
 
 def get_power_status(_, options):
-	cmd = create_command(options, "status")
-
-	try:
-		logging.info("Executing: %s\n" % cmd)
-		process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	except OSError:
-		fail_usage("Ipmitool not found or not accessible")
-
-	process.wait()
-
-	out = process.communicate()
-	process.stdout.close()
-	process.stderr.close()
-	logging.debug("%s\n" % str(out))
-
-	match = re.search('[Cc]hassis [Pp]ower is [\\s]*([a-zA-Z]{2,3})', str(out))
+	output = run_command(options, create_command(options, "status"))
+	match = re.search('[Cc]hassis [Pp]ower is [\\s]*([a-zA-Z]{2,3})', str(output))
 	status = match.group(1) if match else None
-
 	return status
 
 def set_power_status(_, options):
-	cmd = create_command(options, options["--action"])
-
-	try:
-		logging.debug("Executing: %s\n" % cmd)
-		process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	except OSError:
-		fail_usage("Ipmitool not found or not accessible")
-
-	process.wait()
-
-	out = process.communicate()
-	process.stdout.close()
-	process.stderr.close()
-	logging.debug("%s\n" % str(out))
-
+	run_command(options, create_command(options, options["--action"]))
 	return
 
 def reboot_cycle(_, options):
-	cmd = create_command(options, "cycle")
-
-	try:
-		logging.debug("Executing: %s\n" % cmd)
-		process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	except OSError:
-		fail_usage("Ipmitool not found or not accessible")
-
-	process.wait()
-
-	out = process.communicate()
-	process.stdout.close()
-	process.stderr.close()
-	logging.debug("%s\n" % str(out))
-
-	return bool(re.search('chassis power control: cycle', str(out).lower()))
+	output = run_command(options, create_command(options, "cycle"))
+	return bool(re.search('chassis power control: cycle', str(output).lower()))
 
 def create_command(options, action):
 	cmd = options["--ipmitool-path"]

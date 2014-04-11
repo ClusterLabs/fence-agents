@@ -1,12 +1,11 @@
 #!/usr/bin/python -tt
 
-import sys, subprocess, re
-import logging
+import sys, re
 import atexit
 from pipes import quote
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail_usage, is_executable, SUDO_PATH
+from fencing import fail_usage, is_executable, SUDO_PATH, run_command
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="Fence agent for Intel AMT"
@@ -15,22 +14,8 @@ BUILD_DATE=""
 #END_VERSION_GENERATION
 
 def get_power_status(_, options):
-	cmd = create_command(options, "status")
-
-	try:
-		logging.debug("Running: %s" % cmd)
-		process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-	except OSError:
-		fail_usage("Amttool not found or not accessible")
-
-	process.wait()
-
-	out = process.communicate()
-	process.stdout.close()
-	process.stderr.close()
-	logging.debug("%s\n" % str(out))
-
-	match = re.search('Powerstate:[\\s]*(..)', str(out))
+	output = run_command(options, create_command(options, "status"))
+	match = re.search('Powerstate:[\\s]*(..)', str(output))
 	status = match.group(1) if match else None
 
 	if (status == None):
@@ -41,39 +26,11 @@ def get_power_status(_, options):
 		return "off"
 
 def set_power_status(_, options):
-	cmd = create_command(options, options["--action"])
-
-	try:
-		logging.debug("Running: %s" % cmd)
-		process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-	except OSError:
-		fail_usage("Amttool not found or not accessible")
-
-	process.wait()
-
-	out = process.communicate()
-	process.stdout.close()
-	process.stderr.close()
-	logging.debug("%s\n" % str(out))
-
+	run_command(options, create_command(options, options["--action"]))
 	return
 
 def reboot_cycle(_, options):
-	cmd = create_command(options, "cycle")
-
-	try:
-		logging.debug("Running: %s" % cmd)
-		process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-	except OSError:
-		fail_usage("Amttool not found or not accessible")
-
-	status = process.wait()
-
-	out = process.communicate()
-	process.stdout.close()
-	process.stderr.close()
-	logging.debug("%s\n" % str(out))
-    
+	(status, _, _) = run_command(options, create_command(options, "cycle"))
 	return not bool(status)
 
 def create_command(options, action):
