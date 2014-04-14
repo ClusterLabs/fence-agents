@@ -137,10 +137,6 @@ def vmware_prepare_command(options, add_login_params, additional_params):
 
 	return res
 
-# Log message if user set verbose option
-def vmware_log(options, message):
-	logging.debug("%s\n" % message)
-
 # Run command with timeout and parameters. Internaly uses vmware_prepare_command. Returns string
 # with output from vmrun command. If something fails (command not found, exit code is not 0), fail_usage
 # function is called (and never return).
@@ -148,7 +144,7 @@ def vmware_run_command(options, add_login_params, additional_params, additional_
 	command = vmware_prepare_command(options, add_login_params, additional_params)
 
 	try:
-		vmware_log(options, command)
+		logging.debug("%s\n" % command)
 
 		(res_output, res_code) = pexpect.run(command,
 				int(options["--shell-timeout"]) + int(options["--login-timeout"]) + additional_timeout, True)
@@ -156,10 +152,10 @@ def vmware_run_command(options, add_login_params, additional_params, additional_
 		if res_code == None:
 			fail(EC_TIMED_OUT)
 		if res_code != 0 and add_login_params:
-			vmware_log(options, res_output)
+			logging.debug("%s\n" % res_output)
 			fail_usage("%s returned %s"% (options["--exec"], res_output))
 		else:
-			vmware_log(options, res_output)
+			logging.debug("%s\n" % res_output)
 
 	except pexpect.ExceptionPexpect:
 		fail_usage("Cannot run command %s"% (options["--exec"]))
