@@ -40,7 +40,7 @@ def netboot_reboot(options, mode):
 
 	# dedicatedNetbootModifyById changes the mode of the next reboot
 	conn.service.dedicatedNetbootModifyById(options["session"], options["--plug"], mode, '', options["--email"])
- 
+
 	# dedicatedHardRebootDo initiates a hard reboot on the given node
 	conn.service.dedicatedHardRebootDo(options["session"],
 			options["--plug"], 'Fencing initiated by cluster', '', 'en')
@@ -81,7 +81,7 @@ def soap_login(options):
 
 def remove_tmp_dir(tmp_dir):
 	shutil.rmtree(tmp_dir)
-	
+
 def main():
 	device_opt = [ "login", "passwd", "port", "email" ]
 
@@ -134,7 +134,7 @@ Poweroff is simulated with a reboot into rescue-pro mode."
 		reboot_t.end.strftime('%Y-%m-%d %H:%M:%S'))
 	logging.debug("after_netboot_reboot: %s\n" %
 		after_netboot_reboot.strftime('%Y-%m-%d %H:%M:%S'))
-                
+
 	if reboot_t.start < after_netboot_reboot < reboot_t.end:
 		result = 0
 		logging.debug("Netboot reboot went OK.\n")

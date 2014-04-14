@@ -29,7 +29,7 @@ STATUS_SET_ON = 1
 
 def get_power_status(conn, options):
 	(_, status) = conn.get("%s.%s"% (STATUSES_OID, options["--plug"]))
-	return (status == str(STATUS_UP) and "on" or "off")
+	return status == str(STATUS_UP) and "on" or "off"
 
 def set_power_status(conn, options):
 	conn.set("%s.%s"%(CONTROL_OID, options["--plug"]),

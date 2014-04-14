@@ -26,14 +26,14 @@ def get_power_status(conn, options):
 	res = send_command(options, "vms/?search=name%3D" + options["--plug"])
 
 	result = RE_GET_ID.search(res)
-	if (result == None):
+	if result == None:
 		# Unable to obtain ID needed to access virtual machine
 		fail(EC_STATUS)
 
 	options["id"] = result.group(2)
 
 	result = RE_STATUS.search(res)
-	if (result == None):
+	if result == None:
 		# We were able to parse ID so output is correct
 		# in some cases it is possible that RHEV-M output does not
 		# contain <status> line. We can assume machine is OFF then
@@ -41,7 +41,7 @@ def get_power_status(conn, options):
 	else:
 		status = result.group(1)
 
-	if (status.lower() == "down"):
+	if status.lower() == "down":
 		return "off"
 	else:
 		return "on"
@@ -94,7 +94,7 @@ def send_command(opt, command, method = "GET"):
 	conn.setopt(pycurl.SSL_VERIFYPEER, 0)
 	conn.setopt(pycurl.SSL_VERIFYHOST, 0)
 
-	if (method == "POST"):
+	if method == "POST":
 		conn.setopt(pycurl.POSTFIELDS, "<action />")
 
 	conn.setopt(pycurl.WRITEFUNCTION, web_buffer.write)

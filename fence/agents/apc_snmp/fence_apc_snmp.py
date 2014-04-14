@@ -99,7 +99,7 @@ def apc_set_device(conn):
 	# First resolve type of APC
 	apc_type = conn.walk(OID_SYS_OBJECT_ID)
 
-	if (not ((len(apc_type)==1) and (agents_dir.has_key(apc_type[0][1])))):
+	if not ((len(apc_type)==1) and (agents_dir.has_key(apc_type[0][1]))):
 		apc_type = [[None, None]]
 
 	device = agents_dir[apc_type[0][1]]
@@ -109,41 +109,41 @@ def apc_set_device(conn):
 def apc_resolv_port_id(conn, options):
 	global port_id, switch_id
 
-	if (device == None):
+	if device == None:
 		apc_set_device(conn)
 
 	# Now we resolv port_id/switch_id
-	if ((options["--plug"].isdigit()) and ((not device.has_switches) or (options["--switch"].isdigit()))):
+	if (options["--plug"].isdigit()) and ((not device.has_switches) or (options["--switch"].isdigit())):
 		port_id = int(options["--plug"])
 
-		if (device.has_switches):
+		if device.has_switches:
 			switch_id = int(options["--switch"])
 	else:
 		table = conn.walk(device.outlet_table_oid, 30)
 
 		for x in table:
-			if (x[1].strip('"') == options["--plug"]):
+			if x[1].strip('"') == options["--plug"]:
 				t = x[0].split('.')
-				if (device.has_switches):
+				if device.has_switches:
 					port_id = int(t[len(t)-1])
 					switch_id = int(t[len(t)-3])
 				else:
 					port_id = int(t[len(t)-1])
 
-	if (port_id == None):
+	if port_id == None:
 		fail_usage("Can't find port with name %s!"%(options["--plug"]))
 
 def get_power_status(conn, options):
-	if (port_id == None):
+	if port_id == None:
 		apc_resolv_port_id(conn, options)
 
 	oid = ((device.has_switches) and device.status_oid%(switch_id, port_id) or device.status_oid%(port_id))
 
 	(oid, status) = conn.get(oid)
-	return (status==str(device.state_on) and "on" or "off")
+	return status == str(device.state_on) and "on" or "off"
 
 def set_power_status(conn, options):
-	if (port_id == None):
+	if port_id == None:
 		apc_resolv_port_id(conn, options)
 
 	oid = ((device.has_switches) and device.control_oid%(switch_id, port_id) or device.control_oid%(port_id))
@@ -154,7 +154,7 @@ def set_power_status(conn, options):
 def get_outlets_status(conn, options):
 	result = {}
 
-	if (device == None):
+	if device == None:
 		apc_set_device(conn)
 
 	res_ports = conn.walk(device.outlet_table_oid, 30)
@@ -183,13 +183,13 @@ def main():
 	options = check_input(device_opt, process_input(device_opt))
 
         ## Support for -n [switch]:[plug] notation that was used before
-	if ((options.has_key("--plug")) and (-1 != options["--plug"].find(":"))):
+	if (options.has_key("--plug")) and (-1 != options["--plug"].find(":")):
 		(switch, plug) = options["--plug"].split(":", 1)
-		if ((switch.isdigit()) and (plug.isdigit())):
+		if switch.isdigit() and plug.isdigit():
 			options["--switch"] = switch
 			options["--plug"] = plug
 
-	if (not (options.has_key("--switch"))):
+	if not options.has_key("--switch"):
 		options["--switch"] = "1"
 
 	docs = { }

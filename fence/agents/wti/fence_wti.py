@@ -67,9 +67,9 @@ def get_plug_status(conn, options):
 				## We already believe that first column contains plug number
 				if len(plug_line[0]) != 0:
 					outlets[plug_line[0]] = (plug_line[name_index], plug_line[status_index])
-		elif (plug_section == 1):
+		elif plug_section == 1:
 			plug_section = 2
-		elif (line.upper().startswith("PLUG")):
+		elif line.upper().startswith("PLUG"):
 			plug_section = 1
 			plug_header = [x.strip().lower() for x in line.split("|")]
 			plug_index = plug_header.index("plug")
@@ -99,7 +99,7 @@ def get_plug_group_status(conn, options):
 	lines = listing.splitlines()
 	while line_index < len(lines) and line_index >= 0:
 		line = lines[line_index]
-		if (line.find("|") >= 0 and line.lstrip().startswith("GROUP NAME") == False):
+		if line.find("|") >= 0 and line.lstrip().startswith("GROUP NAME") == False:
 			plug_line = [x.strip().lower() for x in line.split("|")]
 			if ["list", "monitor"].count(options["--action"]) == 0 and \
 					options["--plug"].lower() == plug_line[name_index]:
@@ -137,7 +137,7 @@ def get_plug_group_status(conn, options):
 					outlets[group_name] = (group_name, get_plug_group_status_from_list(plug_status))
 				line_index += 1
 
-		elif (line.upper().lstrip().startswith("GROUP NAME")):
+		elif line.upper().lstrip().startswith("GROUP NAME"):
 			plug_header = [x.strip().lower() for x in line.split("|")]
 			name_index = plug_header.index("group name")
 			plug_index = plug_header.index("plug")

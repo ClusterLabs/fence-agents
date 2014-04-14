@@ -69,7 +69,7 @@ def get_outlets_fail(conn, options):
 	if options.has_key("--action") and options["--action"] == "list":
 		result["fake_port_1"] = [plug_status, "fake"]
 		result["fake_port_2"] = [plug_status, "fake"]
-	elif (options.has_key("--plug") == 0):
+	elif options.has_key("--plug") == 0:
 		fail_usage("Failed: You have to enter existing machine!")
 	else:
 		port = options["--plug"]

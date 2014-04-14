@@ -39,9 +39,9 @@ def get_power_status(conn, options):
 	for line in conn.before.splitlines():
 		# populate the relevant fields based on regex
 		partition = re.search(RE_STATUS_LINE, line)
-		if( partition != None):
+		if partition != None:
 			# find the blade number defined in args
-			if( partition.group(1) == options["--plug"] ):
+			if partition.group(1) == options["--plug"]:
 				result = partition.group(2).lower()
 	# We must make sure we go back to the main menu as the
 	# status is checked before any fencing operations are
@@ -97,7 +97,7 @@ def get_blades_list(conn, options):
 	# "1 On           Normal        Off      Basic Synchronized"
 	for line in conn.before.splitlines():
 		partition = re.search(RE_STATUS_LINE, line)
-		if( partition != None):
+		if partition != None:
 			outlets[partition.group(1)] = (partition.group(2), "")
 	conn.sendline("Q")	# Quit back to system command mode
 	conn.log_expect(options, "SVP>", int(options["--shell-timeout"]))

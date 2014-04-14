@@ -28,12 +28,12 @@ def get_power_status(conn, options):
 			options["--plug"] + "/power\"/>", int(options["--shell-timeout"]))
 
 	result = RE_STATUS.search(res)
-	if (result == None):
+	if result == None:
 		fail(EC_STATUS)
 	else:
 		status = result.group(1)
 
-	if (status == "up"):
+	if status == "up":
 		return "on"
 	else:
 		return "off"
@@ -137,7 +137,7 @@ used with Cisco UCS to fence machines."
 		res = send_command(options, "<aaaLogin inName=\"" + options["--username"] +
 				"\" inPassword=\"" + options["--password"] + "\" />", int(options["--login-timeout"]))
 		result = RE_COOKIE.search(res)
-		if (result == None):
+		if result == None:
 			## Cookie is absenting in response
 			fail(EC_LOGIN_DENIED)
 	except:

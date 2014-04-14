@@ -42,11 +42,11 @@ class FencingSnmp:
 			res = True
 
 			for item in e:
-				if ((item[0]=='!') and (self.options.has_key("--"+item[1:]))):
+				if item[0] == '!' and self.options.has_key("--" + item[1:]):
 					res = False
 					break
 
-				if ((item[0]!='!') and (not self.options.has_key("--"+item[0:]))):
+				if item[0] != '!' and not self.options.has_key("--" + item[0:]):
 					res = False
 					break
 
@@ -62,7 +62,7 @@ class FencingSnmp:
 		mapping = (('snmp-version', 'v'),('community', 'c'))
 
 		for item in mapping:
-			if (self.options.has_key("--" + item[0])):
+			if self.options.has_key("--" + item[0]):
 				cmd += " -%s '%s'"% (item[1], self.quote_for_run(self.options["--" + item[0]]))
 
 		# Some options make sense only for v3 (and for v1/2c can cause "problems")
@@ -71,15 +71,15 @@ class FencingSnmp:
 			mapping_v3 = (('snmp-auth-prot','a'), ('snmp-sec-level','l'), ('snmp-priv-prot','x'), \
 				('snmp-priv-passwd','X'),('password','A'),('username','u'))
 			for item in mapping_v3:
-				if (self.options.has_key("--"+item[0])):
+				if self.options.has_key("--"+item[0]):
 					cmd += " -%s '%s'"% (item[1], self.quote_for_run(self.options["--" + item[0]]))
 
 		force_ipvx = ""
 
-		if (self.options.has_key("--inet6-only")):
+		if self.options.has_key("--inet6-only"):
 			force_ipvx = "udp6:"
 
-		if (self.options.has_key("--inet4-only")):
+		if self.options.has_key("--inet4-only"):
 			force_ipvx = "udp:"
 
 		cmd += " '%s%s%s'"% (force_ipvx, self.quote_for_run(self.options["--ip"]),
@@ -95,7 +95,7 @@ class FencingSnmp:
 					int(self.options["--login-timeout"]) +
 					additional_timemout, True)
 
-			if (res_code==None):
+			if res_code == None:
 				fail(EC_TIMED_OUT)
 
 			self.log_command(res_output)
@@ -120,7 +120,7 @@ class FencingSnmp:
 		type_of_value = ''
 
 		for item in mapping:
-			if (isinstance(value, item[0])):
+			if isinstance(value, item[0]):
 				type_of_value = item[1]
 				break
 

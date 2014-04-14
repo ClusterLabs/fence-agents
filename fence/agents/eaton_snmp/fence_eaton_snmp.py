@@ -76,7 +76,7 @@ def eaton_set_device(conn):
 	# First resolve type of Eaton
 	eaton_type = conn.walk(OID_SYS_OBJECT_ID)
 
-	if (not ((len(eaton_type)==1) and (agents_dir.has_key(eaton_type[0][1])))):
+	if not ((len(eaton_type)==1) and (agents_dir.has_key(eaton_type[0][1]))):
 		eaton_type = [[None, None]]
 
 	device = agents_dir[eaton_type[0][1]]
@@ -86,48 +86,48 @@ def eaton_set_device(conn):
 def eaton_resolv_port_id(conn, options):
 	global port_id, switch_id
 
-	if (device==None):
+	if device == None:
 		eaton_set_device(conn)
 
 	# Restore the increment, that was removed in main for ePDU Managed
-	if (device.ident_str == "Eaton Switched ePDU"):
+	if device.ident_str == "Eaton Switched ePDU":
 		options["--plug"] = str(int(options["--plug"]) + 1)
 
 	# Now we resolv port_id/switch_id
-	if ((options["--plug"].isdigit()) and ((not device.has_switches) or (options["--switch"].isdigit()))):
+	if options["--plug"].isdigit() and ((not device.has_switches) or (options["--switch"].isdigit())):
 		port_id = int(options["--plug"])
 
-		if (device.has_switches):
+		if device.has_switches:
 			switch_id = int(options["--switch"])
 	else:
 		table = conn.walk(device.outlet_table_oid, 30)
 
 		for x in table:
-			if (x[1].strip('"')==options["--plug"]):
+			if x[1].strip('"') == options["--plug"]:
 				t = x[0].split('.')
-				if (device.has_switches):
+				if device.has_switches:
 					port_id = int(t[len(t)-1])
 					switch_id = int(t[len(t)-3])
 				else:
-					if (device.ident_str == "Eaton Switched ePDU"):
+					if device.ident_str == "Eaton Switched ePDU":
 						port_id = int(t[len(t)-3])
 					else:
 						port_id = int(t[len(t)-1])
 
-	if (port_id==None):
+	if port_id == None:
 		# Restore index offset, to provide a valid error output on Managed ePDU
-		if (device.ident_str != "Eaton Switched ePDU"):
+		if device.ident_str != "Eaton Switched ePDU":
 			options["--plug"] = str(int(options["--plug"]) + 1)
 		fail_usage("Can't find port with name %s!"%(options["--plug"]))
 
 def get_power_status(conn, options):
 	global port_id, after_set
 
-	if (port_id==None):
+	if port_id == None:
 		eaton_resolv_port_id(conn, options)
 
 	# Ajust OID for Switched ePDU when the get is after a set
-	if ((after_set == True) and (device.ident_str == "Eaton Switched ePDU")):
+	if after_set and device.ident_str == "Eaton Switched ePDU":
 		port_id -= 1
 		after_set = False
 
@@ -135,9 +135,9 @@ def get_power_status(conn, options):
 
 	try:
 		(oid, status)=conn.get(oid)
-		if (status==str(device.state_on)):
+		if status == str(device.state_on):
 			return "on"
-		elif (status==str(device.state_off)):
+		elif status == str(device.state_off):
 			return "off"
 		else:
 			return None
@@ -149,11 +149,11 @@ def set_power_status(conn, options):
 
 	after_set = True
 
-	if (port_id==None):
+	if port_id == None:
 		eaton_resolv_port_id(conn, options)
 
 	# Controls start at #2 on Switched ePDU, since #1 is the global command
-	if (device.ident_str == "Eaton Switched ePDU"):
+	if device.ident_str == "Eaton Switched ePDU":
 		port_id = int(port_id)+1
 
 	oid = ((device.has_switches) and device.control_oid%(switch_id, port_id) or device.control_oid%(port_id))
@@ -165,7 +165,7 @@ def get_outlets_status(conn, options):
 	outletCount = 0
 	result = {}
 
-	if (device==None):
+	if device == None:
 		eaton_set_device(conn)
 
 	res_ports = conn.walk(device.outlet_table_oid, 30)
@@ -177,7 +177,7 @@ def get_outlets_status(conn, options):
 
 		# Plug indexing start from zero, so we substract '1' from the
 		# user's given plug number
-		if (device.ident_str == "Eaton Managed ePDU"):
+		if device.ident_str == "Eaton Managed ePDU":
 			port_num = str(int(((device.has_switches) and
 					"%s:%s"%(t[len(t)-3], t[len(t)-1]) or "%s"%(t[len(t)-1]))) + 1)
 
@@ -193,7 +193,7 @@ def get_outlets_status(conn, options):
 			port_num = str(outletCount)
 			port_name = str(outletCount)
 			port_status = ""
-			if (status != '0'):
+			if status != '0':
 				result[port_num] = (port_name, port_status)
 
 	return result
@@ -214,7 +214,7 @@ def main():
 	# Plug indexing start from zero on ePDU Managed, so we substract '1' from
 	# the user's given plug number.
 	# For Switched ePDU, we will add this back again later.
-	if ((options.has_key("--plug")) and (options["--plug"].isdigit())):
+	if options.has_key("--plug") and options["--plug"].isdigit():
 		options["--plug"] = str(int(options["--plug"]) - 1)
 
 	docs = { }

@@ -46,14 +46,14 @@ def get_power_status(conn, options):
 	for line in conn.before.splitlines():
 		domain = re.search(r"^(\S+)\s+(\S+)\s+.*$", line)
 
-		if (domain!=None):
-			if ((fa_status==0) and (domain.group(1)=="NAME") and (domain.group(2)=="STATE")):
+		if domain != None:
+			if fa_status == 0 and domain.group(1) == "NAME" and domain.group(2) == "STATE":
 				fa_status = 1
-			elif (fa_status==1):
+			elif fa_status == 1:
 				result[domain.group(1)] = ("", (domain.group(2).lower()=="bound" and "off" or "on"))
 
-	if (not (options["--action"] in ['monitor','list'])):
-		if (not (options["--plug"] in result)):
+	if not options["--action"] in ['monitor','list']:
+		if not options["--plug"] in result:
 			fail_usage("Failed: You have to enter existing logical domain!")
 		else:
 			return result[options["--plug"]][1]

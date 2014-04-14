@@ -18,9 +18,9 @@ def get_power_status(_, options):
 	match = re.search('Powerstate:[\\s]*(..)', str(output))
 	status = match.group(1) if match else None
 
-	if (status == None):
+	if status == None:
 		return "fail"
-	elif (status == "S0"): # SO = on; S3 = sleep; S5 = off
+	elif status == "S0": # SO = on; S3 = sleep; S5 = off
 		return "on"
 	else:
 		return "off"

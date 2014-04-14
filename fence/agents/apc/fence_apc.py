@@ -37,21 +37,21 @@ def get_power_status(conn, options):
 	admin = 0
 	switch = 0
 
-	if (None != re.compile('.* MasterSwitch plus.*', re.IGNORECASE | re.S).match(conn.before)):
+	if None != re.compile('.* MasterSwitch plus.*', re.IGNORECASE | re.S).match(conn.before):
 		switch = 1
-		if (None != re.compile('.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before)):
-			if (0 == options.has_key("--switch")):
+		if None != re.compile('.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before):
+			if 0 == options.has_key("--switch"):
 				fail_usage("Failed: You have to enter physical switch number")
 		else:
-			if (0 == options.has_key("--switch")):
+			if 0 == options.has_key("--switch"):
 				options["--switch"] = "1"
 
-	if (None == re.compile('.*Outlet Management.*', re.IGNORECASE | re.S).match(conn.before)):
+	if None == re.compile('.*Outlet Management.*', re.IGNORECASE | re.S).match(conn.before):
 		version = 2
 	else:
 		version = 3
 
-	if (None == re.compile('.*Outlet Control/Configuration.*', re.IGNORECASE | re.S).match(conn.before)):
+	if None == re.compile('.*Outlet Control/Configuration.*', re.IGNORECASE | re.S).match(conn.before):
 		admin = 0
 	else:
 		admin = 1
@@ -76,7 +76,7 @@ def get_power_status(conn, options):
 		show_re = re.compile(r'(^|\x0D)\s*(\d+)- (.*?)\s+(ON|OFF)\s*')
 		for line in lines:
 			res = show_re.search(line)
-			if (res != None):
+			if res != None:
 				outlets[res.group(2)] = (res.group(3), res.group(4))
 		conn.send_eol("")
 		if exp_result != 0:
@@ -108,26 +108,26 @@ def set_power_status(conn, options):
 	admin3 = 0
 	switch = 0
 
-	if (None != re.compile('.* MasterSwitch plus.*', re.IGNORECASE | re.S).match(conn.before)):
+	if None != re.compile('.* MasterSwitch plus.*', re.IGNORECASE | re.S).match(conn.before):
 		switch = 1
 		## MasterSwitch has different schema for on/off actions
 		action = {
 			'on' : "1",
 			'off': "3"
 		}[options["--action"]]
-		if (None != re.compile('.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before)):
-			if (0 == options.has_key("--switch")):
+		if None != re.compile('.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before):
+			if 0 == options.has_key("--switch"):
 				fail_usage("Failed: You have to enter physical switch number")
 		else:
-			if (0 == options.has_key("--switch")):
+			if 0 == options.has_key("--switch"):
 				options["--switch"] = 1
 
-	if (None == re.compile('.*Outlet Management.*', re.IGNORECASE | re.S).match(conn.before)):
+	if None == re.compile('.*Outlet Management.*', re.IGNORECASE | re.S).match(conn.before):
 		version = 2
 	else:
 		version = 3
 
-	if (None == re.compile('.*Outlet Control/Configuration.*', re.IGNORECASE | re.S).match(conn.before)):
+	if None == re.compile('.*Outlet Control/Configuration.*', re.IGNORECASE | re.S).match(conn.before):
 		admin2 = 0
 	else:
 		admin2 = 1
@@ -141,7 +141,7 @@ def set_power_status(conn, options):
 		else:
 			conn.send_eol("2")
 			conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
-			if (None == re.compile('.*2- Outlet Restriction.*', re.IGNORECASE | re.S).match(conn.before)):
+			if None == re.compile('.*2- Outlet Restriction.*', re.IGNORECASE | re.S).match(conn.before):
 				admin3 = 0
 			else:
 				admin3 = 1
@@ -189,7 +189,7 @@ def get_power_status5(conn, options):
 
 	for line in lines:
 		res = show_re.search(line)
-		if (res != None):
+		if res != None:
 			outlets[res.group(1)] = (res.group(2), res.group(3))
 
 	if ["list", "monitor"].count(options["--action"]) == 1:

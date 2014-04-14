@@ -42,17 +42,17 @@ port_num = None
 def port2index(conn, port):
 	res = None
 
-	if (port.isdigit()):
+	if port.isdigit():
 		res = int(port)
 	else:
 		ports = conn.walk(PORTS_OID, 30)
 
 		for x in ports:
-			if (x[1].strip('"')==port):
+			if x[1].strip('"') == port:
 				res = int(x[0].split('.')[-1])
 				break
 
-	if (res==None):
+	if res == None:
 		fail_usage("Can't find port with name %s!"%(port))
 
 	return res
@@ -60,16 +60,16 @@ def port2index(conn, port):
 def get_power_status(conn, options):
 	global port_num
 
-	if (port_num==None):
+	if port_num == None:
 		port_num = port2index(conn, options["--plug"])
 
 	(_, status) = conn.get("%s.%d"%(STATUSES_OID, port_num))
-	return (status==str(STATUS_UP) and "on" or "off")
+	return status == str(STATUS_UP) and "on" or "off"
 
 def set_power_status(conn, options):
 	global port_num
 
-	if (port_num==None):
+	if port_num == None:
 		port_num = port2index(conn, options["--plug"])
 
 	conn.set("%s.%d"%(STATUSES_OID, port_num), (options["--action"]=="on" and STATUS_UP or STATUS_DOWN))

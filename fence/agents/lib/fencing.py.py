@@ -495,7 +495,7 @@ def metadata(avail_opt, options, docs):
 			mixed = all_opt[option]["help"]
 			## split it between option and help text
 			res = re.compile(r"^(.*--\S+)\s+", re.IGNORECASE | re.S).search(mixed)
-			if (None != res):
+			if None != res:
 				mixed = res.group(1)
 			mixed = mixed.replace("<", "&lt;").replace(">", "&gt;")
 			print "\t\t<getopt mixed=\"" + mixed + "\" />"
@@ -596,7 +596,7 @@ def process_input(avail_opt):
 		name = ""
 		for line in sys.stdin.readlines():
 			line = line.strip()
-			if ((line.startswith("#")) or (len(line) == 0)):
+			if (line.startswith("#")) or (len(line) == 0):
 				continue
 
 			(name, value) = (line + "=").split("=", 1)
@@ -710,7 +710,7 @@ def check_input(device_opt, opt):
 	if device_opt.count("ipaddr") and 0 == options.has_key("--ip") and 0 == options.has_key("--managed"):
 		fail_usage("Failed: You have to enter fence address")
 
-	if (device_opt.count("no_password") == 0):
+	if device_opt.count("no_password") == 0:
 		if 0 == device_opt.count("identity_file"):
 			if 0 == (options.has_key("--password") or options.has_key("--password-script")):
 				fail_usage("Failed: You have to enter password or password script")
@@ -850,10 +850,10 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 
 		## Process options that manipulate fencing device
 		#####
-		if (options["--action"] == "list") and 0 == options["device_opt"].count("port"):
+		if options["--action"] == "list" and 0 == options["device_opt"].count("port"):
 			print "N/A"
 			return
-		elif (options["--action"] == "list" and get_outlet_list == None):
+		elif options["--action"] == "list" and get_outlet_list == None:
 			## @todo: exception?
 			## This is just temporal solution, we will remove default value
 			## None as soon as all existing agent will support this operation
@@ -959,13 +959,13 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 def fence_login(options, re_login_string = r"(login\s*: )|(Login Name:  )|(username: )|(User Name :)"):
 	force_ipvx = ""
 
-	if (options.has_key("--inet6-only")):
+	if options.has_key("--inet6-only"):
 		force_ipvx = "-6 "
 
-	if (options.has_key("--inet4-only")):
+	if options.has_key("--inet4-only"):
 		force_ipvx = "-4 "
 
-	if (options.has_key("eol") == False):
+	if not options.has_key("eol"):
 		options["eol"] = "\r\n"
 
 	if options.has_key("--command-prompt") and type(options["--command-prompt"]) is not list:
@@ -1057,11 +1057,11 @@ def fence_login(options, re_login_string = r"(login\s*: )|(Login Name:  )|(usern
 
 			## automatically change end of line separator
 			screen = conn.read_nonblocking(size=100, timeout=int(options["--shell-timeout"]))
-			if (re_login.search(screen) != None):
+			if re_login.search(screen) != None:
 				options["eol"] = "\n"
 				conn.send_eol(options["--username"])
 				result = conn.log_expect(options, re_pass, int(options["--login-timeout"]))
-			elif (re_pass.search(screen) == None):
+			elif re_pass.search(screen) != None:
 				conn.log_expect(options, re_pass, int(options["--shell-timeout"]))
 
 			try:
@@ -1074,7 +1074,7 @@ def fence_login(options, re_login_string = r"(login\s*: )|(Login Name:  )|(usern
 					conn.send_eol("")
 					screen = conn.read_nonblocking(size=100, timeout=int(options["--shell-timeout"]))
 					## after sending EOL the fence device can either show 'Login' or 'Password'
-					if (re_login.search(screen) != None):
+					if re_login.search(screen) != None:
 						conn.send_eol("")
 					conn.send_eol(options["--username"])
 					conn.log_expect(options, re_pass, int(options["--login-timeout"]))
@@ -1111,7 +1111,7 @@ def run_command(options, command, timeout = None, env = None):
 	thread = threading.Thread(target = process.wait)
 	thread.start()
 	thread.join(timeout)
-	if (thread.is_alive()):
+	if thread.is_alive():
 		process.kill()
 		fail(EC_TIMED_OUT)
 

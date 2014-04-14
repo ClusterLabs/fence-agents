@@ -72,24 +72,24 @@ def dsv_split(dsv_str):
 	tmp_str = ""
 
 	for x in dsv_str:
-		if (status==0):
-			if (x==delimiter_c):
+		if status == 0:
+			if x == delimiter_c:
 				res.append(tmp_str)
 				tmp_str = ""
-			elif (x==escape_c):
+			elif x == escape_c:
 				status = 1
 			else:
 				tmp_str += x
-		elif (status==1):
-			if (x==delimiter_c):
+		elif status == 1:
+			if x == delimiter_c:
 				tmp_str += delimiter_c
-			elif (x==escape_c):
+			elif x == escape_c:
 				tmp_str += escape_c
 			else:
 				tmp_str += escape_c+x
 			status = 0
 
-	if (tmp_str != ""):
+	if tmp_str != "":
 		res.append(tmp_str)
 
 	return res
@@ -111,28 +111,28 @@ def quote_for_run(text):
 def vmware_prepare_command(options, add_login_params, additional_params):
 	res = options["--exec"]
 
-	if (add_login_params):
-		if (vmware_internal_type==VMWARE_TYPE_ESX):
+	if add_login_params:
+		if vmware_internal_type==VMWARE_TYPE_ESX:
 			res += " --server '%s' --username '%s' --password '%s' "% (quote_for_run(options["--ip"]),
 										quote_for_run(options["--username"]),
 										quote_for_run(options["--password"]))
-		elif (vmware_internal_type==VMWARE_TYPE_SERVER2):
+		elif vmware_internal_type==VMWARE_TYPE_SERVER2:
 			res += " -h 'https://%s/sdk' -u '%s' -p '%s' -T server "% (quote_for_run(options["--ip"]),
 										quote_for_run(options["--username"]),
 										quote_for_run(options["--password"]))
-		elif (vmware_internal_type==VMWARE_TYPE_SERVER1):
+		elif vmware_internal_type==VMWARE_TYPE_SERVER1:
 			host_name_array = options["--ip"].split(':')
 
 			res += " -h '%s' -u '%s' -p '%s' -T server1 "% (quote_for_run(host_name_array[0]),
 								     quote_for_run(options["--username"]),
 								     quote_for_run(options["--password"]))
-			if (len(host_name_array)>1):
+			if len(host_name_array) > 1:
 				res += "-P '%s' "% (quote_for_run(host_name_array[1]))
 
-	if ((options.has_key("--vmware-datacenter")) and (vmware_internal_type==VMWARE_TYPE_ESX)):
+	if options.has_key("--vmware-datacenter") and vmware_internal_type == VMWARE_TYPE_ESX:
 		res += "--datacenter '%s' "% (quote_for_run(options["--vmware-datacenter"]))
 
-	if (additional_params != ""):
+	if additional_params != "":
 		res += additional_params
 
 	return res
@@ -153,9 +153,9 @@ def vmware_run_command(options, add_login_params, additional_params, additional_
 		(res_output, res_code) = pexpect.run(command,
 				int(options["--shell-timeout"]) + int(options["--login-timeout"]) + additional_timeout, True)
 
-		if (res_code==None):
+		if res_code == None:
 			fail(EC_TIMED_OUT)
-		if ((res_code!=0) and (add_login_params)):
+		if res_code != 0 and add_login_params:
 			vmware_log(options, res_output)
 			fail_usage("%s returned %s"% (options["--exec"], res_output))
 		else:
@@ -171,7 +171,7 @@ def vmware_run_command(options, add_login_params, additional_params, additional_
 def vmware_get_outlets_vi(options, add_vm_name):
 	outlets = {}
 
-	if (add_vm_name):
+	if add_vm_name:
 		all_machines = vmware_run_command(options, True,
 				("--operation status --vmname '%s'"% (quote_for_run(options["--plug"]))), 0)
 	else:
@@ -181,11 +181,11 @@ def vmware_get_outlets_vi(options, add_vm_name):
 
 	for machine in all_machines_array:
 		machine_array = dsv_split(machine)
-		if (len(machine_array) == 4):
-			if (machine_array[0] in outlets):
+		if len(machine_array) == 4:
+			if machine_array[0] in outlets:
 				fail_usage("Failed. More machines with same name %s found!"%(machine_array[0]))
 
-			if (vmware_disconnected_hack):
+			if vmware_disconnected_hack:
 				outlets[machine_array[0]] = ("", (
 						((machine_array[2].lower() in ["poweredon"]) and
 						 (machine_array[3].lower()=="connected"))
@@ -201,14 +201,14 @@ def vmware_get_outlets_vix(options):
 	running_machines = vmware_run_command(options, True, "list", 0)
 	running_machines_array = running_machines.splitlines()[1:]
 
-	if (vmware_internal_type==VMWARE_TYPE_SERVER2):
+	if vmware_internal_type == VMWARE_TYPE_SERVER2:
 		all_machines = vmware_run_command(options, True, "listRegisteredVM", 0)
 		all_machines_array = all_machines.splitlines()[1:]
-	elif (vmware_internal_type==VMWARE_TYPE_SERVER1):
+	elif vmware_internal_type == VMWARE_TYPE_SERVER1:
 		all_machines_array = running_machines_array
 
 	for machine in all_machines_array:
-		if (machine!=""):
+		if machine != "":
 			outlets[machine] = ("", ((machine in running_machines_array) and "on" or "off"))
 
 	return outlets
@@ -216,35 +216,35 @@ def vmware_get_outlets_vix(options):
 def get_outlets_status(conn, options):
 	del conn
 
-	if (vmware_internal_type==VMWARE_TYPE_ESX):
+	if vmware_internal_type == VMWARE_TYPE_ESX:
 		return vmware_get_outlets_vi(options, False)
-	if ((vmware_internal_type==VMWARE_TYPE_SERVER1) or (vmware_internal_type==VMWARE_TYPE_SERVER2)):
+	if vmware_internal_type == VMWARE_TYPE_SERVER1 or vmware_internal_type == VMWARE_TYPE_SERVER2:
 		return vmware_get_outlets_vix(options)
 
 def get_power_status(conn, options):
-	if (vmware_internal_type==VMWARE_TYPE_ESX):
+	if vmware_internal_type == VMWARE_TYPE_ESX:
 		outlets = vmware_get_outlets_vi(options, True)
 	else:
 		outlets = get_outlets_status(conn, options)
 
-	if ((vmware_internal_type==VMWARE_TYPE_SERVER2) or (vmware_internal_type==VMWARE_TYPE_ESX)):
-		if (not (options["--plug"] in outlets)):
+	if vmware_internal_type == VMWARE_TYPE_SERVER2 or vmware_internal_type == VMWARE_TYPE_ESX:
+		if not options["--plug"] in outlets:
 			fail_usage("Failed: You have to enter existing name of virtual machine!")
 		else:
 			return outlets[options["--plug"]][1]
-	elif (vmware_internal_type==VMWARE_TYPE_SERVER1):
-		return ((options["--plug"] in outlets) and "on" or "off")
+	elif vmware_internal_type == VMWARE_TYPE_SERVER1:
+		return (options["--plug"] in outlets) and "on" or "off"
 
 def set_power_status(conn, options):
 	del conn
 
-	if (vmware_internal_type==VMWARE_TYPE_ESX):
+	if vmware_internal_type == VMWARE_TYPE_ESX:
 		additional_params = "--operation %s --vmname '%s'" % \
 				((options["--action"]=="on" and "on" or "off"), quote_for_run(options["--plug"]))
-	elif ((vmware_internal_type==VMWARE_TYPE_SERVER1) or (vmware_internal_type==VMWARE_TYPE_SERVER2)):
+	elif vmware_internal_type == VMWARE_TYPE_SERVER1 or vmware_internal_type == VMWARE_TYPE_SERVER2:
 		additional_params = "%s '%s'" % \
 				((options["--action"]=="on" and "start" or "stop"), quote_for_run(options["--plug"]))
-		if (options["--action"]=="off"):
+		if options["--action"] == "off":
 			additional_params += " hard"
 
 	vmware_run_command(options, True, additional_params, int(options["--power-timeout"]))
@@ -253,13 +253,13 @@ def set_power_status(conn, options):
 def vmware_is_supported_vmrun_version(options):
 	vmware_help_str = vmware_run_command(options, False, "", 0)
 	version_re = re.search(r"vmrun version (\d\.(\d[\.]*)*)", vmware_help_str.lower())
-	if (version_re==None):
+	if version_re == None:
 		return False   # Looks like this "vmrun" is not real vmrun
 
 	version_array = version_re.group(1).split(".")
 
 	try:
-		if (int(version_array[0]) < VMRUN_MINIMUM_REQUIRED_VERSION):
+		if int(version_array[0]) < VMRUN_MINIMUM_REQUIRED_VERSION:
 			return False
 	except Exception:
 		return False
@@ -273,17 +273,17 @@ def vmware_check_vmware_type(options):
 
 	options["--vmware_type"] = options["--vmware_type"].lower()
 
-	if (options["--vmware_type"]=="esx"):
+	if options["--vmware_type"] == "esx":
 		vmware_internal_type = VMWARE_TYPE_ESX
-		if (not options.has_key("--exec")):
+		if not options.has_key("--exec"):
 			options["--exec"] = VMHELPER_COMMAND
-	elif (options["--vmware_type"]=="server2"):
+	elif options["--vmware_type"] == "server2":
 		vmware_internal_type = VMWARE_TYPE_SERVER2
-		if (not options.has_key("--exec")):
+		if not options.has_key("--exec"):
 			options["--exec"] = VMRUN_COMMAND
-	elif (options["--vmware_type"]=="server1"):
+	elif options["--vmware_type"] == "server1":
 		vmware_internal_type = VMWARE_TYPE_SERVER1
-		if (not options.has_key("--exec")):
+		if not options.has_key("--exec"):
 			options["--exec"] = VMRUN_COMMAND
 	else:
 		fail_usage("vmware_type can be esx,server2 or server1!")
@@ -330,8 +330,8 @@ This agent supports only vmrun from version 2.0.0 (VIX API 1.6.0)."
 	vmware_check_vmware_type(options)
 
 	# Test user vmrun command version
-	if ((vmware_internal_type==VMWARE_TYPE_SERVER1) or (vmware_internal_type==VMWARE_TYPE_SERVER2)):
-		if (not (vmware_is_supported_vmrun_version(options))):
+	if vmware_internal_type == VMWARE_TYPE_SERVER1 or vmware_internal_type == VMWARE_TYPE_SERVER2:
+		if not vmware_is_supported_vmrun_version(options):
 			fail_usage("Unsupported version of vmrun command! You must use at least version %d!" %
 					(VMRUN_MINIMUM_REQUIRED_VERSION))
 

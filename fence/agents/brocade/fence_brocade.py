@@ -22,7 +22,7 @@ def get_power_status(conn, options):
 
 	for line in lines:
 		res = show_re.search(line)
-		if (res != None):
+		if res != None:
 			# We queried if it is disabled, so we have to negate answer
 			if res.group(1) == "ON":
 				return "off"

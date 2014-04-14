@@ -58,7 +58,7 @@ def get_power_fn(session, options):
 		record = session.xenapi.VM.get_record(vm)
 		# Check that we are not trying to manipulate a template or a control
 		# domain as they show up as VM's with specific properties.
-		if not(record["is_a_template"]) and not(record["is_control_domain"]):
+		if not record["is_a_template"] and not record["is_control_domain"]:
 			status = record["power_state"]
 			if verbose:
 				print "UUID:", record["uuid"], "NAME:", record["name_label"], "POWER STATUS:", record["power_state"]
@@ -70,7 +70,7 @@ def get_power_fn(session, options):
 			# We want to make sure that we only return the status "off" if the machine is actually halted as the status
 			# is checked before a fencing action. Only when the machine is Halted is it not consuming resources which
 			# may include whatever you are trying to protect with this fencing action.
-			return (status=="Halted" and "off" or "on")
+			return status == "Halted" and "off" or "on"
 	except Exception, exn:
 		print str(exn)
 
@@ -87,14 +87,14 @@ def set_power_fn(session, options):
 		record = session.xenapi.VM.get_record(vm)
 		# Check that we are not trying to manipulate a template or a control
 		# domain as they show up as VM's with specific properties.
-		if not(record["is_a_template"]) and not(record["is_control_domain"]):
-			if( action == "on" ):
+		if not record["is_a_template"] and not record["is_control_domain"]:
+			if action == "on":
 				# Start the VM
 				session.xenapi.VM.start(vm, False, True)
-			elif( action == "off" ):
+			elif action == "off":
 				# Force shutdown the VM
 				session.xenapi.VM.hard_shutdown(vm)
-			elif( action == "reboot" ):
+			elif action == "reboot":
 				# Force reboot the VM
 				session.xenapi.VM.hard_reboot(vm)
 	except Exception, exn:
@@ -116,7 +116,7 @@ def get_outlet_list(session, options):
 			record = session.xenapi.VM.get_record(vm)
 			# Check that we are not trying to manipulate a template or a control
 			# domain as they show up as VM's with specific properties.
-			if not(record["is_a_template"]) and not(record["is_control_domain"]):
+			if not record["is_a_template"] and not record["is_control_domain"]:
 				name = record["name_label"]
 				uuid = record["uuid"]
 				status = record["power_state"]

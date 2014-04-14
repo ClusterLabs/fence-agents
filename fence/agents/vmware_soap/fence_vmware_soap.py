@@ -107,7 +107,7 @@ def get_power_status(conn, options):
 	(machines, uuid, mappingToUUID) = process_results(raw_machines, {}, {}, {})
 
         # Probably need to loop over the ContinueRetreive if there are more results after 1 iteration.
-	while (hasattr(raw_machines, 'token') == True):
+	while hasattr(raw_machines, 'token'):
 		try:
 			raw_machines = conn.service.ContinueRetrievePropertiesEx(mo_PropertyCollector, raw_machines.token)
 		except Exception:
@@ -169,7 +169,7 @@ def set_power_status(conn, options):
 		else:
 			conn.service.PowerOffVM_Task(mo_machine)
 	except suds.WebFault, ex:
-		if ((str(ex).find("Permission to perform this operation was denied")) >= 0):
+		if (str(ex).find("Permission to perform this operation was denied")) >= 0:
 			fail(EC_INVALID_PRIVILEGES)
 		else:
 			if options["--action"] == "on":

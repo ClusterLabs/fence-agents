@@ -18,7 +18,7 @@ def get_power_status(conn, options):
 	conn.send("0")
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
-	return (status.lower().strip())
+	return status.lower().strip()
 
 def set_power_status(conn, options):
 	action = {

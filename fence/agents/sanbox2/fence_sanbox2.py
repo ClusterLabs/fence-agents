@@ -85,7 +85,7 @@ def get_list_devices(conn, options):
 
 		list_re = re.compile(r"^\s+(\d+?)\s+(Online|Offline)\s+", re.IGNORECASE)
 		for line in conn.before.splitlines():
-			if (list_re.search(line)):
+			if list_re.search(line):
 				status = {
 					'online' : "ON",
 					'offline' : "OFF"
@@ -130,7 +130,7 @@ because the connection will block any necessary fencing actions."
 	conn.send_eol("admin start")
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
-	if (re.search(r"\(admin\)", conn.before, re.MULTILINE) == None):
+	if re.search(r"\(admin\)", conn.before, re.MULTILINE) == None:
 		## Someone else is in admin section, we can't enable/disable
 		## ports so we will rather exit
 		logging.error("Failed: Unable to switch to admin section\n")

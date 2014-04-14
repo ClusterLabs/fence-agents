@@ -39,14 +39,14 @@ def cisco_port2oid(port):
 
 	nums = re.match(r'^fc(\d+)/(\d+)$', port)
 
-	if ((nums) and (len(nums.groups()))==2):
+	if nums and len(nums.groups()) == 2:
 		return "%s.%d.%d"% (PORT_ADMIN_STATUS_OID, int(nums.group(1))+21, int(nums.group(2))-1)
 	else:
 		fail_usage("Mangled port number: %s"%(port))
 
 def get_power_status(conn, options):
 	(_, status) = conn.get(PORT_OID)
-	return (status=="1" and "on" or "off")
+	return status == "1" and "on" or "off"
 
 def set_power_status(conn, options):
 	conn.set(PORT_OID, (options["--action"]=="on" and 1 or 2))
@@ -93,7 +93,7 @@ which can be used with any Cisco MDS 9000 series with SNMP enabled device."
 	docs["vendorurl"] = "http://www.cisco.com"
 	show_docs(options, docs)
 
-	if (not (options["--action"] in ["list","monitor"])):
+	if not options["--action"] in ["list","monitor"]:
 		PORT_OID = cisco_port2oid(options["--plug"])
 
 	# Operate the fencing device

@@ -27,14 +27,14 @@ def eps_run_command(options, params):
 
 		request_str = "/"+options["--page"]
 
-		if (params!=""):
+		if params != "":
 			request_str += "?"+params
 
 		logging.debug("GET %s\n" % request_str)
 		conn.putrequest('GET', request_str)
 
-		if (options.has_key("--username")):
-			if (not options.has_key("--password")):
+		if options.has_key("--username"):
+			if not options.has_key("--password"):
 				options["--password"] = "" # Default is empty password
 
 			# String for Authorization header
@@ -49,7 +49,7 @@ def eps_run_command(options, params):
 		logging.debug("%d %s\n"%(response.status, response.reason))
 
 		#Response != OK -> couldn't login
-		if (response.status!=200):
+		if response.status != 200:
 			fail(EC_LOGIN_DENIED)
 
 		result = response.read()
@@ -71,8 +71,8 @@ def get_power_status(conn, options):
 	for out_num, out_stat in status:
 		result[out_num] = ("",(out_stat=="1" and "on" or "off"))
 
-	if (not (options["--action"] in ['monitor','list'])):
-		if (not (options["--plug"] in result)):
+	if not options["--action"] in ['monitor','list']:
+		if not options["--plug"] in result:
 			fail_usage("Failed: You have to enter existing physical plug!")
 		else:
 			return result[options["--plug"]][1]

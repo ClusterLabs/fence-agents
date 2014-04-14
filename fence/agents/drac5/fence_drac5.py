@@ -73,7 +73,7 @@ def get_list_devices(conn, options):
 		list_re = re.compile(r"^([^\s]*?)\s+Present\s*(ON|OFF)\s*.*$")
 		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 		for line in conn.before.splitlines():
-			if (list_re.search(line)):
+			if list_re.search(line):
 				outlets[list_re.search(line).group(1)] = ("", list_re.search(line).group(2))
 	elif options["--drac-version"] == "DRAC MC":
 		conn.send_eol("getmodinfo")
@@ -81,7 +81,7 @@ def get_list_devices(conn, options):
 		list_re = re.compile(r"^\s*([^\s]*)\s*---->\s*(.*?)\s+Present\s*(ON|OFF)\s*.*$")
 		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 		for line in conn.before.splitlines():
-			if (list_re.search(line)):
+			if list_re.search(line):
 				outlets[list_re.search(line).group(2)] = ("", list_re.search(line).group(3))
 	elif options["--drac-version"] == "DRAC 5":
 		## DRAC 5 can be used only for one computer
