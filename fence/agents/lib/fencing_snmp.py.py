@@ -20,10 +20,6 @@ class FencingSnmp:
 	def __init__(self, options):
 		self.options = options
 
-	# Log message if user set verbose option
-	def log_command(self, message):
-		logging.debug("%s\n", message)
-
 	def quote_for_run(self, string):
 		return string.replace(r"'", "'\\''")
 
@@ -88,7 +84,7 @@ class FencingSnmp:
 
 	def run_command(self, command, additional_timemout=0):
 		try:
-			self.log_command(command)
+			logging.debug("%s\n", command)
 
 			(res_output, res_code) = pexpect.run(command,
 					int(self.options["--shell-timeout"]) +
@@ -98,7 +94,7 @@ class FencingSnmp:
 			if res_code == None:
 				fail(EC_TIMED_OUT)
 
-			self.log_command(res_output)
+			logging.debug("%s\n", res_output)
 
 			if (res_code!=0) or (re.search("^Error ", res_output, re.MULTILINE) != None):
 				fail_usage("Returned %d: %s"% (res_code, res_output))
