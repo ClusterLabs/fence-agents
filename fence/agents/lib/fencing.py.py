@@ -636,25 +636,20 @@ def check_input(device_opt, opt):
 		all_opt["action"]["default"] = "off"
 		all_opt["action"]["help"] = "-o, --action=[action]          Action: status, off (default) or on"
 
-	## Set default values
-	#####
-	for opt in device_opt:
-		if all_opt[opt].has_key("default"):
-			getopt_long  = "--" + all_opt[opt]["longopt"]
-			if 0 == options.has_key(getopt_long):
-				options[getopt_long] = all_opt[opt]["default"]
-
 	if device_opt.count("ipport"):
 		if options.has_key("--ipport"):
 			all_opt["ipport"]["help"] = "-u, --ipport=[port]            " + \
 					"TCP/UDP port to use (default " + options["--ipport"] +")"
+		elif all_opt.has_key("ipport") and all_opt["ipport"].has_key("default"):
+			all_opt["ipport"]["help"] = "-u, --ipport=[port]            " + \
+					"TCP/UDP port to use (default " + all_opt["ipport"]["default"] +")"
 		elif device_opt.count("snmp_version"):
 			all_opt["ipport"]["default"] = "161"
 			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 161)"
-		elif options.has_key("--ssh"):
+		elif options.has_key("--ssh") or (all_opt["secure"].has_key("default") and all_opt["secure"]["default"] == '1'):
 			all_opt["ipport"]["default"] = 22
 			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 22)"
-		elif options.has_key("--ssl"):
+		elif options.has_key("--ssl") or (all_opt["ssl"].has_key("default") and all_opt["ssl"]["default"] == '1'):
 			all_opt["ipport"]["default"] = 443
 			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 443)"
 		elif device_opt.count("web"):
@@ -670,8 +665,15 @@ def check_input(device_opt, opt):
 				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 23)"
 			else:
 				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use\n\
-                                        (default 23, 22 if --ssh option is used)"
+       	                                (default 23, 22 if --ssh option is used)"
 
+	## Set default values
+	#####
+	for opt in device_opt:
+		if all_opt[opt].has_key("default"):
+			getopt_long  = "--" + all_opt[opt]["longopt"]
+			if 0 == options.has_key(getopt_long):
+				options[getopt_long] = all_opt[opt]["default"]
 
 	## In special cases (show help, metadata or version) we don't need to check anything
 	#####
