@@ -77,7 +77,7 @@ def set_power_status(conn, options):
 # Convert array of format [[key1, value1], [key2, value2], ... [keyN, valueN]] to dict, where key is
 # in format a.b.c.d...z and returned dict has key only z
 def array_to_dict(ar):
-	return dict(map(lambda y:[y[0].split('.')[-1], y[1]], ar))
+	return dict([[x[0].split(".")[-1], x[1]] for x in ar])
 
 def get_outlets_status(conn, options):
 	result = {}

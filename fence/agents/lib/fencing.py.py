@@ -762,7 +762,7 @@ def check_input(device_opt, opt):
 	for opt in device_opt:
 		if all_opt[opt].has_key("choices"):
 			longopt = "--" + all_opt[opt]["longopt"]
-			possible_values_upper = map (lambda y : y.upper(), all_opt[opt]["choices"])
+			possible_values_upper = [y.upper() for y in all_opt[opt]["choices"]]
 			if options.has_key(longopt):
 				options[longopt] = options[longopt].upper()
 				if not options["--" + all_opt[opt]["longopt"]] in possible_values_upper:

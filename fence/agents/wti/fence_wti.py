@@ -212,7 +212,7 @@ is running because the connection will block any necessary fencing actions."
 			conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
 
 			re_login = re.compile("(login: )|(Login Name:  )|(username: )|(User Name :)", re.IGNORECASE)
-			re_prompt = re.compile("|".join(map (lambda x: "(" + x + ")", options["--command-prompt"])), re.IGNORECASE)
+			re_prompt = re.compile("|".join(["(" + x + ")" for x in options["--command-prompt"]]), re.IGNORECASE)
 
 			result = conn.log_expect(options, [ re_login, "Password: ", re_prompt ], int(options["--shell-timeout"]))
 			if result == 0:

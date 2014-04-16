@@ -25,7 +25,7 @@ class FencingSnmp:
 		logging.debug("%s\n" % message)
 
 	def quote_for_run(self, string):
-		return ''.join(map(lambda x:x==r"'" and "'\\''" or x, string))
+		return string.replace(r"'", "'\\''")
 
 	def complete_missed_params(self):
 		mapping = [[
@@ -134,4 +134,4 @@ class FencingSnmp:
 
 		output = self.run_command(cmd, additional_timemout).splitlines()
 
-		return map(lambda x:x.split(None, 1), filter(lambda y:len(y)>0 and y[0]=='.', output))
+		return [ x.split(None,1) for x in output if x.startswith(".") ]
