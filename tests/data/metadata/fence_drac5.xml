@@ -4,8 +4,7 @@
 <vendor-url>http://www.dell.com</vendor-url>
 <parameters>
 	<parameter name="ipport" unique="0" required="0">
-		<getopt mixed="-u, --ipport=[port]            TCP/UDP port to use
-                                        (default 23, 22 if --ssh" />
+		<getopt mixed="-u, --ipport=[port]" />
 		<content type="string" default="23"  />
 		<shortdesc lang="en">TCP/UDP port to use for connection with device</shortdesc>
 	</parameter>

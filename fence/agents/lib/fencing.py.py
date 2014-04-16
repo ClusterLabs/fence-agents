@@ -494,7 +494,7 @@ def metadata(avail_opt, options, docs):
 
 			mixed = all_opt[option]["help"]
 			## split it between option and help text
-			res = re.compile(r"^(.*--\S+)\s+", re.IGNORECASE | re.S).search(mixed)
+			res = re.compile(r"^(.*?--\S+)\s+", re.IGNORECASE | re.S).search(mixed)
 			if None != res:
 				mixed = res.group(1)
 			mixed = mixed.replace("<", "&lt;").replace(">", "&gt;")

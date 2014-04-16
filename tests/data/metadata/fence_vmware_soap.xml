@@ -6,8 +6,7 @@ Name of virtual machine (-n / port) has to be used in inventory path format (e.g
 <vendor-url>http://www.vmware.com</vendor-url>
 <parameters>
 	<parameter name="ipport" unique="0" required="0">
-		<getopt mixed="-u, --ipport=[port]            TCP/UDP port to use
-                                        (default 80, 443 if --ssl" />
+		<getopt mixed="-u, --ipport=[port]" />
 		<content type="string" default="80"  />
 		<shortdesc lang="en">TCP/UDP port to use for connection with device</shortdesc>
 	</parameter>
