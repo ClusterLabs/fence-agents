@@ -747,16 +747,6 @@ def check_input(device_opt, opt):
 	if options.has_key("--snmp-priv-passwd-script"):
 		options["--snmp-priv-passwd"] = os.popen(options["--snmp-priv-passwd-script"]).read().rstrip()
 
-	if options.has_key("--ipport") == False:
-		if options.has_key("--ssh"):
-			options["--ipport"] = 22
-		elif options.has_key("--ssl"):
-			options["--ipport"] = 443
-		elif device_opt.count("web"):
-			options["--ipport"] = 80
-		else:
-			options["--ipport"] = 23
-
 	if options.has_key("--plug") and len(options["--plug"].split(",")) > 1 and \
 			options.has_key("--method") and options["--method"] == "cycle":
 		fail_usage("Failed: Cannot use --method cycle for more than 1 plug")
