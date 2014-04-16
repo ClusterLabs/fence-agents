@@ -128,7 +128,7 @@ def main():
 	if options.has_key("--random_sleep_range"):
 		val = int(options["--random_sleep_range"])
 		ran = random.randint(1, val)
-		logging.info("Random sleep for %d seconds\n" % ran)
+		logging.info("Random sleep for %d seconds\n", ran)
 		time.sleep(ran)
 
 	if options["--type"] == "fail":

@@ -22,7 +22,7 @@ class FencingSnmp:
 
 	# Log message if user set verbose option
 	def log_command(self, message):
-		logging.debug("%s\n" % message)
+		logging.debug("%s\n", message)
 
 	def quote_for_run(self, string):
 		return string.replace(r"'", "'\\''")

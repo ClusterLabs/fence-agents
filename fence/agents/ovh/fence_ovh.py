@@ -126,13 +126,13 @@ Poweroff is simulated with a reboot into rescue-pro mode."
 	# Verify that action was completed sucesfully
 	reboot_t = reboot_time(options)
 
-	logging.debug("reboot_start_end.start: %s\n" %
+	logging.debug("reboot_start_end.start: %s\n",
 		reboot_t.start.strftime('%Y-%m-%d %H:%M:%S'))
-	logging.debug("before_netboot_reboot: %s\n" %
+	logging.debug("before_netboot_reboot: %s\n",
 		before_netboot_reboot.strftime('%Y-%m-%d %H:%M:%S'))
-	logging.debug("reboot_start_end.end: %s\n" %
+	logging.debug("reboot_start_end.end: %s\n",
 		reboot_t.end.strftime('%Y-%m-%d %H:%M:%S'))
-	logging.debug("after_netboot_reboot: %s\n" %
+	logging.debug("after_netboot_reboot: %s\n",
 		after_netboot_reboot.strftime('%Y-%m-%d %H:%M:%S'))
 
 	if reboot_t.start < after_netboot_reboot < reboot_t.end:

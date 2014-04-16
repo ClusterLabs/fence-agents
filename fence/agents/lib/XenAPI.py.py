@@ -73,7 +73,7 @@ class Failure(Exception):
 			return "Message database broken: %s.\nXen-API failure: %s" % \
 				   (exn, str(self.details))
 		except Exception, exn:
-			logging.error("%s\n" % str(exn))
+			logging.error("%s\n", str(exn))
 			return "Xen-API failure: %s" % str(self.details)
 
 	def _details_map(self):

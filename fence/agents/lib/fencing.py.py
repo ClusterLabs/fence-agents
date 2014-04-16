@@ -382,17 +382,17 @@ DEPENDENCY_OPT = {
 
 class fspawn(pexpect.spawn):
 	def __init__(self, options, command):
-		logging.info("Running command: %s" % command)
+		logging.info("Running command: %s", command)
 		pexpect.spawn.__init__(self, command)
 		self.opt = options
 
 	def log_expect(self, options, pattern, timeout):
 		result = self.expect(pattern, timeout)
-		logging.debug("Received: %s" % (self.before + self.after))
+		logging.debug("Received: %s", self.before + self.after)
 		return result
 
 	def send(self, message):
-		logging.debug("Sent: %s" % message)
+		logging.debug("Sent: %s", message)
 		return pexpect.spawn.send(self, message)
 
 	# send EOL according to what was detected in login process (telnet)
@@ -404,7 +404,7 @@ def atexit_handler():
 		sys.stdout.close()
 		os.close(1)
 	except IOError:
-		logging.error("%s failed to close standard output\n" % (sys.argv[0]))
+		logging.error("%s failed to close standard output\n", sys.argv[0])
 		syslog.syslog(syslog.LOG_ERR, "Failed to close standard output")
 		sys.exit(EC_GENERIC_ERROR)
 
@@ -418,7 +418,7 @@ def add_dependency_options(options):
 
 def fail_usage(message = ""):
 	if len(message) > 0:
-		logging.error("%s\n" % message)
+		logging.error("%s\n", message)
 	logging.error("Please use '-h' for usage\n")
 	sys.exit(EC_GENERIC_ERROR)
 
@@ -435,7 +435,7 @@ def fail(error_code):
 		EC_PASSWORD_MISSING : "Failed: You have to set login password",
 		EC_INVALID_PRIVILEGES : "Failed: The user does not have the correct privileges to do the requested action."
 	}[error_code] + "\n"
-	logging.error("%s\n" % message)
+	logging.error("%s\n", message)
 	syslog.syslog(syslog.LOG_ERR, message)
 	sys.exit(EC_GENERIC_ERROR)
 
@@ -603,8 +603,8 @@ def process_input(avail_opt):
 			value = value[:-1]
 
 			if avail_opt.count(name) == 0:
-				logging.warning("Parse error: Ignoring unknown option '%s'\n" % line)
-				syslog.syslog(syslog.LOG_WARNING, "Parse error: Ignoring unknown option '"+line)
+				logging.warning("Parse error: Ignoring unknown option '%s'\n", line)
+				syslog.syslog(syslog.LOG_WARNING, "Parse error: Ignoring unknown option '" + line)
 				continue
 
 			if all_opt[name]["getopt"].endswith(":"):
@@ -741,7 +741,7 @@ def check_input(device_opt, opt):
 			fh.setLevel(logging.DEBUG)
 			logging.getLogger().addHandler(fh)
 		except IOError:
-			logging.error("Unable to create file %s" % options["--debug-file"])
+			logging.error("Unable to create file %s", options["--debug-file"])
 			fail_usage("Failed: Unable to create file " + options["--debug-file"])
 
 	if options.has_key("--snmp-priv-passwd-script"):
@@ -932,7 +932,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 				except Exception, ex:
 					# an error occured during power ON phase in reboot
 					# fence action was completed succesfully even in that case
-					logging.error("%s\n", str(ex))
+					logging.error("%s", str(ex))
 					syslog.syslog(syslog.LOG_NOTICE, str(ex))
 
 			if power_on == False:
@@ -952,7 +952,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 	except pexpect.TIMEOUT:
 		fail(EC_TIMED_OUT)
 	except pycurl.error, ex:
-		logging.error("%s\n" % str(ex))
+		logging.error("%s\n", str(ex))
 		syslog.syslog(syslog.LOG_ERR, ex[1])
 		fail(EC_TIMED_OUT)
 
@@ -976,7 +976,7 @@ def fence_login(options, re_login_string = r"(login\s*: )|(Login Name:  )|(usern
 	## Do the delay of the fence device before logging in
 	## Delay is important for two-node clusters fencing but we do not need to delay 'status' operations
 	if options["--action"] in ["off", "reboot"]:
-		logging.info("Delay %s second(s) before logging in to the fence device" % options["--delay"])
+		logging.info("Delay %s second(s) before logging in to the fence device", options["--delay"])
 		time.sleep(int(options["--delay"]))
 
 	try:
@@ -993,7 +993,7 @@ def fence_login(options, re_login_string = r"(login\s*: )|(Login Name:  )|(usern
 			try:
 				conn = fspawn(options, command)
 			except pexpect.ExceptionPexpect, ex:
-				logging.error("%s\n" % str(ex))
+				logging.error("%s\n", str(ex))
 				syslog.syslog(syslog.LOG_ERR, str(ex))
 				sys.exit(EC_GENERIC_ERROR)
 		elif options.has_key("--ssh") and 0 == options.has_key("--identity-file"):
@@ -1103,7 +1103,7 @@ def run_command(options, command, timeout = None, env = None):
 	if timeout is not None:
 		timeout = float(timeout)
 
-	logging.info("Executing: %s\n" % command)
+	logging.info("Executing: %s\n", command)
 
 	try:
 		process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
@@ -1123,6 +1123,6 @@ def run_command(options, command, timeout = None, env = None):
 	process.stdout.close()
 	process.stderr.close()
 
-	logging.debug("%s %s %s\n" % (str(status), str(pipe_stdout), str(pipe_stderr)))
+	logging.debug("%s %s %s\n", str(status), str(pipe_stdout), str(pipe_stderr))
 
 	return (status, pipe_stdout, pipe_stderr)

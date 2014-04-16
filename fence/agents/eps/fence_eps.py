@@ -30,7 +30,7 @@ def eps_run_command(options, params):
 		if params != "":
 			request_str += "?"+params
 
-		logging.debug("GET %s\n" % request_str)
+		logging.debug("GET %s\n", request_str)
 		conn.putrequest('GET', request_str)
 
 		if options.has_key("--username"):
@@ -39,21 +39,21 @@ def eps_run_command(options, params):
 
 			# String for Authorization header
 			auth_str = 'Basic ' + string.strip(base64.encodestring(options["--username"]+':'+options["--password"]))
-			logging.debug("Authorization: %s\n" % auth_str)
+			logging.debug("Authorization: %s\n", auth_str)
 			conn.putheader('Authorization', auth_str)
 
 		conn.endheaders()
 
 		response = conn.getresponse()
 
-		logging.debug("%d %s\n"%(response.status, response.reason))
+		logging.debug("%d %s\n", response.status, response.reason)
 
 		#Response != OK -> couldn't login
 		if response.status != 200:
 			fail(EC_LOGIN_DENIED)
 
 		result = response.read()
-		logging.debug("%s \n" % result)
+		logging.debug("%s \n", result)
 		conn.close()
 	except socket.timeout:
 		fail(EC_TIMED_OUT)

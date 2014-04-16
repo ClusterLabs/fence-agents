@@ -101,8 +101,8 @@ def send_command(opt, command, method = "GET"):
 	conn.perform()
 	result = web_buffer.getvalue()
 
-	logging.debug("%s\n" % command)
-	logging.debug("%s\n" % result)
+	logging.debug("%s\n", command)
+	logging.debug("%s\n", result)
 
 	return result
 

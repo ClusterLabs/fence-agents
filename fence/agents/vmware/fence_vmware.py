@@ -144,7 +144,7 @@ def vmware_run_command(options, add_login_params, additional_params, additional_
 	command = vmware_prepare_command(options, add_login_params, additional_params)
 
 	try:
-		logging.debug("%s\n" % command)
+		logging.debug("%s\n", command)
 
 		(res_output, res_code) = pexpect.run(command,
 				int(options["--shell-timeout"]) + int(options["--login-timeout"]) + additional_timeout, True)
@@ -152,10 +152,10 @@ def vmware_run_command(options, add_login_params, additional_params, additional_
 		if res_code == None:
 			fail(EC_TIMED_OUT)
 		if res_code != 0 and add_login_params:
-			logging.debug("%s\n" % res_output)
+			logging.debug("%s\n", res_output)
 			fail_usage("%s returned %s"% (options["--exec"], res_output))
 		else:
-			logging.debug("%s\n" % res_output)
+			logging.debug("%s\n", res_output)
 
 	except pexpect.ExceptionPexpect:
 		fail_usage("Cannot run command %s"% (options["--exec"]))
