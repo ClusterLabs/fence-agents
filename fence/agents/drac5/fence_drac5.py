@@ -142,7 +142,7 @@ By default, the telnet interface is not  enabled."
 			options["--drac-version"] = "DRAC 5"
 
 	if options["--drac-version"] in ["DRAC MC", "DRAC CMC"]:
-		if not options.has_key("--plug") and 0 == ["monitor", "list"].count(options["--action"].lower()):
+		if not options.has_key("--plug") and 0 == ["monitor", "list"].count(options["--action"]):
 			fail_usage("Failed: You have to enter module name (-n)")
 
 	result = fence_action(conn, options, set_power_status, get_power_status, get_list_devices)

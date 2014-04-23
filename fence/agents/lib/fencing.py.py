@@ -688,13 +688,13 @@ def check_input(device_opt, opt):
 			if not options.has_key(getopt_long):
 				options[getopt_long] = all_opt[opt]["default"]
 
+	options["--action"] = options["--action"].lower()
+
 	## In special cases (show help, metadata or version) we don't need to check anything
 	#####
 	if options.has_key("--help") or options.has_key("--version") or \
-			options.get("--action", "").lower() == "metadata":
+			options["--action"] == "metadata":
 		return options
-
-	options["--action"] = options["--action"].lower()
 
 	if options.has_key("--verbose"):
 		logging.getLogger().setLevel(logging.DEBUG)
@@ -744,7 +744,7 @@ def check_input(device_opt, opt):
 		if not os.path.isfile(options["--identity-file"]):
 			fail_usage("Failed: Identity file " + options["--identity-file"] + " does not exist")
 
-	if (0 == ["list", "monitor"].count(options["--action"].lower())) and \
+	if (0 == ["list", "monitor"].count(options["--action"])) and \
 		not options.has_key("--plug") and device_opt.count("port") and device_opt.count("no_port") == 0:
 		fail_usage("Failed: You have to enter plug number or machine identification")
 
@@ -840,7 +840,7 @@ def show_docs(options, docs = None):
 		usage(device_opt)
 		sys.exit(0)
 
-	if options.get("--action", "").lower() == "metadata":
+	if options.get("--action", "") == "metadata":
 		metadata(device_opt, options, docs)
 		sys.exit(0)
 

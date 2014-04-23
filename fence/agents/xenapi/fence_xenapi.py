@@ -79,8 +79,6 @@ def get_power_fn(session, options):
 
 # Set the state of the port given in the -U flag of options.
 def set_power_fn(session, options):
-	action = options["--action"].lower()
-
 	try:
 		# Get a reference to the vm specified in the UUID or vm_name/port parameter
 		vm = return_vm_reference(session, options)
@@ -89,13 +87,13 @@ def set_power_fn(session, options):
 		# Check that we are not trying to manipulate a template or a control
 		# domain as they show up as VM's with specific properties.
 		if not record["is_a_template"] and not record["is_control_domain"]:
-			if action == "on":
+			if options["--action"] == "on":
 				# Start the VM
 				session.xenapi.VM.start(vm, False, True)
-			elif action == "off":
+			elif options["--action"] == "off":
 				# Force shutdown the VM
 				session.xenapi.VM.hard_shutdown(vm)
-			elif action == "reboot":
+			elif options["--action"] == "reboot":
 				# Force reboot the VM
 				session.xenapi.VM.hard_reboot(vm)
 	except Exception, exn:
