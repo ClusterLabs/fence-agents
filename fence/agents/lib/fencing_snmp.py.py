@@ -5,7 +5,7 @@
 import re, pexpect
 import logging
 from fencing import *
-from fencing import fail, fail_usage, EC_TIMED_OUT
+from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay
 
 __all__ = [ 'FencingSnmp' ]
 
@@ -19,6 +19,7 @@ BUILD_DATE = ""
 class FencingSnmp:
 	def __init__(self, options):
 		self.options = options
+		run_delay(options)
 
 	def quote_for_run(self, string):
 		return string.replace(r"'", "'\\''")
