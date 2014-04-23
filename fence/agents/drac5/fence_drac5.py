@@ -154,7 +154,7 @@ By default, the telnet interface is not  enabled."
 		conn.send_eol("exit")
 		time.sleep(1)
 		conn.close()
-	except:
+	except Exception:
 		pass
 
 	sys.exit(result)

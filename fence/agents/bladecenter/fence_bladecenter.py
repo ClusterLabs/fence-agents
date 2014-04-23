@@ -111,7 +111,7 @@ and uses the command line interface to power on and off blades."
 	try:
 		conn.send_eol("exit")
 		conn.close()
-	except:
+	except Exception:
 		pass
 
 	sys.exit(result)

@@ -243,7 +243,7 @@ is running because the connection will block any necessary fencing actions."
 	try:
 		conn.send("/X"+"\r\n")
 		conn.close()
-	except:
+	except Exception:
 		pass
 
 	sys.exit(result)

@@ -262,7 +262,7 @@ will block any necessary fencing actions."
 	try:
 		conn.send_eol("4")
 		conn.close()
-	except:
+	except Exception:
 		pass
 
 	sys.exit(result)

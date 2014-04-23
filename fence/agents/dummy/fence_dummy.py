@@ -21,7 +21,7 @@ def get_power_status_file(conn, options):
 
 	try:
 		status_file = open(options["--status-file"], 'r')
-	except:
+	except Exception:
 		return "off"
 
 	status = status_file.read()

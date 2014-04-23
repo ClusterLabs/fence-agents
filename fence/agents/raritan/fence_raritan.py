@@ -90,7 +90,7 @@ block any necessary fencing actions."
 	try:
 		conn.send("exit\n")
 		conn.close()
-	except:
+	except Exception:
 		pass
 
 	sys.exit(result)

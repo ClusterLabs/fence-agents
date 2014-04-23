@@ -107,7 +107,7 @@ block any necessary fencing actions."
 		conn.send("quit\n")
 		conn.log_expect(options, "110 BYE", int(options["--shell-timeout"]))
 		conn.close()
-	except:
+	except Exception:
 		pass
 
 	sys.exit(result)

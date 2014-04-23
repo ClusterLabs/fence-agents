@@ -79,7 +79,7 @@ FC switch needs to be enabled. This can be done by running fence_brocade and spe
 	try:
 		conn.send_eol("exit")
 		conn.close()
-	except:
+	except Exception:
 		pass
 
 	sys.exit(result)

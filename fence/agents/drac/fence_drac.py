@@ -72,7 +72,7 @@ To enable telnet on the DRAC: \
 	try:
 		conn.send_eol("exit")
 		conn.close()
-	except:
+	except Exception:
 		pass
 
 	sys.exit(result)

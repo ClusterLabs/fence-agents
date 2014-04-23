@@ -141,7 +141,7 @@ def get_power_status(conn, options):
 			return "off"
 		else:
 			return None
-	except:
+	except Exception:
 		return None
 
 def set_power_status(conn, options):

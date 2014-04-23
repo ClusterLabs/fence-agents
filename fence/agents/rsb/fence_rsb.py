@@ -78,7 +78,7 @@ will block any necessary fencing actions."
 	try:
 		conn.send_eol("0")
 		conn.close()
-	except:
+	except Exception:
 		pass
 
 	sys.exit(result)

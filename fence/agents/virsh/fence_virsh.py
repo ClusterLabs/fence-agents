@@ -98,7 +98,7 @@ must allow ssh login in your sshd_config."
 	try:
 		conn.sendline("quit")
 		conn.close()
-	except:
+	except Exception:
 		pass
 
 	sys.exit(result)

@@ -156,7 +156,7 @@ def main():
 	try:
 		conn.send("quit\r\n")
 		conn.close()
-	except:
+	except Exception:
 		pass
 
 	sys.exit(result)

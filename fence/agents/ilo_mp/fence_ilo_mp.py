@@ -60,7 +60,7 @@ def main():
 
 	try:
 		conn.send_eol("exit")
-	except:
+	except Exception:
 		pass
 
 	sys.exit(result)

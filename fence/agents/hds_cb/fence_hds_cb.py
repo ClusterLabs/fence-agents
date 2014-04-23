@@ -137,7 +137,7 @@ includes telnet support."
 	try:
 		conn.sendline("X")
 		conn.close()
-	except:
+	except Exception:
 		pass
 
 	sys.exit(result)

@@ -1102,7 +1102,7 @@ def run_command(options, command, timeout = None, env = None):
 
 	try:
 		process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
-	except OSError, ex:
+	except OSError:
 		fail_usage("Unable to run %s\n" % command)
 
 	thread = threading.Thread(target = process.wait)
