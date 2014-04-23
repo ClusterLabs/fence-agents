@@ -6,7 +6,7 @@ import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, EC_STATUS
+from fencing import fail, EC_STATUS, run_delay
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New RHEV-M Agent - test release on steroids"
@@ -125,6 +125,7 @@ used with RHEV-M REST API to fence virtual machines."
 	##
 	## Fence operations
 	####
+	run_delay(options)
 	result = fence_action(None, options, set_power_status, get_power_status, get_list)
 
 	sys.exit(result)

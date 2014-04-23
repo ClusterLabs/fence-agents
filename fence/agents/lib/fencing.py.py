@@ -972,10 +972,7 @@ def fence_login(options, re_login_string = r"(login\s*: )|(Login Name:  )|(usern
 		options["--command-prompt"] = [ options["--command-prompt"] ]
 
 	## Do the delay of the fence device before logging in
-	## Delay is important for two-node clusters fencing but we do not need to delay 'status' operations
-	if options["--action"] in ["off", "reboot"]:
-		logging.info("Delay %s second(s) before logging in to the fence device", options["--delay"])
-		time.sleep(int(options["--delay"]))
+	run_delay(options)
 
 	try:
 		re_login = re.compile(re_login_string, re.IGNORECASE)
@@ -1124,3 +1121,9 @@ def run_command(options, command, timeout = None, env = None):
 	logging.debug("%s %s %s\n", str(status), str(pipe_stdout), str(pipe_stderr))
 
 	return (status, pipe_stdout, pipe_stderr)
+
+def run_delay(options):
+	## Delay is important for two-node clusters fencing but we do not need to delay 'status' operations
+	if options["--action"] in ["off", "reboot"]:
+		logging.info("Delay %s second(s) before logging in to the fence device", options["--delay"])
+		time.sleep(int(options["--delay"]))

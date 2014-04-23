@@ -7,7 +7,7 @@ import time
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, EC_STATUS, EC_LOGIN_DENIED
+from fencing import fail, EC_STATUS, EC_LOGIN_DENIED, run_delay
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New Cisco UCS Agent - test release on steroids"
@@ -127,11 +127,7 @@ used with Cisco UCS to fence machines."
 	docs["vendorurl"] = "http://www.cisco.com"
 	show_docs(options, docs)
 
-	## Do the delay of the fence device before logging in
-	## Delay is important for two-node clusters fencing but we do not need to delay 'status' operations
-	if options["--action"] in ["off", "reboot"]:
-		time.sleep(int(options["--delay"]))
-
+	run_delay(options)
 	### Login
 	try:
 		res = send_command(options, "<aaaLogin inName=\"" + options["--username"] +

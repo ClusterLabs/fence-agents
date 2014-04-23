@@ -4,7 +4,7 @@ import sys, re, pexpect
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fspawn, fail, EC_LOGIN_DENIED, TELNET_PATH
+from fencing import fspawn, fail, EC_LOGIN_DENIED, TELNET_PATH, run_delay
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION=""
@@ -80,6 +80,7 @@ block any necessary fencing actions."
 	## Operate the fencing device
 	## We can not use fence_login(), username and passwd are sent on one line
 	####
+	run_delay(options)
 	try:
 		conn = fspawn(options, TELNET_PATH)
 		conn.send("set binary\n")

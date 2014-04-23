@@ -1,6 +1,6 @@
 #!/usr/bin/python -tt
 
-import sys, time
+import sys
 import shutil, tempfile, suds
 import logging
 import atexit
@@ -10,6 +10,7 @@ from suds.client import Client
 from suds.sudsobject import Property
 from fencing import *
 from fencing import fail, EC_STATUS, EC_LOGIN_DENIED, EC_INVALID_PRIVILEGES, EC_WAITING_ON, EC_WAITING_OFF
+from fencing import run_delay
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New VMWare Agent - test release on steroids"
@@ -18,8 +19,7 @@ BUILD_DATE="April, 2011"
 #END_VERSION_GENERATION
 
 def soap_login(options):
-	if options["--action"] in ["off", "reboot"]:
-		time.sleep(int(options["--delay"]))
+	run_delay(options)
 
 	if options.has_key("--ssl"):
 		url = "https://"

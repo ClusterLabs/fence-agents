@@ -27,7 +27,7 @@ import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, fail_usage, EC_TIMED_OUT
+from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="VMware Agent using VI Perl API and/or VIX vmrun command"
@@ -321,6 +321,8 @@ be able to run fence_vmware_helper (part of this agent) or vmrun command. \
 This agent supports only vmrun from version 2.0.0 (VIX API 1.6.0)."
 	docs["vendorurl"] = "http://www.vmware.com"
 	show_docs(options, docs)
+
+	run_delay(options)
 
 	# Check vmware type and set path
 	vmware_check_vmware_type(options)

@@ -35,6 +35,7 @@ import sys
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
+from fencing import run_delay
 import XenAPI
 
 #BEGIN_VERSION_GENERATION
@@ -216,6 +217,8 @@ commands are issued in order to switch on, switch off, restart and query \
 the status of virtual machines running on the host."
 	docs["vendorurl"] = "http://www.xenproject.org"
 	show_docs(options, docs)
+
+	run_delay(options)
 
 	xen_session = connect_and_login(options)
 

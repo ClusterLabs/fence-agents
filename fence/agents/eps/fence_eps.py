@@ -9,7 +9,7 @@ import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, fail_usage, EC_LOGIN_DENIED, EC_TIMED_OUT
+from fencing import fail, fail_usage, EC_LOGIN_DENIED, EC_TIMED_OUT, run_delay
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="ePowerSwitch 8M+ (eps)"
@@ -119,6 +119,7 @@ page feature must be enabled and properly configured."
 	docs["vendorurl"] = "http://www.epowerswitch.com"
 	show_docs(options, docs)
 
+	run_delay(options)
 	#Run fence action. Conn is None, beacause we always need open new http connection
 	result = fence_action(None, options, set_power_status, get_power_status, get_power_status)
 

@@ -5,7 +5,7 @@ import atexit
 from pipes import quote
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import SUDO_PATH, fail_usage, is_executable, run_command
+from fencing import SUDO_PATH, fail_usage, is_executable, run_command, run_delay
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION=""
@@ -149,6 +149,8 @@ This agent calls support software ipmitool (http://ipmitool.sf.net/)."
 		("fence_imm", "Fence agent for IBM Integrated Management Module"),
 		("fence_idrac", "Fence agent for Dell iDRAC")]
 	show_docs(options, docs)
+
+	run_delay(options)
 
 	if not is_executable(options["--ipmitool-path"]):
 		fail_usage("Ipmitool not found or not accessible")

@@ -5,7 +5,7 @@ import atexit
 from pipes import quote
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail_usage, is_executable, SUDO_PATH, run_command
+from fencing import fail_usage, is_executable, SUDO_PATH, run_command, run_delay
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="Fence agent for Intel AMT"
@@ -103,6 +103,8 @@ which can be used with Intel AMT. This agent calls support software amttool\
 (http://www.kraxel.org/cgit/amtterm/)."
 	docs["vendorurl"] = "http://www.intel.com/"
 	show_docs(options, docs)
+
+	run_delay(options)
 
 	if not is_executable(options["--amttool-path"]):
 		fail_usage("Amttool not found or not accessible")

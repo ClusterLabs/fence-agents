@@ -17,7 +17,7 @@ from suds.client import Client
 from suds.xsd.doctor import ImportDoctor, Import
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, fail_usage, EC_LOGIN_DENIED
+from fencing import fail, fail_usage, EC_LOGIN_DENIED, run_delay
 
 OVH_RESCUE_PRO_NETBOOT_ID = '28'
 OVH_HARD_DISK_NETBOOT_ID  = '1'
@@ -111,6 +111,8 @@ Poweroff is simulated with a reboot into rescue-pro mode."
 
 	# Save datetime just before changing netboot
 	before_netboot_reboot = datetime.now()
+
+	run_delay(options)
 
 	if options["--action"] == 'off':
 		# Reboot in Rescue-pro

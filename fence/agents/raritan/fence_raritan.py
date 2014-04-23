@@ -2,10 +2,9 @@
 
 import sys, re, pexpect
 import atexit
-import time
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fspawn, fail, fail_usage, TELNET_PATH, EC_LOGIN_DENIED
+from fencing import fspawn, fail, fail_usage, TELNET_PATH, EC_LOGIN_DENIED, run_delay
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION=""
@@ -59,8 +58,7 @@ block any necessary fencing actions."
 	show_docs(options, docs)
 
 	#  add support also for delay before login which is very useful for 2-node clusters
-	if options["--action"] in ["off", "reboot"]:
-		time.sleep(int(options["--delay"]))
+	run_delay(options)
 
 	##
 	## Operate the fencing device
