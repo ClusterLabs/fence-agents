@@ -178,16 +178,16 @@ def set_power_status(conn, options):
 	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 def main():
-	device_opt = [  "ipaddr", "login", "passwd", "no_login", "no_password", \
-			"cmd_prompt", "secure", "port" ]
+	device_opt = ["ipaddr", "login", "passwd", "no_login", "no_password", \
+			"cmd_prompt", "secure", "port"]
 
 	atexit.register(atexit_handler)
 
-	all_opt["cmd_prompt"]["default"] = [ "RSM>", "MPC>", "IPS>", "TPS>", "NBB>", "NPS>", "VMR>" ]
+	all_opt["cmd_prompt"]["default"] = ["RSM>", "MPC>", "IPS>", "TPS>", "NBB>", "NPS>", "VMR>"]
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for WTI"
 	docs["longdesc"] = "fence_wti is an I/O Fencing agent \
 which can be used with the WTI Network Power Switch (NPS). It logs \
@@ -214,11 +214,11 @@ is running because the connection will block any necessary fencing actions."
 			re_login = re.compile("(login: )|(Login Name:  )|(username: )|(User Name :)", re.IGNORECASE)
 			re_prompt = re.compile("|".join(["(" + x + ")" for x in options["--command-prompt"]]), re.IGNORECASE)
 
-			result = conn.log_expect(options, [ re_login, "Password: ", re_prompt ], int(options["--shell-timeout"]))
+			result = conn.log_expect(options, [re_login, "Password: ", re_prompt], int(options["--shell-timeout"]))
 			if result == 0:
 				if options.has_key("--username"):
 					conn.send(options["--username"]+"\r\n")
-					result = conn.log_expect(options, [ re_login, "Password: ", re_prompt ], int(options["--shell-timeout"]))
+					result = conn.log_expect(options, [re_login, "Password: ", re_prompt], int(options["--shell-timeout"]))
 				else:
 					fail_usage("Failed: You have to set login name")
 

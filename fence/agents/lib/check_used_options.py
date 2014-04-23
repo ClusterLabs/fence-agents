@@ -13,7 +13,7 @@ from fencing import all_opt
 def main():
 	agent = sys.argv[1]
 
-	available = { }
+	available = {}
 
 	## all_opt from fencing library are imported
 	for k in all_opt.keys():

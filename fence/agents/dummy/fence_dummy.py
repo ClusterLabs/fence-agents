@@ -32,7 +32,7 @@ def get_power_status_file(conn, options):
 def set_power_status_file(conn, options):
 	del conn
 
-	if not (options["--action"] in [ "on", "off" ]):
+	if not (options["--action"] in ["on", "off"]):
 		return
 
 	status_file = open(options["--status-file"], 'w')
@@ -78,7 +78,7 @@ def get_outlets_fail(conn, options):
 	return result
 
 def main():
-	device_opt = [ "no_password", "status_file", "random_sleep_range", "type", "port" ]
+	device_opt = ["no_password", "status_file", "random_sleep_range", "type", "port"]
 
 	atexit.register(atexit_handler)
 
@@ -118,7 +118,7 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Dummy fence agent"
 	docs["longdesc"] = "fence_dummy"
 	docs["vendorurl"] = "http://www.example.com"

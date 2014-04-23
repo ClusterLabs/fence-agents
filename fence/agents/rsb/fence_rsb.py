@@ -38,11 +38,11 @@ def set_power_status(conn, options):
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "secure", "cmd_prompt" ]
+	device_opt = ["ipaddr", "login", "passwd", "secure", "cmd_prompt"]
 
 	atexit.register(atexit_handler)
 
-	all_opt["cmd_prompt"]["default"] = [ "to quit:" ]
+	all_opt["cmd_prompt"]["default"] = ["to quit:"]
 
 	opt = process_input(device_opt)
 
@@ -52,7 +52,7 @@ def main():
 
 	options = check_input(device_opt, opt)
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "I/O Fencing agent for Fujitsu-Siemens RSB"
 	docs["longdesc"] = "fence_rsb is an I/O Fencing agent \
 which can be used with the Fujitsu-Siemens RSB management interface. It logs \

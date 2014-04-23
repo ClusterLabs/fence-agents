@@ -58,7 +58,7 @@ def set_power_status(conn, options):
 
 def get_list(conn, options):
 	del conn
-	outlets = { }
+	outlets = {}
 
 	try:
 		res = send_command(options, "vms")
@@ -68,13 +68,13 @@ def get_list(conn, options):
 			name = RE_GET_NAME.search(lines[i]).group(1)
 			outlets[name] = ("", None)
 	except AttributeError:
-		return { }
+		return {}
 	except IndexError:
-		return { }
+		return {}
 
 	return outlets
 
-def send_command(opt, command, method = "GET"):
+def send_command(opt, command, method="GET"):
 	## setup correct URL
 	if opt.has_key("--ssl"):
 		url = "https:"
@@ -87,7 +87,7 @@ def send_command(opt, command, method = "GET"):
 	conn = pycurl.Curl()
 	web_buffer = StringIO.StringIO()
 	conn.setopt(pycurl.URL, url)
-	conn.setopt(pycurl.HTTPHEADER, [ "Content-type: application/xml", "Accept: application/xml" ])
+	conn.setopt(pycurl.HTTPHEADER, ["Content-type: application/xml", "Accept: application/xml"])
 	conn.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_BASIC)
 	conn.setopt(pycurl.USERPWD, opt["--username"] + ":" + opt["--password"])
 	conn.setopt(pycurl.TIMEOUT, int(opt["--shell-timeout"]))
@@ -107,7 +107,7 @@ def send_command(opt, command, method = "GET"):
 	return result
 
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "ssl", "notls", "web", "port" ]
+	device_opt = ["ipaddr", "login", "passwd", "ssl", "notls", "web", "port"]
 
 	atexit.register(atexit_handler)
 
@@ -115,7 +115,7 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for RHEV-M REST API"
 	docs["longdesc"] = "fence_rhevm is an I/O Fencing agent which can be \
 used with RHEV-M REST API to fence virtual machines."

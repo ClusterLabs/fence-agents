@@ -20,7 +20,7 @@ BUILD_DATE="March, 2008"
 
 def get_power_status(conn, options):
 	conn.send_eol("show server status " + options["--plug"])
-	conn.log_expect(options, options["--command-prompt"] , int(options["--shell-timeout"]))
+	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 	power_re = re.compile(r"^\s*Power: (.*?)\s*$")
 	status = "unknown"
@@ -45,9 +45,9 @@ def set_power_status(conn, options):
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 def get_blades_list(conn, options):
-	outlets = { }
+	outlets = {}
 
-	conn.send_eol("show server list" )
+	conn.send_eol("show server list")
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 	list_re = re.compile(r"^\s*(.*?)\s+(.*?)\s+(.*?)\s+OK\s+(.*?)\s+(.*?)\s*$")
@@ -59,15 +59,15 @@ def get_blades_list(conn, options):
 	return outlets
 
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "cmd_prompt", "secure", "port", "missing_as_off" ]
+	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", "port", "missing_as_off"]
 
 	atexit.register(atexit_handler)
 
-	all_opt["cmd_prompt"]["default"] = [ "c7000oa>" ]
+	all_opt["cmd_prompt"]["default"] = ["c7000oa>"]
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for HP BladeSystem"
 	docs["longdesc"] = "fence_hpblade is an I/O Fencing agent \
 which can be used with HP BladeSystem. It logs into an enclosure via telnet or ssh \

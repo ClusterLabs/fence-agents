@@ -40,16 +40,16 @@ def set_power_status(conn, options):
 	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 def main():
-	device_opt = [  "ipaddr", "login", "passwd", "cmd_prompt", "secure", "port", "fabric_fencing" ]
+	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", "port", "fabric_fencing"]
 
 	atexit.register(atexit_handler)
 
-	all_opt["cmd_prompt"]["default"] = [ "> " ]
+	all_opt["cmd_prompt"]["default"] = ["> "]
 
 	options = check_input(device_opt, process_input(device_opt))
 	options["eol"] = "\n"
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for HP Brocade over telnet/ssh"
 	docs["longdesc"] = "fence_brocade is an I/O Fencing agent which can be used with Brocade FC switches. \
 It logs into a Brocade switch via telnet and disables a specified port. Disabling the port which a machine is \

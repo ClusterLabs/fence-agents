@@ -44,7 +44,7 @@ def get_power_status(conn, options):
 
 def set_power_status(conn, options):
 	conn.set("%s.%s" % (STATUSES_OID, options["--plug"]),
-			(options["--action"]=="on" and STATUS_SET_ON or STATUS_SET_OFF))
+			(options["--action"] == "on" and STATUS_SET_ON or STATUS_SET_OFF))
 
 def get_outlets_status(conn, options):
 	result = {}
@@ -55,7 +55,7 @@ def get_outlets_status(conn, options):
 		port_num = x[0].split('.')[-1]
 
 		port_alias = ""
-		port_status = (x[1]==str(STATUS_UP) and "on" or "off")
+		port_status = (x[1] == str(STATUS_UP) and "on" or "off")
 
 		result[port_num] = (port_alias, port_status)
 
@@ -63,14 +63,14 @@ def get_outlets_status(conn, options):
 
 # Main agent method
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "no_login", "no_password",
-		       "port", "snmp_version", "community" ]
+	device_opt = ["ipaddr", "login", "passwd", "no_login", "no_password",
+		       "port", "snmp_version", "community"]
 
 	atexit.register(atexit_handler)
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for Intel Modular"
 	docs["longdesc"] = "fence_intelmodular is an I/O Fencing agent \
 which can be used with Intel Modular device (tested on Intel MFSYS25, should \

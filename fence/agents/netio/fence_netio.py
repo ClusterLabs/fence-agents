@@ -53,7 +53,7 @@ def get_outlet_list(conn, options):
 	return result
 
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "port" ]
+	device_opt = ["ipaddr", "login", "passwd", "port"]
 
 	atexit.register(atexit_handler)
 
@@ -66,7 +66,7 @@ def main():
 	opt["eol"] = "\r\n"
 	options = check_input(device_opt, opt)
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "I/O Fencing agent for Koukaam NETIO-230B"
 	docs["longdesc"] = "fence_netio is an I/O Fencing agent which can be \
 used with the Koukaam NETIO-230B Power Distribution Unit. It logs into \

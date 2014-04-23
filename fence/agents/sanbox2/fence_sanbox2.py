@@ -77,7 +77,7 @@ def set_power_status(conn, options):
 		fail(EC_TIMED_OUT)
 
 def get_list_devices(conn, options):
-	outlets = { }
+	outlets = {}
 
 	try:
 		conn.send_eol("show port")
@@ -104,15 +104,15 @@ def get_list_devices(conn, options):
 	return outlets
 
 def main():
-	device_opt = [ "fabric_fencing", "ipaddr", "login", "passwd", "cmd_prompt", "port" ]
+	device_opt = ["fabric_fencing", "ipaddr", "login", "passwd", "cmd_prompt", "port"]
 
 	atexit.register(atexit_handler)
 
-	all_opt["cmd_prompt"]["default"] = [ " #> " ]
+	all_opt["cmd_prompt"]["default"] = [" #> "]
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for QLogic SANBox2 FC switches"
 	docs["longdesc"] = "fence_sanbox2 is an I/O Fencing agent which can be used with \
 QLogic SANBox2 FC switches.  It logs into a SANBox2 switch via telnet and disables a specified \

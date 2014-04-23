@@ -54,7 +54,7 @@ def ipdu_set_device(conn, options):
 	# First resolve type of PDU device
 	pdu_type = conn.walk(OID_SYS_OBJECT_ID)
 
-	if not ((len(pdu_type)==1) and (agents_dir.has_key(pdu_type[0][1]))):
+	if not ((len(pdu_type) == 1) and (agents_dir.has_key(pdu_type[0][1]))):
 		pdu_type = [[None, None]]
 
 	device = agents_dir[pdu_type[0][1]]
@@ -103,7 +103,7 @@ def set_power_status(conn, options):
 
 	oid = ((device.has_switches) and device.control_oid%(switch_id, port_id) or device.control_oid%(port_id))
 
-	conn.set(oid,(options["--action"]=="on" and device.turn_on or device.turn_off))
+	conn.set(oid, (options["--action"] == "on" and device.turn_on or device.turn_off))
 
 
 def get_outlets_status(conn, options):
@@ -129,8 +129,8 @@ def get_outlets_status(conn, options):
 def main():
 	global device
 
-	device_opt = [ "ipaddr", "login", "passwd", "no_login", "no_password", \
-		       "port", "snmp_version", "community" ]
+	device_opt = ["ipaddr", "login", "passwd", "no_login", "no_password", \
+		       "port", "snmp_version", "community"]
 
 	atexit.register(atexit_handler)
 
@@ -141,7 +141,7 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for iPDU over SNMP"
 	docs["longdesc"] = "fence_ipdu is an I/O Fencing agent \
 which can be used with the IBM iPDU network power switch. It logs \

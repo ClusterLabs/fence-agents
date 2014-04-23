@@ -65,7 +65,7 @@ def set_power_status(conn, options):
 		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 def get_list_devices(conn, options):
-	outlets = { }
+	outlets = {}
 
 	if options["--drac-version"] == "DRAC CMC":
 		conn.send_eol("getmodinfo")
@@ -99,22 +99,22 @@ def define_new_opts():
 		"help" : "-d, --drac-version=[version]   Force DRAC version to use (DRAC 5, DRAC CMC, DRAC MC)",
 		"required" : "0",
 		"shortdesc" : "Force DRAC version to use (DRAC 5, DRAC CMC, DRAC MC)",
-		"choices" : [ "DRAC CMC", "DRAC MC", "DRAC 5" ],
-		"order" : 1 }
+		"choices" : ["DRAC CMC", "DRAC MC", "DRAC 5"],
+		"order" : 1}
 
 def main():
-	device_opt = [  "ipaddr", "login", "passwd", "cmd_prompt", "secure", \
-			"drac_version", "port", "no_port" ]
+	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", \
+			"drac_version", "port", "no_port"]
 
 	atexit.register(atexit_handler)
 
 	define_new_opts()
 
-	all_opt["cmd_prompt"]["default"] = [ r"\$", r"DRAC\/MC:" ]
+	all_opt["cmd_prompt"]["default"] = [r"\$", r"DRAC\/MC:"]
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for Dell DRAC CMC/5"
 	docs["longdesc"] = "fence_drac5 is an I/O Fencing agent \
 which can be used with the Dell Remote Access Card v5 or CMC (DRAC). \

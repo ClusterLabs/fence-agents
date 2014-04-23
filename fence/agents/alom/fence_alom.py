@@ -32,17 +32,17 @@ def set_power_status(conn, options):
 	time.sleep(int(options["--power-timeout"]))
 
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "cmd_prompt", "secure" ]
+	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure"]
 
 	atexit.register(atexit_handler)
 
 	all_opt["secure"]["default"] = "1"
-	all_opt["cmd_prompt"]["default"] = [ r"sc\>\ " ]
+	all_opt["cmd_prompt"]["default"] = [r"sc\>\ "]
 
 	options = check_input(device_opt, process_input(device_opt))
 	options["telnet_over_ssh"] = 1
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for Sun ALOM"
 	docs["longdesc"] = "fence_alom is an I/O Fencing \
 agent which can be used with ALOM connected machines."

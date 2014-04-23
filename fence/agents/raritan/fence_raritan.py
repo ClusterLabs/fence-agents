@@ -36,7 +36,7 @@ def set_power_status(conn, options):
 	conn.send_eol("set %s powerState=%s" % (options["--plug"], action))
 
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "port" ]
+	device_opt = ["ipaddr", "login", "passwd", "port"]
 
 	atexit.register(atexit_handler)
 
@@ -47,7 +47,7 @@ def main():
 	opt["eol"] = "\r\n"
 	options = check_input(device_opt, opt)
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "I/O Fencing agent for Raritan Dominion PX"
 	docs["longdesc"] = "fence_raritan is an I/O Fencing agent which can be \
 used with the Raritan DPXS12-20 Power Distribution Unit. It logs into \

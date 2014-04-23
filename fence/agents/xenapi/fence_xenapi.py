@@ -44,7 +44,7 @@ REDHAT_COPYRIGHT=""
 BUILD_DATE=""
 #END_VERSION_GENERATION
 
-EC_BAD_SESSION 		= 1
+EC_BAD_SESSION = 1
 # Find the status of the port given in the -U flag of options.
 def get_power_fn(session, options):
 	if options.has_key("--verbose"):
@@ -199,13 +199,13 @@ def return_vm_reference(session, options):
 
 def main():
 
-	device_opt = [	"login", "passwd", "port", "no_login", "no_password", "session_url" ]
+	device_opt = ["login", "passwd", "port", "no_login", "no_password", "session_url"]
 
 	atexit.register(atexit_handler)
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "XenAPI based fencing for the Citrix XenServer virtual machines."
 	docs["longdesc"] = "\
 fence_cxs is an I/O Fencing agent used on Citrix XenServer hosts. \

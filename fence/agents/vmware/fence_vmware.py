@@ -112,15 +112,15 @@ def vmware_prepare_command(options, add_login_params, additional_params):
 	res = options["--exec"]
 
 	if add_login_params:
-		if vmware_internal_type==VMWARE_TYPE_ESX:
+		if vmware_internal_type == VMWARE_TYPE_ESX:
 			res += " --server '%s' --username '%s' --password '%s' "% (quote_for_run(options["--ip"]),
 										quote_for_run(options["--username"]),
 										quote_for_run(options["--password"]))
-		elif vmware_internal_type==VMWARE_TYPE_SERVER2:
+		elif vmware_internal_type == VMWARE_TYPE_SERVER2:
 			res += " -h 'https://%s/sdk' -u '%s' -p '%s' -T server "% (quote_for_run(options["--ip"]),
 										quote_for_run(options["--username"]),
 										quote_for_run(options["--password"]))
-		elif vmware_internal_type==VMWARE_TYPE_SERVER1:
+		elif vmware_internal_type == VMWARE_TYPE_SERVER1:
 			host_name_array = options["--ip"].split(':')
 
 			res += " -h '%s' -u '%s' -p '%s' -T server1 "% (quote_for_run(host_name_array[0]),
@@ -184,7 +184,7 @@ def vmware_get_outlets_vi(options, add_vm_name):
 			if vmware_disconnected_hack:
 				outlets[machine_array[0]] = ("", (
 						((machine_array[2].lower() in ["poweredon"]) and
-						 (machine_array[3].lower()=="connected"))
+						 (machine_array[3].lower() == "connected"))
 						and "on" or "off"))
 			else:
 				outlets[machine_array[0]] = ("", ((machine_array[2].lower() in ["poweredon"]) and "on" or "off"))
@@ -236,10 +236,10 @@ def set_power_status(conn, options):
 
 	if vmware_internal_type == VMWARE_TYPE_ESX:
 		additional_params = "--operation %s --vmname '%s'" % \
-				((options["--action"]=="on" and "on" or "off"), quote_for_run(options["--plug"]))
+				((options["--action"] == "on" and "on" or "off"), quote_for_run(options["--plug"]))
 	elif vmware_internal_type == VMWARE_TYPE_SERVER1 or vmware_internal_type == VMWARE_TYPE_SERVER2:
 		additional_params = "%s '%s'" % \
-				((options["--action"]=="on" and "start" or "stop"), quote_for_run(options["--plug"]))
+				((options["--action"] == "on" and "start" or "stop"), quote_for_run(options["--plug"]))
 		if options["--action"] == "off":
 			additional_params += " hard"
 
@@ -286,7 +286,7 @@ def vmware_check_vmware_type(options):
 
 # Main agent method
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "secure",
+	device_opt = ["ipaddr", "login", "passwd", "secure",
 		       "exec", "vmware_type", "vmware_datacenter"]
 
 	atexit.register(atexit_handler)
@@ -296,7 +296,7 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for VMWare"
 	docs["longdesc"] = "fence_vmware is an I/O Fencing agent \
 which can be used with the VMware ESX, VMware ESXi or VMware Server \

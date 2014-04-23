@@ -68,17 +68,17 @@ def set_power_status(conn, options):
 	time.sleep(int(options["--power-wait"]))
 
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "cmd_prompt", "secure", "port", "sudo" ]
+	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", "port", "sudo"]
 
 	atexit.register(atexit_handler)
 
 	all_opt["secure"]["default"] = "1"
-	all_opt["cmd_prompt"]["default"] = [ r"\[EXPECT\]#\ " ]
+	all_opt["cmd_prompt"]["default"] = [r"\[EXPECT\]#\ "]
 	all_opt["ssh_options"]["default"] = "-t '/bin/bash -c \"" + r"PS1=\[EXPECT\]#\  " + "/bin/bash --noprofile --norc\"'"
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for virsh"
 	docs["longdesc"] = "fence_virsh is an I/O Fencing agent \
 which can be used with the virtual machines managed by libvirt. \

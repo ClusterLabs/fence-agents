@@ -50,7 +50,7 @@ import httplib
 import socket
 import logging
 
-translation = gettext.translation('xen-xm', fallback = True)
+translation = gettext.translation('xen-xm', fallback=True)
 
 class Failure(Exception):
 	def __init__(self, details):
@@ -81,7 +81,7 @@ class Failure(Exception):
 					 for i in range(len(self.details))])
 
 
-_RECONNECT_AND_RETRY = (lambda _ : ())
+_RECONNECT_AND_RETRY = (lambda _: ())
 
 class UDSHTTPConnection(httplib.HTTPConnection):
 	""" Stupid hacked up HTTPConnection subclass to allow HTTP over Unix domain

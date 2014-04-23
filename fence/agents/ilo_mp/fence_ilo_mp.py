@@ -35,16 +35,16 @@ def set_power_status(conn, options):
 	return
 
 def main():
-	device_opt = [  "ipaddr", "login", "passwd", "secure", "cmd_prompt" ]
+	device_opt = ["ipaddr", "login", "passwd", "secure", "cmd_prompt"]
 
 	atexit.register(atexit_handler)
 
-	all_opt["cmd_prompt"]["default"] = [ "MP>", "hpiLO->" ]
+	all_opt["cmd_prompt"]["default"] = ["MP>", "hpiLO->"]
 	all_opt["power_wait"]["default"] = 5
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for HP iLO MP"
 	docs["longdesc"] = ""
 	docs["vendorurl"] = "http://www.hp.com"

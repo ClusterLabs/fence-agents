@@ -16,25 +16,25 @@ REDHAT_COPYRIGHT = ""
 BUILD_DATE = "March, 2008"
 #END_VERSION_GENERATION
 
-__all__ = [ 'atexit_handler', 'check_input', 'process_input', 'all_opt', 'show_docs',
-		'fence_login', 'fence_action', 'fence_logout' ]
+__all__ = ['atexit_handler', 'check_input', 'process_input', 'all_opt', 'show_docs',
+		'fence_login', 'fence_action', 'fence_logout']
 
-EC_GENERIC_ERROR   = 1
-EC_BAD_ARGS        = 2
-EC_LOGIN_DENIED    = 3
+EC_GENERIC_ERROR = 1
+EC_BAD_ARGS = 2
+EC_LOGIN_DENIED = 3
 EC_CONNECTION_LOST = 4
-EC_TIMED_OUT       = 5
-EC_WAITING_ON      = 6
-EC_WAITING_OFF     = 7
-EC_STATUS          = 8
-EC_STATUS_HMC      = 9
+EC_TIMED_OUT = 5
+EC_WAITING_ON = 6
+EC_WAITING_OFF = 7
+EC_STATUS = 8
+EC_STATUS_HMC = 9
 EC_PASSWORD_MISSING = 10
 EC_INVALID_PRIVILEGES = 11
 
 TELNET_PATH = "/usr/bin/telnet"
-SSH_PATH    = "/usr/bin/ssh"
-SSL_PATH    = "@GNUTLSCLI_PATH@"
-SUDO_PATH   = "/usr/bin/sudo"
+SSH_PATH = "/usr/bin/ssh"
+SSL_PATH = "@GNUTLSCLI_PATH@"
+SUDO_PATH = "/usr/bin/sudo"
 
 all_opt = {
 	"help"    : {
@@ -43,28 +43,28 @@ all_opt = {
 		"help" : "-h, --help                     Display this help and exit",
 		"required" : "0",
 		"shortdesc" : "Display help and exit",
-		"order" : 54 },
+		"order" : 54},
 	"version" : {
 		"getopt" : "V",
 		"longopt" : "version",
 		"help" : "-V, --version                  Output version information and exit",
 		"required" : "0",
 		"shortdesc" : "Display version information and exit",
-		"order" : 53 },
+		"order" : 53},
 	"verbose" : {
 		"getopt" : "v",
 		"longopt" : "verbose",
 		"help" : "-v, --verbose                  Verbose mode",
 		"required" : "0",
 		"shortdesc" : "Verbose mode",
-		"order" : 51 },
+		"order" : 51},
 	"debug" : {
 		"getopt" : "D:",
 		"longopt" : "debug-file",
 		"help" : "-D, --debug-file=[debugfile]   Debugging to output file",
 		"required" : "0",
 		"shortdesc" : "Write debug information to given file",
-		"order" : 52 },
+		"order" : 52},
 	"delay" : {
 		"getopt" : "f:",
 		"longopt" : "delay",
@@ -72,15 +72,15 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "Wait X seconds before fencing is started",
 		"default" : "0",
-		"order" : 200 },
+		"order" : 200},
 	"agent"   : {
 		"getopt" : "",
 		"help" : "",
-		"order" : 1 },
+		"order" : 1},
 	"web"    : {
 		"getopt" : "",
 		"help" : "",
-		"order" : 1 },
+		"order" : 1},
 	"action" : {
 		"getopt" : "o:",
 		"longopt" : "action",
@@ -88,97 +88,97 @@ all_opt = {
 		"required" : "1",
 		"shortdesc" : "Fencing Action",
 		"default" : "reboot",
-		"order" : 1 },
+		"order" : 1},
 	"fabric_fencing" : {
 		"getopt" : "",
 		"help" : "",
-		"order" : 1 },
+		"order" : 1},
 	"ipaddr" : {
 		"getopt" : "a:",
 		"longopt" : "ip",
 		"help" : "-a, --ip=[ip]                  IP address or hostname of fencing device",
 		"required" : "1",
 		"shortdesc" : "IP Address or Hostname",
-		"order" : 1 },
+		"order" : 1},
 	"ipport" : {
 		"getopt" : "u:",
 		"longopt" : "ipport",
 		"help" : "-u, --ipport=[port]            TCP/UDP port to use",
 		"required" : "0",
 		"shortdesc" : "TCP/UDP port to use for connection with device",
-		"order" : 1 },
+		"order" : 1},
 	"login" : {
 		"getopt" : "l:",
 		"longopt" : "username",
 		"help" : "-l, --username=[name]          Login name",
 		"required" : "?",
 		"shortdesc" : "Login Name",
-		"order" : 1 },
+		"order" : 1},
 	"no_login" : {
 		"getopt" : "",
 		"help" : "",
-		"order" : 1 },
+		"order" : 1},
 	"no_password" : {
 		"getopt" : "",
 		"help" : "",
-		"order" : 1 },
+		"order" : 1},
 	"no_port" : {
 		"getopt" : "",
 		"help" : "",
-		"order" : 1 },
+		"order" : 1},
 	"no_status" : {
 		"getopt" : "",
 		"help" : "",
-		"order" : 1 },
+		"order" : 1},
 	"passwd" : {
 		"getopt" : "p:",
 		"longopt" : "password",
 		"help" : "-p, --password=[password]      Login password or passphrase",
 		"required" : "0",
 		"shortdesc" : "Login password or passphrase",
-		"order" : 1 },
+		"order" : 1},
 	"passwd_script" : {
 		"getopt" : "S:",
 		"longopt" : "password-script",
 		"help" : "-S, --password-script=[script] Script to run to retrieve password",
 		"required" : "0",
 		"shortdesc" : "Script to retrieve password",
-		"order" : 1 },
+		"order" : 1},
 	"identity_file" : {
 		"getopt" : "k:",
 		"longopt" : "identity-file",
 		"help" : "-k, --identity-file=[filename] Identity file (private key) for ssh ",
 		"required" : "0",
 		"shortdesc" : "Identity file for ssh",
-		"order" : 1 },
+		"order" : 1},
 	"cmd_prompt" : {
 		"getopt" : "c:",
 		"longopt" : "command-prompt",
 		"help" : "-c, --command-prompt=[prompt]  Force Python regex for command prompt",
 		"shortdesc" : "Force Python regex for command prompt",
 		"required" : "0",
-		"order" : 1 },
+		"order" : 1},
 	"secure" : {
 		"getopt" : "x",
 		"longopt" : "ssh",
 		"help" : "-x, --ssh                      Use ssh connection",
 		"shortdesc" : "SSH connection",
 		"required" : "0",
-		"order" : 1 },
+		"order" : 1},
 	"ssh_options" : {
 		"getopt" : "X:",
 		"longopt" : "ssh-options",
 		"help" : "--ssh-options=[options]	  SSH options to use",
 		"shortdesc" : "SSH options to use",
 		"required" : "0",
-		"order" : 1 },
+		"order" : 1},
 	"ssl" : {
 		"getopt" : "z",
 		"longopt" : "ssl",
 		"help" : "-z, --ssl                      Use ssl connection",
 		"required" : "0",
 		"shortdesc" : "SSL connection",
-		"order" : 1 },
+		"order" : 1},
 	"notls" : {
 		"getopt" : "t",
 		"longopt" : "notls",
@@ -188,7 +188,7 @@ all_opt = {
 				"This should only be used for devices that do not support TLS1.0 and up.",
 		"required" : "0",
 		"shortdesc" : "Disable TLS negotiation",
-		"order" : 1 },
+		"order" : 1},
 	"port" : {
 		"getopt" : "n:",
 		"longopt" : "plug",
@@ -196,43 +196,43 @@ all_opt = {
         "                                        identification of machine",
 		"required" : "1",
 		"shortdesc" : "Physical plug number, name of virtual machine or UUID",
-		"order" : 1 },
+		"order" : 1},
 	"switch" : {
 		"getopt" : "s:",
 		"longopt" : "switch",
 		"help" : "-s, --switch=[id]              Physical switch number on device",
 		"required" : "0",
 		"shortdesc" : "Physical switch number on device",
-		"order" : 1 },
+		"order" : 1},
 	"exec" : {
 		"getopt" : "e:",
 		"longopt" : "exec",
 		"help" : "-e, --exec=[command]           Command to execute",
 		"required" : "0",
 		"shortdesc" : "Command to execute",
-		"order" : 1 },
+		"order" : 1},
 	"vmware_type" : {
 		"getopt" : "d:",
 		"longopt" : "vmware_type",
 		"help" : "-d, --vmware_type=[type]       Type of VMware to connect",
 		"required" : "0",
 		"shortdesc" : "Type of VMware to connect",
-		"order" : 1 },
+		"order" : 1},
 	"vmware_datacenter" : {
 		"getopt" : "s:",
 		"longopt" : "vmware-datacenter",
 		"help" : "-s, --vmware-datacenter=[dc]   VMWare datacenter filter",
 		"required" : "0",
 		"shortdesc" : "Show only machines in specified datacenter",
-		"order" : 2 },
+		"order" : 2},
 	"snmp_version" : {
 		"getopt" : "d:",
 		"longopt" : "snmp-version",
 		"help" : "-d, --snmp-version=[version]   Specifies SNMP version to use",
 		"required" : "0",
 		"shortdesc" : "Specifies SNMP version to use (1,2c,3)",
-		"choices" : [ "1", "2c", "3" ],
-		"order" : 1 },
+		"choices" : ["1", "2c", "3"],
+		"order" : 1},
 	"community" : {
 		"getopt" : "c:",
 		"longopt" : "community",
@@ -246,7 +246,7 @@ all_opt = {
 		"help" : "-b, --snmp-auth-prot=[prot]    Set authentication protocol (MD5|SHA)",
 		"required" : "0",
 		"shortdesc" : "Set authentication protocol (MD5|SHA)",
-		"choices" : [ "MD5" , "SHA" ],
+		"choices" : ["MD5", "SHA"],
 		"order" : 1},
 	"snmp_sec_level" : {
 		"getopt" : "E:",
@@ -255,7 +255,7 @@ all_opt = {
 		"                                  (noAuthNoPriv|authNoPriv|authPriv)",
 		"required" : "0",
 		"shortdesc" : "Set security level (noAuthNoPriv|authNoPriv|authPriv)",
-		"choices" : [ "noAuthNoPriv", "authNoPriv", "authPriv" ],
+		"choices" : ["noAuthNoPriv", "authNoPriv", "authPriv"],
 		"order" : 1},
 	"snmp_priv_prot" : {
 		"getopt" : "B:",
@@ -263,7 +263,7 @@ all_opt = {
 		"help" : "-B, --snmp-priv-prot=[prot]    Set privacy protocol (DES|AES)",
 		"required" : "0",
 		"shortdesc" : "Set privacy protocol (DES|AES)",
-		"choices" : [ "DES", "AES" ],
+		"choices" : ["DES", "AES"],
 		"order" : 1},
 	"snmp_priv_passwd" : {
 		"getopt" : "P:",
@@ -285,14 +285,14 @@ all_opt = {
 		"help" : "-4, --inet4-only               Forces agent to use IPv4 addresses only",
 		"required" : "0",
 		"shortdesc" : "Forces agent to use IPv4 addresses only",
-		"order" : 1 },
+		"order" : 1},
 	"inet6_only" : {
 		"getopt" : "6",
 		"longopt" : "inet6-only",
 		"help" : "-6, --inet6-only               Forces agent to use IPv6 addresses only",
 		"required" : "0",
 		"shortdesc" : "Forces agent to use IPv6 addresses only",
-		"order" : 1 },
+		"order" : 1},
 	"separator" : {
 		"getopt" : "C:",
 		"longopt" : "separator",
@@ -300,7 +300,7 @@ all_opt = {
 		"default" : ",",
 		"required" : "0",
 		"shortdesc" : "Separator for CSV created by operation list",
-		"order" : 100 },
+		"order" : 100},
 	"login_timeout" : {
 		"getopt" : "y:",
 		"longopt" : "login-timeout",
@@ -308,7 +308,7 @@ all_opt = {
 		"default" : "5",
 		"required" : "0",
 		"shortdesc" : "Wait X seconds for cmd prompt after login",
-		"order" : 200 },
+		"order" : 200},
 	"shell_timeout" : {
 		"getopt" : "Y:",
 		"longopt" : "shell-timeout",
@@ -316,7 +316,7 @@ all_opt = {
 		"default" : "3",
 		"required" : "0",
 		"shortdesc" : "Wait X seconds for cmd prompt after issuing command",
-		"order" : 200 },
+		"order" : 200},
 	"power_timeout" : {
 		"getopt" : "g:",
 		"longopt" : "power-timeout",
@@ -324,7 +324,7 @@ all_opt = {
 		"default" : "20",
 		"required" : "0",
 		"shortdesc" : "Test X seconds for status change after ON/OFF",
-		"order" : 200 },
+		"order" : 200},
 	"power_wait" : {
 		"getopt" : "G:",
 		"longopt" : "power-wait",
@@ -332,14 +332,14 @@ all_opt = {
 		"default" : "0",
 		"required" : "0",
 		"shortdesc" : "Wait X seconds after issuing ON/OFF",
-		"order" : 200 },
+		"order" : 200},
 	"missing_as_off" : {
 		"getopt" : "M",
 		"longopt" : "missing-as-off",
 		"help" : "--missing-as-off               Missing port returns OFF instead of failure",
 		"required" : "0",
 		"shortdesc" : "Missing port returns OFF instead of failure",
-		"order" : 200 },
+		"order" : 200},
 	"retry_on" : {
 		"getopt" : "F:",
 		"longopt" : "retry-on",
@@ -347,7 +347,7 @@ all_opt = {
 		"default" : "1",
 		"required" : "0",
 		"shortdesc" : "Count of attempts to retry power on",
-		"order" : 201 },
+		"order" : 201},
 	"session_url" : {
 		"getopt" : "s:",
 		"longopt" : "session-url",
@@ -369,7 +369,7 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "Method to fence (onoff|cycle)",
 		"default" : "onoff",
-		"choices" : [ "onoff", "cycle" ],
+		"choices" : ["onoff", "cycle"],
 		"order" : 1},
 	"on_target": {
 		"getopt" : "",
@@ -379,14 +379,14 @@ all_opt = {
 
 # options which are added automatically if 'key' is encountered ("default" is always added)
 DEPENDENCY_OPT = {
-		"default" : [ "help", "debug", "verbose", "version", "action", "agent", \
-			"power_timeout", "shell_timeout", "login_timeout", "power_wait", "retry_on", "delay" ],
-		"passwd" : [ "passwd_script" ],
-		"secure" : [ "identity_file", "ssh_options" ],
-		"ipaddr" : [ "ipport", "inet4_only", "inet6_only" ],
-		"port" : [ "separator" ],
-		"community" : [ "snmp_auth_prot", "snmp_sec_level", "snmp_priv_prot", \
-			"snmp_priv_passwd", "snmp_priv_passwd_script" ]
+		"default" : ["help", "debug", "verbose", "version", "action", "agent", \
+			"power_timeout", "shell_timeout", "login_timeout", "power_wait", "retry_on", "delay"],
+		"passwd" : ["passwd_script"],
+		"secure" : ["identity_file", "ssh_options"],
+		"ipaddr" : ["ipport", "inet4_only", "inet6_only"],
+		"port" : ["separator"],
+		"community" : ["snmp_auth_prot", "snmp_sec_level", "snmp_priv_prot", \
+			"snmp_priv_passwd", "snmp_priv_passwd_script"]
 	}
 
 class fspawn(pexpect.spawn):
@@ -425,7 +425,7 @@ def add_dependency_options(options):
 			added_opt.extend([y for y in DEPENDENCY_OPT[opt] if options.count(y) == 0])
 	return added_opt
 
-def fail_usage(message = ""):
+def fail_usage(message=""):
 	if len(message) > 0:
 		logging.error("%s\n", message)
 	logging.error("Please use '-h' for usage\n")
@@ -453,7 +453,7 @@ def usage(avail_opt):
 	print "\t" + os.path.basename(sys.argv[0]) + " [options]"
 	print "Options:"
 
-	sorted_list = [ (key, all_opt[key]) for key in avail_opt ]
+	sorted_list = [(key, all_opt[key]) for key in avail_opt]
 	sorted_list.sort(lambda x, y: cmp(x[1]["order"], y[1]["order"]))
 
 	for key, value in sorted_list:
@@ -462,7 +462,7 @@ def usage(avail_opt):
 
 def metadata(avail_opt, options, docs):
 	# avail_opt has to be unique, if there are duplicities then they should be removed
-	sorted_list = [ (key, all_opt[key]) for key in list(set(avail_opt)) ]
+	sorted_list = [(key, all_opt[key]) for key in list(set(avail_opt))]
 	sorted_list.sort(lambda x, y: cmp(x[1]["order"], y[1]["order"]))
 
 	print "<?xml version=\"1.0\" ?>"
@@ -494,11 +494,11 @@ def metadata(avail_opt, options, docs):
 				default = "true"
 
 			if default:
-				default = default.replace("&", "&amp;" )
-				default = default.replace('"', "&quot;" )
-				default = default.replace('<', "&lt;" )
-				default = default.replace('>', "&gt;" )
-				default = default.replace("'", "&apos;" )
+				default = default.replace("&", "&amp;")
+				default = default.replace('"', "&quot;")
+				default = default.replace('<', "&lt;")
+				default = default.replace('>', "&gt;")
+				default = default.replace("'", "&apos;")
 				default = "default=\"" + default + "\" "
 
 			mixed = all_opt[option]["help"]
@@ -557,7 +557,7 @@ def process_input(avail_opt):
 	## Prepare list of options for getopt
 	#####
 	getopt_string = ""
-	longopt_list = [ ]
+	longopt_list = []
 	for k in avail_opt:
 		if all_opt.has_key(k):
 			getopt_string += all_opt[k]["getopt"]
@@ -582,7 +582,7 @@ def process_input(avail_opt):
 		## Transform short getopt to long one which are used in fencing agents
 		#####
 		old_opt = opt
-		opt = { }
+		opt = {}
 		for o in dict(old_opt).keys():
 			if o.startswith("--"):
 				for x in all_opt.keys():
@@ -605,7 +605,7 @@ def process_input(avail_opt):
 		##
 		#####
 	else:
-		opt = { }
+		opt = {}
 		name = ""
 		for line in sys.stdin.readlines():
 			line = line.strip()
@@ -622,7 +622,7 @@ def process_input(avail_opt):
 
 			if all_opt[name]["getopt"].endswith(":"):
 				opt["--"+all_opt[name]["longopt"].rstrip(":")] = value
-			elif value.lower() in [ "1", "yes", "on", "true" ]:
+			elif value.lower() in ["1", "yes", "on", "true"]:
 				opt["--"+all_opt[name]["longopt"]] = "1"
 	return opt
 
@@ -684,7 +684,7 @@ def check_input(device_opt, opt):
 	#####
 	for opt in device_opt:
 		if all_opt[opt].has_key("default"):
-			getopt_long  = "--" + all_opt[opt]["longopt"]
+			getopt_long = "--" + all_opt[opt]["longopt"]
 			if not options.has_key(getopt_long):
 				options[getopt_long] = all_opt[opt]["default"]
 
@@ -699,7 +699,7 @@ def check_input(device_opt, opt):
 	if options.has_key("--verbose"):
 		logging.getLogger().setLevel(logging.DEBUG)
 
-	acceptable_actions = [ "on", "off", "status", "list", "monitor" ]
+	acceptable_actions = ["on", "off", "status", "list", "monitor"]
 	if 1 == device_opt.count("fabric_fencing"):
 		## Compatibility layer
 		#####
@@ -776,7 +776,7 @@ def check_input(device_opt, opt):
 				if not options["--" + all_opt[opt]["longopt"]] in possible_values_upper:
 					fail_usage("Failed: You have to enter a valid choice " + \
 							"for %s from the valid values: %s" % \
-							("--" + all_opt[opt]["longopt"] , str(all_opt[opt]["choices"])))
+							("--" + all_opt[opt]["longopt"], str(all_opt[opt]["choices"])))
 
 	return options
 
@@ -826,11 +826,11 @@ def set_multi_power_fn(tn, options, set_power_fn):
 	else:
 		set_power_fn(tn, options)
 
-def show_docs(options, docs = None):
+def show_docs(options, docs=None):
 	device_opt = options["device_opt"]
 
 	if docs == None:
-		docs = { }
+		docs = {}
 		docs["shortdesc"] = "Fence agent"
 		docs["longdesc"] = ""
 
@@ -849,7 +849,7 @@ def show_docs(options, docs = None):
 		print __main__.REDHAT_COPYRIGHT
 		sys.exit(0)
 
-def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None, reboot_cycle_fn = None):
+def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list=None, reboot_cycle_fn=None):
 	result = 0
 
 	try:
@@ -964,7 +964,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 
 	return result
 
-def fence_login(options, re_login_string = r"(login\s*: )|(Login Name:  )|(username: )|(User Name :)"):
+def fence_login(options, re_login_string=r"(login\s*: )|(Login Name:  )|(username: )|(User Name :)"):
 	force_ipvx = ""
 
 	if options.has_key("--inet6-only"):
@@ -977,14 +977,14 @@ def fence_login(options, re_login_string = r"(login\s*: )|(Login Name:  )|(usern
 		options["eol"] = "\r\n"
 
 	if options.has_key("--command-prompt") and type(options["--command-prompt"]) is not list:
-		options["--command-prompt"] = [ options["--command-prompt"] ]
+		options["--command-prompt"] = [options["--command-prompt"]]
 
 	## Do the delay of the fence device before logging in
 	run_delay(options)
 
 	try:
 		re_login = re.compile(re_login_string, re.IGNORECASE)
-		re_pass  = re.compile("(password)|(pass phrase)", re.IGNORECASE)
+		re_pass = re.compile("(password)|(pass phrase)", re.IGNORECASE)
 
 		if options.has_key("--ssl"):
 			gnutls_opts = ""
@@ -1011,7 +1011,7 @@ def fence_login(options, re_login_string = r"(login\s*: )|(Login Name:  )|(usern
 				# This is for stupid ssh servers (like ALOM) which behave more like telnet
 				# (ignore name and display login prompt)
 				result = conn.log_expect(options, \
-						[ re_login, "Are you sure you want to continue connecting (yes/no)?" ],
+						[re_login, "Are you sure you want to continue connecting (yes/no)?"],
 						int(options["--login-timeout"]))
 				if result == 1:
 					conn.sendline("yes") # Host identity confirm
@@ -1021,7 +1021,7 @@ def fence_login(options, re_login_string = r"(login\s*: )|(Login Name:  )|(usern
 				conn.log_expect(options, re_pass, int(options["--login-timeout"]))
 			else:
 				result = conn.log_expect(options, \
-						[ "ssword:", "Are you sure you want to continue connecting (yes/no)?" ],
+						["ssword:", "Are you sure you want to continue connecting (yes/no)?"],
 						int(options["--login-timeout"]))
 				if result == 1:
 					conn.sendline("yes")
@@ -1038,13 +1038,13 @@ def fence_login(options, re_login_string = r"(login\s*: )|(Login Name:  )|(usern
 
 			conn = fspawn(options, command)
 
-			result = conn.log_expect(options, [ "Enter passphrase for key '" + options["--identity-file"] + "':", \
-					"Are you sure you want to continue connecting (yes/no)?" ] + \
+			result = conn.log_expect(options, ["Enter passphrase for key '" + options["--identity-file"] + "':", \
+					"Are you sure you want to continue connecting (yes/no)?"] + \
 					options["--command-prompt"], int(options["--login-timeout"]))
 			if result == 1:
 				conn.sendline("yes")
 				result = conn.log_expect(options,
-					[ "Enter passphrase for key '" + options["--identity-file"]+"':"] + \
+					["Enter passphrase for key '" + options["--identity-file"]+"':"] + \
 					options["--command-prompt"], int(options["--login-timeout"]))
 			if result == 0:
 				if options.has_key("--password"):
@@ -1071,7 +1071,7 @@ def fence_login(options, re_login_string = r"(login\s*: )|(Login Name:  )|(usern
 
 			try:
 				conn.send_eol(options["--password"])
-				valid_password = conn.log_expect(options, [ re_login ] + \
+				valid_password = conn.log_expect(options, [re_login] + \
 						options["--command-prompt"], int(options["--shell-timeout"]))
 				if valid_password == 0:
 					## password is invalid or we have to change EOL separator
@@ -1100,7 +1100,7 @@ def is_executable(path):
 			return True
 	return False
 
-def run_command(options, command, timeout = None, env = None):
+def run_command(options, command, timeout=None, env=None):
 	if timeout is None and "--power-timeout" in options:
 		timeout = options["--power-timeout"]
 	if timeout is not None:
@@ -1113,7 +1113,7 @@ def run_command(options, command, timeout = None, env = None):
 	except OSError:
 		fail_usage("Unable to run %s\n" % command)
 
-	thread = threading.Thread(target = process.wait)
+	thread = threading.Thread(target=process.wait)
 	thread.start()
 	thread.join(timeout)
 	if thread.is_alive():

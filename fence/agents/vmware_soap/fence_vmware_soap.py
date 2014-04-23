@@ -34,7 +34,7 @@ def soap_login(options):
 
 	try:
 		conn = Client(url + "/vimService.wsdl")
-		conn.set_options(location = url)
+		conn.set_options(location=url)
 
 		mo_ServiceInstance = Property('ServiceInstance')
 		mo_ServiceInstance._type = 'ServiceInstance'
@@ -74,8 +74,8 @@ def get_power_status(conn, options):
 	mo_PropertyCollector = Property(options["ServiceContent"].propertyCollector.value)
 	mo_PropertyCollector._type = 'PropertyCollector'
 
-	ContainerView = conn.service.CreateContainerView(mo_ViewManager, recursive = 1,
-			container = mo_RootFolder, type = ['VirtualMachine'])
+	ContainerView = conn.service.CreateContainerView(mo_ViewManager, recursive=1,
+			container=mo_RootFolder, type=['VirtualMachine'])
 	mo_ContainerView = Property(ContainerView.value)
 	mo_ContainerView._type = "ContainerView"
 
@@ -87,7 +87,7 @@ def get_power_status(conn, options):
 
 	objSpec = conn.factory.create('ns0:ObjectSpec')
 	objSpec.obj = mo_ContainerView
-	objSpec.selectSet = [ FolderTraversalSpec ]
+	objSpec.selectSet = [FolderTraversalSpec]
 	objSpec.skip = True
 
 	propSpec = conn.factory.create('ns0:PropertySpec')
@@ -96,8 +96,8 @@ def get_power_status(conn, options):
 	propSpec.type = "VirtualMachine"
 
 	propFilterSpec = conn.factory.create('ns0:PropertyFilterSpec')
-	propFilterSpec.propSet = [ propSpec ]
-	propFilterSpec.objectSet = [ objSpec ]
+	propFilterSpec.propSet = [propSpec]
+	propFilterSpec.objectSet = [objSpec]
 
 	try:
 		raw_machines = conn.service.RetrievePropertiesEx(mo_PropertyCollector, propFilterSpec)
@@ -158,7 +158,7 @@ def get_power_status(conn, options):
 def set_power_status(conn, options):
 	mo_SearchIndex = Property(options["ServiceContent"].searchIndex.value)
 	mo_SearchIndex._type = "SearchIndex"
-	vm = conn.service.FindByUuid(mo_SearchIndex, vmSearch = 1, uuid = options["--uuid"])
+	vm = conn.service.FindByUuid(mo_SearchIndex, vmSearch=1, uuid=options["--uuid"])
 
 	mo_machine = Property(vm.value)
 	mo_machine._type = "VirtualMachine"
@@ -181,7 +181,7 @@ def remove_tmp_dir(tmp_dir):
 	shutil.rmtree(tmp_dir)
 
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "web", "ssl", "notls", "port" ]
+	device_opt = ["ipaddr", "login", "passwd", "web", "ssl", "notls", "port"]
 
 	atexit.register(atexit_handler)
 
@@ -190,7 +190,7 @@ def main():
 	##
 	## Fence agent specific defaults
 	#####
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for VMWare over SOAP API"
 	docs["longdesc"] = "fence_vmware_soap is an I/O Fencing agent \
 which can be used with the virtual machines managed by VMWare products \

@@ -27,19 +27,19 @@ def set_power_status(conn, options):
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "cmd_prompt" ]
+	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt"]
 
 	atexit.register(atexit_handler)
 
 	opt = process_input(device_opt)
 	if "--username" in opt:
-		all_opt["cmd_prompt"]["default"] = [ "\\[" + opt["--username"] + "\\]# " ]
+		all_opt["cmd_prompt"]["default"] = ["\\[" + opt["--username"] + "\\]# "]
 	else:
-		all_opt["cmd_prompt"]["default"] = [ "\\[" "username" + "\\]# " ]
+		all_opt["cmd_prompt"]["default"] = ["\\[" "username" + "\\]# "]
 
 	options = check_input(device_opt, opt)
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "I/O Fencing agent for Dell DRAC IV"
 	docs["longdesc"] = "fence_drac is an I/O Fencing agent which can be used with \
 the Dell Remote Access Card (DRAC). This card provides remote access to controlling \

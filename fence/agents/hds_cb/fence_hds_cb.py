@@ -84,7 +84,7 @@ def set_power_status(conn, options):
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 def get_blades_list(conn, options):
-	outlets = { }
+	outlets = {}
 
 	conn.sendline("S")	# Enter System Command Mode
 	conn.log_expect(options, "SVP>", int(options["--shell-timeout"]))
@@ -107,17 +107,17 @@ def get_blades_list(conn, options):
 	return outlets
 
 def main():
-	device_opt = [  "ipaddr", "login", "passwd", "cmd_prompt", "secure", \
-			"port", "missing_as_off" ]
+	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", \
+			"port", "missing_as_off"]
 
 	atexit.register(atexit_handler)
 
 	all_opt["power_wait"]["default"] = "5"
-	all_opt["cmd_prompt"]["default"] = [ r"\) :" ]
+	all_opt["cmd_prompt"]["default"] = [r"\) :"]
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for Hitachi Compute Blade systems"
 	docs["longdesc"] = "fence_hds_cb is an I/O Fencing agent \
 which can be used with Hitachi Compute Blades with recent enough firmware that \

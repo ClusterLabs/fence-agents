@@ -71,12 +71,12 @@ def eaton_set_device(conn):
 
 	agents_dir = {'.1.3.6.1.4.1.534.6.6.6':EatonManagedePDU,
 				'.1.3.6.1.4.1.20677.1':EatonSwitchedePDU,
-				'.1.3.6.1.4.1.20677.2':EatonSwitchedePDU }
+				'.1.3.6.1.4.1.20677.2':EatonSwitchedePDU}
 
 	# First resolve type of Eaton
 	eaton_type = conn.walk(OID_SYS_OBJECT_ID)
 
-	if not ((len(eaton_type)==1) and (agents_dir.has_key(eaton_type[0][1]))):
+	if not ((len(eaton_type) == 1) and (agents_dir.has_key(eaton_type[0][1]))):
 		eaton_type = [[None, None]]
 
 	device = agents_dir[eaton_type[0][1]]
@@ -134,7 +134,7 @@ def get_power_status(conn, options):
 	oid = ((device.has_switches) and device.status_oid%(switch_id, port_id) or device.status_oid%(port_id))
 
 	try:
-		(oid, status)=conn.get(oid)
+		(oid, status) = conn.get(oid)
 		if status == str(device.state_on):
 			return "on"
 		elif status == str(device.state_off):
@@ -158,7 +158,7 @@ def set_power_status(conn, options):
 
 	oid = ((device.has_switches) and device.control_oid%(switch_id, port_id) or device.control_oid%(port_id))
 
-	conn.set(oid,(options["--action"]=="on" and device.turn_on or device.turn_off))
+	conn.set(oid, (options["--action"] == "on" and device.turn_on or device.turn_off))
 
 
 def get_outlets_status(conn, options):
@@ -200,8 +200,8 @@ def get_outlets_status(conn, options):
 
 # Main agent method
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "no_login", "no_password", \
-		       "port", "snmp_version", "community" ]
+	device_opt = ["ipaddr", "login", "passwd", "no_login", "no_password", \
+		       "port", "snmp_version", "community"]
 
 	atexit.register(atexit_handler)
 
@@ -217,7 +217,7 @@ def main():
 	if options.has_key("--plug") and options["--plug"].isdigit():
 		options["--plug"] = str(int(options["--plug"]) - 1)
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for Eaton over SNMP"
 	docs["longdesc"] = "fence_eaton_snmp is an I/O Fencing agent \
 which can be used with the Eaton network power switch. It logs \

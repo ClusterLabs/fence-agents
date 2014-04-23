@@ -24,11 +24,11 @@ COMMAND_PROMPT_NEW = "[PEXPECT]"
 
 # Start comunicating after login. Prepare good environment.
 def start_communication(conn, options):
-	conn.send_eol ("PS1='"+COMMAND_PROMPT_NEW+"'")
+	conn.send_eol("PS1='" + COMMAND_PROMPT_NEW + "'")
 	res = conn.expect([pexpect.TIMEOUT, COMMAND_PROMPT_REG], int(options["--shell-timeout"]))
 	if res == 0:
 		#CSH stuff
-		conn.send_eol("set prompt='"+COMMAND_PROMPT_NEW+"'")
+		conn.send_eol("set prompt='" + COMMAND_PROMPT_NEW + "'")
 		conn.log_expect(options, COMMAND_PROMPT_REG, int(options["--shell-timeout"]))
 
 def get_power_status(conn, options):
@@ -50,9 +50,9 @@ def get_power_status(conn, options):
 			if fa_status == 0 and domain.group(1) == "NAME" and domain.group(2) == "STATE":
 				fa_status = 1
 			elif fa_status == 1:
-				result[domain.group(1)] = ("", (domain.group(2).lower()=="bound" and "off" or "on"))
+				result[domain.group(1)] = ("", (domain.group(2).lower() == "bound" and "off" or "on"))
 
-	if not options["--action"] in ['monitor','list']:
+	if not options["--action"] in ['monitor', 'list']:
 		if not options["--plug"] in result:
 			fail_usage("Failed: You have to enter existing logical domain!")
 		else:
@@ -63,23 +63,23 @@ def get_power_status(conn, options):
 def set_power_status(conn, options):
 	start_communication(conn, options)
 
-	cmd_line = "ldm "+(options["--action"]=="on" and "start" or "stop -f")+" \""+options["--plug"]+"\""
+	cmd_line = "ldm "+ (options["--action"] == "on" and "start" or "stop -f") + " \"" + options["--plug"] + "\""
 
 	conn.send_eol(cmd_line)
 
 	conn.log_expect(options, COMMAND_PROMPT_REG, int(options["--power-timeout"]))
 
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "cmd_prompt", "secure", "port" ]
+	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", "port"]
 
 	atexit.register(atexit_handler)
 
 	all_opt["secure"]["default"] = "1"
-	all_opt["cmd_prompt"]["default"] = [ r"\ $" ]
+	all_opt["cmd_prompt"]["default"] = [r"\ $"]
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for Sun LDOM"
 	docs["longdesc"] = "fence_ldom is an I/O Fencing agent \
 which can be used with LDoms virtual machines. This agent works \

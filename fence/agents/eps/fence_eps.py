@@ -64,14 +64,14 @@ def eps_run_command(options, params):
 
 def get_power_status(conn, options):
 	del conn
-	ret_val = eps_run_command(options,"")
+	ret_val = eps_run_command(options, "")
 
 	result = {}
 	status = re.findall(r"p(\d{2})=(0|1)\s*\<br\>", ret_val.lower())
 	for out_num, out_stat in status:
-		result[out_num] = ("",(out_stat=="1" and "on" or "off"))
+		result[out_num] = ("", (out_stat == "1" and "on" or "off"))
 
-	if not options["--action"] in ['monitor','list']:
+	if not options["--action"] in ['monitor', 'list']:
 		if not options["--plug"] in result:
 			fail_usage("Failed: You have to enter existing physical plug!")
 		else:
@@ -81,7 +81,7 @@ def get_power_status(conn, options):
 
 def set_power_status(conn, options):
 	del conn
-	eps_run_command(options, "P%s=%s"%(options["--plug"], (options["--action"]=="on" and "1" or "0")))
+	eps_run_command(options, "P%s=%s"%(options["--plug"], (options["--action"] == "on" and "1" or "0")))
 
 # Define new option
 def eps_define_new_opts():
@@ -97,8 +97,8 @@ def eps_define_new_opts():
 
 # Starting point of fence agent
 def main():
-	device_opt = [  "ipaddr", "login", "passwd", "no_login", "no_password", \
-			"port", "hidden_page" ]
+	device_opt = ["ipaddr", "login", "passwd", "no_login", "no_password", \
+			"port", "hidden_page"]
 
 	atexit.register(atexit_handler)
 
@@ -106,7 +106,7 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for ePowerSwitch"
 	docs["longdesc"] = "fence_eps  is an I/O Fencing agent \
 which can be used with the ePowerSwitch 8M+ power switch to fence \

@@ -55,7 +55,7 @@ def set_power_status(conn, options):
 
 def get_list(conn, options):
 	del conn
-	outlets = { }
+	outlets = {}
 
 	try:
 		res = send_command(options, "<configResolveClass cookie=\"" + options["cookie"] +
@@ -67,9 +67,9 @@ def get_list(conn, options):
 			desc = RE_GET_DESC.search(lines[i]).group(1)
 			outlets[node_name] = (desc, None)
 	except AttributeError:
-		return { }
+		return {}
 	except IndexError:
-		return { }
+		return {}
 
 	return outlets
 
@@ -86,7 +86,7 @@ def send_command(opt, command, timeout):
 	conn = pycurl.Curl()
 	web_buffer = StringIO.StringIO()
 	conn.setopt(pycurl.URL, url)
-	conn.setopt(pycurl.HTTPHEADER, [ "Content-type: text/xml" ])
+	conn.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
 	conn.setopt(pycurl.POSTFIELDS, command)
 	conn.setopt(pycurl.WRITEFUNCTION, web_buffer.write)
 	conn.setopt(pycurl.TIMEOUT, timeout)
@@ -108,10 +108,10 @@ def define_new_opts():
 		"required" : "0",
 		"shortdesc" : "Additional path needed to access suborganization",
 		"default" : "",
-		"order" : 1 }
+		"order" : 1}
 
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "ssl", "notls", "port", "web", "suborg" ]
+	device_opt = ["ipaddr", "login", "passwd", "ssl", "notls", "port", "web", "suborg"]
 
 	atexit.register(atexit_handler)
 
@@ -119,7 +119,7 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for Cisco UCS"
 	docs["longdesc"] = "fence_cisco_ucs is an I/O Fencing agent which can be \
 used with Cisco UCS to fence machines."

@@ -49,7 +49,7 @@ def get_power_status(conn, options):
 	return status == "1" and "on" or "off"
 
 def set_power_status(conn, options):
-	conn.set(PORT_OID, (options["--action"]=="on" and 1 or 2))
+	conn.set(PORT_OID, (options["--action"] == "on" and 1 or 2))
 
 def get_outlets_status(conn, options):
 	result = {}
@@ -74,21 +74,21 @@ def get_outlets_status(conn, options):
 def main():
 	global PORT_OID
 
-	device_opt = [ "fabric_fencing", "ipaddr", "login", "passwd", "no_login", "no_password", \
-		       "port", "snmp_version", "community" ]
+	device_opt = ["fabric_fencing", "ipaddr", "login", "passwd", "no_login", "no_password", \
+		       "port", "snmp_version", "community"]
 
 	atexit.register(atexit_handler)
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for Cisco MDS"
 	docs["longdesc"] = "fence_cisco_mds is an I/O Fencing agent \
 which can be used with any Cisco MDS 9000 series with SNMP enabled device."
 	docs["vendorurl"] = "http://www.cisco.com"
 	show_docs(options, docs)
 
-	if not options["--action"] in ["list","monitor"]:
+	if not options["--action"] in ["list", "monitor"]:
 		PORT_OID = cisco_port2oid(options["--plug"])
 
 	# Operate the fencing device

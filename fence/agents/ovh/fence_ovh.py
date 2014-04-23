@@ -20,7 +20,7 @@ from fencing import *
 from fencing import fail, fail_usage, EC_LOGIN_DENIED, run_delay
 
 OVH_RESCUE_PRO_NETBOOT_ID = '28'
-OVH_HARD_DISK_NETBOOT_ID  = '1'
+OVH_HARD_DISK_NETBOOT_ID = '1'
 
 STATUS_HARD_DISK_SLEEP = 240 # Wait 4 minutes to SO to boot
 STATUS_RESCUE_PRO_SLEEP = 150 # Wait 2 minutes 30 seconds to Rescue-Pro to run
@@ -33,7 +33,7 @@ def define_new_opts():
 		"required" : "1",
 		"shortdesc" : "Reboot email",
 		"default" : "",
-		"order" : 1 }
+		"order" : 1}
 
 def netboot_reboot(options, mode):
 	conn = soap_login(options)
@@ -51,8 +51,8 @@ def reboot_time(options):
 	conn = soap_login(options)
 
 	result = conn.service.dedicatedHardRebootStatus(options["session"], options["--plug"])
-	tmpstart = datetime.strptime(result.start,'%Y-%m-%d %H:%M:%S')
-	tmpend = datetime.strptime(result.end,'%Y-%m-%d %H:%M:%S')
+	tmpstart = datetime.strptime(result.start, '%Y-%m-%d %H:%M:%S')
+	tmpend = datetime.strptime(result.end, '%Y-%m-%d %H:%M:%S')
 	result.start = tmpstart
 	result.end = tmpend
 
@@ -83,7 +83,7 @@ def remove_tmp_dir(tmp_dir):
 	shutil.rmtree(tmp_dir)
 
 def main():
-	device_opt = [ "login", "passwd", "port", "email", "no_status" ]
+	device_opt = ["login", "passwd", "port", "email", "no_status"]
 
 	atexit.register(atexit_handler)
 
@@ -91,7 +91,7 @@ def main():
 	all_opt["action"]["help"] = "-o, --action=[action]          Action: reboot (default), off or on"
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for OVH"
 	docs["longdesc"] = "fence_ovh is an Power Fencing agent \
 which can be used within OVH datecentre. \
@@ -100,7 +100,7 @@ Poweroff is simulated with a reboot into rescue-pro mode."
 	docs["vendorurl"] = "http://www.ovh.net"
 	show_docs(options, docs)
 
-	if options["--action"] in [ "list", "status"]:
+	if options["--action"] in ["list", "status"]:
 		fail_usage("Action '" + options["--action"] + "' is not supported in this fence agent")
 
 	if not options["--plug"].endswith(".ovh.net"):
@@ -118,7 +118,7 @@ Poweroff is simulated with a reboot into rescue-pro mode."
 		# Reboot in Rescue-pro
 		netboot_reboot(options, OVH_RESCUE_PRO_NETBOOT_ID)
 		time.sleep(STATUS_RESCUE_PRO_SLEEP)
-	elif options["--action"] in  ['on', 'reboot' ]:
+	elif options["--action"] in  ['on', 'reboot']:
 		# Reboot from HD
 		netboot_reboot(options, OVH_HARD_DISK_NETBOOT_ID)
 		time.sleep(STATUS_HARD_DISK_SLEEP)

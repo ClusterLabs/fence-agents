@@ -35,18 +35,18 @@ def set_power_status(conn, options):
 	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "cmd_prompt", "secure" ]
+	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure"]
 
 	atexit.register(atexit_handler)
 
 	all_opt["login_timeout"]["default"] = 10
-	all_opt["cmd_prompt"]["default"] = [ ">" ]
+	all_opt["cmd_prompt"]["default"] = [">"]
 	# This device will not allow us to login even with LANG=C
 	all_opt["ssh_options"]["default"] = "-F /dev/null"
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for IBM RSA"
 	docs["longdesc"] = "fence_rsa is an I/O Fencing agent \
 which can be used with the IBM RSA II management interface. It \

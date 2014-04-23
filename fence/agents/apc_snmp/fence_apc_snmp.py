@@ -99,7 +99,7 @@ def apc_set_device(conn):
 	# First resolve type of APC
 	apc_type = conn.walk(OID_SYS_OBJECT_ID)
 
-	if not ((len(apc_type)==1) and (agents_dir.has_key(apc_type[0][1]))):
+	if not ((len(apc_type) == 1) and (agents_dir.has_key(apc_type[0][1]))):
 		apc_type = [[None, None]]
 
 	device = agents_dir[apc_type[0][1]]
@@ -148,7 +148,7 @@ def set_power_status(conn, options):
 
 	oid = ((device.has_switches) and device.control_oid%(switch_id, port_id) or device.control_oid%(port_id))
 
-	conn.set(oid, (options["--action"]=="on" and device.turn_on or device.turn_off))
+	conn.set(oid, (options["--action"] == "on" and device.turn_on or device.turn_off))
 
 
 def get_outlets_status(conn, options):
@@ -172,8 +172,8 @@ def get_outlets_status(conn, options):
 
 # Main agent method
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "no_login", "no_password", \
-		       "port", "snmp_version", "community" ]
+	device_opt = ["ipaddr", "login", "passwd", "no_login", "no_password", \
+		       "port", "snmp_version", "community"]
 
 	atexit.register(atexit_handler)
 
@@ -192,7 +192,7 @@ def main():
 	if not options.has_key("--switch"):
 		options["--switch"] = "1"
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for APC, Tripplite PDU over SNMP"
 	docs["longdesc"] = "fence_apc_snmp is an I/O Fencing agent \
 which can be used with the APC network power switch or Tripplite PDU devices.\

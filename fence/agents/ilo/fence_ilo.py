@@ -62,10 +62,10 @@ def define_new_opts():
 		"help" : "-r, --ribcl-version=[version]  Force ribcl version to use",
 		"required" : "0",
 		"shortdesc" : "Force ribcl version to use",
-		"order" : 1 }
+		"order" : 1}
 
 def main():
-	device_opt = [ "ipaddr", "login", "passwd", "ssl", "notls", "ribcl" ]
+	device_opt = ["ipaddr", "login", "passwd", "ssl", "notls", "ribcl"]
 
 	atexit.register(atexit_handler)
 
@@ -77,7 +77,7 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for HP iLO"
 	docs["longdesc"] = "fence_ilo is an I/O Fencing agent \
 used for HP servers with the Integrated Light Out (iLO) PCI card.\
@@ -94,7 +94,7 @@ the iLO card through an XML stream."
 	conn = fence_login(options)
 	try:
 		conn.send("<?xml version=\"1.0\"?>\r\n")
-		conn.log_expect(options, [ "</RIBCL>", "<END_RIBCL/>" ], int(options["--login-timeout"]))
+		conn.log_expect(options, ["</RIBCL>", "<END_RIBCL/>"], int(options["--login-timeout"]))
 		version = re.compile("<RIBCL VERSION=\"(.*?)\"", re.IGNORECASE).search(conn.before).group(1)
 		if not options.has_key("--ribcl-version"):
 			options["--ribcl-version"] = float(version)

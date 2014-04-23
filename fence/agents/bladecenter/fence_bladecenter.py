@@ -28,7 +28,7 @@ def get_power_status(conn, options):
 	node_cmd = r"system:blade\[" + options["--plug"] + r"\]>"
 
 	conn.send_eol("env -T system:blade[" + options["--plug"] + "]")
-	i = conn.log_expect(options, [ node_cmd, "system>" ] , int(options["--shell-timeout"]))
+	i = conn.log_expect(options, [node_cmd, "system>"], int(options["--shell-timeout"]))
 	if i == 1:
 		## Given blade number does not exist
 		if options.has_key("--missing-as-off"):
@@ -47,7 +47,7 @@ def set_power_status(conn, options):
 	node_cmd = r"system:blade\[" + options["--plug"] + r"\]>"
 
 	conn.send_eol("env -T system:blade[" + options["--plug"] + "]")
-	i = conn.log_expect(options, [ node_cmd, "system>" ] , int(options["--shell-timeout"]))
+	i = conn.log_expect(options, [node_cmd, "system>"], int(options["--shell-timeout"]))
 	if i == 1:
 		## Given blade number does not exist
 		if options.has_key("--missing-as-off"):
@@ -61,7 +61,7 @@ def set_power_status(conn, options):
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 def get_blades_list(conn, options):
-	outlets = { }
+	outlets = {}
 
 	node_cmd = "system>"
 
@@ -80,17 +80,17 @@ def get_blades_list(conn, options):
 	return outlets
 
 def main():
-	device_opt = [  "ipaddr", "login", "passwd", "cmd_prompt", "secure", \
-			"port", "missing_as_off" ]
+	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", \
+			"port", "missing_as_off"]
 
 	atexit.register(atexit_handler)
 
 	all_opt["power_wait"]["default"] = "10"
-	all_opt["cmd_prompt"]["default"] = [ "system>" ]
+	all_opt["cmd_prompt"]["default"] = ["system>"]
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for IBM BladeCenter"
 	docs["longdesc"] = "fence_bladecenter is an I/O Fencing agent \
 which can be used with IBM Bladecenters with recent enough firmware that \

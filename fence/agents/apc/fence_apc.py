@@ -71,7 +71,7 @@ def get_power_status(conn, options):
 
 	while True:
 		exp_result = conn.log_expect(options,
-				["Press <ENTER>" ] + options["--command-prompt"], int(options["--shell-timeout"]))
+				["Press <ENTER>"] + options["--command-prompt"], int(options["--shell-timeout"]))
 		lines = conn.before.split("\n")
 		show_re = re.compile(r'(^|\x0D)\s*(\d+)- (.*?)\s+(ON|OFF)\s*')
 		for line in lines:
@@ -150,7 +150,7 @@ def set_power_status(conn, options):
 		conn.send_eol(options["--switch"])
 
 	while 0 == conn.log_expect(options,
-			[ "Press <ENTER>" ] + options["--command-prompt"], int(options["--shell-timeout"])):
+			["Press <ENTER>"] + options["--command-prompt"], int(options["--shell-timeout"])):
 		conn.send_eol("")
 
 	conn.send_eol(options["--plug"]+"")
@@ -211,17 +211,17 @@ def set_power_status5(conn, options):
 	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 def main():
-	device_opt = [  "ipaddr", "login", "passwd", "cmd_prompt", "secure", \
-			"port", "switch" ]
+	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", \
+			"port", "switch"]
 
 	atexit.register(atexit_handler)
 
-	all_opt["cmd_prompt"]["default"] = [ "\n>", "\napc>" ]
+	all_opt["cmd_prompt"]["default"] = ["\n>", "\napc>"]
 	all_opt["ssh_options"]["default"] = "-1 -c blowfish"
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for APC over telnet/ssh"
 	docs["longdesc"] = "fence_apc is an I/O Fencing agent \
 which can be used with the APC network power switch. It logs into device \

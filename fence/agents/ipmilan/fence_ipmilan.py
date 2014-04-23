@@ -138,7 +138,7 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for IPMI"
 	docs["longdesc"] = "fence_ipmilan is an I/O Fencing agent\
 which can be used with machines controlled by IPMI.\

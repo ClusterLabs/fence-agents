@@ -7,7 +7,7 @@ import logging
 from fencing import *
 from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay
 
-__all__ = [ 'FencingSnmp' ]
+__all__ = ['FencingSnmp']
 
 ## do not add code here.
 #BEGIN_VERSION_GENERATION
@@ -26,10 +26,10 @@ class FencingSnmp:
 
 	def complete_missed_params(self):
 		mapping = [[
-					['snmp-priv-passwd','password','!snmp-sec-level'],
+					['snmp-priv-passwd', 'password', '!snmp-sec-level'],
 					'self.options["--snmp-sec-level"]="authPriv"'
-				],[
-					['!snmp-version','community','!username','!snmp-priv-passwd','!password'],
+				], [
+					['!snmp-version', 'community', '!username', '!snmp-priv-passwd', '!password'],
 					'self.options["--snmp-version"]="2c"'
 				]]
 
@@ -56,7 +56,7 @@ class FencingSnmp:
 		self.complete_missed_params()
 
 		#mapping from our option to snmpcmd option
-		mapping = (('snmp-version', 'v'),('community', 'c'))
+		mapping = (('snmp-version', 'v'), ('community', 'c'))
 
 		for item in mapping:
 			if self.options.has_key("--" + item[0]):
@@ -65,8 +65,8 @@ class FencingSnmp:
 		# Some options make sense only for v3 (and for v1/2c can cause "problems")
 		if (self.options.has_key("--snmp-version")) and (self.options["--snmp-version"] == "3"):
 			# Mapping from our options to snmpcmd options for v3
-			mapping_v3 = (('snmp-auth-prot','a'), ('snmp-sec-level','l'), ('snmp-priv-prot','x'), \
-				('snmp-priv-passwd','X'),('password','A'),('username','u'))
+			mapping_v3 = (('snmp-auth-prot', 'a'), ('snmp-sec-level', 'l'), ('snmp-priv-prot', 'x'), \
+				('snmp-priv-passwd', 'X'), ('password', 'A'), ('username', 'u'))
 			for item in mapping_v3:
 				if self.options.has_key("--"+item[0]):
 					cmd += " -%s '%s'"% (item[1], self.quote_for_run(self.options["--" + item[0]]))
@@ -80,7 +80,7 @@ class FencingSnmp:
 			force_ipvx = "udp:"
 
 		cmd += " '%s%s%s'"% (force_ipvx, self.quote_for_run(self.options["--ip"]),
-				self.options.has_key("--ipport") and self.quote_for_run(":" + str (self.options["--ipport"])) or "")
+				self.options.has_key("--ipport") and self.quote_for_run(":" + str(self.options["--ipport"])) or "")
 		return cmd
 
 	def run_command(self, command, additional_timemout=0):
@@ -97,7 +97,7 @@ class FencingSnmp:
 
 			logging.debug("%s\n", res_output)
 
-			if (res_code!=0) or (re.search("^Error ", res_output, re.MULTILINE) != None):
+			if (res_code != 0) or (re.search("^Error ", res_output, re.MULTILINE) != None):
 				fail_usage("Returned %d: %s"% (res_code, res_output))
 		except pexpect.ExceptionPexpect:
 			fail_usage("Cannot run command %s"%(command))
@@ -131,4 +131,4 @@ class FencingSnmp:
 
 		output = self.run_command(cmd, additional_timemout).splitlines()
 
-		return [ x.split(None,1) for x in output if x.startswith(".") ]
+		return [x.split(None, 1) for x in output if x.startswith(".")]

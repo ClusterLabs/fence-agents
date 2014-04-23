@@ -33,7 +33,7 @@ def reboot_cycle(_, options):
 	(status, _, _) = run_command(options, create_command(options, "cycle"))
 	return not bool(status)
 
-def amt_run_command(options, command, timeout = None):
+def amt_run_command(options, command, timeout=None):
 	env = os.environ.copy()
 	env["AMT_PASSWORD"] = quote(options["--password"])
 	return run_command(options, command, timeout, env)
@@ -89,14 +89,14 @@ def define_new_opts():
 def main():
 	atexit.register(atexit_handler)
 
-	device_opt = [ "ipaddr", "no_login", "passwd", "boot_option", "no_port",
-		"sudo", "amttool_path", "method" ]
+	device_opt = ["ipaddr", "no_login", "passwd", "boot_option", "no_port",
+		"sudo", "amttool_path", "method"]
 
 	define_new_opts()
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for AMT"
 	docs["longdesc"] = "fence_amt is an I/O Fencing agent \
 which can be used with Intel AMT. This agent calls support software amttool\

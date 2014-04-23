@@ -72,7 +72,7 @@ def set_power_status(conn, options):
 	if port_num == None:
 		port_num = port2index(conn, options["--plug"])
 
-	conn.set("%s.%d"%(STATUSES_OID, port_num), (options["--action"]=="on" and STATUS_UP or STATUS_DOWN))
+	conn.set("%s.%d" % (STATUSES_OID, port_num), (options["--action"] == "on" and STATUS_UP or STATUS_DOWN))
 
 def get_outlets_status(conn, options):
 	result = {}
@@ -92,8 +92,8 @@ def get_outlets_status(conn, options):
 
 # Main agent method
 def main():
-	device_opt = [ "fabric_fencing", "ipaddr", "login", "passwd", "no_login", "no_password", \
-		       "port", "snmp_version", "community" ]
+	device_opt = ["fabric_fencing", "ipaddr", "login", "passwd", "no_login", "no_password", \
+		       "port", "snmp_version", "community"]
 
 	atexit.register(atexit_handler)
 
@@ -101,7 +101,7 @@ def main():
 
 	options = check_input(device_opt, process_input(device_opt))
 
-	docs = { }
+	docs = {}
 	docs["shortdesc"] = "Fence agent for IF MIB"
 	docs["longdesc"] = "fence_ifmib is an I/O Fencing agent \
 which can be used with any SNMP IF-MIB capable device. \
