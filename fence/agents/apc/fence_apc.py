@@ -252,19 +252,7 @@ will block any necessary fencing actions."
 	else:
 		result = fence_action(conn, options, set_power_status, get_power_status, get_power_status)
 
-	##
-	## Logout from system
-	##
-	## In some special unspecified cases it is possible that
-	## connection will be closed before we run close(). This is not
-	## a problem because everything is checked before.
-	######
-	try:
-		conn.send_eol("4")
-		conn.close()
-	except Exception:
-		pass
-
+	fence_logout(conn, "4")
 	sys.exit(result)
 
 if __name__ == "__main__":

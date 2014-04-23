@@ -6,6 +6,7 @@ import logging
 import subprocess
 import threading
 import shlex
+import exceptions
 import __main__
 
 ## do not add code here.
@@ -16,7 +17,7 @@ BUILD_DATE = "March, 2008"
 #END_VERSION_GENERATION
 
 __all__ = [ 'atexit_handler', 'check_input', 'process_input', 'all_opt', 'show_docs',
-		'fence_login', 'fence_action' ]
+		'fence_login', 'fence_action', 'fence_logout' ]
 
 EC_GENERIC_ERROR   = 1
 EC_BAD_ARGS        = 2
@@ -1127,3 +1128,16 @@ def run_delay(options):
 	if options["--action"] in ["off", "reboot"]:
 		logging.info("Delay %s second(s) before logging in to the fence device", options["--delay"])
 		time.sleep(int(options["--delay"]))
+
+def fence_logout(conn, logout_string, sleep=0):
+	# Logout is not required part of fencing but we should attempt to do it properly
+	# In some cases our 'exit' command is faster and we can not close connection as it
+	# was already closed by fencing device
+	try:
+		conn.send_eol(logout_string)
+		time.sleep(sleep)
+		conn.close()
+	except exceptions.OSError:
+		pass
+	except pexpect.ExceptionPexpect:
+		pass

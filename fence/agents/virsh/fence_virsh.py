@@ -93,14 +93,8 @@ must allow ssh login in your sshd_config."
 	## Operate the fencing device
 	conn = fence_login(options)
 	result = fence_action(conn, options, set_power_status, get_power_status, get_outlets_status)
-
-	## Logout from system
-	try:
-		conn.sendline("quit")
-		conn.close()
-	except Exception:
-		pass
-
+	fence_logout(conn, "quit")
 	sys.exit(result)
+
 if __name__ == "__main__":
 	main()

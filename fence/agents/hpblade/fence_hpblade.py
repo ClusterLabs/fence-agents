@@ -81,16 +81,7 @@ and uses the command line interface to power on and off blades."
 	options["eol"] = "\n"
 	conn = fence_login(options)
 	result = fence_action(conn, options, set_power_status, get_power_status, get_blades_list)
-
-	##
-	## Logout from system
-	######
-	try:
-		conn.send_eol("exit")
-		conn.close()
-	except Exception:
-		pass
-
+	fence_logout(conn, "exit")
 	sys.exit(result)
 
 if __name__ == "__main__":

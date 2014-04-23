@@ -61,20 +61,7 @@ To enable telnet on the DRAC: \
 	####
 	conn = fence_login(options)
 	result = fence_action(conn, options, set_power_status, get_power_status, None)
-
-	##
-	## Logout from system
-	##
-	## In some special unspecified cases it is possible that
-	## connection will be closed before we run close(). This is not
-	## a problem because everything is checked before.
-	######
-	try:
-		conn.send_eol("exit")
-		conn.close()
-	except Exception:
-		pass
-
+	fence_logout(conn, "exit")
 	sys.exit(result)
 
 if __name__ == "__main__":

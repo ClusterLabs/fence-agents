@@ -101,18 +101,7 @@ root. Than prompt is $, so again, you must use parameter -c."
 	####
 	conn = fence_login(options)
 	result = fence_action(conn, options, set_power_status, get_power_status, get_power_status)
-
-	##
-	## Logout from system
-	######
-	try:
-		conn.send_eol("logout")
-		conn.close()
-	except exceptions.OSError:
-		pass
-	except pexpect.ExceptionPexpect:
-		pass
-
+	fence_logout(conn, "logout")
 	sys.exit(result)
 
 if __name__ == "__main__":

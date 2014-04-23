@@ -78,21 +78,9 @@ block any necessary fencing actions."
 		fail(EC_LOGIN_DENIED)
 	except pexpect.TIMEOUT:
 		fail(EC_LOGIN_DENIED)
+
 	result = fence_action(conn, options, set_power_status, get_power_status)
-
-	##
-	## Logout from system
-	##
-	## In some special unspecified cases it is possible that
-	## connection will be closed before we run close(). This is not
-	## a problem because everything is checked before.
-	######
-	try:
-		conn.send("exit\n")
-		conn.close()
-	except Exception:
-		pass
-
+	fence_logout(conn, "exit\n")
 	sys.exit(result)
 
 if __name__ == "__main__":

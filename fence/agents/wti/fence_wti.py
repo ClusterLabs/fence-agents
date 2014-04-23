@@ -236,16 +236,7 @@ is running because the connection will block any necessary fencing actions."
 		conn = fence_login(options)
 
 	result = fence_action(conn, options, set_power_status, get_power_status, get_power_status)
-
-	##
-	## Logout from system
-	######
-	try:
-		conn.send("/X"+"\r\n")
-		conn.close()
-	except Exception:
-		pass
-
+	fence_logout(conn, "/X\r\n")
 	sys.exit(result)
 
 if __name__ == "__main__":

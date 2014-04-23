@@ -146,17 +146,7 @@ By default, the telnet interface is not  enabled."
 			fail_usage("Failed: You have to enter module name (-n)")
 
 	result = fence_action(conn, options, set_power_status, get_power_status, get_list_devices)
-
-	##
-	## Logout from system
-	######
-	try:
-		conn.send_eol("exit")
-		time.sleep(1)
-		conn.close()
-	except Exception:
-		pass
-
+	fence_logout(conn, "exit", 1)
 	sys.exit(result)
 
 if __name__ == "__main__":

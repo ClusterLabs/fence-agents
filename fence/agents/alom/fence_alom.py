@@ -52,14 +52,7 @@ agent which can be used with ALOM connected machines."
 	# Operate the fencing device
 	conn = fence_login(options)
 	result = fence_action(conn, options, set_power_status, get_power_status, None)
-
-	# Logout from system
-	try:
-		conn.send_eol("logout")
-		conn.close()
-	except Exception:
-		pass
-
+	fence_logout(conn, "logout")
 	sys.exit(result)
 
 if __name__ == "__main__":
