@@ -1,7 +1,7 @@
 #!/usr/bin/python -tt
 
 import sys, getopt, time, os, uuid, pycurl, stat
-import pexpect, re, atexit, syslog
+import pexpect, re, syslog
 import logging
 import subprocess
 import threading
