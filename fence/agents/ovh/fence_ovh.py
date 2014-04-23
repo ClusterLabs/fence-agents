@@ -83,11 +83,12 @@ def remove_tmp_dir(tmp_dir):
 	shutil.rmtree(tmp_dir)
 
 def main():
-	device_opt = [ "login", "passwd", "port", "email" ]
+	device_opt = [ "login", "passwd", "port", "email", "no_status" ]
 
 	atexit.register(atexit_handler)
 
 	define_new_opts()
+	all_opt["action"]["help"] = "-o, --action=[action]          Action: reboot (default), off or on"
 	options = check_input(device_opt, process_input(device_opt))
 
 	docs = { }

@@ -93,7 +93,6 @@
 	<action name="on" automatic="0"/>
 	<action name="off" />
 	<action name="reboot" />
-	<action name="status" />
 	<action name="list" />
 	<action name="monitor" />
 	<action name="metadata" />

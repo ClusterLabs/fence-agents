@@ -125,6 +125,10 @@ all_opt = {
 		"getopt" : "",
 		"help" : "",
 		"order" : 1 },
+	"no_status" : {
+		"getopt" : "",
+		"help" : "",
+		"order" : 1 },
 	"passwd" : {
 		"getopt" : "p:",
 		"longopt" : "password",
@@ -524,7 +528,8 @@ def metadata(avail_opt, options, docs):
 	if avail_opt.count("fabric_fencing") == 0:
 		print "\t<action name=\"reboot\" />"
 
-	print "\t<action name=\"status\" />"
+	if avail_opt.count("no_status") == 0:
+		print "\t<action name=\"status\" />"
 	print "\t<action name=\"list\" />"
 	print "\t<action name=\"monitor\" />"
 	print "\t<action name=\"metadata\" />"
@@ -693,6 +698,9 @@ def check_input(device_opt, opt):
 		acceptable_actions.extend(["enable", "disable"])
 	else:
 		acceptable_actions.extend(["reboot"])
+
+	if 1 == device_opt.count("no_status"):
+		acceptable_actions.remove("status")
 
 	if 0 == acceptable_actions.count(options["--action"]):
 		fail_usage("Failed: Unrecognised action '" + options["--action"] + "'")
