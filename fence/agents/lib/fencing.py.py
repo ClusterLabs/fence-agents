@@ -1148,3 +1148,8 @@ def fence_logout(conn, logout_string, sleep=0):
 		pass
 	except pexpect.ExceptionPexpect:
 		pass
+
+# Convert array of format [[key1, value1], [key2, value2], ... [keyN, valueN]] to dict, where key is
+# in format a.b.c.d...z and returned dict has key only z
+def array_to_dict(ar):
+	return dict([[x[0].split(".")[-1], x[1]] for x in ar])

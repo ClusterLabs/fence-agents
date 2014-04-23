@@ -12,7 +12,7 @@ import sys
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail_usage
+from fencing import fail_usage, array_to_dict
 from fencing_snmp import FencingSnmp
 
 #BEGIN_VERSION_GENERATION
@@ -73,11 +73,6 @@ def set_power_status(conn, options):
 		port_num = port2index(conn, options["--plug"])
 
 	conn.set("%s.%d"%(STATUSES_OID, port_num), (options["--action"]=="on" and STATUS_UP or STATUS_DOWN))
-
-# Convert array of format [[key1, value1], [key2, value2], ... [keyN, valueN]] to dict, where key is
-# in format a.b.c.d...z and returned dict has key only z
-def array_to_dict(ar):
-	return dict([[x[0].split(".")[-1], x[1]] for x in ar])
 
 def get_outlets_status(conn, options):
 	result = {}
