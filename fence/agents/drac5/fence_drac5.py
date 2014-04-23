@@ -129,7 +129,7 @@ By default, the telnet interface is not  enabled."
 	######
 	conn = fence_login(options)
 
-	if options.has_key("--drac-version") == False:
+	if not options.has_key("--drac-version"):
 		## autodetect from text issued by fence device
 		if conn.before.find("CMC") >= 0:
 			options["--drac-version"] = "DRAC CMC"
@@ -142,7 +142,7 @@ By default, the telnet interface is not  enabled."
 			options["--drac-version"] = "DRAC 5"
 
 	if options["--drac-version"] in ["DRAC MC", "DRAC CMC"]:
-		if 0 == options.has_key("--plug") and 0 == ["monitor", "list"].count(options["--action"].lower()):
+		if not options.has_key("--plug") and 0 == ["monitor", "list"].count(options["--action"].lower()):
 			fail_usage("Failed: You have to enter module name (-n)")
 
 	result = fence_action(conn, options, set_power_status, get_power_status, get_list_devices)

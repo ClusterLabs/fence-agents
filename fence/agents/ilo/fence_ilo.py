@@ -39,7 +39,7 @@ def set_power_status(conn, options):
 		" PASSWORD = " + quoteattr(options["--password"]) + ">\r\n")
 	conn.send("<SERVER_INFO MODE = \"write\">")
 
-	if options.has_key("fw_processor") and options["fw_processor"] == "iLO2":
+	if options.get("fw_processor", None) == "iLO2":
 		if options["fw_version"] > 1.29:
 			conn.send("<HOLD_PWR_BTN TOGGLE=\"yes\" />\r\n")
 		else:
@@ -96,7 +96,7 @@ the iLO card through an XML stream."
 		conn.send("<?xml version=\"1.0\"?>\r\n")
 		conn.log_expect(options, [ "</RIBCL>", "<END_RIBCL/>" ], int(options["--login-timeout"]))
 		version = re.compile("<RIBCL VERSION=\"(.*?)\"", re.IGNORECASE).search(conn.before).group(1)
-		if options.has_key("--ribcl-version") == 0:
+		if not options.has_key("--ribcl-version"):
 			options["--ribcl-version"] = float(version)
 
 		if options["--ribcl-version"] >= 2:

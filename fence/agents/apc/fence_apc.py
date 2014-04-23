@@ -40,10 +40,10 @@ def get_power_status(conn, options):
 	if None != re.compile('.* MasterSwitch plus.*', re.IGNORECASE | re.S).match(conn.before):
 		switch = 1
 		if None != re.compile('.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before):
-			if 0 == options.has_key("--switch"):
+			if not options.has_key("--switch"):
 				fail_usage("Failed: You have to enter physical switch number")
 		else:
-			if 0 == options.has_key("--switch"):
+			if not options.has_key("--switch"):
 				options["--switch"] = "1"
 
 	if None == re.compile('.*Outlet Management.*', re.IGNORECASE | re.S).match(conn.before):
@@ -116,10 +116,10 @@ def set_power_status(conn, options):
 			'off': "3"
 		}[options["--action"]]
 		if None != re.compile('.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before):
-			if 0 == options.has_key("--switch"):
+			if not options.has_key("--switch"):
 				fail_usage("Failed: You have to enter physical switch number")
 		else:
-			if 0 == options.has_key("--switch"):
+			if not options.has_key("--switch"):
 				options["--switch"] = 1
 
 	if None == re.compile('.*Outlet Management.*', re.IGNORECASE | re.S).match(conn.before):

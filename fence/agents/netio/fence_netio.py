@@ -60,7 +60,7 @@ def main():
 	opt = process_input(device_opt)
 
 	# set default port for telnet only
-	if 0 == opt.has_key("--ipport"):
+	if not opt.has_key("--ipport"):
 		opt["--ipport"] = "1234"
 
 	opt["eol"] = "\r\n"

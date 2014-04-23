@@ -598,7 +598,7 @@ def process_input(avail_opt):
 		## Compatibility Layer
 		#####
 		z = dict(opt)
-		if z.has_key("--plug") == 1:
+		if z.has_key("--plug"):
 			z["-m"] = z["--plug"]
 
 		opt = z
@@ -685,13 +685,13 @@ def check_input(device_opt, opt):
 	for opt in device_opt:
 		if all_opt[opt].has_key("default"):
 			getopt_long  = "--" + all_opt[opt]["longopt"]
-			if 0 == options.has_key(getopt_long):
+			if not options.has_key(getopt_long):
 				options[getopt_long] = all_opt[opt]["default"]
 
 	## In special cases (show help, metadata or version) we don't need to check anything
 	#####
 	if options.has_key("--help") or options.has_key("--version") or \
-			(options.has_key("--action") and options["--action"].lower() == "metadata"):
+			options.get("--action", "").lower() == "metadata":
 		return options
 
 	options["--action"] = options["--action"].lower()
@@ -721,31 +721,31 @@ def check_input(device_opt, opt):
 		options["--action"] = "off"
 
 	## automatic detection and set of valid UUID from --plug
-	if (0 == options.has_key("--username")) and \
+	if not options.has_key("--username") and \
 			device_opt.count("login") and (device_opt.count("no_login") == 0):
 		fail_usage("Failed: You have to set login name")
 
-	if device_opt.count("ipaddr") and 0 == options.has_key("--ip") and 0 == options.has_key("--managed"):
+	if device_opt.count("ipaddr") and not options.has_key("--ip") and not options.has_key("--managed"):
 		fail_usage("Failed: You have to enter fence address")
 
 	if device_opt.count("no_password") == 0:
 		if 0 == device_opt.count("identity_file"):
-			if 0 == (options.has_key("--password") or options.has_key("--password-script")):
+			if not (options.has_key("--password") or options.has_key("--password-script")):
 				fail_usage("Failed: You have to enter password or password script")
 		else:
-			if 0 == (options.has_key("--password") or \
+			if not (options.has_key("--password") or \
 					options.has_key("--password-script") or options.has_key("--identity-file")):
 				fail_usage("Failed: You have to enter password, password script or identity file")
 
-	if 0 == options.has_key("--ssh") and 1 == options.has_key("--identity-file"):
+	if not options.has_key("--ssh") and options.has_key("--identity-file"):
 		fail_usage("Failed: You have to use identity file together with ssh connection (-x)")
 
-	if 1 == options.has_key("--identity-file"):
-		if 0 == os.path.isfile(options["--identity-file"]):
+	if options.has_key("--identity-file"):
+		if not os.path.isfile(options["--identity-file"]):
 			fail_usage("Failed: Identity file " + options["--identity-file"] + " does not exist")
 
 	if (0 == ["list", "monitor"].count(options["--action"].lower())) and \
-		0 == options.has_key("--plug") and device_opt.count("port") and device_opt.count("no_port") == 0:
+		not options.has_key("--plug") and device_opt.count("port") and device_opt.count("no_port") == 0:
 		fail_usage("Failed: You have to enter plug number or machine identification")
 
 	if options.has_key("--password-script"):
@@ -840,7 +840,7 @@ def show_docs(options, docs = None):
 		usage(device_opt)
 		sys.exit(0)
 
-	if options.has_key("--action") and options["--action"].lower() == "metadata":
+	if options.get("--action", "").lower() == "metadata":
 		metadata(device_opt, options, docs)
 		sys.exit(0)
 
@@ -910,7 +910,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list = None
 					fail(EC_WAITING_OFF)
 		elif options["--action"] == "reboot":
 			power_on = False
-			if options.has_key("--method") and options["--method"].lower() == "cycle" and reboot_cycle_fn is not None:
+			if options.get("--method", "").lower() == "cycle" and reboot_cycle_fn is not None:
 				for _ in range(1, 1 + int(options["--retry-on"])):
 					if reboot_cycle_fn(tn, options):
 						power_on = True
@@ -999,7 +999,7 @@ def fence_login(options, re_login_string = r"(login\s*: )|(Login Name:  )|(usern
 				logging.error("%s\n", str(ex))
 				syslog.syslog(syslog.LOG_ERR, str(ex))
 				sys.exit(EC_GENERIC_ERROR)
-		elif options.has_key("--ssh") and 0 == options.has_key("--identity-file"):
+		elif options.has_key("--ssh") and not options.has_key("--identity-file"):
 			command = '%s %s %s@%s -p %s -o PubkeyAuthentication=no' % \
 					(SSH_PATH, force_ipvx, options["--username"], options["--ip"], options["--ipport"])
 			if options.has_key("--ssh-options"):

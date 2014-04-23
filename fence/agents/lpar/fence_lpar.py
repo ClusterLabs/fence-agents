@@ -141,7 +141,7 @@ def main():
 	docs["vendorurl"] = "http://www.ibm.com"
 	show_docs(options, docs)
 
-	if 0 == options.has_key("--managed"):
+	if not options.has_key("--managed"):
 		fail_usage("Failed: You have to enter name of managed system")
 
 	##

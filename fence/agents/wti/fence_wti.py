@@ -202,7 +202,7 @@ is running because the connection will block any necessary fencing actions."
 	##
 	## @note: if it possible that this device does not need either login, password or both of them
 	#####
-	if 0 == options.has_key("--ssh"):
+	if not options.has_key("--ssh"):
 		try:
 			if options["--action"] in ["off", "reboot"]:
 				time.sleep(int(options["--delay"]))

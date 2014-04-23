@@ -103,10 +103,10 @@ Poweroff is simulated with a reboot into rescue-pro mode."
 	if options["--action"] in [ "list", "status"]:
 		fail_usage("Action '" + options["--action"] + "' is not supported in this fence agent")
 
-	if options["--plug"].endswith(".ovh.net") == False:
+	if not options["--plug"].endswith(".ovh.net"):
 		options["--plug"] += ".ovh.net"
 
-	if options.has_key("--email") == False:
+	if not options.has_key("--email"):
 		fail_usage("You have to enter e-mail address which is notified by fence agent")
 
 	# Save datetime just before changing netboot

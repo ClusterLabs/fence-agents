@@ -42,7 +42,7 @@ def set_power_status_file(conn, options):
 def get_power_status_fail(conn, options):
 	outlets = get_outlets_fail(conn, options)
 
-	if len(outlets) == 0 or options.has_key("--plug") == 0:
+	if len(outlets) == 0 or not options.has_key("--plug"):
 		fail_usage("Failed: You have to enter existing machine!")
 	else:
 		return outlets[options["--plug"]][0]
@@ -66,10 +66,10 @@ def get_outlets_fail(conn, options):
 
 	# This fake agent has no port data to list, so we have to make
 	# something up for the list action.
-	if options.has_key("--action") and options["--action"] == "list":
+	if options.get("--action", None) == "list":
 		result["fake_port_1"] = [plug_status, "fake"]
 		result["fake_port_2"] = [plug_status, "fake"]
-	elif options.has_key("--plug") == 0:
+	elif not options.has_key("--plug"):
 		fail_usage("Failed: You have to enter existing machine!")
 	else:
 		port = options["--plug"]

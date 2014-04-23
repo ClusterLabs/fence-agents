@@ -123,7 +123,7 @@ def get_power_status(conn, options):
 	if ["list", "monitor"].count(options["--action"]) == 1:
 		return machines
 	else:
-		if options.has_key("--uuid") == False:
+		if not options.has_key("--uuid"):
 			if options["--plug"].startswith('/'):
 				## Transform InventoryPath to UUID
 				mo_SearchIndex = Property(options["ServiceContent"].searchIndex.value)
