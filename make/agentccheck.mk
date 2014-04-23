@@ -12,4 +12,3 @@ xml-check.%: %
 xml-upload.%: %
 	$(eval INPUT=$(subst xml-upload.,,$@))
 	./$(INPUT) -o metadata > $(DATADIR)/$(INPUT).xml
-

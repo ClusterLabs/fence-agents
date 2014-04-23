@@ -219,8 +219,6 @@ the status of virtual machines running on the host."
 	run_delay(options)
 
 	xen_session = connect_and_login(options)
-
-	# Operate the fencing device
 	result = fence_action(xen_session, options, set_power_fn, get_power_fn, get_outlet_list)
 
 	sys.exit(result)

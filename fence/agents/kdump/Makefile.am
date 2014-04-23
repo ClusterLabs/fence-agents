@@ -13,6 +13,8 @@ fence_kdump_send_CFLAGS		= -D_GNU_SOURCE
 
 dist_man_MANS			= fence_kdump.8 fence_kdump_send.8
 
+FENCE_TEST_ARGS			= -n test
+
 include $(top_srcdir)/make/agentccheck.mk
 
 check: xml-check.fence_kdump

@@ -12,6 +12,8 @@ sbin_SCRIPTS		= $(TARGET) $(SYMTARGET)
 
 man_MANS		= $(TARGET).8 $(SYMTARGET:%=%.8)
 
+FENCE_TEST_ARGS         = -l test -p test -a test
+
 $(SYMTARGET): $(TARGET)
 	cp $^ $@
 
