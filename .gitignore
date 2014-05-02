@@ -65,6 +65,7 @@ fence/agents/node_assassin/fence_na.conf
 fence/agents/node_assassin/fence_na.lib
 fence/agents/node_assassin/fence_na.pod
 fence/agents/nss_wrapper/fence_nss_wrapper
+fence/agents/pve/fence_pve
 fence/agents/rackswitch/fence_rackswitch
 fence/agents/rhevm/fence_rhevm
 fence/agents/raritan/fence_raritan

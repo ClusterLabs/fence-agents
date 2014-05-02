@@ -283,6 +283,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/netio/Makefile
 		 fence/agents/rackswitch/Makefile
 		 fence/agents/ovh/Makefile
+		 fence/agents/pve/Makefile
 		 fence/agents/raritan/Makefile
 		 fence/agents/rhevm/Makefile
 		 fence/agents/rsa/Makefile
