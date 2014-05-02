@@ -370,6 +370,10 @@ all_opt = {
 		"shortdesc" : "Method to fence (onoff|cycle)",
 		"default" : "onoff",
 		"choices" : [ "onoff", "cycle" ],
+		"order" : 1},
+	"on_target": {
+		"getopt" : "",
+		"help" : "",
 		"order" : 1}
 }
 
@@ -521,7 +525,10 @@ def metadata(avail_opt, options, docs):
 	print "<actions>"
 	if avail_opt.count("fabric_fencing") == 1:
 		## do 'unfence' at the start
-		print "\t<action name=\"on\" automatic=\"1\"/>"
+		if avail_opt.count("on_target") == 1:
+			print "\t<action name=\"on\" on_target=\"1\" automatic=\"1\"/>"
+		else:
+			print "\t<action name=\"on\" automatic=\"1\"/>"
 	else:
 		print "\t<action name=\"on\" automatic=\"0\"/>"
 	print "\t<action name=\"off\" />"
