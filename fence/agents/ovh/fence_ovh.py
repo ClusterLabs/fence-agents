@@ -103,12 +103,12 @@ Poweroff is simulated with a reboot into rescue-pro mode."
 	if not options.has_key("--email"):
 		fail_usage("You have to enter e-mail address which is notified by fence agent")
 
+	run_delay(options)
+
 	conn = soap_login(options)
 
 	# Save datetime just before changing netboot
 	before_netboot_reboot = datetime.now()
-
-	run_delay(options)
 
 	if options["--action"] == 'off':
 		# Reboot in Rescue-pro
