@@ -12,6 +12,10 @@ $(TARGET): $(SRC)
 		-e 's#@''IPMITOOL_PATH@#${IPMITOOL_PATH}#g' \
 		-e 's#@''AMTTOOL_PATH@#${AMTTOOL_PATH}#g' \
 		-e 's#@''GNUTLSCLI_PATH@#${GNUTLSCLI_PATH}#g' \
+		-e 's#@''COROSYNC_CMAPCTL_PATH@#${COROSYNC_CMAPCTL_PATH}#g' \
+		-e 's#@''SG_PERSIST_PATH@#${SG_PERSIST_PATH}#g' \
+		-e 's#@''SG_TURS_PATH@#${SG_TURS_PATH}#g' \
+		-e 's#@''VGS_PATH@#${VGS_PATH}#g' \
 	> $@
 
 	if [ 0 -eq `echo "$(SRC)" | grep fence_ &> /dev/null; echo $$?` ]; then \

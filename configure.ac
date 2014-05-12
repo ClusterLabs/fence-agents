@@ -163,6 +163,10 @@ CLUSTERDATA=${datadir}/cluster
 AC_PATH_PROG([IPMITOOL_PATH], [ipmitool], [/usr/bin/ipmitool])
 AC_PATH_PROG([AMTTOOL_PATH], [amttool], [/usr/bin/amttool])
 AC_PATH_PROG([GNUTLSCLI_PATH], [gnutlscli], [/usr/bin/gnutls-cli])
+AC_PATH_PROG([COROSYNC_CMAPCTL_PATH], [corosync-cmapctl], [/usr/sbin/corosync-cmapctl])
+AC_PATH_PROG([SG_PERSIST_PATH], [sg_persist], [/usr/bin/sg_persist])
+AC_PATH_PROG([SG_TURS_PATH], [sg_turs], [/usr/bin/sg_turs])
+AC_PATH_PROG([VGS_PATH], [vgs], [/usr/sbin/vgs])
 ## do subst
 
 AC_SUBST([DEFAULT_CONFIG_DIR])
@@ -189,6 +193,10 @@ AM_CONDITIONAL(BUILD_XENAPILIB, test $XENAPILIB -eq 1)
 
 AC_SUBST([IPMITOOL_PATH])
 AC_SUBST([AMTTOOL_PATH])
+AC_SUBST([COROSYNC_CMAPCTL_PATH])
+AC_SUBST([SG_PERSIST_PATH])
+AC_SUBST([SG_TURS_PATH])
+AC_SUBST([VGS_PATH])
 
 ## *FLAGS handling
 
