@@ -529,14 +529,14 @@ zvm_metadata()
 	fprintf (stdout, "\t\t<getopt mixed=\"-u, --username\" />\n");
 	fprintf (stdout, "\t\t<content type=\"string\" />\n");
 	fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
-	     "Name of authorized SMAPI user\n");
+	     "Name of authorized SMAPI user");
 	fprintf (stdout, "\t</parameter>\n");
 
 	fprintf (stdout, "\t<parameter name=\"passwd\" unique=\"1\" required=\"1\">\n");
 	fprintf (stdout, "\t\t<getopt mixed=\"-p, --password\" />\n");
 	fprintf (stdout, "\t\t<content type=\"string\" />\n");
 	fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
-	     "Password of authorized SMAPI user\n");
+	     "Password of authorized SMAPI user");
 	fprintf (stdout, "\t</parameter>\n");
 
 	fprintf (stdout, "\t<parameter name=\"action\" unique=\"1\" required=\"0\">\n");

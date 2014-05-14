@@ -565,6 +565,7 @@ typedef struct {
 	char	 target[9];
 	char	 authUser[9];
 	char	 authPass[9];
+	char	 node[9];
 	char	 smapiSrv[128];
 } zvm_driver_t;
 

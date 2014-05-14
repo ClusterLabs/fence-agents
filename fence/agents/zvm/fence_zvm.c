@@ -58,6 +58,7 @@ static struct option longopts[] = {
 	{"ip",		required_argument,	NULL, 'a'},
 	{"plug",	required_argument,	NULL, 'n'},
 	{"timeout",	required_argument,	NULL, 'T'},
+	{"zvmsys",   	required_argument,	NULL, 'z'},
 	{NULL,		0,			NULL, 0}
 };
 
@@ -93,6 +94,7 @@ zvm_smapi_open(zvm_driver_t *zvm)
 		if ((rc = bind(zvm->sd,siucv_ptr,sockaddrlen)) != -1) {
 			memcpy(&siucv_addr.siucv_user_id,zvm->smapiSrv,strlen(zvm->smapiSrv));
 			memcpy(&siucv_addr.siucv_name,&iucvprog,8);
+			memcpy(&siucv_addr.siucv_nodeid,zvm->node,strlen(zvm->node));
 			rc = connect(zvm->sd,(__CONST_SOCKADDR_ARG)siucv_ptr,sockaddrlen);
 		}
 		if (rc == -1) {
@@ -372,6 +374,13 @@ zvm_metadata()
 	     "Name of the SMAPI IUCV Server Virtual Machine");
 	fprintf (stdout, "\t</parameter>\n");
 
+	fprintf (stdout, "\t<parameter name=\"zvmsys\" unique=\"1\" required=\"0\">\n");
+	fprintf (stdout, "\t\t<getopt mixed=\"--zvmsys\" />\n");
+	fprintf (stdout, "\t\t<content type=\"string\" />\n");
+	fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
+	     "Node of the SMAPI IUCV Server Virtual Machine");
+	fprintf (stdout, "\t</parameter>\n");
+
 	fprintf (stdout, "\t<parameter name=\"action\" unique=\"1\" required=\"0\">\n");
 	fprintf (stdout, "\t\t<getopt mixed=\"-o, --action\" />\n");
 	fprintf (stdout, "\t\t<content type=\"string\" default=\"off\" />\n");
@@ -412,6 +421,7 @@ get_options_stdin (zvm_driver_t *zvm)
 		*opt,
 		*arg;
 	int32_t lSrvName,
+		lSrvNode,
 		lTarget;
 	int	fence = 0;
 
@@ -459,6 +469,10 @@ get_options_stdin (zvm_driver_t *zvm)
 				       arg, DEFAULT_TIMEOUT);
 				zvm->timeOut = DEFAULT_TIMEOUT;
 			}
+		} else if (!strcasecmp (opt, "zvmsys")) {
+			lSrvNode = MIN(strlen(arg), sizeof(zvm->node));
+			memcpy(zvm->node, arg, lSrvNode);
+			continue;
 		} else if (!strcasecmp (opt, "help")) {
 			fence = 2;
 		}
@@ -479,6 +493,7 @@ get_options(int argc, char **argv, zvm_driver_t *zvm)
 	int	c,
 		fence = 0;
 	int32_t	lSrvName,
+		lSrvNode,
 		lTarget;
 	char	*endPtr;
 
@@ -497,11 +512,11 @@ get_options(int argc, char **argv, zvm_driver_t *zvm)
 				fence = 2;
 			}
 			break;
-		case 's' :
+		case 'a' :
 			lSrvName = MIN(strlen(optarg), sizeof(zvm->smapiSrv));
 			memcpy(zvm->smapiSrv, optarg, lSrvName);
 			break;
-		case 't' :
+		case 'T' :
 			zvm->timeOut = strtoul(optarg, &endPtr, 10);
 			if (*endPtr != 0) {
 				syslog(LOG_WARNING, "Invalid timeout value specified: %s - "
@@ -509,6 +524,10 @@ get_options(int argc, char **argv, zvm_driver_t *zvm)
 				       optarg, DEFAULT_TIMEOUT);
 				zvm->timeOut = DEFAULT_TIMEOUT;
 			}
+			break;
+		case 'z' :
+			lSrvNode = MIN(strlen(optarg), sizeof(zvm->node));
+			memcpy(zvm->node, optarg, lSrvNode);
 			break;
 		default :
 			fence = 2;
@@ -528,8 +547,9 @@ usage()
 		"\tWhere [options] =\n"
 		"\t-o --action [action]    - \"off\", \"metadata\"\n"
 		"\t-n --plug [target]      - Name of virtual machine to fence\n"
-		"\t-s --server [server]    - Name of SMAPI IUCV Request server\n"
+		"\t-a --ip [server]        - Name of SMAPI IUCV Request server\n"
 		"\t-T --timeout [secs]     - Time to wait for fence in seconds - currently ignored\n"
+		"\t--zvmsys [node]         - z/VM Node on which SMAPI server lives\n"
 		"\t-h --help               - Display this usage information\n");
 	return(1);
 }
