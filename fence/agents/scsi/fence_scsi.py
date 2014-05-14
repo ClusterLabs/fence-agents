@@ -10,6 +10,7 @@ import atexit
 import hashlib
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import fail_usage, run_command, atexit_handler, check_input, process_input, show_docs, fence_action, all_opt
+from fencing import run_delay
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION=""
@@ -407,6 +408,8 @@ longer be able to write to the device(s). A manual reboot is required."
 	docs["vendorurl"] = ""
 	show_docs(options, docs)
 
+	run_delay(options)
+
 	# backward compatibility layer BEGIN
 	if "--logfile" in options:
 		try:
@@ -440,10 +443,6 @@ longer be able to write to the device(s). A manual reboot is required."
 	if not options["devices"]:
 		fail_usage("Failed: No devices found")
 	# Input control END
-
-	# backward compatibility layer
-	if "--delay" in options and options["--delay"].isdigit():
-		time.sleep(int(options["--delay"]))
 
 	result = fence_action(None, options, set_status, get_status)
 	sys.exit(result)

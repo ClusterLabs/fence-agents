@@ -10,6 +10,8 @@ sbin_SCRIPTS		= $(TARGET) fence_scsi_check
 
 man_MANS		= $(TARGET).8
 
+FENCE_TEST_ARGS         = -k 1
+
 fence_scsi_check: $(TARGET)
 	cp -s $^ $@
 
