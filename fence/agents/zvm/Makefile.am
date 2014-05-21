@@ -12,7 +12,9 @@ fence_zvmip_CFLAGS	= -D_GNU_SOURCE
 
 dist_man_MANS		= fence_zvm.8 fence_zvmip.8
 
+FENCE_TEST_ARGS		= -n test -a test -p test -u test
+
 include $(top_srcdir)/make/agentccheck.mk
 
 # we do not test fence_zvm because it can be compiled only on specific architecture
-check: xml-check.fence_zvmip
+check: xml-check.fence_zvmip delay-check.fence_zvmip
