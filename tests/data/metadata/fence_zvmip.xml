@@ -15,19 +15,22 @@
 	<parameter name="login" unique="1" required="1">
 		<getopt mixed="-u, --username" />
 		<content type="string" />
-		<shortdesc lang="en">Name of authorized SMAPI user
-</shortdesc>
+		<shortdesc lang="en">Name of authorized SMAPI user</shortdesc>
 	</parameter>
 	<parameter name="passwd" unique="1" required="1">
 		<getopt mixed="-p, --password" />
 		<content type="string" />
-		<shortdesc lang="en">Password of authorized SMAPI user
-</shortdesc>
+		<shortdesc lang="en">Password of authorized SMAPI user</shortdesc>
 	</parameter>
 	<parameter name="action" unique="1" required="0">
 		<getopt mixed="-o, --action" />
 		<content type="string" default="off" />
 		<shortdesc lang="en">Fencing action</shortdesc>
+	</parameter>
+	<parameter name="delay" unique="1" required="0">
+		<getopt mixed="--delay" />
+		<content type="string" default="0" />
+		<shortdesc lang="en">Time to delay fencing action in seconds</shortdesc>
 	</parameter>
 	<parameter name="usage" unique="1" required="0">
 		<getopt mixed="-h, --help" />
