@@ -562,6 +562,7 @@ typedef struct {
 	int	 sd;
 	int	 reason;
 	uint32_t timeOut;
+	uint32_t delay;
 	char	 target[9];
 	char	 authUser[9];
 	char	 authPass[9];

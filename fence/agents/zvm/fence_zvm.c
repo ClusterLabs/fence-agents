@@ -49,11 +49,13 @@
 
 #define MIN(a,b)	((a) < (b) ? (a) : (b))
 #define DEFAULT_TIMEOUT 300
+#define DEFAULT_DELAY   0
 
 static int zvm_smapi_reportError(void *, void *);
 
 static struct option longopts[] = {
 	{"action",	required_argument,	NULL, 'o'},
+	{"delay",	required_argument,	NULL, 'h'},
 	{"help",	no_argument,		NULL, 'h'},
 	{"ip",		required_argument,	NULL, 'a'},
 	{"plug",	required_argument,	NULL, 'n'},
@@ -135,6 +137,12 @@ zvm_smapi_imageRecycle(zvm_driver_t *zvm)
 	int32_t	lRsp;
 	uint32_t reqId;
 	int	rc;
+
+	/*
+	 * Implement any delay
+	 */ 
+	if (zvm->delay > 0) 
+		sleep(zvm->delay);
 
 	lInPlist = sizeof(*inPlist) + strlen(zvm->target);
 	inPlist = malloc(lInPlist);
@@ -388,6 +396,13 @@ zvm_metadata()
 	     "Fencing action");
 	fprintf (stdout, "\t</parameter>\n");
 
+	fprintf (stdout, "\t<parameter name=\"delay\" unique=\"1\" required=\"0\">\n");
+	fprintf (stdout, "\t\t<getopt mixed=\"--delay\" />\n");
+	fprintf (stdout, "\t\t<content type=\"string\" default=\"0\" />\n");
+	fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
+	     "Time to delay fencing action in seconds");
+	fprintf (stdout, "\t</parameter>\n");
+
 	fprintf (stdout, "\t<parameter name=\"usage\" unique=\"1\" required=\"0\">\n");
 	fprintf (stdout, "\t\t<getopt mixed=\"-h, --help\" />\n");
 	fprintf (stdout, "\t\t<content type=\"boolean\" />\n");
@@ -466,13 +481,21 @@ get_options_stdin (zvm_driver_t *zvm)
 			if (*endPtr != 0) {
 				syslog(LOG_WARNING, "Invalid timeout value specified %s "
 				       "defaulting to %d", 
-				       arg, DEFAULT_TIMEOUT);
-				zvm->timeOut = DEFAULT_TIMEOUT;
+				       arg, DEFAULT_DELAY);
+				zvm->timeOut = DEFAULT_DELAY;
 			}
 		} else if (!strcasecmp (opt, "zvmsys")) {
 			lSrvNode = MIN(strlen(arg), sizeof(zvm->node));
 			memcpy(zvm->node, arg, lSrvNode);
 			continue;
+		} else if (!strcasecmp (opt, "delay")) {
+			zvm->delay = strtoul(arg, &endPtr, 10);
+			if (*endPtr != 0) {
+				syslog(LOG_WARNING, "Invalid delay value specified %s "
+				       "defaulting to %d", 
+				       arg, DEFAULT_DELAY);
+				zvm->delay = DEFAULT_DELAY;
+			}
 		} else if (!strcasecmp (opt, "help")) {
 			fence = 2;
 		}
@@ -525,6 +548,15 @@ get_options(int argc, char **argv, zvm_driver_t *zvm)
 				zvm->timeOut = DEFAULT_TIMEOUT;
 			}
 			break;
+		case 'd' :
+			zvm->delay = strtoul(optarg, &endPtr, 10);
+			if (*endPtr != 0) {
+				syslog(LOG_WARNING, "Invalid delay value specified: %s - "
+				       "defaulting to %d", 
+				       optarg, DEFAULT_DELAY);
+				zvm->delay = DEFAULT_DELAY;
+			}
+			break;
 		case 'z' :
 			lSrvNode = MIN(strlen(optarg), sizeof(zvm->node));
 			memcpy(zvm->node, optarg, lSrvNode);
@@ -546,6 +578,7 @@ usage()
 	fprintf(stderr,"Usage: fence_zvm [options]\n\n"
 		"\tWhere [options] =\n"
 		"\t-o --action [action]    - \"off\", \"metadata\"\n"
+		"\t--delay [seconds]       - Time to delay fencing action in seconds\n"
 		"\t-n --plug [target]      - Name of virtual machine to fence\n"
 		"\t-a --ip [server]        - Name of SMAPI IUCV Request server\n"
 		"\t-T --timeout [secs]     - Time to wait for fence in seconds - currently ignored\n"
@@ -588,6 +621,7 @@ main(int argc, char **argv)
 	openlog ("fence_zvm", LOG_CONS|LOG_PID, LOG_DAEMON);
 	memset(&zvm, 0, sizeof(zvm));
 	zvm.timeOut = DEFAULT_TIMEOUT;
+	zvm.delay   = DEFAULT_DELAY;
 
 	if (argc > 1)
 		fence = get_options(argc, argv, &zvm);
