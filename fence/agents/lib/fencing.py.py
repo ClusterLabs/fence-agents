@@ -780,40 +780,29 @@ def check_input(device_opt, opt):
 
 	return options
 
-def wait_power_status(tn, options, get_power_fn):
-	for dummy in xrange(int(options["--power-timeout"])):
-		if get_multi_power_fn(tn, options, get_power_fn) != options["--action"]:
-			time.sleep(1)
-		else:
-			return 1
-	return 0
-
 ## Obtain a power status from possibly more than one plug
 ##	"on" is returned if at least one plug is ON
 ######
 def get_multi_power_fn(tn, options, get_power_fn):
 	status = "off"
 
-	if options.has_key("--plugs"):
-		for plug in options["--plugs"]:
-			try:
-				options["--uuid"] = str(uuid.UUID(plug))
-			except ValueError:
-				pass
-			except KeyError:
-				pass
+	for plug in options["--plugs"]:
+		try:
+			options["--uuid"] = str(uuid.UUID(plug))
+		except ValueError:
+			pass
+		except KeyError:
+			pass
 
-			options["--plug"] = plug
-			plug_status = get_power_fn(tn, options)
-			if plug_status != "off":
-				status = plug_status
-	else:
-		status = get_power_fn(tn, options)
+		options["--plug"] = plug
+		plug_status = get_power_fn(tn, options)
+		if plug_status != "off":
+			status = plug_status
 
 	return status
 
-def set_multi_power_fn(tn, options, set_power_fn):
-	if options.has_key("--plugs"):
+def set_multi_power_fn(tn, options, set_power_fn, get_power_fn, retry_attempts = 1):
+	for _ in range(1, retry_attempts):
 		for plug in options["--plugs"]:
 			try:
 				options["--uuid"] = str(uuid.UUID(plug))
@@ -821,10 +810,17 @@ def set_multi_power_fn(tn, options, set_power_fn):
 				pass
 			except KeyError:
 				pass
+
 			options["--plug"] = plug
 			set_power_fn(tn, options)
-	else:
-		set_power_fn(tn, options)
+			time.sleep(int(options["--power-wait"]))
+
+	for _ in xrange(int(options["--power-timeout"])):
+		if get_multi_power_fn(tn, options, get_power_fn) != options["--action"]:
+			time.sleep(1)
+		else:
+			return True
+	return False
 
 def show_docs(options, docs=None):
 	device_opt = options["device_opt"]
@@ -882,32 +878,20 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list=None, 
 		if status != "on" and status != "off":
 			fail(EC_STATUS)
 
-		if options["--action"] == "on":
-			if status == "on":
-				print "Success: Already ON"
-			else:
-				power_on = False
-				for _ in range(1, 1 + int(options["--retry-on"])):
-					set_multi_power_fn(tn, options, set_power_fn)
-					time.sleep(int(options["--power-wait"]))
-					if wait_power_status(tn, options, get_power_fn):
-						power_on = True
-						break
+		if options["--action"] == status:
+			print "Success: Already %s" % (status.upper())
+			return 0
 
-				if power_on:
-					print "Success: Powered ON"
-				else:
-					fail(EC_WAITING_ON)
-		elif options["--action"] == "off":
-			if status == "off":
-				print "Success: Already OFF"
+		if options["--action"] == "on":
+			if set_multi_power_fn(tn, options, set_power_fn, get_power_fn, 1 + int(options["--retry-on"])):
+				print "Success: Powered ON"
 			else:
-				set_multi_power_fn(tn, options, set_power_fn)
-				time.sleep(int(options["--power-wait"]))
-				if wait_power_status(tn, options, get_power_fn):
-					print "Success: Powered OFF"
-				else:
-					fail(EC_WAITING_OFF)
+				fail(EC_WAITING_ON)
+		elif options["--action"] == "off":
+			if set_multi_power_fn(tn, options, set_power_fn, get_power_fn):
+				print "Success: Powered OFF"
+			else:
+				fail(EC_WAITING_OFF)
 		elif options["--action"] == "reboot":
 			power_on = False
 			if options.get("--method", "").lower() == "cycle" and reboot_cycle_fn is not None:
@@ -922,19 +906,13 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list=None, 
 			else:
 				if status != "off":
 					options["--action"] = "off"
-					set_multi_power_fn(tn, options, set_power_fn)
-					time.sleep(int(options["--power-wait"]))
-					if wait_power_status(tn, options, get_power_fn) == 0:
+					if not set_multi_power_fn(tn, options, set_power_fn, get_power_fn):
 						fail(EC_WAITING_OFF)
+
 				options["--action"] = "on"
 
 				try:
-					for _ in range(1, 1 + int(options["--retry-on"])):
-						set_multi_power_fn(tn, options, set_power_fn)
-						time.sleep(int(options["--power-wait"]))
-						if wait_power_status(tn, options, get_power_fn) == 1:
-							power_on = True
-							break
+					power_on = set_multi_power_fn(tn, options, set_power_fn, get_power_fn, int(options["--retry-on"]))
 				except Exception, ex:
 					# an error occured during power ON phase in reboot
 					# fence action was completed succesfully even in that case
