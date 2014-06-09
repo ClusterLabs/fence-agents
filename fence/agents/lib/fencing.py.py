@@ -785,8 +785,9 @@ def check_input(device_opt, opt):
 ######
 def get_multi_power_fn(tn, options, get_power_fn):
 	status = "off"
+	plugs = options["--plugs"] if options.has_key("--plugs") else [""]
 
-	for plug in options["--plugs"]:
+	for plug in plugs:
 		try:
 			options["--uuid"] = str(uuid.UUID(plug))
 		except ValueError:
@@ -802,8 +803,10 @@ def get_multi_power_fn(tn, options, get_power_fn):
 	return status
 
 def set_multi_power_fn(tn, options, set_power_fn, get_power_fn, retry_attempts = 1):
-	for _ in range(1, retry_attempts):
-		for plug in options["--plugs"]:
+	plugs = options["--plugs"] if options.has_key("--plugs") else [""]
+
+	for _ in range(retry_attempts):
+		for plug in plugs:
 			try:
 				options["--uuid"] = str(uuid.UUID(plug))
 			except ValueError:
