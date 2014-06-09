@@ -12,7 +12,6 @@ LT_PREREQ([2.2.6])
 LT_INIT
 
 AC_CONFIG_MACRO_DIR([m4])
-AC_CONFIG_SRCDIR([fence/agents/rackswitch/do_rack.h])
 AC_CONFIG_HEADERS([make/clusterautoconfig.h])
 
 AC_CANONICAL_HOST
@@ -261,18 +260,14 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/apc/Makefile
 		 fence/agents/apc_snmp/Makefile
 		 fence/agents/amt/Makefile 
-		 fence/agents/baytech/Makefile
 		 fence/agents/bladecenter/Makefile
 		 fence/agents/brocade/Makefile
-		 fence/agents/bullpap/Makefile
 		 fence/agents/cisco_mds/Makefile
 		 fence/agents/cisco_ucs/Makefile
-		 fence/agents/cpint/Makefile
 		 fence/agents/drac/Makefile
 		 fence/agents/drac5/Makefile
 		 fence/agents/dummy/Makefile
 		 fence/agents/eaton_snmp/Makefile
-		 fence/agents/egenera/Makefile
 		 fence/agents/eps/Makefile
 		 fence/agents/hpblade/Makefile
 		 fence/agents/ibmblade/Makefile
@@ -287,9 +282,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/lib/Makefile
 		 fence/agents/lpar/Makefile
 		 fence/agents/manual/Makefile
-		 fence/agents/mcdata/Makefile
 		 fence/agents/netio/Makefile
-		 fence/agents/rackswitch/Makefile
 		 fence/agents/ovh/Makefile
 		 fence/agents/pve/Makefile
 		 fence/agents/raritan/Makefile
@@ -299,11 +292,9 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/sanbox2/Makefile
 		 fence/agents/scsi/Makefile
 		 fence/agents/virsh/Makefile
-		 fence/agents/vixel/Makefile
 		 fence/agents/vmware/Makefile
 		 fence/agents/vmware_soap/Makefile
 		 fence/agents/wti/Makefile
-		 fence/agents/xcat/Makefile
 		 fence/agents/xenapi/Makefile
 		 fence/agents/hds_cb/Makefile
 		 fence/agents/zvm/Makefile
