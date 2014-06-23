@@ -818,11 +818,11 @@ def set_multi_power_fn(tn, options, set_power_fn, get_power_fn, retry_attempts =
 			set_power_fn(tn, options)
 			time.sleep(int(options["--power-wait"]))
 
-	for _ in xrange(int(options["--power-timeout"])):
-		if get_multi_power_fn(tn, options, get_power_fn) != options["--action"]:
-			time.sleep(1)
-		else:
-			return True
+		for _ in xrange(int(options["--power-timeout"])):
+			if get_multi_power_fn(tn, options, get_power_fn) != options["--action"]:
+				time.sleep(1)
+			else:
+				return True
 	return False
 
 def show_docs(options, docs=None):
