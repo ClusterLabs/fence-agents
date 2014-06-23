@@ -406,9 +406,12 @@ _sc_set(void *config, const char *key, const char *value)
 	id_dup = strdup(ptr);
 	if (!id_dup)
 		return -1;
+
 	val_dup = strdup(value);
-	if (!val_dup)
+	if (!val_dup) {
+		free(id_dup);
 		return -1;
+	}
 	_sc_value_add(id_dup, val_dup, values);
 
 	return 0;
