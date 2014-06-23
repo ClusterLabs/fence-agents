@@ -144,7 +144,7 @@ connect_tcp(fence_req_t *req, fence_auth_type_t auth,
 		}
 		break;
 	case PF_INET6:
-		memset(&sin6, 0, sizeof(sin));
+		memset(&sin6, 0, sizeof(sin6));
 		memcpy(&sin6.sin6_addr, req->address,
 		       sizeof(sin6.sin6_addr));
 		sin.sin_family = PF_INET6;
