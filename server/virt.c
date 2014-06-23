@@ -40,85 +40,62 @@ _compare_virt(const void *_left, const void *_right)
 virt_list_t *vl_get(virConnectPtr vp, int my_id)
 {
 	virt_list_t *vl = NULL;
-	int *d_ids = NULL;
 	int d_count, x;
-	char *d_name;
-	char d_uuid[MAX_DOMAINNAME_LENGTH];
-	virDomainPtr dom;
-	virDomainInfo d_info;
+	virDomainPtr *dom_list;
 
 	errno = EINVAL;
 	if (!vp)
 		return NULL;
 
-	d_count = virConnectNumOfDomains(vp);
-	if (d_count <= 0) {
-		if (d_count == 0) {
-			/* Successful, but no domains running */
-			errno = 0;
-			return NULL;
-		}
+	d_count = virConnectListAllDomains(vp, &dom_list, 0);
+	if (d_count <= 0)
 		goto out_fail;
-	}
 
-	vl = malloc(sizeof(uint32_t) + sizeof(virt_state_t) * d_count );
+	vl = malloc(sizeof(uint32_t) + sizeof(virt_state_t) * d_count);
 	if (!vl)
-		goto out_fail;
-
-	d_ids = malloc(sizeof(int) * d_count);
-	if (!d_ids)
-		goto out_fail;
-
-	if (virConnectListDomains(vp, d_ids, d_count) < 0)
 		goto out_fail;
 
 	vl->vm_count = d_count;
 
 	/* Ok, we have the domain IDs - let's get their names and states */
 	for (x = 0; x < d_count; x++) {
-		dom = virDomainLookupByID(vp, d_ids[x]);
-		if (!dom) {
-			/* XXX doom */
-			goto out_fail;
-		}
+		char *d_name;
+		virDomainInfo d_info;
+		char d_uuid[MAX_DOMAINNAME_LENGTH];
+		virDomainPtr dom = dom_list[x];
 
-		if (!(d_name = (char *)virDomainGetName(dom))) {
-			/* XXX no name for the domain?!! */
-			virDomainFree(dom);
+		if (!(d_name = (char *)virDomainGetName(dom)))
 			goto out_fail;
-		}
 
-		if (virDomainGetUUIDString(dom, d_uuid) != 0) {
-			virDomainFree(dom);
+		if (virDomainGetUUIDString(dom, d_uuid) != 0)
 			goto out_fail;
-		}
 
-		if (virDomainGetInfo(dom, &d_info) < 0) {
-			/* XXX no info for the domain?!! */
-			virDomainFree(dom);
+		if (virDomainGetInfo(dom, &d_info) < 0)
 			goto out_fail;
-		}
 
 		/* Store the name & state */
 		strncpy(vl->vm_states[x].v_name, d_name, MAX_DOMAINNAME_LENGTH);
 		strncpy(vl->vm_states[x].v_uuid, d_uuid, MAX_DOMAINNAME_LENGTH);
 		vl->vm_states[x].v_state.s_state = d_info.state;
 		vl->vm_states[x].v_state.s_owner = my_id;
-
-		virDomainFree(dom);
 	}
+
+	for (x = 0 ; x < d_count; x++)
+		virDomainFree(dom_list[x]);
+	free(dom_list);
 
 	/* We have all the locally running domains & states now */
 	/* Sort */
-	free(d_ids);
 	qsort(&vl->vm_states[0], vl->vm_count, sizeof(vl->vm_states[0]),
 	      _compare_virt);
 	return vl;	
 
 out_fail:
 	x = errno;
-	if (d_ids)
-		free(d_ids);
+	for (x = 0 ; x < d_count; x++)
+		virDomainFree(dom_list[x]);
+	free(dom_list);
+
 	if (vl)
 		free(vl);
 	errno = x;

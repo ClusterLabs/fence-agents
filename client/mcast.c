@@ -118,7 +118,7 @@ do_read_hostlist(int fd, int timeout)
 			break;
 
 		printf("%-20.20s %s %s\n", hinfo.domain, hinfo.uuid,
-		       (hinfo.state == 0) ? "off" : "on");
+		       (hinfo.state == 1) ? "on" : "off");
 
 	} while (1);
 }
