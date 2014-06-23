@@ -40,7 +40,7 @@ _compare_virt(const void *_left, const void *_right)
 virt_list_t *vl_get(virConnectPtr vp, int my_id)
 {
 	virt_list_t *vl = NULL;
-	int d_count, x;
+	int d_count, x, saved_errno;
 	virDomainPtr *dom_list;
 
 	errno = EINVAL;
@@ -91,14 +91,14 @@ virt_list_t *vl_get(virConnectPtr vp, int my_id)
 	return vl;	
 
 out_fail:
-	x = errno;
+	saved_errno = errno;
 	for (x = 0 ; x < d_count; x++)
 		virDomainFree(dom_list[x]);
 	free(dom_list);
 
 	if (vl)
 		free(vl);
-	errno = x;
+	errno = saved_errno;
 	return NULL;
 }
 
