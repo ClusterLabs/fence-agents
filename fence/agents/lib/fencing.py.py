@@ -559,9 +559,10 @@ def process_input(avail_opt):
 	getopt_string = ""
 	longopt_list = []
 	for k in avail_opt:
-		if all_opt.has_key(k):
+		if all_opt.has_key(k) and all_opt[k]["getopt"] != ":":
+			# getopt == ":" means that opt is without short getopt, but has value
 			getopt_string += all_opt[k]["getopt"]
-		else:
+		elif not all_opt.has_key(k):
 			fail_usage("Parse error: unknown option '"+k+"'")
 
 		if all_opt.has_key(k) and all_opt[k].has_key("longopt"):
