@@ -39,6 +39,7 @@ fence/agents/bullpap/fence_bullpap
 fence/agents/cisco_mds/fence_cisco_mds
 fence/agents/cisco_ucs/fence_cisco_ucs
 fence/agents/cpint/fence_cpint
+fence/agents/docker/fence_docker
 fence/agents/drac/fence_drac
 fence/agents/drac5/fence_drac5
 fence/agents/eaton_snmp/fence_eaton_snmp

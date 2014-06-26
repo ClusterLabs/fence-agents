@@ -265,6 +265,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/brocade/Makefile
 		 fence/agents/cisco_mds/Makefile
 		 fence/agents/cisco_ucs/Makefile
+		 fence/agents/docker/Makefile
 		 fence/agents/drac/Makefile
 		 fence/agents/drac5/Makefile
 		 fence/agents/dummy/Makefile
