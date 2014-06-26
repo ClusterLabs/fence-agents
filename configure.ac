@@ -12,6 +12,7 @@ LT_PREREQ([2.2.6])
 LT_INIT
 
 AC_CONFIG_MACRO_DIR([m4])
+AC_CONFIG_SRCDIR([fence/agents/lib/fencing.py.py])
 AC_CONFIG_HEADERS([make/clusterautoconfig.h])
 
 AC_CANONICAL_HOST
