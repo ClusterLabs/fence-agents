@@ -195,7 +195,10 @@ main(int argc, char **argv)
 	signal(SIGTERM, exit_handler);
 	signal(SIGQUIT, exit_handler);
 
-	syslog(LOG_NOTICE, "fence_virtd starting.  Listener: %s  Backend: %s", backend_name, listener_name);
+	openlog(basename(argv[0]), LOG_NDELAY | LOG_PID, LOG_DAEMON);
+
+	syslog(LOG_NOTICE, "fence_virtd starting.  Listener: %s  Backend: %s",
+		backend_name, listener_name);
 
 	while (p->init(&backend_ctx, config) < 0) {
 		if (!wait_for_init) {

@@ -1,5 +1,5 @@
 /*
-  Copyright Red Hat, Inc. 2006
+  Copyright Red Hat, Inc. 2006-2014
 
   This program is free software; you can redistribute it and/or modify it
   under the terms of the GNU General Public License as published by the
@@ -67,7 +67,8 @@
 
 struct libvirt_info {
 	int magic;
-	virConnectPtr vp;
+	int vp_count;
+	virConnectPtr *vp;
 };
 
 #define VALIDATE(arg) \
@@ -80,8 +81,7 @@ do {\
 
 
 static inline int
-wait_domain(const char *vm_name, virConnectPtr vp,
-	    int timeout)
+wait_domain(const char *vm_name, virConnectPtr vp, int timeout)
 {
 	int tries = 0;
 	int response = 1;
@@ -89,7 +89,7 @@ wait_domain(const char *vm_name, virConnectPtr vp,
 	virDomainPtr vdp;
 	virDomainInfo vdi;
 	int uuid_check;
-	
+
 	uuid_check = is_uuid(vm_name);
 
 	if (uuid_check) {
@@ -111,8 +111,7 @@ wait_domain(const char *vm_name, virConnectPtr vp,
 
 		sleep(1);
 		if (uuid_check) {
-			vdp = virDomainLookupByUUIDString(vp,
-					(const char *)vm_name);
+			vdp = virDomainLookupByUUIDString(vp, (const char *)vm_name);
 		} else {
 			vdp = virDomainLookupByName(vp, vm_name);
 		}
@@ -133,10 +132,9 @@ wait_domain(const char *vm_name, virConnectPtr vp,
 			response = 0;
 			break;
 		}
-		
-		dbg_printf(4, "Domain still exists (state %d) "
-			   "after %d seconds\n",
-			   vdi.state, tries);
+
+		dbg_printf(4, "Domain still exists (state %d) after %d seconds\n",
+			vdi.state, tries);
 	} while (1);
 
 	return response;
@@ -146,111 +144,131 @@ wait_domain(const char *vm_name, virConnectPtr vp,
 static int
 libvirt_null(const char *vm_name, void *priv)
 {
-	dbg_printf(5, "%s %s\n", __FUNCTION__, vm_name);
+	dbg_printf(5, "ENTER %s %s\n", __FUNCTION__, vm_name);
 	printf("NULL operation: returning failure\n");
 	return 1;
 }
 
 
 static int
-libvirt_off(const char *vm_name, const char *src,
-	    uint32_t seqno, void *priv)
+libvirt_off(const char *vm_name, const char *src, uint32_t seqno, void *priv)
 {
 	struct libvirt_info *info = (struct libvirt_info *)priv;
-	virDomainPtr vdp;
+	virDomainPtr vdp = NULL;
 	virDomainInfo vdi;
+	virDomainPtr (*virt_lookup_fn)(virConnectPtr, const char *);
 	int ret = -1;
+	int i;
 
-	dbg_printf(5, "%s %s\n", __FUNCTION__, vm_name);
+	dbg_printf(5, "ENTER %s %s %u\n", __FUNCTION__, vm_name, seqno);
 	VALIDATE(info);
 
-	if (is_uuid(vm_name)) {
-		vdp = virDomainLookupByUUIDString(info->vp,
-					    (const char *)vm_name);
-	} else {
-		vdp = virDomainLookupByName(info->vp, vm_name);
+	if (is_uuid(vm_name))
+		virt_lookup_fn = virDomainLookupByUUIDString;
+	else
+		virt_lookup_fn = virDomainLookupByName;
+
+	for (i = 0 ; i < info->vp_count ; i++) {
+		vdp = virt_lookup_fn(info->vp[i], vm_name);
+		if (vdp)
+			break;
 	}
 
 	if (!vdp) {
-		dbg_printf(2, "Nothing to do - domain does not exist\n");
+		dbg_printf(2, "[libvirt:OFF] Domain %s does not exist\n", vm_name);
 		return 1;
 	}
 
-	if (((virDomainGetInfo(vdp, &vdi) == 0) &&
-	     (vdi.state == VIR_DOMAIN_SHUTOFF))) {
-		dbg_printf(2, "Nothing to do - domain is off\n");
+	if (virDomainGetInfo(vdp, &vdi) == 0 && vdi.state == VIR_DOMAIN_SHUTOFF) {
+		dbg_printf(2, "[libvirt:OFF] Nothing to do - "
+			"domain %s is already off\n",
+			vm_name);
 		virDomainFree(vdp);
 		return 0;
 	}
 
 	syslog(LOG_NOTICE, "Destroying domain %s\n", vm_name);
-	dbg_printf(2, "[OFF] Calling virDomainDestroy\n");
+	dbg_printf(2, "[libvirt:OFF] Calling virDomainDestroy for %s\n", vm_name);
+
 	ret = virDomainDestroy(vdp);
+	virDomainFree(vdp);
+
 	if (ret < 0) {
-		syslog(LOG_NOTICE, "Failed to destroy domain: %d\n", ret);
-		printf("virDomainDestroy() failed: %d\n", ret);
+		syslog(LOG_NOTICE, "Failed to destroy domain %s: %d\n", vm_name, ret);
+		dbg_printf(2, "[libvirt:OFF] Failed to destroy domain: %s %d\n",
+			vm_name, ret);
 		return 1;
 	}
 
 	if (ret) {
-		syslog(LOG_NOTICE,
-		       "Domain %s still exists; fencing failed\n",
-		       vm_name);
-		printf("Domain %s still exists; fencing failed\n", vm_name);
+		syslog(LOG_NOTICE, "Domain %s still exists; fencing failed\n", vm_name);
+		dbg_printf(2, "[libvirt:OFF] Domain %s still exists; fencing failed\n",
+			vm_name);
 		return 1;
 	}
 
+	dbg_printf(2, "[libvirt:OFF] Success for %s\n", vm_name);
 	return 0;
 }
 
 
 static int
-libvirt_on(const char *vm_name, const char *src,
-	   uint32_t seqno, void *priv)
+libvirt_on(const char *vm_name, const char *src, uint32_t seqno, void *priv)
 {
 	struct libvirt_info *info = (struct libvirt_info *)priv;
-	virDomainPtr vdp;
+	virDomainPtr vdp = NULL;
 	virDomainInfo vdi;
+	virDomainPtr (*virt_lookup_fn)(virConnectPtr, const char *);
 	int ret = -1;
+	int i;
 
-	dbg_printf(5, "%s %s\n", __FUNCTION__, vm_name);
+	dbg_printf(5, "ENTER %s %s %u\n", __FUNCTION__, vm_name, seqno);
 	VALIDATE(info);
 
-	if (is_uuid(vm_name)) {
-		vdp = virDomainLookupByUUIDString(info->vp,
-					    (const char *)vm_name);
-	} else {
-		vdp = virDomainLookupByName(info->vp, vm_name);
+	if (is_uuid(vm_name))
+		virt_lookup_fn = virDomainLookupByUUIDString;
+	else
+		virt_lookup_fn = virDomainLookupByName;
+
+	for (i = 0 ; i < info->vp_count ; i++) {
+		vdp = virt_lookup_fn(info->vp[i], vm_name);
+		if (vdp)
+			break;
 	}
 
-	if (vdp &&
-	    ((virDomainGetInfo(vdp, &vdi) == 0) &&
-	     (vdi.state != VIR_DOMAIN_SHUTOFF))) {
-		dbg_printf(2, "Nothing to do - domain is running\n");
+	if (!vdp) {
+		dbg_printf(2, "[libvirt:ON] Domain %s does not exist\n", vm_name);
+		return 1;
+	}
 
-		if (vdp)
-			virDomainFree(vdp);
+	if (virDomainGetInfo(vdp, &vdi) == 0 && vdi.state != VIR_DOMAIN_SHUTOFF) {
+		dbg_printf(2, "Nothing to do - domain %s is already running\n",
+			vm_name);
+		virDomainFree(vdp);
 		return 0;
 	}
 
 	syslog(LOG_NOTICE, "Starting domain %s\n", vm_name);
-	dbg_printf(2, "[ON] Calling virDomainCreate\n");
+	dbg_printf(2, "[libvirt:ON] Calling virDomainCreate for %s\n", vm_name);
+
 	ret = virDomainCreate(vdp);
+	virDomainFree(vdp);
+
 	if (ret < 0) {
-		syslog(LOG_NOTICE, "Failed to start domain: %d\n", ret);
-		printf("virDomainCreate() failed: %d\n", ret);
+		syslog(LOG_NOTICE, "Failed to start domain %s: %d\n", vm_name, ret);
+		dbg_printf(2, "[libvirt:ON] virDomainCreate() failed for %s: %d\n",
+			vm_name, ret);
 		return 1;
 	}
 
 	if (ret) {
-		syslog(LOG_NOTICE,
-		       "Domain %s did not start\n",
-		       vm_name);
-		printf("Domain %s did not start\n", vm_name);
+		syslog(LOG_NOTICE, "Domain %s did not start\n", vm_name);
+		dbg_printf(2, "[libvirt:ON] Domain %s did not start\n", vm_name);
 		return 1;
 	}
-	syslog(LOG_NOTICE, "Domain %s started\n", vm_name);
 
+	syslog(LOG_NOTICE, "Domain %s started\n", vm_name);
+	dbg_printf(2, "[libvirt:ON] Success for %s\n", vm_name);
 	return 0;
 }
 
@@ -270,22 +288,33 @@ static int
 libvirt_status(const char *vm_name, void *priv)
 {
 	struct libvirt_info *info = (struct libvirt_info *)priv;
-	virDomainPtr vdp;
+	virDomainPtr vdp = NULL;
 	virDomainInfo vdi;
 	int ret = 0;
+	int i;
+	virDomainPtr (*virt_lookup_fn)(virConnectPtr, const char *);
 
-	dbg_printf(5, "%s %s\n", __FUNCTION__, vm_name);
+	dbg_printf(5, "ENTER %s %s\n", __FUNCTION__, vm_name);
 	VALIDATE(info);
 
-	if (is_uuid(vm_name)) {
-		vdp = virDomainLookupByUUIDString(info->vp,
-					    (const char *)vm_name);
-	} else {
-		vdp = virDomainLookupByName(info->vp, vm_name);
+	if (is_uuid(vm_name))
+		virt_lookup_fn = virDomainLookupByUUIDString;
+	else
+		virt_lookup_fn = virDomainLookupByName;
+
+	for (i = 0 ; i < info->vp_count ; i++) {
+		vdp = virt_lookup_fn(info->vp[i], vm_name);
+		if (vdp)
+			break;
 	}
 
-	if (!vdp || ((virDomainGetInfo(vdp, &vdi) == 0) &&
-	     (vdi.state == VIR_DOMAIN_SHUTOFF))) {
+	if (!vdp) {
+		dbg_printf(2, "[libvirt:STATUS] Unknown VM %s - return OFF\n", vm_name);
+		return RESP_OFF;
+	}
+
+	if (virDomainGetInfo(vdp, &vdi) == 0 && vdi.state == VIR_DOMAIN_SHUTOFF) {
+		dbg_printf(2, "[libvirt:STATUS] VM %s is OFF\n", vm_name);
 		ret = RESP_OFF;
 	}
 
@@ -296,70 +325,86 @@ libvirt_status(const char *vm_name, void *priv)
 
 
 static int
-libvirt_reboot(const char *vm_name, const char *src,
-	       uint32_t seqno, void *priv)
+libvirt_reboot(const char *vm_name, const char *src, uint32_t seqno, void *priv)
 {
 	struct libvirt_info *info = (struct libvirt_info *)priv;
-	virDomainPtr vdp, nvdp;
+	virDomainPtr vdp = NULL, nvdp;
 	virDomainInfo vdi;
 	char *domain_desc;
+	virConnectPtr vcp = NULL;
+	virDomainPtr (*virt_lookup_fn)(virConnectPtr, const char *);
 	int ret;
+	int i;
 
-	//uuid_unparse(vm_uuid, uu_string);
-	dbg_printf(5, "%s %s\n", __FUNCTION__, vm_name);
+	dbg_printf(5, "ENTER %s %s %u\n", __FUNCTION__, vm_name, seqno);
 	VALIDATE(info);
-	
-	if (is_uuid(vm_name)) {
-		vdp = virDomainLookupByUUIDString(info->vp,
-					    (const char *)vm_name);
-	} else {
-		vdp = virDomainLookupByName(info->vp, vm_name);
+
+	if (is_uuid(vm_name))
+		virt_lookup_fn = virDomainLookupByUUIDString;
+	else
+		virt_lookup_fn = virDomainLookupByName;
+
+	for (i = 0 ; i < info->vp_count ; i++) {
+		vdp = virt_lookup_fn(info->vp[i], vm_name);
+		if (vdp) {
+			vcp = info->vp[i];
+			break;
+		}
 	}
 
-	if (!vdp) {
-		dbg_printf(2, "[libvirt:REBOOT] Nothing to "
-			   "do - domain does not exist\n");
+	if (!vdp || !vcp) {
+		dbg_printf(2,
+			"[libvirt:REBOOT] Nothing to do - domain %s does not exist\n",
+			vm_name);
 		return 1;
 	}
 
-	if (((virDomainGetInfo(vdp, &vdi) == 0) &&
-	     (vdi.state == VIR_DOMAIN_SHUTOFF))) {
-			dbg_printf(2, "[libvirt:REBOOT] Nothing to "
-				   "do - domain is off\n");
+	if (virDomainGetInfo(vdp, &vdi) == 0 && vdi.state == VIR_DOMAIN_SHUTOFF) {
+		dbg_printf(2, "[libvirt:REBOOT] Nothing to do - domain %s is off\n",
+			vm_name);
 		virDomainFree(vdp);
 		return 0;
 	}
 
-
 	syslog(LOG_NOTICE, "Rebooting domain %s\n", vm_name);
-	printf("Rebooting domain %s...\n", vm_name);
+	dbg_printf(5, "[libvirt:REBOOT] Rebooting domain %s...\n", vm_name);
+
 	domain_desc = virDomainGetXMLDesc(vdp, 0);
 
 	if (!domain_desc) {
-		printf("Failed getting domain description from "
-		       "libvirt\n");
+		dbg_printf(5, "[libvirt:REBOOT] Failed getting domain description "
+			"from libvirt for %s...\n", vm_name);
 	}
 
-	dbg_printf(2, "[REBOOT] Calling virDomainDestroy(%p)\n", vdp);
+	dbg_printf(2, "[libvirt:REBOOT] Calling virDomainDestroy(%p) for %s\n",
+		vdp, vm_name);
+
 	ret = virDomainDestroy(vdp);
 	if (ret < 0) {
-		printf("virDomainDestroy() failed: %d/%d\n", ret, errno);
-		free(domain_desc);
+		dbg_printf(2,
+			"[libvirt:REBOOT] virDomainDestroy() failed for %s: %d/%d\n",
+			vm_name, ret, errno);
+
+		if (domain_desc)
+			free(domain_desc);
 		virDomainFree(vdp);
 		return 1;
 	}
 
-	ret = wait_domain(vm_name, info->vp, 15);
+	ret = wait_domain(vm_name, vcp, 15);
 
 	if (ret) {
-		syslog(LOG_NOTICE, "Domain %s still exists; fencing failed\n",
-		       vm_name);
-		printf("Domain %s still exists; fencing failed\n", vm_name);
+		syslog(LOG_NOTICE, "Domain %s still exists; fencing failed\n", vm_name);
+		dbg_printf(2,
+			"[libvirt:REBOOT] Domain %s still exists; fencing failed\n",
+			vm_name);
+
 		if (domain_desc)
 			free(domain_desc);
+		virDomainFree(vdp);
 		return 1;
 	}
-		
+
 	if (!domain_desc)
 		return 0;
 
@@ -368,27 +413,31 @@ libvirt_reboot(const char *vm_name, const char *src,
 
 	dbg_printf(3, "[[ XML Domain Info ]]\n");
 	dbg_printf(3, "%s\n[[ XML END ]]\n", domain_desc);
-	dbg_printf(2, "Calling virDomainCreateLinux()...\n");
 
-	nvdp = virDomainCreateLinux(info->vp, domain_desc, 0);
+	dbg_printf(2, "[libvirt:REBOOT] Calling virDomainCreateLinux() for %s\n",
+		vm_name);
+
+	nvdp = virDomainCreateLinux(vcp, domain_desc, 0);
 	if (nvdp == NULL) {
 		/* More recent versions of libvirt or perhaps the
 		 * KVM back-end do not let you create a domain from
 		 * XML if there is already a defined domain description
 		 * with the same name that it knows about.  You must
 		 * then call virDomainCreate() */
-		dbg_printf(2, "Failed; Trying virDomainCreate()...\n");
+		dbg_printf(2,
+			"[libvirt:REBOOT] virDomainCreateLinux() failed for %s; "
+			"Trying virDomainCreate()\n",
+			vm_name);
+
 		if (virDomainCreate(vdp) < 0) {
-			syslog(LOG_NOTICE,
-			       "Could not restart %s\n",
-			       vm_name);
-			dbg_printf(1, "Failed to recreate guest"
-				   " %s!\n", vm_name);
+			syslog(LOG_NOTICE, "Could not restart %s\n", vm_name);
+			dbg_printf(1, "[libvirt:REBOOT] Failed to recreate guest %s!\n",
+				vm_name);
 		}
 	}
 
 	free(domain_desc);
-
+	virDomainFree(vdp);
 	return ret;
 }
 
@@ -397,24 +446,32 @@ static int
 libvirt_hostlist(hostlist_callback callback, void *arg, void *priv)
 {
 	struct libvirt_info *info = (struct libvirt_info *)priv;
-	virt_list_t *vl;
-	int x;
+	int i;
 
-	dbg_printf(5, "%s\n", __FUNCTION__);
+	dbg_printf(5, "ENTER %s\n", __FUNCTION__);
 	VALIDATE(info);
 
-	vl = vl_get(info->vp, 1);
-	if (!vl)
-		return 1;
+	for (i = 0 ; i < info->vp_count ; i++) {
+		int x;
+		virt_list_t *vl;
 
-	for (x = 0; x < vl->vm_count; x++) {
-		dbg_printf(10, "Sending %s\n", vl->vm_states[x].v_uuid);
-		callback(vl->vm_states[x].v_name,
-			 vl->vm_states[x].v_uuid,
-			 vl->vm_states[x].v_state.s_state, arg);
+		vl = vl_get(info->vp[i], 1);
+		if (!vl)
+			continue;
+
+		for (x = 0; x < vl->vm_count; x++) {
+			callback(vl->vm_states[x].v_name,
+					 vl->vm_states[x].v_uuid,
+					 vl->vm_states[x].v_state.s_state, arg);
+
+			dbg_printf(10, "[libvirt:HOSTLIST] Sent %s %s %d\n",
+				vl->vm_states[x].v_name,
+				vl->vm_states[x].v_uuid,
+				vl->vm_states[x].v_state.s_state);
+		}
+
+		vl_free(vl);
 	}
-
-	vl_free(vl);
 
 	return 0;
 }
@@ -426,41 +483,68 @@ libvirt_init(backend_context_t *c, config_object_t *config)
 	virConnectPtr vp;
 	char value[256];
 	struct libvirt_info *info = NULL;
-	char *uri = NULL;
+	int i = 0;
 
 	info = malloc(sizeof(*info));
 	if (!info)
 		return -1;
 
-	dbg_printf(5, "[%s:%d %s]\n", __FILE__, __LINE__, __FUNCTION__);
+	dbg_printf(5, "ENTER [%s:%d %s]\n", __FILE__, __LINE__, __FUNCTION__);
 	memset(info, 0, sizeof(*info));
 
 #ifdef _MODULE
-	if (sc_get(config, "fence_virtd/@debug", value, sizeof(value))==0)
+	if (sc_get(config, "fence_virtd/@debug", value, sizeof(value)) == 0)
 		dset(atoi(value));
 #endif
 
-	if (sc_get(config, "backends/libvirt/@uri",
-		   value, sizeof(value)) == 0) {
-		uri = strdup(value);
-		if (!uri) {
-			free(info);
-			return -1;
-		}
-		dbg_printf(1, "Using %s\n", uri);
-	}
+	do {
+		virConnectPtr *vpl = NULL;
+		char conf_attr[256];
+		char *uri;
 
-	/* We don't need to store the URI; we only use it once */
-	vp = virConnectOpen(uri);
-	if (!vp) {
-		free(uri);
+		if (i != 0) {
+			snprintf(conf_attr, sizeof(conf_attr),
+				"backends/libvirt/@uri%d", i);
+		} else
+			snprintf(conf_attr, sizeof(conf_attr), "backends/libvirt/@uri");
+		++i;
+
+		if (sc_get(config, conf_attr, value, sizeof(value)) != 0)
+			break;
+
+		uri = value;
+		vp = virConnectOpen(uri);
+		if (!vp) {
+			dbg_printf(1, "[libvirt:INIT] Failed to connect to URI: %s\n", uri);
+			continue;
+		}
+
+		vpl = realloc(info->vp, sizeof(*info->vp) * (info->vp_count + 1));
+		if (!vpl) {
+			dbg_printf(1, "[libvirt:INIT] Out of memory allocating URI: %s\n",
+				uri);
+			virConnectClose(vp);
+			continue;
+		}
+
+		info->vp = vpl;
+		info->vp[info->vp_count++] = vp;
+
+		if (i > 1)
+			dbg_printf(1, "[libvirt:INIT] Added URI%d %s\n", i - 1, uri);
+		else
+			dbg_printf(1, "[libvirt:INIT] Added URI %s\n", uri);
+	} while (1);
+
+	if (info->vp_count < 1) {
+		dbg_printf(1, "[libvirt:INIT] Could not connect to any hypervisors\n");
+		if (info->vp)
+			free(info->vp);
 		free(info);
 		return -1;
 	}
-	free(uri);
 
 	info->magic = MAGIC;
-	info->vp = vp;
 
 	*c = (void *)info;
 	return 0;
@@ -471,16 +555,19 @@ static int
 libvirt_shutdown(backend_context_t c)
 {
 	struct libvirt_info *info = (struct libvirt_info *)c;
+	int i;
+	int ret = 0;
 
 	VALIDATE(info);
 
-	if (virConnectClose(info->vp) < 0) {
-		free(info);
-		return -errno;
+	for (i = 0 ; i < info->vp_count ; i++) {
+		if (virConnectClose(info->vp[i]) < 0)
+			ret = -errno;
 	}
 
+	free(info->vp);
 	free(info);
-	return 0;
+	return ret;
 }
 
 
