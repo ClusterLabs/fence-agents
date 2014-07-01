@@ -1,5 +1,5 @@
 TEMPFILE:=$(shell mktemp)
-DATADIR:=../../../tests/data/metadata
+DATADIR:=$(abs_top_builddir)/../tests/data/metadata
 
 check: $(TARGET:%=xml-check.%) $(SYMTARGET:%=xml-check.%)
 
