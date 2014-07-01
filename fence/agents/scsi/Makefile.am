@@ -4,16 +4,20 @@ TARGET			= fence_scsi
 
 SRC			= $(TARGET).py
 
-EXTRA_DIST		= $(SRC)
+EXTRA_DIST		= $(SRC) \
+			  fence_scsi_check
 
-sbin_SCRIPTS		= $(TARGET) fence_scsi_check
+scsidatadir		= $(CLUSTERDATA)
+scsidata_SCRIPTS	= fence_scsi_check
+
+sbin_SCRIPTS		= $(TARGET)
 
 man_MANS		= $(TARGET).8
 
 FENCE_TEST_ARGS         = -k 1
 
 fence_scsi_check: $(TARGET)
-	cp -s $^ $@
+	cp $^ $@
 
 include $(top_srcdir)/make/fencebuild.mk
 include $(top_srcdir)/make/fenceman.mk
