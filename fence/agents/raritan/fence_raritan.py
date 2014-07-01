@@ -79,7 +79,10 @@ block any necessary fencing actions."
 	except pexpect.TIMEOUT:
 		fail(EC_LOGIN_DENIED)
 
-	result = fence_action(conn, options, set_power_status, get_power_status)
+	result = 0
+	if options["--action"] != "monitor":
+		result = fence_action(conn, options, set_power_status, get_power_status)
+
 	fence_logout(conn, "exit\n")
 	sys.exit(result)
 

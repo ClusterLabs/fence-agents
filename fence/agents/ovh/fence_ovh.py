@@ -94,10 +94,10 @@ Poweroff is simulated with a reboot into rescue-pro mode."
 	docs["vendorurl"] = "http://www.ovh.net"
 	show_docs(options, docs)
 
-	if options["--action"] in ["list", "status"]:
-		fail_usage("Action '" + options["--action"] + "' is not supported in this fence agent")
+	if options["--action"] == "list":
+		fail_usage("Action 'list' is not supported in this fence agent")
 
-	if not options["--plug"].endswith(".ovh.net"):
+	if options["--action"] != "monitor" and not options["--plug"].endswith(".ovh.net"):
 		options["--plug"] += ".ovh.net"
 
 	if not options.has_key("--email"):
@@ -106,6 +106,13 @@ Poweroff is simulated with a reboot into rescue-pro mode."
 	run_delay(options)
 
 	conn = soap_login(options)
+
+	if options["--action"] == 'monitor':
+		try:
+			conn.service.logout(options["session"])
+		except Exception:
+			pass
+		sys.exit(0)
 
 	# Save datetime just before changing netboot
 	before_netboot_reboot = datetime.now()
