@@ -12,24 +12,6 @@ REDHAT_COPYRIGHT=""
 BUILD_DATE="March, 20013"
 #END_VERSION_GENERATION
 
-def get_power_status(conn, options):
-	conn.send_eol("portCfgShow " + options["--plug"])
-
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
-
-	show_re = re.compile(r'^\s*Persistent Disable\s*(ON|OFF)\s*$', re.IGNORECASE)
-	lines = conn.before.split("\n")
-
-	for line in lines:
-		res = show_re.search(line)
-		if res != None:
-			# We queried if it is disabled, so we have to negate answer
-			if res.group(1) == "ON":
-				return "off"
-			else:
-				return "on"
-
-	fail(EC_STATUS)
 def set_power_status(conn, options):
 	action = {
 		'on' : "portCfgPersistentEnable",
@@ -38,6 +20,27 @@ def set_power_status(conn, options):
 
 	conn.send_eol(action + " " + options["--plug"])
 	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+
+def get_power_status(conn, options):
+	line_re = re.compile(r'=========', re.IGNORECASE)
+	outlets = {}
+	in_index = False
+
+	conn.send_eol("switchshow")
+	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+	for line in str(conn.before).split("\n"):
+		if line_re.search(line):
+			in_index = True
+		elif in_index and line.lstrip()[0].isdigit():
+			tokens = line.lstrip().split()
+			status = "off" if len(tokens) > 7 and tokens[7] == "Disabled" else "on"
+			outlets[tokens[0]] = ("", status)
+
+	if options["--action"] == "status":
+		(_, status) = outlets[options["--plug"]]
+		return status
+	else:
+		return outlets
 
 def main():
 	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", "port", "fabric_fencing"]
@@ -66,7 +69,7 @@ FC switch needs to be enabled. This can be done by running fence_brocade and spe
 	## Operate the fencing device
 	####
 	conn = fence_login(options)
-	result = fence_action(conn, options, set_power_status, get_power_status, None)
+	result = fence_action(conn, options, set_power_status, get_power_status, get_power_status)
 	fence_logout(conn, "exit")
 	sys.exit(result)
 
