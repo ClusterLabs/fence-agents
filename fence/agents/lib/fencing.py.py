@@ -414,7 +414,6 @@ def atexit_handler():
 		os.close(1)
 	except IOError:
 		logging.error("%s failed to close standard output\n", sys.argv[0])
-		syslog.syslog(syslog.LOG_ERR, "Failed to close standard output")
 		sys.exit(EC_GENERIC_ERROR)
 
 def add_dependency_options(options):
@@ -445,7 +444,6 @@ def fail(error_code):
 		EC_INVALID_PRIVILEGES : "Failed: The user does not have the correct privileges to do the requested action."
 	}[error_code] + "\n"
 	logging.error("%s\n", message)
-	syslog.syslog(syslog.LOG_ERR, message)
 	sys.exit(EC_GENERIC_ERROR)
 
 def usage(avail_opt):
@@ -618,7 +616,6 @@ def process_input(avail_opt):
 
 			if avail_opt.count(name) == 0:
 				logging.warning("Parse error: Ignoring unknown option '%s'\n", line)
-				syslog.syslog(syslog.LOG_WARNING, "Parse error: Ignoring unknown option '" + line)
 				continue
 
 			if all_opt[name]["getopt"].endswith(":"):
@@ -699,6 +696,12 @@ def check_input(device_opt, opt):
 
 	if options.has_key("--verbose"):
 		logging.getLogger().setLevel(logging.DEBUG)
+
+	## add logging to syslog
+	logging.getLogger().addHandler(SyslogLibHandler())
+	## add loggint to stderr
+	logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stderr))
+	
 
 	acceptable_actions = ["on", "off", "status", "list", "monitor"]
 	if 1 == device_opt.count("fabric_fencing"):
@@ -920,13 +923,11 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list=None, 
 				except Exception, ex:
 					# an error occured during power ON phase in reboot
 					# fence action was completed succesfully even in that case
-					logging.error("%s", str(ex))
-					syslog.syslog(syslog.LOG_NOTICE, str(ex))
+					logging.warning("%s", str(ex))
 
 			if power_on == False:
 				# this should not fail as node was fenced succesfully
 				logging.error('Timed out waiting to power ON\n')
-				syslog.syslog(syslog.LOG_NOTICE, "Timed out waiting to power ON")
 
 			print "Success: Rebooted"
 		elif options["--action"] == "status":
@@ -941,7 +942,6 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list=None, 
 		fail(EC_TIMED_OUT)
 	except pycurl.error, ex:
 		logging.error("%s\n", str(ex))
-		syslog.syslog(syslog.LOG_ERR, ex[1])
 		fail(EC_TIMED_OUT)
 
 	return result
@@ -979,7 +979,6 @@ def fence_login(options, re_login_string=r"(login\s*: )|(Login Name:  )|(usernam
 				conn = fspawn(options, command)
 			except pexpect.ExceptionPexpect, ex:
 				logging.error("%s\n", str(ex))
-				syslog.syslog(syslog.LOG_ERR, str(ex))
 				sys.exit(EC_GENERIC_ERROR)
 		elif options.has_key("--ssh") and not options.has_key("--identity-file"):
 			command = '%s %s %s@%s -p %s -o PubkeyAuthentication=no' % \
@@ -1135,3 +1134,24 @@ def fence_logout(conn, logout_string, sleep=0):
 # in format a.b.c.d...z and returned dict has key only z
 def array_to_dict(ar):
 	return dict([[x[0].split(".")[-1], x[1]] for x in ar])
+
+
+## Own logger handler that uses old-style syslog handler as otherwise everything is sourced
+## from /dev/syslog 
+class SyslogLibHandler(logging.StreamHandler):
+	"""
+	A handler class that correctly push messages into syslog
+	"""
+	def emit(self, record):
+		syslog_level = {
+			logging.CRITICAL:syslog.LOG_CRIT,
+			logging.ERROR:syslog.LOG_ERR,
+			logging.WARNING:syslog.LOG_WARNING,
+			logging.INFO:syslog.LOG_INFO,
+			logging.DEBUG:syslog.LOG_DEBUG,
+			logging.NOTSET:syslog.LOG_DEBUG,
+		}[record.levelno]
+
+		msg = self.format(record)
+		syslog.syslog(syslog_level, msg)
+		return
