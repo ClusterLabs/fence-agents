@@ -614,7 +614,9 @@ def process_input(avail_opt):
 			(name, value) = (line + "=").split("=", 1)
 			value = value[:-1]
 
-			if avail_opt.count(name) == 0:
+			if avail_opt.count(name) == 0 and name in ["nodename"]:
+				continue
+			elif avail_opt.count(name) == 0:
 				logging.warning("Parse error: Ignoring unknown option '%s'\n", line)
 				continue
 
