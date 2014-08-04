@@ -88,6 +88,18 @@ class ApcMS(object):
 	turn_off = 2
 	has_switches = False
 
+class ApcMS6(object):
+	# Master Switch with 6.x firmware
+	status_oid = '.1.3.6.1.4.1.318.1.1.4.4.2.1.3.%d'
+	control_oid = '.1.3.6.1.4.1.318.1.1.12.3.3.1.1.4.%d'
+	outlet_table_oid = '1.3.6.1.4.1.318.1.1.4.4.2.1.4'
+	ident_str = "APC Master Switch with firmware v6.x"
+	state_on = 1
+	state_off = 2
+	turn_on = 1
+	turn_off = 2
+	has_switches = False
+
 ### FUNCTIONS ###
 def apc_set_device(conn):
 	global device
@@ -95,6 +107,7 @@ def apc_set_device(conn):
 	agents_dir = {'.1.3.6.1.4.1.318.1.3.4.5':ApcRPDU,
 		    '.1.3.6.1.4.1.318.1.3.4.4':ApcMSP,
                     '.1.3.6.1.4.1.850.1':TripplitePDU,
+		    '.1.3.6.1.4.1.318.1.3.4.6':ApcMS6,
 		    None:ApcMS}
 
 	# First resolve type of APC
