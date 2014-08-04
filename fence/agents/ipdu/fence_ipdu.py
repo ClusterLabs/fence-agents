@@ -7,6 +7,7 @@
 
 import sys
 import atexit
+import logging
 sys.path.append("/usr/share/fence")
 from fencing import *
 from fencing import fail_usage
@@ -59,7 +60,7 @@ def ipdu_set_device(conn, options):
 
 	device = agents_dir[pdu_type[0][1]]
 
-	conn.log_command("Trying %s"%(device.ident_str))
+	logging.debug("Trying %s"%(device.ident_str))
 
 def ipdu_resolv_port_id(conn, options):
 	global port_id, switch_id

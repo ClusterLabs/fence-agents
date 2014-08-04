@@ -14,6 +14,7 @@
 
 import sys
 import atexit
+import logging
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail_usage
@@ -104,7 +105,7 @@ def apc_set_device(conn):
 
 	device = agents_dir[apc_type[0][1]]
 
-	conn.log_command("Trying %s"%(device.ident_str))
+	logging.debug("Trying %s"%(device.ident_str))
 
 def apc_resolv_port_id(conn, options):
 	global port_id, switch_id

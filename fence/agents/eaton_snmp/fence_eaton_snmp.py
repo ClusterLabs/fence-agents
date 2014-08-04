@@ -8,6 +8,7 @@
 
 import sys
 import atexit
+import logging
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail_usage
@@ -81,7 +82,7 @@ def eaton_set_device(conn):
 
 	device = agents_dir[eaton_type[0][1]]
 
-	conn.log_command("Trying %s"%(device.ident_str))
+	logging.debug("Trying %s"%(device.ident_str))
 
 def eaton_resolv_port_id(conn, options):
 	global port_id, switch_id
