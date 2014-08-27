@@ -276,6 +276,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/ipdu/Makefile
 		 fence/agents/ifmib/Makefile
 		 fence/agents/ilo/Makefile
+		 fence/agents/ilo_moonshot/Makefile
 		 fence/agents/ilo_mp/Makefile
 		 fence/agents/intelmodular/Makefile
 		 fence/agents/ipmilan/Makefile
