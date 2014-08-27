@@ -1,4 +1,3 @@
 MAINTAINERCLEANFILES	= Makefile.in
 
-SUBDIRS 		= lib \
-			  $(AGENTS_LIST)
+SUBDIRS 		= $(AGENTS_LIST)

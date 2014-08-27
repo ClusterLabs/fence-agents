@@ -15,7 +15,7 @@ noinst_HEADERS		= make/copyright.cf
 
 ACLOCAL_AMFLAGS		= -I m4
 
-SUBDIRS			= fence doc
+SUBDIRS			= fence/agents/lib fence doc
 
 install-exec-local:
 			$(INSTALL) -d $(DESTDIR)/$(LOGDIR)
