@@ -4,8 +4,7 @@ TARGET			= fence_scsi
 
 SRC			= $(TARGET).py
 
-EXTRA_DIST		= $(SRC) \
-			  fence_scsi_check
+EXTRA_DIST		= $(SRC) 
 
 scsidatadir		= $(CLUSTERDATA)
 scsidata_SCRIPTS	= fence_scsi_check
