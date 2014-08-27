@@ -40,6 +40,8 @@
 </parameters>
 <actions>
 	<action name="off" />
+	<action name="on" />
 	<action name="metadata" />
+	<action name="status" />
 </actions>
 </resource-agent>
