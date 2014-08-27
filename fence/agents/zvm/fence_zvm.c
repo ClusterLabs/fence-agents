@@ -185,6 +185,240 @@ zvm_smapi_imageRecycle(zvm_driver_t *zvm)
 }
 
 /**
+ * zvm_smapi_imageDeactivate
+ * @zvm: z/VM driver information
+ *
+ * Deactivates a virtual image
+ */
+int
+zvm_smapi_imageDeactivate(zvm_driver_t *zvm)
+{
+	struct _inPlist {
+		int32_t	lPlist;
+		int32_t	lFName;
+		char	fName[16];
+		int32_t lUser;
+		int32_t lPass;
+		int32_t	lTarget;
+		char	target[0];
+	} __attribute__ ((__packed__)) *inPlist;
+	struct _deactTime {
+		int32_t lForceTime;
+		char	forceTime[5];
+	} __attribute__ ((__packed__)) *deactTime;
+	int32_t	lInPlist;
+	struct	_outPlist {
+		smapiOutHeader_t hdr;
+		int32_t	nActive;
+		int32_t	nInActive;
+		int32_t	lFail;
+		char	failArray[0];
+	} *outPlist = NULL;
+	void	*pOut = NULL;
+	int32_t	lRsp;
+	uint32_t reqId;
+	int	rc;
+
+	/*
+	 * Implement any delay
+	 */ 
+	if (zvm->delay > 0) 
+		sleep(zvm->delay);
+
+	lInPlist = sizeof(*inPlist) + strlen(zvm->target) + sizeof(*deactTime);
+	inPlist = malloc(lInPlist);
+	if (inPlist != NULL) {
+		inPlist->lPlist = lInPlist - sizeof(inPlist->lPlist);
+		inPlist->lFName = sizeof(inPlist->fName);
+		memcpy(inPlist->fName, Image_Deactivate, sizeof(inPlist->fName));
+		deactTime = (void *) ((intptr_t) inPlist + sizeof(*inPlist) + strlen(zvm->target));
+		deactTime->lForceTime = sizeof(deactTime->forceTime);
+		memcpy(deactTime->forceTime, "IMMED", sizeof(deactTime->forceTime));
+		inPlist->lUser = inPlist->lPass = 0;
+		inPlist->lTarget = strlen(zvm->target);
+		memcpy(inPlist->target, zvm->target, inPlist->lTarget);
+		if ((rc = zvm_smapi_send(zvm, inPlist, &reqId, lInPlist)) != -1) {
+			if ((rc = zvm_smapi_recv(zvm, &pOut, &lRsp)) != -1) {
+				outPlist = pOut;
+				if (outPlist->hdr.rc == 0) {
+					syslog(LOG_INFO, "Deactivation of %s successful",
+					       zvm->target);
+					rc = 0;
+				} else {
+					if ((outPlist->hdr.rc == RCERR_IMAGEOP) &
+					    ((outPlist->hdr.reason == RS_NOT_ACTIVE) |
+					     (outPlist->hdr.reason == RS_BEING_DEACT))) {
+						syslog(LOG_INFO, "Deactivation of %s successful",
+						       zvm->target);
+						rc = 0;
+					} else {
+						rc = outPlist->hdr.rc;
+						zvm->reason = outPlist->hdr.reason;
+						(void) zvm_smapi_reportError(inPlist, outPlist);
+					}
+				}
+			}
+		}
+		free(inPlist);
+		free(outPlist);
+	} else {
+		syslog(LOG_ERR, "%s - cannot allocate parameter list", __func__);
+		rc = -1;
+	}
+	return(rc);
+}
+
+/**
+ * zvm_smapi_imageActivate
+ * @zvm: z/VM driver information
+ *
+ * Deactivates a virtual image
+ */
+int
+zvm_smapi_imageActivate(zvm_driver_t *zvm)
+{
+	struct _inPlist {
+		int32_t	lPlist;
+		int32_t	lFName;
+		char	fName[14];
+		int32_t lUser;
+		int32_t lPass;
+		int32_t	lTarget;
+		char	target[0];
+	} __attribute__ ((__packed__)) *inPlist;
+	int32_t	lInPlist;
+	struct	_outPlist {
+		smapiOutHeader_t hdr;
+		int32_t	nActive;
+		int32_t	nInActive;
+		int32_t	lFail;
+		char	failArray[0];
+	} *outPlist = NULL;
+	void	*pOut = NULL;
+	int32_t	lRsp;
+	uint32_t reqId;
+	int	rc;
+
+	/*
+	 * Implement any delay
+	 */ 
+	if (zvm->delay > 0) 
+		sleep(zvm->delay);
+
+	lInPlist = sizeof(*inPlist) + strlen(zvm->target);
+	inPlist = malloc(lInPlist);
+	if (inPlist != NULL) {
+		inPlist->lPlist = lInPlist - sizeof(inPlist->lPlist);
+		inPlist->lFName = sizeof(inPlist->fName);
+		memcpy(inPlist->fName, Image_Activate, sizeof(inPlist->fName));
+		inPlist->lUser = inPlist->lPass = 0;
+		inPlist->lTarget = strlen(zvm->target);
+		memcpy(inPlist->target, zvm->target, inPlist->lTarget);
+		if ((rc = zvm_smapi_send(zvm, inPlist, &reqId, lInPlist)) != -1) {
+			if ((rc = zvm_smapi_recv(zvm, &pOut, &lRsp)) != -1) {
+				outPlist = pOut;
+				if (outPlist->hdr.rc == 0) {
+					syslog(LOG_INFO, "Activation of %s successful",
+					       zvm->target);
+					rc = 0;
+				} else {
+					if ((outPlist->hdr.rc == RCERR_IMAGEOP) &
+					    ((outPlist->hdr.reason == RS_NOT_ACTIVE) |
+					     (outPlist->hdr.reason == RS_BEING_DEACT))) {
+						syslog(LOG_INFO, "Activation of %s successful",
+						       zvm->target);
+						rc = 0;
+					} else {
+						rc = outPlist->hdr.rc;
+						zvm->reason = outPlist->hdr.reason;
+						(void) zvm_smapi_reportError(inPlist, outPlist);
+					}
+				}
+			}
+		}
+		free(inPlist);
+		free(outPlist);
+	} else {
+		syslog(LOG_ERR, "%s - cannot allocate parameter list", __func__);
+		rc = -1;
+	}
+	return(rc);
+}
+
+/**
+ * zvm_smapi_imageQuery
+ * @zvm: z/VM driver information
+ *
+ * Queries the state of a virtual image
+ */
+int
+zvm_smapi_imageQuery(zvm_driver_t *zvm)
+{
+	struct _inPlist {
+		int32_t	lPlist;
+		int32_t	lFName;
+		char	fName[18];
+		int32_t lUser;
+		int32_t lPass;
+		int32_t	lTarget;
+		char	target[0];
+	} __attribute__ ((__packed__)) *inPlist;
+	int32_t	lInPlist;
+	struct	_outPlist {
+		smapiOutHeader_t hdr;
+		int32_t	lNames;
+		char	nameArray[0];
+	} *outPlist = NULL;
+	void	*pOut = NULL;
+	int32_t	lRsp;
+	uint32_t reqId;
+	int	rc;
+
+	/*
+	 * Implement any delay
+	 */ 
+	if (zvm->delay > 0) 
+		sleep(zvm->delay);
+
+	lInPlist = sizeof(*inPlist) + strlen(zvm->target);
+	inPlist = malloc(lInPlist);
+	if (inPlist != NULL) {
+		inPlist->lPlist = lInPlist - sizeof(inPlist->lPlist);
+		inPlist->lFName = sizeof(inPlist->fName);
+		memcpy(inPlist->fName, Image_Status_Query, sizeof(inPlist->fName));
+		inPlist->lUser = inPlist->lPass = 0;
+		inPlist->lTarget = strlen(zvm->target);
+		memcpy(inPlist->target, zvm->target, inPlist->lTarget);
+		if ((rc = zvm_smapi_send(zvm, inPlist, &reqId, lInPlist)) != -1) {
+			if ((rc = zvm_smapi_recv(zvm, &pOut, &lRsp)) != -1) {
+				outPlist = pOut;
+				if (outPlist->hdr.rc == 0) {
+					if (outPlist->hdr.reason == 0) {
+						syslog(LOG_INFO, "Node %s is active",
+						       zvm->target);
+						rc = 0;
+					} else { 
+						syslog(LOG_INFO, "Node %s is inactive",
+						       zvm->target);
+						rc = 2;
+					}
+				} else {
+					rc = 1;
+					zvm->reason = outPlist->hdr.reason;
+					(void) zvm_smapi_reportError(inPlist, outPlist);
+				}
+			}
+		}
+		free(inPlist);
+		free(outPlist);
+	} else {
+		syslog(LOG_ERR, "%s - cannot allocate parameter list", __func__);
+		rc = -1;
+	}
+	return(rc);
+}
+
+/**
  * zvm_smapi_send:
  * @zvm: z/VM driver information
  * @reqid: Returned request id
@@ -414,7 +648,9 @@ zvm_metadata()
 
 	fprintf (stdout, "<actions>\n");
 	fprintf (stdout, "\t<action name=\"off\" />\n");
+	fprintf (stdout, "\t<action name=\"on\" />\n");
 	fprintf (stdout, "\t<action name=\"metadata\" />\n");
+	fprintf (stdout, "\t<action name=\"status\" />\n");
 	fprintf (stdout, "</actions>\n");
 
 	fprintf (stdout, "</resource-agent>\n");
@@ -463,10 +699,14 @@ get_options_stdin (zvm_driver_t *zvm)
 		if (!strcasecmp (opt, "action")) {
 			if (strcasecmp(arg, "off") == 0) {
 				fence = 0;
-			} else if (strcasecmp(arg, "metadata") == 0) {
+			} else if (strcasecmp(arg, "on") == 0) {
 				fence = 1;
-			} else {
+			} else if (strcasecmp(arg, "metadata") == 0) {
 				fence = 2;
+			} else if (strcasecmp(arg, "status") == 0) {
+				fence = 3;
+			} else {
+				fence = 4;
 			}
 		} else if (!strcasecmp (opt, "ipaddr")) {
 			lSrvName = MIN(strlen(arg), sizeof(zvm->smapiSrv));
@@ -497,7 +737,7 @@ get_options_stdin (zvm_driver_t *zvm)
 				zvm->delay = DEFAULT_DELAY;
 			}
 		} else if (!strcasecmp (opt, "help")) {
-			fence = 2;
+			fence = 4;
 		}
 	}
 	return(fence);
@@ -529,10 +769,14 @@ get_options(int argc, char **argv, zvm_driver_t *zvm)
 		case 'o' :
 			if (strcasecmp(optarg, "off") == 0) {
 				fence = 0;
-			} else if (strcasecmp(optarg, "metadata") == 0) {
+			} else if (strcasecmp(optarg, "on") == 0) {
 				fence = 1;
-			} else {
+			} else if (strcasecmp(optarg, "metadata") == 0) {
 				fence = 2;
+			} else if (strcasecmp(optarg, "status") == 0) {
+				fence = 3;
+			} else {
+				fence = 4;
 			}
 			break;
 		case 'a' :
@@ -562,7 +806,7 @@ get_options(int argc, char **argv, zvm_driver_t *zvm)
 			memcpy(zvm->node, optarg, lSrvNode);
 			break;
 		default :
-			fence = 2;
+			fence = 4;
 		}
 	}
 	return(fence);
@@ -577,13 +821,13 @@ usage()
 {
 	fprintf(stderr,"Usage: fence_zvm [options]\n\n"
 		"\tWhere [options] =\n"
-		"\t-o --action [action]    - \"off\", \"metadata\"\n"
-		"\t--delay [seconds]       - Time to delay fencing action in seconds\n"
-		"\t-n --plug [target]      - Name of virtual machine to fence\n"
-		"\t-a --ip [server]        - Name of SMAPI IUCV Request server\n"
-		"\t-T --timeout [secs]     - Time to wait for fence in seconds - currently ignored\n"
-		"\t--zvmsys [node]         - z/VM Node on which SMAPI server lives\n"
-		"\t-h --help               - Display this usage information\n");
+		"\t-o --action [action] - \"off\", \"on\", \"metadata\", \"status\"\n"
+		"\t--delay [seconds]    - Time to delay fencing action in seconds\n"
+		"\t-n --plug [target]   - Name of virtual machine to fence\n"
+		"\t-a --ip [server]     - Name of SMAPI IUCV Request server\n"
+		"\t-T --timeout [secs]  - Time to wait for fence in seconds - currently ignored\n"
+		"\t--zvmsys [node]      - z/VM Node on which SMAPI server lives\n"
+		"\t-h --help            - Display this usage information\n");
 	return(1);
 }
 
@@ -629,14 +873,22 @@ main(int argc, char **argv)
 		fence = get_options_stdin(&zvm);
 
 	switch(fence) {
-		case 0 :
+		case 0 :	// OFF
 			if ((rc = check_parm(&zvm)) == 0)
-				rc = zvm_smapi_imageRecycle(&zvm);
+				rc = zvm_smapi_imageDeactivate(&zvm);
 			break;
-		case 1 :
+		case 1 :	// ON
+			if ((rc = check_parm(&zvm)) == 0)
+				rc = zvm_smapi_imageActivate(&zvm);
+			break;
+		case 2 :	// METADATA
 			rc = zvm_metadata();
 			break;
-		case 2 :
+		case 3 :	// STATUS
+			if ((rc = check_parm(&zvm)) == 0)
+				rc = zvm_smapi_imageQuery(&zvm);
+			break;
+		case 4 :
 			rc = usage();
 	}
 	closelog();

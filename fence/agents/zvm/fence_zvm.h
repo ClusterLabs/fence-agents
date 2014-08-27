@@ -578,5 +578,6 @@ int zvm_smapi_imageActivate(zvm_driver_t *);
 int zvm_smapi_imageActiveQuery(zvm_driver_t *);
 int zvm_smapi_imageDeactivate(zvm_driver_t *);
 int zvm_smapi_imageRecycle(zvm_driver_t *);
+int zvm_smapi_imageQuery(zvm_driver_t *);
 
 #endif /* FENCE_ZVM_H */

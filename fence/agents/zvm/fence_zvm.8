@@ -22,7 +22,7 @@ Vendor URL: http://www.sinenomine.net
 .SH OPTIONS
 .TP
 \fB-o --action\fP
-Fencing action: "off" - fence off device; "metadata" - display device metadata
+Fencing action: "off" - deactivate virtual machine; "on" - activate virtual machine; "metadata" - display device metadata" - describe fence agent parameters; "status" - state of virtual machine
 .TP
 \fB--delay\fP \fIseconds\fP
 Time to delay fencing action in seconds
@@ -52,7 +52,7 @@ forcibly terminated. Currently, this option is ignored.
 This option is used by fence_node(8) and is ignored by fence_zvm.
 .TP
 \fIaction = < action >\fP
-Fencing action: "off" - fence off device; "metadata" - display device metadata
+Fencing action: "off" - fence off device; "metadata" - display device metadata; "status" - state of device
 .TP
 \fIport = < target >\fP
 Name of virtual machine to recycle.
