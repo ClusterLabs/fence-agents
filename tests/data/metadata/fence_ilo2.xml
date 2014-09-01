@@ -19,6 +19,11 @@
 		<content type="string"  />
 		<shortdesc lang="en">Force ribcl version to use</shortdesc>
 	</parameter>
+	<parameter name="ssl_secure" unique="0" required="0">
+		<getopt mixed="--ssl-secure" />
+		<content type="boolean"  />
+		<shortdesc lang="en">SSL connection with verifying fence device's certificate</shortdesc>
+	</parameter>
 	<parameter name="action" unique="0" required="1">
 		<getopt mixed="-o, --action=[action]" />
 		<content type="string" default="reboot"  />
@@ -53,6 +58,11 @@
 		<getopt mixed="-z, --ssl" />
 		<content type="boolean" default="1"  />
 		<shortdesc lang="en">SSL connection</shortdesc>
+	</parameter>
+	<parameter name="ssl_insecure" unique="0" required="0">
+		<getopt mixed="--ssl-insecure" />
+		<content type="boolean"  />
+		<shortdesc lang="en">SSL connection without verifying fence device's certificate</shortdesc>
 	</parameter>
 	<parameter name="login" unique="0" required="1">
 		<getopt mixed="-l, --username=[name]" />

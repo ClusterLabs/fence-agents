@@ -15,6 +15,11 @@ Name of virtual machine (-n / port) has to be used in inventory path format (e.g
 		<content type="boolean"  />
 		<shortdesc lang="en">Disable TLS negotiation</shortdesc>
 	</parameter>
+	<parameter name="ssl_secure" unique="0" required="0">
+		<getopt mixed="--ssl-secure" />
+		<content type="boolean"  />
+		<shortdesc lang="en">SSL connection with verifying fence device's certificate</shortdesc>
+	</parameter>
 	<parameter name="port" unique="0" required="1">
 		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />
@@ -49,6 +54,11 @@ Name of virtual machine (-n / port) has to be used in inventory path format (e.g
 		<getopt mixed="-z, --ssl" />
 		<content type="boolean"  />
 		<shortdesc lang="en">SSL connection</shortdesc>
+	</parameter>
+	<parameter name="ssl_insecure" unique="0" required="0">
+		<getopt mixed="--ssl-insecure" />
+		<content type="boolean"  />
+		<shortdesc lang="en">SSL connection without verifying fence device's certificate</shortdesc>
 	</parameter>
 	<parameter name="action" unique="0" required="1">
 		<getopt mixed="-o, --action=[action]" />
