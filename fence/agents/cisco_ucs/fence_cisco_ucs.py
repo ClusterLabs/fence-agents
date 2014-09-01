@@ -90,8 +90,13 @@ def send_command(opt, command, timeout):
 	conn.setopt(pycurl.POSTFIELDS, command)
 	conn.setopt(pycurl.WRITEFUNCTION, web_buffer.write)
 	conn.setopt(pycurl.TIMEOUT, timeout)
-	conn.setopt(pycurl.SSL_VERIFYPEER, 0)
-	conn.setopt(pycurl.SSL_VERIFYHOST, 0)
+	if opt.has_key("--ssl") or opt.has_key("--ssl-secure"):
+		conn.setopt(pycurl.SSL_VERIFYPEER, 1)
+		conn.setopt(pycurl.SSL_VERIFYHOST, 2)
+
+	if opt.has_key("--ssl-insecure"):
+		conn.setopt(pycurl.SSL_VERIFYPEER, 0)
+		conn.setopt(pycurl.SSL_VERIFYHOST, 0)
 	conn.perform()
 	result = web_buffer.getvalue()
 

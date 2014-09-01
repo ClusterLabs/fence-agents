@@ -2,12 +2,14 @@
 
 import sys
 import shutil, tempfile, suds
-import logging
+import logging, requests
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 
 from suds.client import Client
 from suds.sudsobject import Property
+from suds.transport.http import HttpAuthenticated
+from suds.transport import Reply, TransportError
 from fencing import *
 from fencing import fail, EC_STATUS, EC_LOGIN_DENIED, EC_INVALID_PRIVILEGES, EC_WAITING_ON, EC_WAITING_OFF
 from fencing import run_delay
@@ -18,12 +20,31 @@ REDHAT_COPYRIGHT=""
 BUILD_DATE="April, 2011"
 #END_VERSION_GENERATION
 
+class RequestsTransport(HttpAuthenticated):
+	def __init__(self, **kwargs):
+		self.cert = kwargs.pop('cert', None)
+		self.verify = kwargs.pop('verify', True)
+		self.session = requests.Session()
+		# super won't work because not using new style class
+		HttpAuthenticated.__init__(self, **kwargs)
+
+	def send(self, request):
+		self.addcredentials(request)
+		resp = self.session.post(request.url, data = request.message, headers = request.headers, cert = self.cert, verify = self.verify)
+		result = Reply(resp.status_code, resp.headers, resp.content)
+		return result
+
 def soap_login(options):
 	run_delay(options)
 
-	if options.has_key("--ssl"):
+	if options.has_key("--ssl") or options.has_key("--ssl-secure") or options.has_key("--ssl-insecure"):
+		if options.has_key("--ssl-insecure"):
+			verify = False
+		else:
+			verify = True
 		url = "https://"
 	else:
+		verify = False
 		url = "http://"
 
 	url += options["--ip"] + ":" + str(options["--ipport"]) + "/sdk"
@@ -33,8 +54,8 @@ def soap_login(options):
 	atexit.register(remove_tmp_dir, tmp_dir)
 
 	try:
-		conn = Client(url + "/vimService.wsdl")
-		conn.set_options(location=url)
+		headers = {"Content-Type" : "text/xml;charset=UTF-8", "SOAPAction" : ""}
+		conn = Client(url + "/vimService.wsdl", location = url, transport = RequestsTransport(verify = verify), headers = headers)
 
 		mo_ServiceInstance = Property('ServiceInstance')
 		mo_ServiceInstance._type = 'ServiceInstance'
@@ -43,6 +64,8 @@ def soap_login(options):
 		mo_SessionManager._type = 'SessionManager'
 
 		conn.service.Login(mo_SessionManager, options["--username"], options["--password"])
+	except requests.exceptions.SSLError, ex:
+		fail_usage("Server side certificate verification failed")
 	except Exception:
 		fail(EC_LOGIN_DENIED)
 
@@ -205,6 +228,8 @@ Alternatively you can always use UUID to access virtual machine."
 
 	logging.basicConfig(level=logging.INFO)
 	logging.getLogger('suds.client').setLevel(logging.CRITICAL)
+	logging.getLogger("requests").setLevel(logging.CRITICAL)
+	logging.getLogger("urllib3").setLevel(logging.CRITICAL)
 
 	##
 	## Operate the fencing device

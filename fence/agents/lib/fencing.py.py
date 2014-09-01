@@ -179,6 +179,21 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "SSL connection",
 		"order" : 1},
+	"ssl_insecure" : {
+		"getopt" : "9",
+		"longopt" : "ssl-insecure",
+		"help" : "--ssl-insecure                 Use ssl connection without verifying certificate",
+		"required" : "0",
+		"shortdesc" : "SSL connection without verifying fence device's certificate",
+		"order" : 1},
+	"ssl_secure" : {
+		"getopt" : "9",
+		"longopt" : "ssl-secure",
+		"help" : "--ssl-secure                   Use ssl connection with verifying certificate",
+		"required" : "0",
+		"shortdesc" : "SSL connection with verifying fence device's certificate",
+		"order" : 1},
+
 	"notls" : {
 		"getopt" : "t",
 		"longopt" : "notls",
@@ -385,6 +400,7 @@ DEPENDENCY_OPT = {
 		"secure" : ["identity_file", "ssh_options"],
 		"ipaddr" : ["ipport", "inet4_only", "inet6_only"],
 		"port" : ["separator"],
+		"ssl" : ["ssl_secure", "ssl_insecure"],
 		"community" : ["snmp_auth_prot", "snmp_sec_level", "snmp_priv_prot", \
 			"snmp_priv_passwd", "snmp_priv_passwd_script"]
 	}
@@ -662,7 +678,7 @@ def check_input(device_opt, opt):
 		elif options.has_key("--ssh") or (all_opt["secure"].has_key("default") and all_opt["secure"]["default"] == '1'):
 			all_opt["ipport"]["default"] = 22
 			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 22)"
-		elif options.has_key("--ssl") or (all_opt["ssl"].has_key("default") and all_opt["ssl"]["default"] == '1'):
+		elif options.has_key("--ssl") or options.has_key("--ssl-secure") or options.has_key("--ssl-insecure") or (all_opt["ssl"].has_key("default") and all_opt["ssl"]["default"] == '1'):
 			all_opt["ipport"]["default"] = 443
 			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 443)"
 		elif device_opt.count("web"):
@@ -972,11 +988,17 @@ def fence_login(options, re_login_string=r"(login\s*: )|(Login Name:  )|(usernam
 
 		if options.has_key("--ssl"):
 			gnutls_opts = ""
+			ssl_opts = ""
+
 			if options.has_key("--notls"):
 				gnutls_opts = "--priority \"NORMAL:-VERS-TLS1.2:-VERS-TLS1.1:-VERS-TLS1.0:+VERS-SSL3.0\""
 
-			command = '%s %s --insecure --crlf -p %s %s' % \
-					(SSL_PATH, gnutls_opts, options["--ipport"], options["--ip"])
+			# --ssl is same as the --ssl-secure
+			if options.has_key("--ssl-insecure"):
+				ssl_opts = "--insecure"
+
+			command = '%s %s %s --insecure --crlf -p %s %s' % \
+					(SSL_PATH, gnutls_opts, ssl_opts, options["--ipport"], options["--ip"])
 			try:
 				conn = fspawn(options, command)
 			except pexpect.ExceptionPexpect, ex:
