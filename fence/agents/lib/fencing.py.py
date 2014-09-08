@@ -719,7 +719,6 @@ def check_input(device_opt, opt):
 	logging.getLogger().addHandler(SyslogLibHandler())
 	## add loggint to stderr
 	logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stderr))
-	
 
 	acceptable_actions = ["on", "off", "status", "list", "monitor"]
 	if 1 == device_opt.count("fabric_fencing"):
@@ -1159,9 +1158,8 @@ def fence_logout(conn, logout_string, sleep=0):
 def array_to_dict(ar):
 	return dict([[x[0].split(".")[-1], x[1]] for x in ar])
 
-
 ## Own logger handler that uses old-style syslog handler as otherwise everything is sourced
-## from /dev/syslog 
+## from /dev/syslog
 class SyslogLibHandler(logging.StreamHandler):
 	"""
 	A handler class that correctly push messages into syslog

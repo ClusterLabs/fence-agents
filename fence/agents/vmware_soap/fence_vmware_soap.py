@@ -11,7 +11,7 @@ from suds.sudsobject import Property
 from suds.transport.http import HttpAuthenticated
 from suds.transport import Reply, TransportError
 from fencing import *
-from fencing import fail, EC_STATUS, EC_LOGIN_DENIED, EC_INVALID_PRIVILEGES, EC_WAITING_ON, EC_WAITING_OFF
+from fencing import fail, fail_usage, EC_STATUS, EC_LOGIN_DENIED, EC_INVALID_PRIVILEGES, EC_WAITING_ON, EC_WAITING_OFF
 from fencing import run_delay
 
 #BEGIN_VERSION_GENERATION
@@ -33,7 +33,7 @@ class RequestsTransport(HttpAuthenticated):
 
 	def send(self, request):
 		self.addcredentials(request)
-		resp = self.session.post(request.url, data = request.message, headers = request.headers, cert = self.cert, verify = self.verify)
+		resp = self.session.post(request.url, data=request.message, headers=request.headers, cert=self.cert, verify=self.verify)
 		result = Reply(resp.status_code, resp.headers, resp.content)
 		return result
 
@@ -58,7 +58,7 @@ def soap_login(options):
 
 	try:
 		headers = {"Content-Type" : "text/xml;charset=UTF-8", "SOAPAction" : ""}
-		conn = Client(url + "/vimService.wsdl", location = url, transport = RequestsTransport(verify = verify), headers = headers)
+		conn = Client(url + "/vimService.wsdl", location=url, transport=RequestsTransport(verify=verify), headers=headers)
 
 		mo_ServiceInstance = Property('ServiceInstance')
 		mo_ServiceInstance._type = 'ServiceInstance'
