@@ -19,6 +19,8 @@ RE_STATUS = re.compile("<lsPower .*? state=\"(.*?)\"", re.IGNORECASE)
 RE_GET_DN = re.compile(" dn=\"(.*?)\"", re.IGNORECASE)
 RE_GET_DESC = re.compile(" descr=\"(.*?)\"", re.IGNORECASE)
 
+options_global = None
+
 def get_power_status(conn, options):
 	del conn
 
@@ -115,27 +117,37 @@ def define_new_opts():
 		"default" : "",
 		"order" : 1}
 
+def logout():
+	### Logout; we do not care about result as we will end in any case
+	try:
+		send_command(options_global, "<aaaLogout inCookie=\"" + options_global["cookie"] + "\" />",
+				int(options_global["--shell-timeout"]))
+	except Exception:
+		pass
+
 def main():
+	global options_global
 	device_opt = ["ipaddr", "login", "passwd", "ssl", "notls", "port", "web", "suborg"]
 
 	atexit.register(atexit_handler)
+	atexit.register(logout)
 
 	define_new_opts()
 
-	options = check_input(device_opt, process_input(device_opt))
+	options_global = check_input(device_opt, process_input(device_opt))
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for Cisco UCS"
 	docs["longdesc"] = "fence_cisco_ucs is an I/O Fencing agent which can be \
 used with Cisco UCS to fence machines."
 	docs["vendorurl"] = "http://www.cisco.com"
-	show_docs(options, docs)
+	show_docs(options_global, docs)
 
-	run_delay(options)
+	run_delay(options_global)
 	### Login
 	try:
-		res = send_command(options, "<aaaLogin inName=\"" + options["--username"] +
-				"\" inPassword=\"" + options["--password"] + "\" />", int(options["--login-timeout"]))
+		res = send_command(options_global, "<aaaLogin inName=\"" + options_global["--username"] +
+				"\" inPassword=\"" + options_global["--password"] + "\" />", int(options_global["--login-timeout"]))
 		result = RE_COOKIE.search(res)
 		if result == None:
 			## Cookie is absenting in response
@@ -143,22 +155,19 @@ used with Cisco UCS to fence machines."
 	except Exception:
 		fail(EC_LOGIN_DENIED)
 
-	options["cookie"] = result.group(1)
+	options_global["cookie"] = result.group(1)
 
 	##
 	## Modify suborg to format /suborg
-	if options["--suborg"] != "":
-		options["--suborg"] = "/" + options["--suborg"].lstrip("/").rstrip("/")
+	if options_global["--suborg"] != "":
+		options_global["--suborg"] = "/" + options_global["--suborg"].lstrip("/").rstrip("/")
 
 	##
 	## Fence operations
 	####
-	result = fence_action(None, options, set_power_status, get_power_status, get_list)
+	result = fence_action(None, options_global, set_power_status, get_power_status, get_list)
 
-	### Logout; we do not care about result as we will end in any case
-	send_command(options, "<aaaLogout inCookie=\"" + options["cookie"] + "\" />",
-			int(options["--shell-timeout"]))
-
+	## Logout is done every time at atexit phase
 	sys.exit(result)
 
 if __name__ == "__main__":

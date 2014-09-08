@@ -20,6 +20,9 @@ REDHAT_COPYRIGHT=""
 BUILD_DATE="April, 2011"
 #END_VERSION_GENERATION
 
+options_global = None
+conn_global = None
+
 class RequestsTransport(HttpAuthenticated):
 	def __init__(self, **kwargs):
 		self.cert = kwargs.pop('cert', None)
@@ -203,12 +206,21 @@ def set_power_status(conn, options):
 def remove_tmp_dir(tmp_dir):
 	shutil.rmtree(tmp_dir)
 
+def logout():
+	try:
+		conn_global.service.Logout(options_global["mo_SessionManager"])
+	except Exception:
+		pass
+
 def main():
+	global options_global
+	global conn_global
 	device_opt = ["ipaddr", "login", "passwd", "web", "ssl", "notls", "port"]
 
 	atexit.register(atexit_handler)
+	atexit.register(logout)
 
-	options = check_input(device_opt, process_input(device_opt))
+	options_global = check_input(device_opt, process_input(device_opt))
 
 	##
 	## Fence agent specific defaults
@@ -224,7 +236,7 @@ format (e.g. /datacenter/vm/Discovered virtual machine/myMachine). \
 In the cases when name of yours VM is unique you can use it instead. \
 Alternatively you can always use UUID to access virtual machine."
 	docs["vendorurl"] = "http://www.vmware.com"
-	show_docs(options, docs)
+	show_docs(options_global, docs)
 
 	logging.basicConfig(level=logging.INFO)
 	logging.getLogger('suds.client').setLevel(logging.CRITICAL)
@@ -234,18 +246,11 @@ Alternatively you can always use UUID to access virtual machine."
 	##
 	## Operate the fencing device
 	####
-	conn = soap_login(options)
+	conn_global = soap_login(options_global)
 
-	result = fence_action(conn, options, set_power_status, get_power_status, get_power_status)
+	result = fence_action(conn_global, options_global, set_power_status, get_power_status, get_power_status)
 
-	##
-	## Logout from system
-	#####
-	try:
-		conn.service.Logout(options["mo_SessionManager"])
-	except Exception:
-		pass
-
+	## Logout from system is done automatically via atexit()
 	sys.exit(result)
 
 if __name__ == "__main__":
