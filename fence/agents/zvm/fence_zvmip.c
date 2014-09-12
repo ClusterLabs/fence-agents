@@ -804,6 +804,7 @@ zvm_metadata()
 	fprintf (stdout, "<longdesc>");
 	fprintf (stdout, "The fence_zvm agent is intended to be used with with z/VM SMAPI service via TCP/IP");
 	fprintf (stdout, "</longdesc>\n");
+	fprintf (stdout, "<vendor-url>http://www.ibm.com</vendor-url>\n");
 
 	fprintf (stdout, "<parameters>\n");
 

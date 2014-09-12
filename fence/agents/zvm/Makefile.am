@@ -1,5 +1,7 @@
 MAINTAINERCLEANFILES	= Makefile.in
 
+TARGET			= fence_zvmip
+
 sbin_PROGRAMS		= fence_zvm fence_zvmip
 
 noinst_HEADERS		= fence_zvm.h
@@ -11,6 +13,11 @@ fence_zvmip_SOURCES	= fence_zvmip.c
 fence_zvmip_CFLAGS	= -D_GNU_SOURCE
 
 dist_man_MANS		= fence_zvm.8 fence_zvmip.8
+
+#include $(top_srcdir)/make/fencemanc.mk
+
+clean-local:
+	rm -f $(sbin_PROGRAMS)
 
 FENCE_TEST_ARGS		= -n test -a test -p test -u test
 
