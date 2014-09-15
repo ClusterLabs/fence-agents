@@ -677,15 +677,15 @@ get_options_stdin (zvm_driver_t *zvm)
 
 		if (!strcasecmp (opt, "action")) {
 			if (strcasecmp(arg, "off") == 0) {
-				fence = 0;
-			} else if (strcasecmp(arg, "on") == 0) {
 				fence = 1;
-			} else if (strcasecmp(arg, "metadata") == 0) {
+			} else if (strcasecmp(arg, "on") == 0) {
 				fence = 2;
-			} else if (strcasecmp(arg, "status") == 0) {
+			} else if (strcasecmp(arg, "metadata") == 0) {
 				fence = 3;
-			} else {
+			} else if (strcasecmp(arg, "status") == 0) {
 				fence = 4;
+			} else {
+				fence = 5;
 			}
 		} else if (!strcasecmp (opt, "ipaddr")) {
 			lSrvName = MIN(strlen(arg), sizeof(zvm->smapiSrv)-1);
@@ -712,7 +712,7 @@ get_options_stdin (zvm_driver_t *zvm)
 				zvm->timeOut = DEFAULT_TIMEOUT;
 			}
 		} else if (!strcasecmp (opt, "help")) {
-			fence = 2;
+			fence = 5;
 		}
 	}
 	return(fence);
@@ -746,15 +746,15 @@ get_options(int argc, char **argv, zvm_driver_t *zvm)
 			break;
 		case 'o' :
 			if (strcasecmp(optarg, "off") == 0) {
-				fence = 0;
-			} else if (strcasecmp(optarg, "on") == 0) {
 				fence = 1;
-			} else if (strcasecmp(optarg, "metadata") == 0) {
+			} else if (strcasecmp(optarg, "on") == 0) {
 				fence = 2;
-			} else if (strcasecmp(optarg, "status") == 0) {
+			} else if (strcasecmp(optarg, "metadata") == 0) {
 				fence = 3;
-			} else {
+			} else if (strcasecmp(optarg, "status") == 0) {
 				fence = 4;
+			} else {
+				fence = 5;
 			}
 			break;
 		case 'p' :
@@ -784,7 +784,7 @@ get_options(int argc, char **argv, zvm_driver_t *zvm)
 			}
 			break;
 		default :
-			fence = 4;
+			fence = 5;
 		}
 	}
 	return(fence);
@@ -944,22 +944,26 @@ main(int argc, char **argv)
 		fence = get_options_stdin(&zvm);
 
 	switch(fence) {
-		case 0 :	// OFF
+		case 0 :	// OFFON
+			if ((rc = check_parm(&zvm)) == 0)
+				rc = zvm_smapi_imageRecycle(&zvm);
+			break;
+		case 1 :	// OFF
 			if ((rc = check_parm(&zvm)) == 0)
 				rc = zvm_smapi_imageDeactivate(&zvm);
 			break;
-		case 1 :	// ON
+		case 2 :	// ON
 			if ((rc = check_parm(&zvm)) == 0)
 				rc = zvm_smapi_imageActivate(&zvm);
 			break;
-		case 2 :	// METADATA
+		case 3 :	// METADATA
 			rc = zvm_metadata();
 			break;
-		case 3 :	// STATUS
+		case 4 :	// STATUS
 			if ((rc = check_parm(&zvm)) == 0)
 				rc = zvm_smapi_imageQuery(&zvm);
 			break;
-		case 4 :
+		case 5 :
 			rc = usage();
 	}
 	closelog();
