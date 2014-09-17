@@ -76,7 +76,7 @@ def get_list(conn, options):
 
 def send_command(opt, command, method="GET"):
 	## setup correct URL
-	if opt.has_key("--ssl"):
+	if opt.has_key("--ssl") or opt.has_key("--ssl-secure") or opt.has_key("--ssl-insecure"):
 		url = "https:"
 	else:
 		url = "http:"
