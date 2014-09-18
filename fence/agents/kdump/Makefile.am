@@ -18,4 +18,3 @@ FENCE_TEST_ARGS			= -n test
 include $(top_srcdir)/make/agentccheck.mk
 
 check: xml-check.fence_kdump
-

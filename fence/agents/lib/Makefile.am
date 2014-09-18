@@ -23,6 +23,3 @@ rngdir			= ${CLUSTERDATA}/relaxng
 rng_DATA		= $(XSL) $(FASRNG)
 
 include $(top_srcdir)/make/fencebuild.mk
-
-clean-local:
-	rm -f $(TARGET) *.pyc

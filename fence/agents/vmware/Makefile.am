@@ -14,6 +14,3 @@ FENCE_TEST_ARGS         = -l test -p test -a test -n 1
 
 include $(top_srcdir)/make/fencebuild.mk
 include $(top_srcdir)/make/fenceman.mk
-
-clean-local: clean-man
-	rm -f $(TARGET)

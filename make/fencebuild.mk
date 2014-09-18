@@ -21,3 +21,7 @@ $(TARGET): $(SRC)
 	if [ 0 -eq `echo "$(SRC)" | grep fence_ &> /dev/null; echo $$?` ]; then \
 		PYTHONPATH=$(abs_srcdir)/../lib:$(abs_builddir)/../lib $(top_srcdir)/fence/agents/lib/check_used_options.py $@; \
 	else true ; fi
+
+clean: clean-man
+	rm -f $(TARGET) $(SYMTARGET) *.pyc
+
