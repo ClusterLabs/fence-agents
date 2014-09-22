@@ -206,7 +206,7 @@ def main():
 	options = check_input(device_opt, process_input(device_opt))
 
 	docs = {}
-	docs["shortdesc"] = "XenAPI based fencing for the Citrix XenServer virtual machines."
+	docs["shortdesc"] = "Fence agent fo Citrix XenServer over XenAPI"
 	docs["longdesc"] = "\
 fence_cxs is an I/O Fencing agent used on Citrix XenServer hosts. \
 It uses the XenAPI, supplied by Citrix, to establish an XML-RPC sesssion \

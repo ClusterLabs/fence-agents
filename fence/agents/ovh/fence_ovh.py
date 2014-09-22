@@ -29,7 +29,7 @@ def define_new_opts():
 	all_opt["email"] = {
 		"getopt" : "Z:",
 		"longopt" : "email",
-		"help" : "-Z, --email=<email>          email for reboot message: admin@domain.com",
+		"help" : "-Z, --email=[email]          email for reboot message: admin@domain.com",
 		"required" : "1",
 		"shortdesc" : "Reboot email",
 		"default" : "",
