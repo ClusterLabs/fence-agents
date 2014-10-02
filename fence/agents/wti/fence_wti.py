@@ -27,7 +27,7 @@ BUILD_DATE="March, 2008"
 def get_listing(conn, options, listing_command):
 	listing = ""
 
-	conn.send(listing_command + "\r\n")
+	conn.send_eol(listing_command)
 
 	if isinstance(options["--command-prompt"], list):
 		re_all = list(options["--command-prompt"])
@@ -39,7 +39,7 @@ def get_listing(conn, options, listing_command):
 	result = conn.log_expect(options, re_all, int(options["--shell-timeout"]))
 	listing = conn.before
 	if result == (len(re_all) - 1):
-		conn.send("\r\n")
+		conn.send_eol("")
 		conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 		listing += conn.before
 
@@ -174,7 +174,7 @@ def set_power_status(conn, options):
 		'off': "/off"
 	}[options["--action"]]
 
-	conn.send(action + " " + options["--plug"] + ",y\r\n")
+	conn.send_eol(action + " " + options["--plug"] + ",y")
 	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
 
 def main():
@@ -207,6 +207,8 @@ is running because the connection will block any necessary fencing actions."
 			if options["--action"] in ["off", "reboot"]:
 				time.sleep(int(options["--delay"]))
 
+			options["eol"] = "\r\n"
+
 			conn = fspawn(options, TELNET_PATH)
 			conn.send("set binary\n")
 			conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
@@ -217,14 +219,14 @@ is running because the connection will block any necessary fencing actions."
 			result = conn.log_expect(options, [re_login, "Password: ", re_prompt], int(options["--shell-timeout"]))
 			if result == 0:
 				if options.has_key("--username"):
-					conn.send(options["--username"]+"\r\n")
+					conn.send_eol(options["--username"])
 					result = conn.log_expect(options, [re_login, "Password: ", re_prompt], int(options["--shell-timeout"]))
 				else:
 					fail_usage("Failed: You have to set login name")
 
 			if result == 1:
 				if options.has_key("--password"):
-					conn.send(options["--password"]+"\r\n")
+					conn.send_eol(options["--password"])
 					conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 				else:
 					fail_usage("Failed: You have to enter password or password script")
@@ -236,7 +238,7 @@ is running because the connection will block any necessary fencing actions."
 		conn = fence_login(options)
 
 	result = fence_action(conn, options, set_power_status, get_power_status, get_power_status)
-	fence_logout(conn, "/X\r\n")
+	fence_logout(conn, "/X")
 	sys.exit(result)
 
 if __name__ == "__main__":
