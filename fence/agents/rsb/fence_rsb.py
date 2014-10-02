@@ -29,7 +29,6 @@ def set_power_status(conn, options):
 	conn.send("2")
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 	conn.send_eol(action)
-	conn.log_expect(options, ["want to power off", "'yes' or 'no'"], int(options["--shell-timeout"]))
 	conn.log_expect(options, ["want to power " + options["--action"], 
 			"yes/no", "'yes' or 'no'"], int(options["--shell-timeout"]))
 	conn.send_eol("yes")
