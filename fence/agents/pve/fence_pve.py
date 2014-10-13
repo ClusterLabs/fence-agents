@@ -106,8 +106,13 @@ def send_cmd(options, cmd, post=None):
 		conn.setopt(pycurl.POSTFIELDS, urllib.urlencode(post))
 	conn.setopt(pycurl.WRITEFUNCTION, output_buffer.write)
 	conn.setopt(pycurl.TIMEOUT, int(options["--shell-timeout"]))
-	conn.setopt(pycurl.SSL_VERIFYPEER, 0)
-	conn.setopt(pycurl.SSL_VERIFYHOST, 0)
+	if opt.has_key("--ssl") or opt.has_key("--ssl-secure"):
+		conn.setopt(pycurl.SSL_VERIFYPEER, 1)
+		conn.setopt(pycurl.SSL_VERIFYHOST, 2)
+
+	if opt.has_key("--ssl-insecure"):
+		conn.setopt(pycurl.SSL_VERIFYPEER, 0)
+		conn.setopt(pycurl.SSL_VERIFYHOST, 0)
 
 	logging.debug("URL: " + url)
 
