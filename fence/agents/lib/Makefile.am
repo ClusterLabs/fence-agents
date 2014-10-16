@@ -8,7 +8,7 @@ endif
 
 SRC			= fencing.py.py fencing_snmp.py.py XenAPI.py.py check_used_options.py
 
-XSL			= fence2man.xsl fence2rng.xsl
+XSL			= fence2man.xsl fence2rng.xsl fence2wiki.xsl
 
 FASRNG			= fence.rng.head fence.rng.tail metadata.rng
 
@@ -23,3 +23,5 @@ rngdir			= ${CLUSTERDATA}/relaxng
 rng_DATA		= $(XSL) $(FASRNG)
 
 include $(top_srcdir)/make/fencebuild.mk
+
+clean-man:
