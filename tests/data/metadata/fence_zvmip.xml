@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_zvmip" shortdesc="Fence agent for use with z/VM Virtual Machines">
 <longdesc>The fence_zvm agent is intended to be used with with z/VM SMAPI service via TCP/IP</longdesc>
+<vendor-url>http://www.ibm.com</vendor-url>
 <parameters>
 	<parameter name="port" unique="1" required="1">
 		<getopt mixed="-n, --plug" />

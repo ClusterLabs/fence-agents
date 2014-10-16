@@ -53,6 +53,11 @@
 		<content type="boolean"  />
 		<shortdesc lang="en">SSL connection</shortdesc>
 	</parameter>
+	<parameter name="use_cookies" unique="0" required="0">
+		<getopt mixed="--use-cookies" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Reuse cookies for authentication</shortdesc>
+	</parameter>
 	<parameter name="ssl_insecure" unique="0" required="0">
 		<getopt mixed="--ssl-insecure" />
 		<content type="boolean"  />
