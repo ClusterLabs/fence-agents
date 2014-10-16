@@ -10,7 +10,7 @@ sbin_SCRIPTS		= $(TARGET)
 
 man_MANS		= $(TARGET).8
 
-FENCE_TEST_ARGS         = -p test -a test
+FENCE_TEST_ARGS         = -p test -a test -l test
 
 include $(top_srcdir)/make/fencebuild.mk
 include $(top_srcdir)/make/fenceman.mk
