@@ -23,5 +23,6 @@ $(TARGET): $(SRC)
 	else true ; fi
 
 clean: clean-man
-	rm -f $(TARGET) $(SYMTARGET) *.pyc
+	rm -f $(TARGET) $(SYMTARGET) *.pyc *.wiki
 
+clean-local: clean
