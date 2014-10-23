@@ -159,6 +159,11 @@ LOGDIR=${localstatedir}/log/cluster
 CLUSTERVARRUN=${localstatedir}/run/cluster
 CLUSTERDATA=${datadir}/cluster
 
+AC_PYTHON_MODULE(suds, 1)
+AC_PYTHON_MODULE(pexpect, 1)
+AC_PYTHON_MODULE(pycurl, 1)
+AC_PYTHON_MODULE(requests, 1)
+
 ## path to 3rd-party binaries
 AC_PATH_PROG([IPMITOOL_PATH], [ipmitool], [/usr/bin/ipmitool])
 AC_PATH_PROG([AMTTOOL_PATH], [amttool], [/usr/bin/amttool])
@@ -253,6 +258,7 @@ CFLAGS="$ENV_CFLAGS $OPT_CFLAGS $GDB_FLAGS \
 	$EXTRA_WARNINGS $WERROR_CFLAGS"
 CPPFLAGS="-I\$(top_builddir)/make -I\$(top_srcdir)/make -I. $ENV_CPPFLAGS"
 LDFLAGS="$ENV_LDFLAGS"
+
 
 AC_CONFIG_FILES([Makefile
 		 fence/Makefile
