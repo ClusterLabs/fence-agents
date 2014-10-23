@@ -82,7 +82,6 @@ def main():
 	atexit.register(atexit_handler)
 
 	define_new_opts()
-	all_opt["action"]["help"] = "-o, --action=[action]          Action: reboot (default), off or on"
 	options = check_input(device_opt, process_input(device_opt))
 
 	docs = {}

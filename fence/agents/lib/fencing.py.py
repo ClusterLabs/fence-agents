@@ -648,7 +648,6 @@ def process_input(avail_opt):
 ## password script to set a correct password
 ######
 def check_input(device_opt, opt):
-
 	device_opt.extend(add_dependency_options(device_opt))
 
 	options = dict(opt)
@@ -663,7 +662,14 @@ def check_input(device_opt, opt):
 
 	if device_opt.count("fabric_fencing"):
 		all_opt["action"]["default"] = "off"
-		all_opt["action"]["help"] = "-o, --action=[action]          Action: status, off (default) or on"
+		if device_opt.count("no_status"):
+			all_opt["action"]["help"] = "-o, --action=[action]          Action: off (default) or on"
+		else:
+			all_opt["action"]["help"] = "-o, --action=[action]          Action: status, off (default) or on"
+	else:
+		if device_opt.count("no_status"):
+			all_opt["action"]["help"] = "-o, --action=[action]          Action: reboot (default), off or on"
+
 
 	if device_opt.count("ipport"):
 		if options.has_key("--ipport"):

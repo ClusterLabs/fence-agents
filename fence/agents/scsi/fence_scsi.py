@@ -382,8 +382,6 @@ def main():
 
 	define_new_opts()
 
-	all_opt["action"]["help"] = "-o, --action=[action]          Action: status, off (default) or on"
-	all_opt["action"]["default"] = "off"
 	all_opt["delay"]["getopt"] = "H:"
 
 	#fence_scsi_check
