@@ -51,6 +51,15 @@
 #define DEFAULT_TIMEOUT 300
 #define DEFAULT_DELAY   0
 
+#define ACT_OFFON 	0
+#define ACT_OFF		1
+#define ACT_ON		2
+#define ACT_METADATA	3
+#define ACT_STATUS	4
+#define ACT_MONITOR	5
+#define ACT_LIST	6
+#define ACT_HELP	7
+
 static int zvm_smapi_reportError(void *, void *);
 
 static struct option longopts[] = {
@@ -64,7 +73,7 @@ static struct option longopts[] = {
 	{NULL,		0,			NULL, 0}
 };
 
-static char *optString = "a:ho:n:T:";
+static const char *optString = "a:ho:n:T:";
 
 static int zvm_metadata(void);
 static int usage(void);
@@ -323,8 +332,7 @@ zvm_smapi_imageActivate(zvm_driver_t *zvm)
 					rc = 0;
 				} else {
 					if ((outPlist->hdr.rc == RCERR_IMAGEOP) &
-					    ((outPlist->hdr.reason == RS_NOT_ACTIVE) |
-					     (outPlist->hdr.reason == RS_BEING_DEACT))) {
+					     (outPlist->hdr.reason == RS_ALREADY_ACTIVE)) {
 						syslog(LOG_INFO, "Activation of %s successful",
 						       zvm->target);
 						rc = 0;
@@ -649,8 +657,11 @@ zvm_metadata()
 
 	fprintf (stdout, "<actions>\n");
 	fprintf (stdout, "\t<action name=\"off\" />\n");
-	fprintf (stdout, "\t<action name=\"on\" />\n");
+	fprintf (stdout, "\t<action name=\"on\" automatic=\"0\" />\n");
+	fprintf (stdout, "\t<action name=\"list\" />\n");
 	fprintf (stdout, "\t<action name=\"metadata\" />\n");
+	fprintf (stdout, "\t<action name=\"monitor\" />\n");
+	fprintf (stdout, "\t<action name=\"reboot\" />\n");
 	fprintf (stdout, "\t<action name=\"status\" />\n");
 	fprintf (stdout, "</actions>\n");
 
@@ -675,7 +686,7 @@ get_options_stdin (zvm_driver_t *zvm)
 	int32_t lSrvName,
 		lSrvNode,
 		lTarget;
-	int	fence = 0;
+	int	fence = ACT_OFFON;
 
 	while (fgets (buf, sizeof (buf), stdin) != 0) {
 		if (trim(buf) == 0) {
@@ -698,16 +709,22 @@ get_options_stdin (zvm_driver_t *zvm)
 			continue;
 
 		if (!strcasecmp (opt, "action")) {
-			if (strcasecmp(arg, "off") == 0) {
-				fence = 1;
+			if (strcasecmp(arg, "reboot") == 0) {
+				fence = ACT_OFFON;
+			} else if (strcasecmp(arg, "off") == 0) {
+				fence = ACT_OFF;
 			} else if (strcasecmp(arg, "on") == 0) {
-				fence = 2;
+				fence = ACT_ON;
 			} else if (strcasecmp(arg, "metadata") == 0) {
-				fence = 3;
+				fence = ACT_METADATA;
 			} else if (strcasecmp(arg, "status") == 0) {
-				fence = 4;
+				fence = ACT_STATUS;
+			} else if (strcasecmp(arg, "monitor") == 0) {
+				fence = ACT_MONITOR;
+			} else if (strcasecmp(arg, "list") == 0) {
+				fence = ACT_LIST;
 			} else {
-				fence = 5;
+				fence = ACT_HELP;
 			}
 		} else if (!strcasecmp (opt, "ipaddr")) {
 			lSrvName = MIN(strlen(arg), sizeof(zvm->smapiSrv));
@@ -738,7 +755,7 @@ get_options_stdin (zvm_driver_t *zvm)
 				zvm->delay = DEFAULT_DELAY;
 			}
 		} else if (!strcasecmp (opt, "help")) {
-			fence = 5;
+			fence = ACT_HELP;
 		}
 	}
 	return(fence);
@@ -755,7 +772,7 @@ static int
 get_options(int argc, char **argv, zvm_driver_t *zvm)
 {
 	int	c,
-		fence = 0;
+		fence = ACT_OFFON;
 	int32_t	lSrvName,
 		lSrvNode,
 		lTarget;
@@ -768,16 +785,22 @@ get_options(int argc, char **argv, zvm_driver_t *zvm)
 			memcpy(zvm->target, optarg, lTarget);
 			break;
 		case 'o' :
-			if (strcasecmp(optarg, "off") == 0) {
-				fence = 1;
+			if (strcasecmp(optarg, "reboot") == 0) {
+				fence = ACT_OFFON;
+			} else if (strcasecmp(optarg, "off") == 0) {
+				fence = ACT_OFF;
 			} else if (strcasecmp(optarg, "on") == 0) {
-				fence = 2;
+				fence = ACT_ON;
 			} else if (strcasecmp(optarg, "metadata") == 0) {
-				fence = 3;
+				fence = ACT_METADATA;
 			} else if (strcasecmp(optarg, "status") == 0) {
-				fence = 4;
+				fence = ACT_STATUS;
+			} else if (strcasecmp(optarg, "monitor") == 0) {
+				fence = ACT_MONITOR;
+			} else if (strcasecmp(optarg, "list") == 0) {
+				fence = ACT_LIST;
 			} else {
-				fence = 5;
+				fence = ACT_HELP;
 			}
 			break;
 		case 'a' :
@@ -807,7 +830,7 @@ get_options(int argc, char **argv, zvm_driver_t *zvm)
 			memcpy(zvm->node, optarg, lSrvNode);
 			break;
 		default :
-			fence = 5;
+			fence = ACT_HELP;
 		}
 	}
 	return(fence);
@@ -822,7 +845,8 @@ usage()
 {
 	fprintf(stderr,"Usage: fence_zvm [options]\n\n"
 		"\tWhere [options] =\n"
-		"\t-o --action [action] - \"off\", \"on\", \"metadata\", \"status\"\n"
+		"\t-o --action [action] - \"off\", \"on\", \"list\", \"metadata\", "
+					 "\"monitor\", \"reboot\", \"status\"\n"
 		"\t--delay [seconds]    - Time to delay fencing action in seconds\n"
 		"\t-n --plug [target]   - Name of virtual machine to fence\n"
 		"\t-a --ip [server]     - Name of SMAPI IUCV Request server\n"
@@ -874,26 +898,33 @@ main(int argc, char **argv)
 		fence = get_options_stdin(&zvm);
 
 	switch(fence) {
-		case 0 :	// OFFON
+		case ACT_OFFON :	// OFFON
 			if ((rc = check_parm(&zvm)) == 0) 
 				rc = zvm_smapi_imageRecycle(&zvm);
 			break;
-		case 1 :	// OFF
+		case ACT_OFF :		// OFF
 			if ((rc = check_parm(&zvm)) == 0)
 				rc = zvm_smapi_imageDeactivate(&zvm);
 			break;
-		case 2 :	// ON
+		case ACT_ON :		// ON
 			if ((rc = check_parm(&zvm)) == 0)
 				rc = zvm_smapi_imageActivate(&zvm);
 			break;
-		case 3 :	// METADATA
+		case ACT_METADATA :	// METADATA
 			rc = zvm_metadata();
 			break;
-		case 4 :	// STATUS
+		case ACT_STATUS :	// STATUS
 			if ((rc = check_parm(&zvm)) == 0)
 				rc = zvm_smapi_imageQuery(&zvm);
 			break;
-		case 5 :
+		case ACT_MONITOR :	// MONITOR
+			rc = 0;
+			break;
+		case ACT_LIST :		// LIST
+			printf("N/A");
+			rc = 0;
+			break;
+		case ACT_HELP :
 			rc = usage();
 	}
 	closelog();
