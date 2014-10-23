@@ -41,8 +41,11 @@
 </parameters>
 <actions>
 	<action name="off" />
-	<action name="on" />
+	<action name="on" automatic="0" />
+	<action name="list" />
 	<action name="metadata" />
+	<action name="monitor" />
 	<action name="status" />
+	<action name="reboot" />
 </actions>
 </resource-agent>
