@@ -1036,7 +1036,7 @@ def fence_login(options, re_login_string=r"(login\s*: )|(Login Name:  )|(usernam
 			if options.has_key("--ssl-insecure"):
 				ssl_opts = "--insecure"
 
-			command = '%s %s %s --insecure --crlf -p %s %s' % \
+			command = '%s %s %s --crlf -p %s %s' % \
 					(options["--gnutlscli-path"], gnutls_opts, ssl_opts, options["--ipport"], options["--ip"])
 			try:
 				conn = fspawn(options, command)
