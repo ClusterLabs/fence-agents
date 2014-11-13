@@ -290,7 +290,7 @@ be removed from the device(s).",
 		"order": 1
 	}
 	all_opt["logfile"] = {
-		"getopt" : "f:",
+		"getopt" : ":",
 		"longopt" : "logfile",
 		"help" : "-f, --logfile                  Log output (stdout and stderr) to file",
 		"required" : "0",
@@ -298,7 +298,7 @@ be removed from the device(s).",
 		"order": 5
 	}
 	all_opt["corosync-cmap_path"] = {
-		"getopt" : "Z:",
+		"getopt" : ":",
 		"longopt" : "corosync-cmap-path",
 		"help" : "--corosync-cmap-path=[path]    Path to corosync-cmapctl binary",
 		"required" : "0",
@@ -307,7 +307,7 @@ be removed from the device(s).",
 		"order": 200
 	}
 	all_opt["sg_persist_path"] = {
-		"getopt" : "X:",
+		"getopt" : ":",
 		"longopt" : "sg_persist-path",
 		"help" : "--sg_persist-path=[path]       Path to sg_persist binary",
 		"required" : "0",
@@ -316,7 +316,7 @@ be removed from the device(s).",
 		"order": 200
 	}
 	all_opt["sg_turs_path"] = {
-		"getopt" : "I:",
+		"getopt" : ":",
 		"longopt" : "sg_turs-path",
 		"help" : "--sg_turs-path=[path]          Path to sg_turs binary",
 		"required" : "0",
@@ -325,7 +325,7 @@ be removed from the device(s).",
 		"order": 200
 	}
 	all_opt["vgs_path"] = {
-		"getopt" : "J:",
+		"getopt" : ":",
 		"longopt" : "vgs-path",
 		"help" : "--vgs-path=[path]              Path to vgs binary",
 		"required" : "0",

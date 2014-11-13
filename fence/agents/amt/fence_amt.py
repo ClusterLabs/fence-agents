@@ -77,7 +77,7 @@ def define_new_opts():
 		"order" : 1
 	}
 	all_opt["amttool_path"] = {
-		"getopt" : "i:",
+		"getopt" : ":",
 		"longopt" : "amttool-path",
 		"help" : "--amttool-path=[path]          Path to amttool binary",
 		"required" : "0",

@@ -129,7 +129,7 @@ def send_command(opt, command, method="GET"):
 
 def define_new_opts():
 	all_opt["use_cookies"] = {
-		"getopt" : "s",
+		"getopt" : "",
 		"longopt" : "use-cookies",
 		"help" : "--use-cookies                  Reuse cookies for authentication",
 		"required" : "0",

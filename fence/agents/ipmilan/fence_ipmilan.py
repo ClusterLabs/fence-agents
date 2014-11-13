@@ -111,7 +111,7 @@ def define_new_opts():
 		"order": 1
 	}
 	all_opt["ipmitool_path"] = {
-		"getopt" : "i:",
+		"getopt" : ":",
 		"longopt" : "ipmitool-path",
 		"help" : "--ipmitool-path=[path]         Path to ipmitool binary",
 		"required" : "0",

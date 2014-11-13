@@ -109,7 +109,7 @@ def send_command(opt, command, timeout):
 
 def define_new_opts():
 	all_opt["suborg"] = {
-		"getopt" : "s:",
+		"getopt" : ":",
 		"longopt" : "suborg",
 		"help" : "--suborg=[path]                Additional path needed to access suborganization",
 		"required" : "0",

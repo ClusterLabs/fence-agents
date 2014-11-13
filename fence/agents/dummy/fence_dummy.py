@@ -83,7 +83,7 @@ def main():
 	atexit.register(atexit_handler)
 
 	all_opt["status_file"] = {
-		"getopt" : "s:",
+		"getopt" : ":",
 		"longopt" : "status-file",
 		"help":"--status-file=[file]           Name of file that holds current status",
 		"required" : "0",
@@ -93,7 +93,7 @@ def main():
 		}
 
 	all_opt["random_sleep_range"] = {
-		"getopt" : "r:",
+		"getopt" : ":",
 		"longopt" : "random_sleep_range",
 		"help":"--random_sleep_range=[seconds] Issue a sleep between 1 and [seconds]",
 		"required" : "0",
@@ -102,7 +102,7 @@ def main():
 		}
 
 	all_opt["type"] = {
-		"getopt" : "t:",
+		"getopt" : ":",
 		"longopt" : "type",
 		"help":"--type=[type]                  Possible types are: file and fail",
 		"required" : "0",

@@ -66,7 +66,7 @@ all_opt = {
 		"shortdesc" : "Write debug information to given file",
 		"order" : 52},
 	"delay" : {
-		"getopt" : "f:",
+		"getopt" : ":",
 		"longopt" : "delay",
 		"help" : "--delay=[seconds]              Wait X seconds before fencing is started",
 		"required" : "0",
@@ -166,7 +166,7 @@ all_opt = {
 		"required" : "0",
 		"order" : 1},
 	"ssh_options" : {
-		"getopt" : "X:",
+		"getopt" : ":",
 		"longopt" : "ssh-options",
 		"help" : "--ssh-options=[options]	  SSH options to use",
 		"shortdesc" : "SSH options to use",
@@ -180,14 +180,14 @@ all_opt = {
 		"shortdesc" : "SSL connection",
 		"order" : 1},
 	"ssl_insecure" : {
-		"getopt" : "9",
+		"getopt" : "",
 		"longopt" : "ssl-insecure",
 		"help" : "--ssl-insecure                 Use ssl connection without verifying certificate",
 		"required" : "0",
 		"shortdesc" : "SSL connection without verifying fence device's certificate",
 		"order" : 1},
 	"ssl_secure" : {
-		"getopt" : "9",
+		"getopt" : "",
 		"longopt" : "ssl-secure",
 		"help" : "--ssl-secure                   Use ssl connection with verifying certificate",
 		"required" : "0",
@@ -317,7 +317,7 @@ all_opt = {
 		"shortdesc" : "Separator for CSV created by operation list",
 		"order" : 100},
 	"login_timeout" : {
-		"getopt" : "y:",
+		"getopt" : ":",
 		"longopt" : "login-timeout",
 		"help" : "--login-timeout=[seconds]      Wait X seconds for cmd prompt after login",
 		"default" : "5",
@@ -325,7 +325,7 @@ all_opt = {
 		"shortdesc" : "Wait X seconds for cmd prompt after login",
 		"order" : 200},
 	"shell_timeout" : {
-		"getopt" : "Y:",
+		"getopt" : ":",
 		"longopt" : "shell-timeout",
 		"help" : "--shell-timeout=[seconds]      Wait X seconds for cmd prompt after issuing command",
 		"default" : "3",
@@ -333,7 +333,7 @@ all_opt = {
 		"shortdesc" : "Wait X seconds for cmd prompt after issuing command",
 		"order" : 200},
 	"power_timeout" : {
-		"getopt" : "g:",
+		"getopt" : ":",
 		"longopt" : "power-timeout",
 		"help" : "--power-timeout=[seconds]      Test X seconds for status change after ON/OFF",
 		"default" : "20",
@@ -341,7 +341,7 @@ all_opt = {
 		"shortdesc" : "Test X seconds for status change after ON/OFF",
 		"order" : 200},
 	"power_wait" : {
-		"getopt" : "G:",
+		"getopt" : ":",
 		"longopt" : "power-wait",
 		"help" : "--power-wait=[seconds]         Wait X seconds after issuing ON/OFF",
 		"default" : "0",
@@ -349,14 +349,14 @@ all_opt = {
 		"shortdesc" : "Wait X seconds after issuing ON/OFF",
 		"order" : 200},
 	"missing_as_off" : {
-		"getopt" : "M",
+		"getopt" : "",
 		"longopt" : "missing-as-off",
 		"help" : "--missing-as-off               Missing port returns OFF instead of failure",
 		"required" : "0",
 		"shortdesc" : "Missing port returns OFF instead of failure",
 		"order" : 200},
 	"retry_on" : {
-		"getopt" : "F:",
+		"getopt" : ":",
 		"longopt" : "retry-on",
 		"help" : "--retry-on=[attempts]          Count of attempts to retry power on",
 		"default" : "1",
@@ -371,7 +371,7 @@ all_opt = {
 		"shortdesc" : "The URL of the XenServer host.",
 		"order" : 1},
 	"sudo" : {
-		"getopt" : "d",
+		"getopt" : "",
 		"longopt" : "use-sudo",
 		"help" : "--use-sudo                     Use sudo (without password) when calling 3rd party software",
 		"required" : "0",
