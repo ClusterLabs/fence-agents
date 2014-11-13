@@ -292,7 +292,7 @@ be removed from the device(s).",
 	all_opt["logfile"] = {
 		"getopt" : "f:",
 		"longopt" : "logfile",
-		"help" : "-a, --logfile                  Log output (stdout and stderr) to file",
+		"help" : "-f, --logfile                  Log output (stdout and stderr) to file",
 		"required" : "0",
 		"shortdesc" : "Log output (stdout and stderr) to file",
 		"order": 5

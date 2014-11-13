@@ -30,7 +30,7 @@ The fence_scsi agent works by having each node in the cluster register a unique 
 		<shortdesc lang="en">Name of the node to be fenced. The node name is used to generate the key value used for the current operation. This option will be ignored when used with the -k option.</shortdesc>
 	</parameter>
 	<parameter name="logfile" unique="0" required="0">
-		<getopt mixed="-a, --logfile" />
+		<getopt mixed="-f, --logfile" />
 		<content type="string"  />
 		<shortdesc lang="en">Log output (stdout and stderr) to file</shortdesc>
 	</parameter>
