@@ -304,7 +304,7 @@ be removed from the device(s).",
 		"required" : "0",
 		"shortdesc" : "Path to corosync-cmapctl binary",
 		"default" : "@COROSYNC_CMAPCTL_PATH@",
-		"order": 200
+		"order": 300
 	}
 	all_opt["sg_persist_path"] = {
 		"getopt" : ":",
@@ -313,7 +313,7 @@ be removed from the device(s).",
 		"required" : "0",
 		"shortdesc" : "Path to sg_persist binary",
 		"default" : "@SG_PERSIST_PATH@",
-		"order": 200
+		"order": 300
 	}
 	all_opt["sg_turs_path"] = {
 		"getopt" : ":",
@@ -322,7 +322,7 @@ be removed from the device(s).",
 		"required" : "0",
 		"shortdesc" : "Path to sg_turs binary",
 		"default" : "@SG_TURS_PATH@",
-		"order": 200
+		"order": 300
 	}
 	all_opt["vgs_path"] = {
 		"getopt" : ":",
@@ -331,7 +331,7 @@ be removed from the device(s).",
 		"required" : "0",
 		"shortdesc" : "Path to vgs binary",
 		"default" : "@VGS_PATH@",
-		"order": 200
+		"order": 300
 	}
 
 
