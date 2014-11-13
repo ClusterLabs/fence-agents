@@ -53,7 +53,7 @@ def get_outlet_list(conn, options):
 	return result
 
 def main():
-	device_opt = ["ipaddr", "login", "passwd", "port"]
+	device_opt = ["ipaddr", "login", "passwd", "port", "telnet"]
 
 	atexit.register(atexit_handler)
 

@@ -59,7 +59,8 @@ def get_blades_list(conn, options):
 	return outlets
 
 def main():
-	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", "port", "missing_as_off"]
+	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", \
+		"port", "missing_as_off", "telnet"]
 
 	atexit.register(atexit_handler)
 

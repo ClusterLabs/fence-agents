@@ -104,7 +104,7 @@ def define_new_opts():
 
 def main():
 	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", \
-			"drac_version", "port", "no_port"]
+			"drac_version", "port", "no_port", "telnet"]
 
 	atexit.register(atexit_handler)
 

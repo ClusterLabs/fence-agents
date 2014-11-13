@@ -43,7 +43,8 @@ def get_power_status(conn, options):
 		return outlets
 
 def main():
-	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", "port", "fabric_fencing"]
+	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", \
+		"port", "fabric_fencing", "telnet"]
 
 	atexit.register(atexit_handler)
 

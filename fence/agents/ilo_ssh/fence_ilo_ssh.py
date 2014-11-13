@@ -40,7 +40,7 @@ def reboot_cycle(conn, options):
 	return
 
 def main():
-	device_opt = ["ipaddr", "login", "passwd", "secure", "cmd_prompt", "method"]
+	device_opt = ["ipaddr", "login", "passwd", "secure", "cmd_prompt", "method", "telnet"]
 
 	atexit.register(atexit_handler)
 

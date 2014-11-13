@@ -77,7 +77,7 @@ def remove_tmp_dir(tmp_dir):
 	shutil.rmtree(tmp_dir)
 
 def main():
-	device_opt = ["login", "passwd", "port", "email", "no_status"]
+	device_opt = ["login", "passwd", "port", "email", "no_status", "web"]
 
 	atexit.register(atexit_handler)
 

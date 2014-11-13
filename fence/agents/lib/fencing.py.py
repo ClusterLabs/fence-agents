@@ -130,6 +130,10 @@ all_opt = {
 		"getopt" : "",
 		"help" : "",
 		"order" : 1},
+	"telnet" : {
+		"getopt" : "",
+		"help" : "",
+		"order" : ""},
 	"passwd" : {
 		"getopt" : "p:",
 		"longopt" : "password",

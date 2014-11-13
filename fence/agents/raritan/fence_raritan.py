@@ -36,7 +36,7 @@ def set_power_status(conn, options):
 	conn.send_eol("set %s powerState=%s" % (options["--plug"], action))
 
 def main():
-	device_opt = ["ipaddr", "login", "passwd", "port"]
+	device_opt = ["ipaddr", "login", "passwd", "port", "telnet"]
 
 	atexit.register(atexit_handler)
 
