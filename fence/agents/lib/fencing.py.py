@@ -31,11 +31,6 @@ EC_STATUS_HMC = 9
 EC_PASSWORD_MISSING = 10
 EC_INVALID_PRIVILEGES = 11
 
-TELNET_PATH = "/usr/bin/telnet"
-SSH_PATH = "/usr/bin/ssh"
-SSL_PATH = "@GNUTLSCLI_PATH@"
-SUDO_PATH = "/usr/bin/sudo"
-
 all_opt = {
 	"help"    : {
 		"getopt" : "h",
@@ -390,6 +385,38 @@ all_opt = {
 		"default" : "onoff",
 		"choices" : ["onoff", "cycle"],
 		"order" : 1},
+	"telnet_path" : {
+		"getopt" : ":",
+		"longopt" : "telnet-path",
+		"help" : "--telnet-path=[path]           Path to telnet binary",
+		"required" : "0",
+		"shortdesc" : "Path to telnet binary",
+		"default" : "@TELNET_PATH@",
+		"order": 300},
+	"ssh_path" : {
+		"getopt" : ":",
+		"longopt" : "ssh-path",
+		"help" : "--ssh-path=[path]              Path to ssh binary",
+		"required" : "0",
+		"shortdesc" : "Path to ssh binary",
+		"default" : "@SSH_PATH@",
+		"order": 300},
+	"gnutlscli_path" : {
+		"getopt" : ":",
+		"longopt" : "gnutlscli-path",
+		"help" : "--gnutlscli-path=[path]        Path to gnutls-cli binary",
+		"required" : "0",
+		"shortdesc" : "Path to gnutls-cli binary",
+		"default" : "@GNUTLSCLI_PATH@",
+		"order": 300},
+	"sudo_path" : {
+		"getopt" : ":",
+		"longopt" : "sudo-path",
+		"help" : "--sudo-path=[path]             Path to sudo binary",
+		"required" : "0",
+		"shortdesc" : "Path to sudo binary",
+		"default" : "@SUDO_PATH@",
+		"order": 300},
 	"on_target": {
 		"getopt" : "",
 		"help" : "",
@@ -401,10 +428,12 @@ DEPENDENCY_OPT = {
 		"default" : ["help", "debug", "verbose", "version", "action", "agent", \
 			"power_timeout", "shell_timeout", "login_timeout", "power_wait", "retry_on", "delay"],
 		"passwd" : ["passwd_script"],
-		"secure" : ["identity_file", "ssh_options"],
+		"sudo" : ["sudo_path"],
+		"secure" : ["identity_file", "ssh_options", "ssh_path"],
+		"telnet" : ["telnet_path"],
 		"ipaddr" : ["ipport", "inet4_only", "inet6_only"],
 		"port" : ["separator"],
-		"ssl" : ["ssl_secure", "ssl_insecure"],
+		"ssl" : ["ssl_secure", "ssl_insecure", "gnutlscli_path"],
 		"community" : ["snmp_auth_prot", "snmp_sec_level", "snmp_priv_prot", \
 			"snmp_priv_passwd", "snmp_priv_passwd_script"]
 	}
@@ -1008,7 +1037,7 @@ def fence_login(options, re_login_string=r"(login\s*: )|(Login Name:  )|(usernam
 				ssl_opts = "--insecure"
 
 			command = '%s %s %s --insecure --crlf -p %s %s' % \
-					(SSL_PATH, gnutls_opts, ssl_opts, options["--ipport"], options["--ip"])
+					(options["--gnutlscli-path"], gnutls_opts, ssl_opts, options["--ipport"], options["--ip"])
 			try:
 				conn = fspawn(options, command)
 			except pexpect.ExceptionPexpect, ex:
@@ -1016,7 +1045,7 @@ def fence_login(options, re_login_string=r"(login\s*: )|(Login Name:  )|(usernam
 				sys.exit(EC_GENERIC_ERROR)
 		elif options.has_key("--ssh") and not options.has_key("--identity-file"):
 			command = '%s %s %s@%s -p %s -o PubkeyAuthentication=no' % \
-					(SSH_PATH, force_ipvx, options["--username"], options["--ip"], options["--ipport"])
+					(options["--ssh-path"], force_ipvx, options["--username"], options["--ip"], options["--ipport"])
 			if options.has_key("--ssh-options"):
 				command += ' ' + options["--ssh-options"]
 
@@ -1046,7 +1075,7 @@ def fence_login(options, re_login_string=r"(login\s*: )|(Login Name:  )|(usernam
 			conn.log_expect(options, options["--command-prompt"], int(options["--login-timeout"]))
 		elif options.has_key("--ssh") and options.has_key("--identity-file"):
 			command = '%s %s %s@%s -i %s -p %s' % \
-					(SSH_PATH, force_ipvx, options["--username"], options["--ip"], \
+					(options["--ssh-path"], force_ipvx, options["--username"], options["--ip"], \
 					options["--identity-file"], options["--ipport"])
 			if options.has_key("--ssh-options"):
 				command += ' ' + options["--ssh-options"]
@@ -1068,7 +1097,7 @@ def fence_login(options, re_login_string=r"(login\s*: )|(Login Name:  )|(usernam
 				else:
 					fail_usage("Failed: You have to enter passphrase (-p) for identity file")
 		else:
-			conn = fspawn(options, TELNET_PATH)
+			conn = fspawn(options, options["--telnet-path"])
 			conn.send("set binary\n")
 			conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
 

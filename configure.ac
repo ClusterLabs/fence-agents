@@ -172,6 +172,9 @@ AC_PATH_PROG([COROSYNC_CMAPCTL_PATH], [corosync-cmapctl], [/usr/sbin/corosync-cm
 AC_PATH_PROG([SG_PERSIST_PATH], [sg_persist], [/usr/bin/sg_persist])
 AC_PATH_PROG([SG_TURS_PATH], [sg_turs], [/usr/bin/sg_turs])
 AC_PATH_PROG([VGS_PATH], [vgs], [/usr/sbin/vgs])
+AC_PATH_PROG([SUDO_PATH], [sudo], [/usr/bin/sudo])
+AC_PATH_PROG([SSH_PATH], [ssh], [/usr/bin/ssh])
+AC_PATH_PROG([TELNET_PATH], [telnet], [/usr/bin/telnet])
 ## do subst
 
 AC_SUBST([DEFAULT_CONFIG_DIR])

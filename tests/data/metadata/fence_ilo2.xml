@@ -119,6 +119,11 @@
 		<content type="string" default="3"  />
 		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
 	</parameter>
+	<parameter name="gnutlscli_path" unique="0" required="0">
+		<getopt mixed="--gnutlscli-path=[path]" />
+		<content type="string" default="/usr/bin/gnutls-cli"  />
+		<shortdesc lang="en">Path to gnutls-cli binary</shortdesc>
+	</parameter>
 </parameters>
 <actions>
 	<action name="on" automatic="0"/>

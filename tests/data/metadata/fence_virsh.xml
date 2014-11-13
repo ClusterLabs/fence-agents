@@ -130,6 +130,16 @@ By default, virsh needs root account to do properly work. So you must allow ssh 
 		<content type="boolean"  />
 		<shortdesc lang="en">Use sudo (without password) when calling 3rd party sotfware.</shortdesc>
 	</parameter>
+	<parameter name="ssh_path" unique="0" required="0">
+		<getopt mixed="--ssh-path=[path]" />
+		<content type="string" default="/usr/bin/ssh"  />
+		<shortdesc lang="en">Path to ssh binary</shortdesc>
+	</parameter>
+	<parameter name="sudo_path" unique="0" required="0">
+		<getopt mixed="--sudo-path=[path]" />
+		<content type="string" default="/usr/bin/sudo"  />
+		<shortdesc lang="en">Path to sudo binary</shortdesc>
+	</parameter>
 </parameters>
 <actions>
 	<action name="on" automatic="0"/>

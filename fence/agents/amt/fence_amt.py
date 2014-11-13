@@ -5,7 +5,7 @@ import atexit
 from pipes import quote
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail_usage, is_executable, SUDO_PATH, run_command, run_delay
+from fencing import fail_usage, is_executable, run_command, run_delay
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="Fence agent for Intel AMT"
@@ -61,7 +61,7 @@ def create_command(options, action):
 
 	# --use-sudo / -d
 	if options.has_key("--use-sudo"):
-		cmd = SUDO_PATH + " " + cmd
+		cmd = options["--sudo-path"] + " " + cmd
 
 	return cmd
 

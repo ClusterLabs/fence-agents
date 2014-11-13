@@ -10,7 +10,7 @@ import time
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail_usage, SUDO_PATH
+from fencing import fail_usage
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="Virsh fence agent"
@@ -23,7 +23,7 @@ def get_name_or_uuid(options):
 
 def get_outlets_status(conn, options):
 	if options.has_key("--use-sudo"):
-		prefix = SUDO_PATH + " "
+		prefix = options["--sudo-path"] + " "
 	else:
 		prefix = ""
 
@@ -47,7 +47,7 @@ def get_outlets_status(conn, options):
 	return result
 
 def get_power_status(conn, options):
-	prefix = SUDO_PATH + " " if options.has_key("--use-sudo") else ""
+	prefix = options["--sudo-path"] + " " if options.has_key("--use-sudo") else ""
 	conn.sendline(prefix + "virsh domstate %s" % (get_name_or_uuid(options)))
 	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
@@ -60,7 +60,7 @@ def get_power_status(conn, options):
 	return "off"
 
 def set_power_status(conn, options):
-	prefix = SUDO_PATH + " " if options.has_key("--use-sudo") else ""
+	prefix = options["--sudo-path"] + " " if options.has_key("--use-sudo") else ""
 	conn.sendline(prefix + "virsh %s " %
 			(options["--action"] == "on" and "start" or "destroy") + get_name_or_uuid(options))
 

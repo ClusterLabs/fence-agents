@@ -16,7 +16,7 @@ import atexit
 import time
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fspawn, fail, fail_usage, TELNET_PATH, EC_LOGIN_DENIED
+from fencing import fspawn, fail, fail_usage, EC_LOGIN_DENIED
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New WTI Agent - test release on steroids"
@@ -209,7 +209,7 @@ is running because the connection will block any necessary fencing actions."
 
 			options["eol"] = "\r\n"
 
-			conn = fspawn(options, TELNET_PATH)
+			conn = fspawn(options, options["--telnet-path"])
 			conn.send("set binary\n")
 			conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
 

@@ -125,6 +125,11 @@ Very useful parameter is -c (or cmd_prompt in stdin mode). This must be set to s
 		<content type="string" default="1"  />
 		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
 	</parameter>
+	<parameter name="ssh_path" unique="0" required="0">
+		<getopt mixed="--ssh-path=[path]" />
+		<content type="string" default="/usr/bin/ssh"  />
+		<shortdesc lang="en">Path to ssh binary</shortdesc>
+	</parameter>
 </parameters>
 <actions>
 	<action name="on" automatic="0"/>

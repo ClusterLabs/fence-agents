@@ -4,7 +4,7 @@ import sys, re, pexpect
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fspawn, fail, EC_LOGIN_DENIED, TELNET_PATH, run_delay
+from fencing import fspawn, fail, EC_LOGIN_DENIED, run_delay
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION=""
@@ -82,7 +82,7 @@ block any necessary fencing actions."
 	####
 	run_delay(options)
 	try:
-		conn = fspawn(options, TELNET_PATH)
+		conn = fspawn(options, options["--telnet-path"])
 		conn.send("set binary\n")
 		conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
 
