@@ -175,6 +175,9 @@ AC_PATH_PROG([VGS_PATH], [vgs], [/usr/sbin/vgs])
 AC_PATH_PROG([SUDO_PATH], [sudo], [/usr/bin/sudo])
 AC_PATH_PROG([SSH_PATH], [ssh], [/usr/bin/ssh])
 AC_PATH_PROG([TELNET_PATH], [telnet], [/usr/bin/telnet])
+AC_PATH_PROG([MPATH_PATH], [mpathpersist], [/usr/sbin/mpathpersist])
+AC_PATH_PROG([SUDO_PATH], [sudo], [/usr/bin/sudo])
+
 ## do subst
 
 AC_SUBST([DEFAULT_CONFIG_DIR])
@@ -295,6 +298,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/lib/Makefile
 		 fence/agents/lpar/Makefile
 		 fence/agents/manual/Makefile
+		 fence/agents/mpath/Makefile
 		 fence/agents/netio/Makefile
 		 fence/agents/ovh/Makefile
 		 fence/agents/pve/Makefile
