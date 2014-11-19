@@ -102,7 +102,7 @@ and uses the command line interface to power on and off blades."
 	##
 	## Operate the fencing device
 	######
-	conn = fence_login(options, "(username: )")
+	conn = fence_login(options)
 	result = fence_action(conn, options, set_power_status, get_power_status, get_blades_list)
 	fence_logout(conn, "exit")
 	sys.exit(result)

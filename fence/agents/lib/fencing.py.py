@@ -1003,7 +1003,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list=None, 
 
 	return result
 
-def fence_login(options, re_login_string=r"(login\s*: )|(Login Name:  )|(username: )|(User Name :)"):
+def fence_login(options, re_login_string=r"(login\s*: )|((?!Last )Login Name:  )|(username: )|(User Name :)"):
 	force_ipvx = ""
 
 	if options.has_key("--inet6-only"):
