@@ -168,6 +168,9 @@ AC_PATH_PROG([SG_PERSIST_PATH], [sg_persist], [/usr/bin/sg_persist])
 AC_PATH_PROG([SG_TURS_PATH], [sg_turs], [/usr/bin/sg_turs])
 AC_PATH_PROG([VGS_PATH], [vgs], [/usr/sbin/vgs])
 AC_PATH_PROG([NOVA_PATH], [nova], [/usr/bin/nova])
+AC_PATH_PROG([MPATH_PATH], [mpathpersist], [/usr/sbin/mpathpersist])
+AC_PATH_PROG([SUDO_PATH], [mpathpersist], [/usr/bin/sudo])
+
 ## do subst
 
 AC_SUBST([DEFAULT_CONFIG_DIR])
@@ -289,6 +292,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/lib/Makefile
 		 fence/agents/lpar/Makefile
 		 fence/agents/manual/Makefile
+		 fence/agents/mpath/Makefile
 		 fence/agents/netio/Makefile
 		 fence/agents/ovh/Makefile
 		 fence/agents/pve/Makefile

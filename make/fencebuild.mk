@@ -17,6 +17,12 @@ $(TARGET): $(SRC)
 		-e 's#@''SG_TURS_PATH@#${SG_TURS_PATH}#g' \
 		-e 's#@''VGS_PATH@#${VGS_PATH}#g' \
 		-e 's#@''NOVA_PATH@#${NOVA_PATH}#g' \
+		-e 's#@''SUDO_PATH@#${SUDO_PATH}#g' \
+		-e 's#@''SSH_PATH@#${SSH_PATH}#g' \
+		-e 's#@''TELNET_PATH@#${TELNET_PATH}#g' \
+		-e 's#@''MPATH_PATH@#${MPATH_PATH}#g' \
+		-e 's#@''STORE_PATH@#${CLUSTERVARRUN}#g' \
+		-e 's#@''SUDO_PATH@#${SUDO_PATH}#g' \
 	> $@
 
 	if [ 0 -eq `echo "$(SRC)" | grep fence_ &> /dev/null; echo $$?` ]; then \
