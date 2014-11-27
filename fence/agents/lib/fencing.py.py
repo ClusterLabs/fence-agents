@@ -1175,5 +1175,7 @@ class SyslogLibHandler(logging.StreamHandler):
 		}[record.levelno]
 
 		msg = self.format(record)
-		syslog.syslog(syslog_level, msg)
+
+		# syslos.syslog can not have 0x00 character inside or exception is thrown
+		syslog.syslog(syslog_level, msg.replace("\x00","\n"))
 		return
