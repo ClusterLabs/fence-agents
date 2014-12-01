@@ -1,0 +1,146 @@
+<?xml version="1.0" ?>
+<resource-agent name="fence_ilo4_ssh" shortdesc="Fence agent for HP iLO over SSH" >
+<symlink name="fence_ilo3_ssh" shortdesc="Fence agent for HP iLO3 over SSH"/>
+<symlink name="fence_ilo4_ssh" shortdesc="Fence agent for HP iLO4 over SSH"/>
+<longdesc>fence_ilo_ssh is a fence agent that connects to iLO device. It logs into device via ssh and reboot a specified outlet. </longdesc>
+<vendor-url>http://www.hp.com</vendor-url>
+<parameters>
+	<parameter name="action" unique="0" required="1">
+		<getopt mixed="-o, --action=[action]" />
+		<content type="string" default="reboot"  />
+		<shortdesc lang="en">Fencing Action</shortdesc>
+	</parameter>
+	<parameter name="cmd_prompt" unique="0" required="0">
+		<getopt mixed="-c, --command-prompt=[prompt]" />
+		<content type="string" default="[&apos;MP&gt;&apos;, &apos;hpiLO-&gt;&apos;]"  />
+		<shortdesc lang="en">Force Python regex for command prompt</shortdesc>
+	</parameter>
+	<parameter name="identity_file" unique="0" required="0">
+		<getopt mixed="-k, --identity-file=[filename]" />
+		<content type="string"  />
+		<shortdesc lang="en">Identity file for ssh</shortdesc>
+	</parameter>
+	<parameter name="inet4_only" unique="0" required="0">
+		<getopt mixed="-4, --inet4-only" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Forces agent to use IPv4 addresses only</shortdesc>
+	</parameter>
+	<parameter name="inet6_only" unique="0" required="0">
+		<getopt mixed="-6, --inet6-only" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Forces agent to use IPv6 addresses only</shortdesc>
+	</parameter>
+	<parameter name="ipaddr" unique="0" required="1">
+		<getopt mixed="-a, --ip=[ip]" />
+		<content type="string"  />
+		<shortdesc lang="en">IP Address or Hostname</shortdesc>
+	</parameter>
+	<parameter name="ipport" unique="0" required="0">
+		<getopt mixed="-u, --ipport=[port]" />
+		<content type="string" default="23"  />
+		<shortdesc lang="en">TCP/UDP port to use for connection with device</shortdesc>
+	</parameter>
+	<parameter name="login" unique="0" required="1">
+		<getopt mixed="-l, --username=[name]" />
+		<content type="string"  />
+		<shortdesc lang="en">Login Name</shortdesc>
+	</parameter>
+	<parameter name="method" unique="0" required="0">
+		<getopt mixed="-m, --method=[method]" />
+		<content type="select" default="onoff"  >
+			<option value="onoff" />
+			<option value="cycle" />
+		</content>
+		<shortdesc lang="en">Method to fence (onoff|cycle)</shortdesc>
+	</parameter>
+	<parameter name="passwd" unique="0" required="0">
+		<getopt mixed="-p, --password=[password]" />
+		<content type="string"  />
+		<shortdesc lang="en">Login password or passphrase</shortdesc>
+	</parameter>
+	<parameter name="passwd_script" unique="0" required="0">
+		<getopt mixed="-S, --password-script=[script]" />
+		<content type="string"  />
+		<shortdesc lang="en">Script to retrieve password</shortdesc>
+	</parameter>
+	<parameter name="secure" unique="0" required="0">
+		<getopt mixed="-x, --ssh" />
+		<content type="boolean"  />
+		<shortdesc lang="en">SSH connection</shortdesc>
+	</parameter>
+	<parameter name="ssh_options" unique="0" required="0">
+		<getopt mixed="--ssh-options=[options]" />
+		<content type="string"  />
+		<shortdesc lang="en">SSH options to use</shortdesc>
+	</parameter>
+	<parameter name="verbose" unique="0" required="0">
+		<getopt mixed="-v, --verbose" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Verbose mode</shortdesc>
+	</parameter>
+	<parameter name="debug" unique="0" required="0">
+		<getopt mixed="-D, --debug-file=[debugfile]" />
+		<content type="string"  />
+		<shortdesc lang="en">Write debug information to given file</shortdesc>
+	</parameter>
+	<parameter name="version" unique="0" required="0">
+		<getopt mixed="-V, --version" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Display version information and exit</shortdesc>
+	</parameter>
+	<parameter name="help" unique="0" required="0">
+		<getopt mixed="-h, --help" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Display help and exit</shortdesc>
+	</parameter>
+	<parameter name="delay" unique="0" required="0">
+		<getopt mixed="--delay=[seconds]" />
+		<content type="string" default="0"  />
+		<shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
+	</parameter>
+	<parameter name="login_timeout" unique="0" required="0">
+		<getopt mixed="--login-timeout=[seconds]" />
+		<content type="string" default="5"  />
+		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
+	</parameter>
+	<parameter name="power_timeout" unique="0" required="0">
+		<getopt mixed="--power-timeout=[seconds]" />
+		<content type="string" default="20"  />
+		<shortdesc lang="en">Test X seconds for status change after ON/OFF</shortdesc>
+	</parameter>
+	<parameter name="power_wait" unique="0" required="0">
+		<getopt mixed="--power-wait=[seconds]" />
+		<content type="string" default="5"  />
+		<shortdesc lang="en">Wait X seconds after issuing ON/OFF</shortdesc>
+	</parameter>
+	<parameter name="shell_timeout" unique="0" required="0">
+		<getopt mixed="--shell-timeout=[seconds]" />
+		<content type="string" default="3"  />
+		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
+	</parameter>
+	<parameter name="retry_on" unique="0" required="0">
+		<getopt mixed="--retry-on=[attempts]" />
+		<content type="string" default="1"  />
+		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
+	</parameter>
+	<parameter name="ssh_path" unique="0" required="0">
+		<getopt mixed="--ssh-path=[path]" />
+		<content type="string" default="/usr/bin/ssh"  />
+		<shortdesc lang="en">Path to ssh binary</shortdesc>
+	</parameter>
+	<parameter name="telnet_path" unique="0" required="0">
+		<getopt mixed="--telnet-path=[path]" />
+		<content type="string" default="/usr/bin/telnet"  />
+		<shortdesc lang="en">Path to telnet binary</shortdesc>
+	</parameter>
+</parameters>
+<actions>
+	<action name="on" automatic="0"/>
+	<action name="off" />
+	<action name="reboot" />
+	<action name="status" />
+	<action name="list" />
+	<action name="monitor" />
+	<action name="metadata" />
+</actions>
+</resource-agent>
