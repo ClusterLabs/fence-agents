@@ -54,11 +54,6 @@ The fence_scsi agent works by having each node in the cluster register a unique 
 		<content type="boolean"  />
 		<shortdesc lang="en">Display help and exit</shortdesc>
 	</parameter>
-	<parameter name="corosync-cmap_path" unique="0" required="0">
-		<getopt mixed="--corosync-cmap-path=[path]" />
-		<content type="string" default="/usr/sbin/corosync-cmapctl"  />
-		<shortdesc lang="en">Path to corosync-cmapctl binary</shortdesc>
-	</parameter>
 	<parameter name="delay" unique="0" required="0">
 		<getopt mixed="--delay=[seconds]" />
 		<content type="string" default="0"  />
@@ -79,6 +74,21 @@ The fence_scsi agent works by having each node in the cluster register a unique 
 		<content type="string" default="0"  />
 		<shortdesc lang="en">Wait X seconds after issuing ON/OFF</shortdesc>
 	</parameter>
+	<parameter name="shell_timeout" unique="0" required="0">
+		<getopt mixed="--shell-timeout=[seconds]" />
+		<content type="string" default="3"  />
+		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
+	</parameter>
+	<parameter name="retry_on" unique="0" required="0">
+		<getopt mixed="--retry-on=[attempts]" />
+		<content type="string" default="1"  />
+		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
+	</parameter>
+	<parameter name="corosync-cmap_path" unique="0" required="0">
+		<getopt mixed="--corosync-cmap-path=[path]" />
+		<content type="string" default="/usr/sbin/corosync-cmapctl"  />
+		<shortdesc lang="en">Path to corosync-cmapctl binary</shortdesc>
+	</parameter>
 	<parameter name="sg_persist_path" unique="0" required="0">
 		<getopt mixed="--sg_persist-path=[path]" />
 		<content type="string" default="/usr/bin/sg_persist"  />
@@ -89,20 +99,10 @@ The fence_scsi agent works by having each node in the cluster register a unique 
 		<content type="string" default="/usr/bin/sg_turs"  />
 		<shortdesc lang="en">Path to sg_turs binary</shortdesc>
 	</parameter>
-	<parameter name="shell_timeout" unique="0" required="0">
-		<getopt mixed="--shell-timeout=[seconds]" />
-		<content type="string" default="3"  />
-		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
-	</parameter>
 	<parameter name="vgs_path" unique="0" required="0">
 		<getopt mixed="--vgs-path=[path]" />
 		<content type="string" default="/usr/sbin/vgs"  />
 		<shortdesc lang="en">Path to vgs binary</shortdesc>
-	</parameter>
-	<parameter name="retry_on" unique="0" required="0">
-		<getopt mixed="--retry-on=[attempts]" />
-		<content type="string" default="1"  />
-		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
 	</parameter>
 </parameters>
 <actions>
