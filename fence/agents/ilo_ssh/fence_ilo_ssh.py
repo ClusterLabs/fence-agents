@@ -59,6 +59,8 @@ device via ssh and reboot a specified outlet. "
 		("fence_ilo4_ssh", "Fence agent for HP iLO4 over SSH")]
 	show_docs(options, docs)
 
+	options["eol"] = "\r"
+
 	conn = fence_login(options)
 	conn.send_eol("SMCLP")
 
