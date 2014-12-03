@@ -1006,13 +1006,7 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 	return result
 
 def fence_login(options, re_login_string=r"(login\s*: )|((?!Last )Login Name:  )|(username: )|(User Name :)"):
-	force_ipvx = ""
-
-	if options.has_key("--inet6-only"):
-		force_ipvx = "-6 "
-
-	if options.has_key("--inet4-only"):
-		force_ipvx = "-4 "
+	run_delay(options)
 
 	if not options.has_key("eol"):
 		options["eol"] = "\r\n"
@@ -1020,119 +1014,15 @@ def fence_login(options, re_login_string=r"(login\s*: )|((?!Last )Login Name:  )
 	if options.has_key("--command-prompt") and type(options["--command-prompt"]) is not list:
 		options["--command-prompt"] = [options["--command-prompt"]]
 
-	## Do the delay of the fence device before logging in
-	run_delay(options)
-
 	try:
-		re_login = re.compile(re_login_string, re.IGNORECASE)
-		re_pass = re.compile("(password)|(pass phrase)", re.IGNORECASE)
-
 		if options.has_key("--ssl"):
-			gnutls_opts = ""
-			ssl_opts = ""
-
-			if options.has_key("--notls"):
-				gnutls_opts = "--priority \"NORMAL:-VERS-TLS1.2:-VERS-TLS1.1:-VERS-TLS1.0:+VERS-SSL3.0\""
-
-			# --ssl is same as the --ssl-secure
-			if options.has_key("--ssl-insecure"):
-				ssl_opts = "--insecure"
-
-			command = '%s %s %s --crlf -p %s %s' % \
-					(options["--gnutlscli-path"], gnutls_opts, ssl_opts, options["--ipport"], options["--ip"])
-			try:
-				conn = fspawn(options, command)
-			except pexpect.ExceptionPexpect, ex:
-				logging.error("%s\n", str(ex))
-				sys.exit(EC_GENERIC_ERROR)
+			conn = _open_ssl_connection(options)
 		elif options.has_key("--ssh") and not options.has_key("--identity-file"):
-			command = '%s %s %s@%s -p %s -o PubkeyAuthentication=no' % \
-					(options["--ssh-path"], force_ipvx, options["--username"], options["--ip"], options["--ipport"])
-			if options.has_key("--ssh-options"):
-				command += ' ' + options["--ssh-options"]
-
-			conn = fspawn(options, command)
-
-			if options.has_key("telnet_over_ssh"):
-				# This is for stupid ssh servers (like ALOM) which behave more like telnet
-				# (ignore name and display login prompt)
-				result = conn.log_expect( \
-						[re_login, "Are you sure you want to continue connecting (yes/no)?"],
-						int(options["--login-timeout"]))
-				if result == 1:
-					conn.sendline("yes") # Host identity confirm
-					conn.log_expect(re_login, int(options["--login-timeout"]))
-
-				conn.sendline(options["--username"])
-				conn.log_expect(re_pass, int(options["--login-timeout"]))
-			else:
-				result = conn.log_expect( \
-						["ssword:", "Are you sure you want to continue connecting (yes/no)?"],
-						int(options["--login-timeout"]))
-				if result == 1:
-					conn.sendline("yes")
-					conn.log_expect("ssword:", int(options["--login-timeout"]))
-
-			conn.sendline(options["--password"])
-			conn.log_expect(options["--command-prompt"], int(options["--login-timeout"]))
+			conn = _login_ssh_with_password(options, re_login_string)
 		elif options.has_key("--ssh") and options.has_key("--identity-file"):
-			command = '%s %s %s@%s -i %s -p %s' % \
-					(options["--ssh-path"], force_ipvx, options["--username"], options["--ip"], \
-					options["--identity-file"], options["--ipport"])
-			if options.has_key("--ssh-options"):
-				command += ' ' + options["--ssh-options"]
-
-			conn = fspawn(options, command)
-
-			result = conn.log_expect(["Enter passphrase for key '" + options["--identity-file"] + "':", \
-					"Are you sure you want to continue connecting (yes/no)?"] + \
-					options["--command-prompt"], int(options["--login-timeout"]))
-			if result == 1:
-				conn.sendline("yes")
-				result = conn.log_expect(
-					["Enter passphrase for key '" + options["--identity-file"]+"':"] + \
-					options["--command-prompt"], int(options["--login-timeout"]))
-			if result == 0:
-				if options.has_key("--password"):
-					conn.sendline(options["--password"])
-					conn.log_expect(options["--command-prompt"], int(options["--login-timeout"]))
-				else:
-					fail_usage("Failed: You have to enter passphrase (-p) for identity file")
+			conn = _login_ssh_with_identity_file(options)
 		else:
-			conn = fspawn(options, options["--telnet-path"])
-			conn.send("set binary\n")
-			conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
-
-			result = conn.log_expect(re_login, int(options["--login-timeout"]))
-			conn.send_eol(options["--username"])
-
-			## automatically change end of line separator
-			screen = conn.read_nonblocking(size=100, timeout=int(options["--shell-timeout"]))
-			if re_login.search(screen) != None:
-				options["eol"] = "\n"
-				conn.send_eol(options["--username"])
-				result = conn.log_expect(re_pass, int(options["--login-timeout"]))
-			elif re_pass.search(screen) != None:
-				conn.log_expect(re_pass, int(options["--shell-timeout"]))
-
-			try:
-				conn.send_eol(options["--password"])
-				valid_password = conn.log_expect([re_login] + \
-						options["--command-prompt"], int(options["--shell-timeout"]))
-				if valid_password == 0:
-					## password is invalid or we have to change EOL separator
-					options["eol"] = "\r"
-					conn.send_eol("")
-					screen = conn.read_nonblocking(size=100, timeout=int(options["--shell-timeout"]))
-					## after sending EOL the fence device can either show 'Login' or 'Password'
-					if re_login.search(screen) != None:
-						conn.send_eol("")
-					conn.send_eol(options["--username"])
-					conn.log_expect(re_pass, int(options["--login-timeout"]))
-					conn.send_eol(options["--password"])
-					conn.log_expect(options["--command-prompt"], int(options["--login-timeout"]))
-			except KeyError:
-				fail(EC_PASSWORD_MISSING)
+			conn = _login_telnet(options, re_login_string)
 	except pexpect.EOF:
 		fail(EC_LOGIN_DENIED)
 	except pexpect.TIMEOUT:
@@ -1221,3 +1111,141 @@ class SyslogLibHandler(logging.StreamHandler):
 		# syslos.syslog can not have 0x00 character inside or exception is thrown
 		syslog.syslog(syslog_level, msg.replace("\x00", "\n"))
 		return
+
+def _open_ssl_connection(options):
+	gnutls_opts = ""
+	ssl_opts = ""
+
+	if options.has_key("--notls"):
+		gnutls_opts = "--priority \"NORMAL:-VERS-TLS1.2:-VERS-TLS1.1:-VERS-TLS1.0:+VERS-SSL3.0\""
+
+	# --ssl is same as the --ssl-secure; it means we want to verify certificate in these cases
+	if options.has_key("--ssl-insecure"):
+		ssl_opts = "--insecure"
+
+	command = '%s %s %s --crlf -p %s %s' % \
+		(options["--gnutlscli-path"], gnutls_opts, ssl_opts, options["--ipport"], options["--ip"])
+	try:
+		conn = fspawn(options, command)
+	except pexpect.ExceptionPexpect, ex:
+		logging.error("%s\n", str(ex))
+		sys.exit(EC_GENERIC_ERROR)
+
+	return conn
+
+def _login_ssh_with_identity_file(options):
+	if options.has_key("--inet6-only"):
+		force_ipvx = "-6 "
+	elif options.has_key("--inet4-only"):
+		force_ipvx = "-4 "
+	else:
+		force_ipvx = ""
+
+	command = '%s %s %s@%s -i %s -p %s' % \
+		(options["--ssh-path"], force_ipvx, options["--username"], options["--ip"], \
+		options["--identity-file"], options["--ipport"])
+	if options.has_key("--ssh-options"):
+		command += ' ' + options["--ssh-options"]
+
+	conn = fspawn(options, command)
+
+	result = conn.log_expect(["Enter passphrase for key '" + options["--identity-file"] + "':", \
+		"Are you sure you want to continue connecting (yes/no)?"] + \
+		options["--command-prompt"], int(options["--login-timeout"]))
+	if result == 1:
+		conn.sendline("yes")
+		result = conn.log_expect(
+			["Enter passphrase for key '" + options["--identity-file"]+"':"] + \
+			options["--command-prompt"], int(options["--login-timeout"]))
+	if result == 0:
+		if options.has_key("--password"):
+			conn.sendline(options["--password"])
+			conn.log_expect(options["--command-prompt"], int(options["--login-timeout"]))
+		else:
+			fail_usage("Failed: You have to enter passphrase (-p) for identity file")
+
+	return conn
+
+def _login_telnet(options, re_login_string):
+	re_login = re.compile(re_login_string, re.IGNORECASE)
+	re_pass = re.compile("(password)|(pass phrase)", re.IGNORECASE)
+
+	conn = fspawn(options, options["--telnet-path"])
+	conn.send("set binary\n")
+	conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
+
+	conn.log_expect(re_login, int(options["--login-timeout"]))
+	conn.send_eol(options["--username"])
+
+	## automatically change end of line separator
+	screen = conn.read_nonblocking(size=100, timeout=int(options["--shell-timeout"]))
+	if re_login.search(screen) != None:
+		options["eol"] = "\n"
+		conn.send_eol(options["--username"])
+		conn.log_expect(re_pass, int(options["--login-timeout"]))
+	elif re_pass.search(screen) != None:
+		conn.log_expect(re_pass, int(options["--shell-timeout"]))
+
+	try:
+		conn.send_eol(options["--password"])
+		valid_password = conn.log_expect([re_login] + \
+				options["--command-prompt"], int(options["--shell-timeout"]))
+		if valid_password == 0:
+			## password is invalid or we have to change EOL separator
+			options["eol"] = "\r"
+			conn.send_eol("")
+			screen = conn.read_nonblocking(size=100, timeout=int(options["--shell-timeout"]))
+			## after sending EOL the fence device can either show 'Login' or 'Password'
+			if re_login.search(screen) != None:
+				conn.send_eol("")
+			conn.send_eol(options["--username"])
+			conn.log_expect(re_pass, int(options["--login-timeout"]))
+			conn.send_eol(options["--password"])
+			conn.log_expect(options["--command-prompt"], int(options["--login-timeout"]))
+	except KeyError:
+		fail(EC_PASSWORD_MISSING)
+
+	return conn
+
+def _login_ssh_with_password(options, re_login_string):
+	re_login = re.compile(re_login_string, re.IGNORECASE)
+	re_pass = re.compile("(password)|(pass phrase)", re.IGNORECASE)
+
+	if options.has_key("--inet6-only"):
+		force_ipvx = "-6 "
+	elif options.has_key("--inet4-only"):
+		force_ipvx = "-4 "
+	else:
+		force_ipvx = ""
+
+	command = '%s %s %s@%s -p %s -o PubkeyAuthentication=no' % \
+			(options["--ssh-path"], force_ipvx, options["--username"], options["--ip"], options["--ipport"])
+	if options.has_key("--ssh-options"):
+		command += ' ' + options["--ssh-options"]
+
+	conn = fspawn(options, command)
+
+	if options.has_key("telnet_over_ssh"):
+		# This is for stupid ssh servers (like ALOM) which behave more like telnet
+		# (ignore name and display login prompt)
+		result = conn.log_expect( \
+				[re_login, "Are you sure you want to continue connecting (yes/no)?"],
+				int(options["--login-timeout"]))
+		if result == 1:
+			conn.sendline("yes") # Host identity confirm
+			conn.log_expect(re_login, int(options["--login-timeout"]))
+
+		conn.sendline(options["--username"])
+		conn.log_expect(re_pass, int(options["--login-timeout"]))
+	else:
+		result = conn.log_expect( \
+				["ssword:", "Are you sure you want to continue connecting (yes/no)?"],
+				int(options["--login-timeout"]))
+		if result == 1:
+			conn.sendline("yes")
+			conn.log_expect("ssword:", int(options["--login-timeout"]))
+
+	conn.sendline(options["--password"])
+	conn.log_expect(options["--command-prompt"], int(options["--login-timeout"]))
+
+	return conn
