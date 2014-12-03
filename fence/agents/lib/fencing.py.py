@@ -624,25 +624,25 @@ def process_input(avail_opt):
 	#####
 	if len(sys.argv) > 1:
 		try:
-			opt, _args = getopt.gnu_getopt(sys.argv[1:], getopt_string, longopt_list)
+			obtained_opt = getopt.gnu_getopt(sys.argv[1:], getopt_string, longopt_list)[0]
 		except getopt.GetoptError, error:
 			fail_usage("Parse error: " + error.msg)
 
 		## Transform short getopt to long one which are used in fencing agents
 		#####
-		old_opt = opt
+		old_opt = entered_opt
 		opt = {}
-		for o in dict(old_opt).keys():
+		for o in dict(entered_opt).keys():
 			if o.startswith("--"):
 				for x in all_opt.keys():
 					if all_opt[x].has_key("longopt") and "--" + all_opt[x]["longopt"] == o:
-						opt["--" + all_opt[x]["longopt"]] = dict(old_opt)[o]
+						opt["--" + all_opt[x]["longopt"]] = dict(entered_opt)[o]
 			else:
 				for x in all_opt.keys():
 					if x in avail_opt and all_opt[x].has_key("getopt") and all_opt[x].has_key("longopt") and \
 						("-" + all_opt[x]["getopt"] == o or "-" + all_opt[x]["getopt"].rstrip(":") == o):
-						opt["--" + all_opt[x]["longopt"]] = dict(old_opt)[o]
-				opt[o] = dict(old_opt)[o]
+						opt["--" + all_opt[x]["longopt"]] = dict(entered_opt)[o]
+				opt[o] = dict(entered_opt)[o]
 
 		## Compatibility Layer
 		#####
@@ -715,10 +715,13 @@ def check_input(device_opt, opt):
 		elif device_opt.count("snmp_version"):
 			all_opt["ipport"]["default"] = "161"
 			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 161)"
-		elif options.has_key("--ssh") or (all_opt["secure"].has_key("default") and all_opt["secure"]["default"] == '1'):
+		elif options.has_key("--ssh") or \
+				(all_opt["secure"].has_key("default") and all_opt["secure"]["default"] == '1'):
 			all_opt["ipport"]["default"] = 22
 			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 22)"
-		elif options.has_key("--ssl") or options.has_key("--ssl-secure") or options.has_key("--ssl-insecure") or (all_opt["ssl"].has_key("default") and all_opt["ssl"]["default"] == '1'):
+		elif options.has_key("--ssl") or options.has_key("--ssl-secure") or \
+				options.has_key("--ssl-insecure") or \
+				(all_opt["ssl"].has_key("default") and all_opt["ssl"]["default"] == '1'):
 			all_opt["ipport"]["default"] = 443
 			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 443)"
 		elif device_opt.count("web"):
@@ -814,9 +817,9 @@ def check_input(device_opt, opt):
 
 	if options.has_key("--debug-file"):
 		try:
-			fh = logging.FileHandler(options["--debug-file"])
-			fh.setLevel(logging.DEBUG)
-			logging.getLogger().addHandler(fh)
+			debug_file = logging.FileHandler(options["--debug-file"])
+			debug_file.setLevel(logging.DEBUG)
+			logging.getLogger().addHandler(debug_file)
 		except IOError:
 			logging.error("Unable to create file %s", options["--debug-file"])
 			fail_usage("Failed: Unable to create file " + options["--debug-file"])
@@ -844,7 +847,7 @@ def check_input(device_opt, opt):
 ## Obtain a power status from possibly more than one plug
 ##	"on" is returned if at least one plug is ON
 ######
-def get_multi_power_fn(tn, options, get_power_fn):
+def get_multi_power_fn(connection, options, get_power_fn):
 	status = "off"
 	plugs = options["--plugs"] if options.has_key("--plugs") else [""]
 
@@ -857,13 +860,13 @@ def get_multi_power_fn(tn, options, get_power_fn):
 			pass
 
 		options["--plug"] = plug
-		plug_status = get_power_fn(tn, options)
+		plug_status = get_power_fn(connection, options)
 		if plug_status != "off":
 			status = plug_status
 
 	return status
 
-def set_multi_power_fn(tn, options, set_power_fn, get_power_fn, retry_attempts = 1):
+def set_multi_power_fn(connection, options, set_power_fn, get_power_fn, retry_attempts=1):
 	plugs = options["--plugs"] if options.has_key("--plugs") else [""]
 
 	for _ in range(retry_attempts):
@@ -876,11 +879,11 @@ def set_multi_power_fn(tn, options, set_power_fn, get_power_fn, retry_attempts =
 				pass
 
 			options["--plug"] = plug
-			set_power_fn(tn, options)
+			set_power_fn(connection, options)
 			time.sleep(int(options["--power-wait"]))
 
 		for _ in xrange(int(options["--power-timeout"])):
-			if get_multi_power_fn(tn, options, get_power_fn) != options["--action"]:
+			if get_multi_power_fn(connection, options, get_power_fn) != options["--action"]:
 				time.sleep(1)
 			else:
 				return True
@@ -909,7 +912,7 @@ def show_docs(options, docs=None):
 		print __main__.REDHAT_COPYRIGHT
 		sys.exit(0)
 
-def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list=None, reboot_cycle_fn=None):
+def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_list=None, reboot_cycle_fn=None):
 	result = 0
 
 	try:
@@ -929,7 +932,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list=None, 
 			return
 		elif (options["--action"] == "list") or \
 				((options["--action"] == "monitor") and 1 == options["device_opt"].count("port")):
-			outlets = get_outlet_list(tn, options)
+			outlets = get_outlet_list(connection, options)
 			## keys can be numbers (port numbers) or strings (names of VM)
 			for outlet_id in outlets.keys():
 				(alias, status) = outlets[outlet_id]
@@ -937,7 +940,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list=None, 
 					print outlet_id + options["--separator"] + alias
 			return
 
-		status = get_multi_power_fn(tn, options, get_power_fn)
+		status = get_multi_power_fn(connection, options, get_power_fn)
 
 		if status != "on" and status != "off":
 			fail(EC_STATUS)
@@ -947,12 +950,12 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list=None, 
 			return 0
 
 		if options["--action"] == "on":
-			if set_multi_power_fn(tn, options, set_power_fn, get_power_fn, 1 + int(options["--retry-on"])):
+			if set_multi_power_fn(connection, options, set_power_fn, get_power_fn, 1 + int(options["--retry-on"])):
 				print "Success: Powered ON"
 			else:
 				fail(EC_WAITING_ON)
 		elif options["--action"] == "off":
-			if set_multi_power_fn(tn, options, set_power_fn, get_power_fn):
+			if set_multi_power_fn(connection, options, set_power_fn, get_power_fn):
 				print "Success: Powered OFF"
 			else:
 				fail(EC_WAITING_OFF)
@@ -960,7 +963,7 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list=None, 
 			power_on = False
 			if options.get("--method", "").lower() == "cycle" and reboot_cycle_fn is not None:
 				for _ in range(1, 1 + int(options["--retry-on"])):
-					if reboot_cycle_fn(tn, options):
+					if reboot_cycle_fn(connection, options):
 						power_on = True
 						break
 
@@ -970,13 +973,13 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list=None, 
 			else:
 				if status != "off":
 					options["--action"] = "off"
-					if not set_multi_power_fn(tn, options, set_power_fn, get_power_fn):
+					if not set_multi_power_fn(connection, options, set_power_fn, get_power_fn):
 						fail(EC_WAITING_OFF)
 
 				options["--action"] = "on"
 
 				try:
-					power_on = set_multi_power_fn(tn, options, set_power_fn, get_power_fn, int(options["--retry-on"]))
+					power_on = set_multi_power_fn(connection, options, set_power_fn, get_power_fn, int(options["--retry-on"]))
 				except Exception, ex:
 					# an error occured during power ON phase in reboot
 					# fence action was completed succesfully even in that case
@@ -1195,8 +1198,8 @@ def fence_logout(conn, logout_string, sleep=0):
 
 # Convert array of format [[key1, value1], [key2, value2], ... [keyN, valueN]] to dict, where key is
 # in format a.b.c.d...z and returned dict has key only z
-def array_to_dict(ar):
-	return dict([[x[0].split(".")[-1], x[1]] for x in ar])
+def array_to_dict(array):
+	return dict([[x[0].split(".")[-1], x[1]] for x in array])
 
 ## Own logger handler that uses old-style syslog handler as otherwise everything is sourced
 ## from /dev/syslog
@@ -1217,5 +1220,5 @@ class SyslogLibHandler(logging.StreamHandler):
 		msg = self.format(record)
 
 		# syslos.syslog can not have 0x00 character inside or exception is thrown
-		syslog.syslog(syslog_level, msg.replace("\x00","\n"))
+		syslog.syslog(syslog_level, msg.replace("\x00", "\n"))
 		return
