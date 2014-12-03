@@ -27,9 +27,9 @@ def get_power_status(conn, options):
 	#### Maybe should put a conn.log_expect here to make sure
 	#### we have properly entered into the main menu
 	conn.sendline("S")	# Enter System Command Mode
-	conn.log_expect(options, "SVP>", int(options["--shell-timeout"]))
+	conn.log_expect("SVP>", int(options["--shell-timeout"]))
 	conn.sendline("PC")	# Enter partition control
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	result = {}
 	# Status can now be obtained from the output of the PC
 	# command. Line looks like the following:
@@ -49,9 +49,9 @@ def get_power_status(conn, options):
 	# the partition control, but the logic is a little cleaner
 	# this way.
 	conn.sendline("Q")	# Back to system command mode
-	conn.log_expect(options, "SVP>", int(options["--shell-timeout"]))
+	conn.log_expect("SVP>", int(options["--shell-timeout"]))
 	conn.sendline("EX")	# Back to system console main menu
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 	return result
 
@@ -63,33 +63,33 @@ def set_power_status(conn, options):
 	}[options["--action"]]
 
 	conn.sendline("S")	# Enter System Command Mode
-	conn.log_expect(options, "SVP>", int(options["--shell-timeout"]))
+	conn.log_expect("SVP>", int(options["--shell-timeout"]))
 	conn.sendline("PC")	# Enter partition control
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	conn.sendline("P")	# Enter power control menu
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	conn.sendline(action)	# Execute action from array above
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	conn.sendline(options["--plug"]) # Select blade number from args
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	conn.sendline("Y")	# Confirm action
-	conn.log_expect(options, "Hit enter key.", int(options["--shell-timeout"]))
+	conn.log_expect("Hit enter key.", int(options["--shell-timeout"]))
 	conn.sendline("")	# Press the any key
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	conn.sendline("Q")	# Quit back to partition control
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	conn.sendline("Q")	# Quit back to system command mode
-	conn.log_expect(options, "SVP>", int(options["--shell-timeout"]))
+	conn.log_expect("SVP>", int(options["--shell-timeout"]))
 	conn.sendline("EX")	# Quit back to system console menu
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 def get_blades_list(conn, options):
 	outlets = {}
 
 	conn.sendline("S")	# Enter System Command Mode
-	conn.log_expect(options, "SVP>", int(options["--shell-timeout"]))
+	conn.log_expect("SVP>", int(options["--shell-timeout"]))
 	conn.sendline("PC")	# Enter partition control
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	# Status can now be obtained from the output of the PC
 	# command. Line looks like the following:
 	# "P Power        Condition     LID lamp Mode  Auto power on"
@@ -100,9 +100,9 @@ def get_blades_list(conn, options):
 		if partition != None:
 			outlets[partition.group(1)] = (partition.group(2), "")
 	conn.sendline("Q")	# Quit back to system command mode
-	conn.log_expect(options, "SVP>", int(options["--shell-timeout"]))
+	conn.log_expect("SVP>", int(options["--shell-timeout"]))
 	conn.sendline("EX")	# Quit back to system console menu
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 	return outlets
 

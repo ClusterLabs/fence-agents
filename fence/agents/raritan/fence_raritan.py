@@ -18,7 +18,7 @@ BUILD_DATE=""
 def get_power_status(conn, options):
 	conn.send_eol("show -d properties=powerState %s" % options["--plug"])
 	re_status = re.compile(".*powerState is [12].*")
-	conn.log_expect(options, re_status, int(options["--shell-timeout"]))
+	conn.log_expect(re_status, int(options["--shell-timeout"]))
 	status = {
 		#"0" : "off",
 		"1" : "on",
@@ -69,11 +69,11 @@ block any necessary fencing actions."
 		conn.send("set binary\n")
 		conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
 		conn.read_nonblocking(size=100, timeout=int(options["--shell-timeout"]))
-		conn.log_expect(options, "Login.*", int(options["--shell-timeout"]))
+		conn.log_expect("Login.*", int(options["--shell-timeout"]))
 		conn.send_eol("%s" % (options["--username"]))
-		conn.log_expect(options, "Password.*", int(options["--shell-timeout"]))
+		conn.log_expect("Password.*", int(options["--shell-timeout"]))
 		conn.send_eol("%s" % (options["--password"]))
-		conn.log_expect(options, "clp.*", int(options["--shell-timeout"]))
+		conn.log_expect("clp.*", int(options["--shell-timeout"]))
 	except pexpect.EOF:
 		fail(EC_LOGIN_DENIED)
 	except pexpect.TIMEOUT:

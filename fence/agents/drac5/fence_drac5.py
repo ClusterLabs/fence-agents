@@ -33,7 +33,7 @@ def get_power_status(conn, options):
 		elif options["--drac-version"] == "DRAC 5":
 			conn.send_eol("racadm serveraction powerstatus")
 
-		conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+		conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 		status = re.compile(r"(^|: )(ON|OFF|Powering ON|Powering OFF)\s*$",
 				re.IGNORECASE | re.MULTILINE).search(conn.before).group(2)
@@ -58,11 +58,11 @@ def set_power_status(conn, options):
 
 	## Fix issue with double-enter [CR/LF]
 	##	We need to read two additional command prompts (one from get + one from set command)
-	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 	if len(conn.before.strip()) == 0:
 		options["eol"] = options["eol"][:-1]
-		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
-		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
+		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 
 def get_list_devices(conn, options):
 	outlets = {}
@@ -71,7 +71,7 @@ def get_list_devices(conn, options):
 		conn.send_eol("getmodinfo")
 
 		list_re = re.compile(r"^([^\s]*?)\s+Present\s*(ON|OFF)\s*.*$")
-		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 		for line in conn.before.splitlines():
 			if list_re.search(line):
 				outlets[list_re.search(line).group(1)] = ("", list_re.search(line).group(2))
@@ -79,7 +79,7 @@ def get_list_devices(conn, options):
 		conn.send_eol("getmodinfo")
 
 		list_re = re.compile(r"^\s*([^\s]*)\s*---->\s*(.*?)\s+Present\s*(ON|OFF)\s*.*$")
-		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 		for line in conn.before.splitlines():
 			if list_re.search(line):
 				outlets[list_re.search(line).group(2)] = ("", list_re.search(line).group(3))

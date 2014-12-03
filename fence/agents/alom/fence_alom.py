@@ -18,7 +18,7 @@ BUILD_DATE=""
 
 def get_power_status(conn, options):
 	conn.send_eol("showplatform")
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	status = re.search("standby", conn.before.lower())
 	result = (status != None and "off" or "on")
 
@@ -27,7 +27,7 @@ def get_power_status(conn, options):
 def set_power_status(conn, options):
 	cmd_line = (options["--action"] == "on" and "poweron" or "poweroff -f -y")
 	conn.send_eol(cmd_line)
-	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 	# Get the machine some time between poweron and poweroff
 	time.sleep(int(options["--power-timeout"]))
 

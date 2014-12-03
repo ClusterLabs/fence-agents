@@ -13,10 +13,10 @@ BUILD_DATE=""
 
 def get_power_status(conn, options):
 	conn.send("2")
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	status = re.compile(r"Power Status[\s]*: (on|off)", re.IGNORECASE).search(conn.before).group(1)
 	conn.send("0")
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 	return status.lower().strip()
 
@@ -27,16 +27,16 @@ def set_power_status(conn, options):
 	}[options["--action"]]
 
 	conn.send("2")
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	conn.send_eol(action)
-	conn.log_expect(options, ["want to power " + options["--action"], 
+	conn.log_expect(["want to power " + options["--action"],
 			"yes/no", "'yes' or 'no'"], int(options["--shell-timeout"]))
 	conn.send_eol("yes")
-	conn.log_expect(options, "any key to continue", int(options["--power-timeout"]))
+	conn.log_expect("any key to continue", int(options["--power-timeout"]))
 	conn.send_eol("")
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	conn.send_eol("0")
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 def main():
 	device_opt = ["ipaddr", "login", "passwd", "secure", "cmd_prompt", "telnet"]

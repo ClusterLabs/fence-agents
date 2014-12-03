@@ -25,7 +25,7 @@ BUILD_DATE=""
 def get_power_status(conn, options):
 	if options["--hmc-version"] == "3":
 		conn.send("lssyscfg -r lpar -m " + options["--managed"] + " -n " + options["--plug"] + " -F name,state\n")
-		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 
 		try:
 			status = re.compile("^" + options["--plug"] + ",(.*?),.*$",
@@ -35,7 +35,7 @@ def get_power_status(conn, options):
 	elif options["--hmc-version"] == "4":
 		conn.send("lssyscfg -r lpar -m "+ options["--managed"] +
 				" --filter 'lpar_names=" + options["--plug"] + "'\n")
-		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 
 		try:
 			status = re.compile(",state=(.*?),", re.IGNORECASE).search(conn.before).group(1)
@@ -55,7 +55,7 @@ def set_power_status(conn, options):
 	if options["--hmc-version"] == "3":
 		conn.send("chsysstate -o " + options["--action"] + " -r lpar -m " + options["--managed"]
 			+ " -n " + options["--plug"] + "\n")
-		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 	elif options["--hmc-version"] == "4":
 		if options["--action"] == "on":
 			conn.send("chsysstate -o on -r lpar -m " + options["--managed"] +
@@ -66,13 +66,13 @@ def set_power_status(conn, options):
 		else:
 			conn.send("chsysstate -o shutdown -r lpar --immed" +
 				" -m " + options["--managed"] + " -n " + options["--plug"] + "\n")
-		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 
 def get_lpar_list(conn, options):
 	outlets = {}
 	if options["--hmc-version"] == "3":
 		conn.send("query_partition_names -m " + options["--managed"] + "\n")
-		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 
 		## We have to remove first 3 lines (command + header) and last line (part of new prompt)
 		####
@@ -87,7 +87,7 @@ def get_lpar_list(conn, options):
 	elif options["--hmc-version"] == "4":
 		conn.send("lssyscfg -r lpar -m " + options["--managed"] +
 			" -F name:state\n")
-		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 
 		## We have to remove first line (command) and last line (part of new prompt)
 		####

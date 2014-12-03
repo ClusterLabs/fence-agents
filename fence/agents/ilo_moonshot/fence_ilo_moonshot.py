@@ -14,7 +14,7 @@ BUILD_DATE=""
 
 def get_power_status(conn, options):
 	conn.send_eol("show node list")
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 	nodes = {}
 	for line in conn.before.splitlines():
@@ -36,7 +36,7 @@ def set_power_status(conn, options):
 	else:
 		conn.send_eol("set node power off force %s" % (options["--plug"]))
 
-	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 
 	return
 

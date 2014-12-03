@@ -29,7 +29,7 @@ def get_power_status(conn, options):
 		" PASSWORD = " + quoteattr(options["--password"]) + ">\r\n")
 	conn.send("<SERVER_INFO MODE = \"read\"><GET_HOST_POWER_STATUS/>\r\n")
 	conn.send("</SERVER_INFO></LOGIN>\r\n")
-	conn.log_expect(options, "HOST_POWER=\"(.*?)\"", int(options["--power-timeout"]))
+	conn.log_expect("HOST_POWER=\"(.*?)\"", int(options["--power-timeout"]))
 
 	status = conn.match.group(1)
 	return status.lower().strip()
@@ -94,7 +94,7 @@ the iLO card through an XML stream."
 	conn = fence_login(options)
 	try:
 		conn.send("<?xml version=\"1.0\"?>\r\n")
-		conn.log_expect(options, ["</RIBCL>", "<END_RIBCL/>"], int(options["--login-timeout"]))
+		conn.log_expect(["</RIBCL>", "<END_RIBCL/>"], int(options["--login-timeout"]))
 		version = re.compile("<RIBCL VERSION=\"(.*?)\"", re.IGNORECASE).search(conn.before).group(1)
 		if not options.has_key("--ribcl-version"):
 			options["--ribcl-version"] = float(version)
@@ -109,8 +109,8 @@ the iLO card through an XML stream."
 		if options["--ribcl-version"] >= 2:
 			conn.send("<RIB_INFO MODE=\"read\"><GET_FW_VERSION />\r\n")
 			conn.send("</RIB_INFO>\r\n")
-			conn.log_expect(options, r"<GET_FW_VERSION\s*\n", int(options["--shell-timeout"]))
-			conn.log_expect(options, "/>", int(options["--shell-timeout"]))
+			conn.log_expect(r"<GET_FW_VERSION\s*\n", int(options["--shell-timeout"]))
+			conn.log_expect("/>", int(options["--shell-timeout"]))
 			options["fw_version"] = float(re.compile(r"FIRMWARE_VERSION\s*=\s*\"(.*?)\"",
 					re.IGNORECASE).search(conn.before).group(1))
 			options["fw_processor"] = re.compile(r"MANAGEMENT_PROCESSOR\s*=\s*\"(.*?)\"",

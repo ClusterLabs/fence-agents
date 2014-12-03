@@ -28,7 +28,7 @@ def get_outlets_status(conn, options):
 		prefix = ""
 
 	conn.sendline(prefix + "virsh list --all")
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 	result = {}
 
@@ -49,7 +49,7 @@ def get_outlets_status(conn, options):
 def get_power_status(conn, options):
 	prefix = options["--sudo-path"] + " " if options.has_key("--use-sudo") else ""
 	conn.sendline(prefix + "virsh domstate %s" % (get_name_or_uuid(options)))
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 	for line in conn.before.splitlines():
 		if line.strip() in ["running", "blocked", "idle", "no state", "paused"]:
@@ -64,7 +64,7 @@ def set_power_status(conn, options):
 	conn.sendline(prefix + "virsh %s " %
 			(options["--action"] == "on" and "start" or "destroy") + get_name_or_uuid(options))
 
-	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 	time.sleep(int(options["--power-wait"]))
 
 def main():

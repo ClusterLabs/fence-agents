@@ -15,7 +15,7 @@ BUILD_DATE=""
 def get_power_status(conn, options):
 	conn.send_eol("port %s" % options["--plug"])
 	re_status = re.compile("250 [01imt]")
-	conn.log_expect(options, re_status, int(options["--shell-timeout"]))
+	conn.log_expect(re_status, int(options["--shell-timeout"]))
 	status = {
 		"0" : "off",
 		"1" : "on",
@@ -34,7 +34,7 @@ def set_power_status(conn, options):
 	}[options["--action"]]
 
 	conn.send_eol("port %s %s" % (options["--plug"], action))
-	conn.log_expect(options, "250 OK", int(options["--shell-timeout"]))
+	conn.log_expect("250 OK", int(options["--shell-timeout"]))
 
 def get_outlet_list(conn, options):
 	result = {}
@@ -43,7 +43,7 @@ def get_outlet_list(conn, options):
 		# the NETIO-230B has 4 ports, counting start at 1
 		for plug in ["1", "2", "3", "4"]:
 			conn.send_eol("port setup %s" % plug)
-			conn.log_expect(options, "250 .+", int(options["--shell-timeout"]))
+			conn.log_expect("250 .+", int(options["--shell-timeout"]))
 			# the name is enclosed in "", drop those with [1:-1]
 			name = conn.after.split()[1][1:-1]
 			result[plug] = (name, "unknown")
@@ -87,9 +87,9 @@ block any necessary fencing actions."
 		conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
 
 		conn.read_nonblocking(size=100, timeout=int(options["--shell-timeout"]))
-		conn.log_expect(options, "100 HELLO .*", int(options["--shell-timeout"]))
+		conn.log_expect("100 HELLO .*", int(options["--shell-timeout"]))
 		conn.send_eol("login %s %s" % (options["--username"], options["--password"]))
-		conn.log_expect(options, "250 OK", int(options["--shell-timeout"]))
+		conn.log_expect("250 OK", int(options["--shell-timeout"]))
 	except pexpect.EOF:
 		fail(EC_LOGIN_DENIED)
 	except pexpect.TIMEOUT:

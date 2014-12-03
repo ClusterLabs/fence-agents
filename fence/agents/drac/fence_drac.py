@@ -13,7 +13,7 @@ BUILD_DATE=""
 
 def get_power_status(conn, options):
 	conn.send_eol("getmodinfo")
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	status = re.compile(r"\s+(on|off)\s+", re.IGNORECASE).search(conn.before).group(1)
 	return status.lower().strip()
 
@@ -24,7 +24,7 @@ def set_power_status(conn, options):
 	}[options["--action"]]
 
 	conn.send_eol("serveraction -d 0 " + action)
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 def main():
 	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "telnet"]

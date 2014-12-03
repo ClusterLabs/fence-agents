@@ -29,14 +29,14 @@ def start_communication(conn, options):
 	if res == 0:
 		#CSH stuff
 		conn.send_eol("set prompt='" + COMMAND_PROMPT_NEW + "'")
-		conn.log_expect(options, COMMAND_PROMPT_REG, int(options["--shell-timeout"]))
+		conn.log_expect(COMMAND_PROMPT_REG, int(options["--shell-timeout"]))
 
 def get_power_status(conn, options):
 	start_communication(conn, options)
 
 	conn.send_eol("ldm ls")
 
-	conn.log_expect(options, COMMAND_PROMPT_REG, int(options["--shell-timeout"]))
+	conn.log_expect(COMMAND_PROMPT_REG, int(options["--shell-timeout"]))
 
 	result = {}
 
@@ -67,7 +67,7 @@ def set_power_status(conn, options):
 
 	conn.send_eol(cmd_line)
 
-	conn.log_expect(options, COMMAND_PROMPT_REG, int(options["--power-timeout"]))
+	conn.log_expect(COMMAND_PROMPT_REG, int(options["--power-timeout"]))
 
 def main():
 	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", "port"]

@@ -444,7 +444,7 @@ class fspawn(pexpect.spawn):
 		pexpect.spawn.__init__(self, command)
 		self.opt = options
 
-	def log_expect(self, options, pattern, timeout):
+	def log_expect(self, pattern, timeout):
 		result = self.expect(pattern, timeout)
 		logging.debug("Received: %s", self.before + self.after)
 		return result
@@ -1057,25 +1057,25 @@ def fence_login(options, re_login_string=r"(login\s*: )|((?!Last )Login Name:  )
 			if options.has_key("telnet_over_ssh"):
 				# This is for stupid ssh servers (like ALOM) which behave more like telnet
 				# (ignore name and display login prompt)
-				result = conn.log_expect(options, \
+				result = conn.log_expect( \
 						[re_login, "Are you sure you want to continue connecting (yes/no)?"],
 						int(options["--login-timeout"]))
 				if result == 1:
 					conn.sendline("yes") # Host identity confirm
-					conn.log_expect(options, re_login, int(options["--login-timeout"]))
+					conn.log_expect(re_login, int(options["--login-timeout"]))
 
 				conn.sendline(options["--username"])
-				conn.log_expect(options, re_pass, int(options["--login-timeout"]))
+				conn.log_expect(re_pass, int(options["--login-timeout"]))
 			else:
-				result = conn.log_expect(options, \
+				result = conn.log_expect( \
 						["ssword:", "Are you sure you want to continue connecting (yes/no)?"],
 						int(options["--login-timeout"]))
 				if result == 1:
 					conn.sendline("yes")
-					conn.log_expect(options, "ssword:", int(options["--login-timeout"]))
+					conn.log_expect("ssword:", int(options["--login-timeout"]))
 
 			conn.sendline(options["--password"])
-			conn.log_expect(options, options["--command-prompt"], int(options["--login-timeout"]))
+			conn.log_expect(options["--command-prompt"], int(options["--login-timeout"]))
 		elif options.has_key("--ssh") and options.has_key("--identity-file"):
 			command = '%s %s %s@%s -i %s -p %s' % \
 					(options["--ssh-path"], force_ipvx, options["--username"], options["--ip"], \
@@ -1085,18 +1085,18 @@ def fence_login(options, re_login_string=r"(login\s*: )|((?!Last )Login Name:  )
 
 			conn = fspawn(options, command)
 
-			result = conn.log_expect(options, ["Enter passphrase for key '" + options["--identity-file"] + "':", \
+			result = conn.log_expect(["Enter passphrase for key '" + options["--identity-file"] + "':", \
 					"Are you sure you want to continue connecting (yes/no)?"] + \
 					options["--command-prompt"], int(options["--login-timeout"]))
 			if result == 1:
 				conn.sendline("yes")
-				result = conn.log_expect(options,
+				result = conn.log_expect(
 					["Enter passphrase for key '" + options["--identity-file"]+"':"] + \
 					options["--command-prompt"], int(options["--login-timeout"]))
 			if result == 0:
 				if options.has_key("--password"):
 					conn.sendline(options["--password"])
-					conn.log_expect(options, options["--command-prompt"], int(options["--login-timeout"]))
+					conn.log_expect(options["--command-prompt"], int(options["--login-timeout"]))
 				else:
 					fail_usage("Failed: You have to enter passphrase (-p) for identity file")
 		else:
@@ -1104,7 +1104,7 @@ def fence_login(options, re_login_string=r"(login\s*: )|((?!Last )Login Name:  )
 			conn.send("set binary\n")
 			conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
 
-			result = conn.log_expect(options, re_login, int(options["--login-timeout"]))
+			result = conn.log_expect(re_login, int(options["--login-timeout"]))
 			conn.send_eol(options["--username"])
 
 			## automatically change end of line separator
@@ -1112,13 +1112,13 @@ def fence_login(options, re_login_string=r"(login\s*: )|((?!Last )Login Name:  )
 			if re_login.search(screen) != None:
 				options["eol"] = "\n"
 				conn.send_eol(options["--username"])
-				result = conn.log_expect(options, re_pass, int(options["--login-timeout"]))
+				result = conn.log_expect(re_pass, int(options["--login-timeout"]))
 			elif re_pass.search(screen) != None:
-				conn.log_expect(options, re_pass, int(options["--shell-timeout"]))
+				conn.log_expect(re_pass, int(options["--shell-timeout"]))
 
 			try:
 				conn.send_eol(options["--password"])
-				valid_password = conn.log_expect(options, [re_login] + \
+				valid_password = conn.log_expect([re_login] + \
 						options["--command-prompt"], int(options["--shell-timeout"]))
 				if valid_password == 0:
 					## password is invalid or we have to change EOL separator
@@ -1129,9 +1129,9 @@ def fence_login(options, re_login_string=r"(login\s*: )|((?!Last )Login Name:  )
 					if re_login.search(screen) != None:
 						conn.send_eol("")
 					conn.send_eol(options["--username"])
-					conn.log_expect(options, re_pass, int(options["--login-timeout"]))
+					conn.log_expect(re_pass, int(options["--login-timeout"]))
 					conn.send_eol(options["--password"])
-					conn.log_expect(options, options["--command-prompt"], int(options["--login-timeout"]))
+					conn.log_expect(options["--command-prompt"], int(options["--login-timeout"]))
 			except KeyError:
 				fail(EC_PASSWORD_MISSING)
 	except pexpect.EOF:

@@ -20,7 +20,7 @@ BUILD_DATE="March, 2008"
 
 def get_power_status(conn, options):
 	conn.send_eol("show server status " + options["--plug"])
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 	power_re = re.compile(r"^\s*Power: (.*?)\s*$")
 	status = "unknown"
@@ -42,13 +42,13 @@ def set_power_status(conn, options):
 		conn.send_eol("poweron server " + options["--plug"])
 	elif options["--action"] == "off":
 		conn.send_eol("poweroff server " + options["--plug"] + " force")
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 def get_blades_list(conn, options):
 	outlets = {}
 
 	conn.send_eol("show server list")
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 	list_re = re.compile(r"^\s*(.*?)\s+(.*?)\s+(.*?)\s+OK\s+(.*?)\s+(.*?)\s*$")
 	for line in conn.before.splitlines():

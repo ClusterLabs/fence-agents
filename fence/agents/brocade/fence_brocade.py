@@ -19,7 +19,7 @@ def set_power_status(conn, options):
 	}[options["--action"]]
 
 	conn.send_eol(action + " " + options["--plug"])
-	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 
 def get_power_status(conn, options):
 	line_re = re.compile(r'=========', re.IGNORECASE)
@@ -27,7 +27,7 @@ def get_power_status(conn, options):
 	in_index = False
 
 	conn.send_eol("switchshow")
-	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 	for line in str(conn.before).split("\n"):
 		if line_re.search(line):
 			in_index = True

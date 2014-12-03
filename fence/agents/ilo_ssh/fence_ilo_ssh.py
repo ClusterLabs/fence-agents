@@ -15,7 +15,7 @@ def get_power_status(conn, options):
 	conn.send_eol("show /system1")
 
 	re_state = re.compile('EnabledState=(.*)', re.IGNORECASE)
-	conn.log_expect(options, re_state, int(options["--shell-timeout"]))
+	conn.log_expect(re_state, int(options["--shell-timeout"]))
 
 	status = conn.match.group(1).lower()
 
@@ -30,13 +30,13 @@ def set_power_status(conn, options):
 	else:
 		conn.send_eol("power off hard")
 
-	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 
 	return
 
 def reboot_cycle(conn, options):
 	conn.send_eol("reset hard /system1")
-	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 	return
 
 def main():

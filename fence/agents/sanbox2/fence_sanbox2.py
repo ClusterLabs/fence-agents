@@ -28,7 +28,7 @@ def get_power_status(conn, options):
 	}
 	try:
 		conn.send_eol("show port " + options["--plug"])
-		conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+		conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	except pexpect.TIMEOUT:
 		try:
 			conn.send_eol("admin end")
@@ -54,7 +54,7 @@ def set_power_status(conn, options):
 
 	try:
 		conn.send_eol("set port " + options["--plug"] + " state " + action)
-		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 	except pexpect.TIMEOUT:
 		try:
 			conn.send_eol("admin end")
@@ -66,7 +66,7 @@ def set_power_status(conn, options):
 
 	try:
 		conn.send_eol("set port " + options["--plug"] + " state " + action)
-		conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 	except pexpect.TIMEOUT:
 		try:
 			conn.send_eol("admin end")
@@ -81,7 +81,7 @@ def get_list_devices(conn, options):
 
 	try:
 		conn.send_eol("show port")
-		conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+		conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 		list_re = re.compile(r"^\s+(\d+?)\s+(Online|Offline)\s+", re.IGNORECASE)
 		for line in conn.before.splitlines():
@@ -129,7 +129,7 @@ because the connection will block any necessary fencing actions."
 	conn = fence_login(options)
 
 	conn.send_eol("admin start")
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 	if re.search(r"\(admin\)", conn.before, re.MULTILINE) == None:
 		## Someone else is in admin section, we can't enable/disable

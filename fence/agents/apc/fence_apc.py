@@ -31,7 +31,7 @@ def get_power_status(conn, options):
 	outlets = {}
 
 	conn.send_eol("1")
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 	version = 0
 	admin = 0
@@ -64,13 +64,13 @@ def get_power_status(conn, options):
 				conn.send_eol("3")
 		else:
 			conn.send_eol("2")
-			conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+			conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 			conn.send_eol("1")
 	else:
 		conn.send_eol(options["--switch"])
 
 	while True:
-		exp_result = conn.log_expect(options,
+		exp_result = conn.log_expect(
 				["Press <ENTER>"] + options["--command-prompt"], int(options["--shell-timeout"]))
 		lines = conn.before.split("\n")
 		show_re = re.compile(r'(^|\x0D)\s*(\d+)- (.*?)\s+(ON|OFF)\s*')
@@ -82,8 +82,8 @@ def get_power_status(conn, options):
 		if exp_result != 0:
 			break
 	conn.send(chr(03))
-	conn.log_expect(options, "- Logout", int(options["--shell-timeout"]))
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect("- Logout", int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 	if ["list", "monitor"].count(options["--action"]) == 1:
 		return outlets
@@ -101,7 +101,7 @@ def set_power_status(conn, options):
 	}[options["--action"]]
 
 	conn.send_eol("1")
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 	version = 0
 	admin2 = 0
@@ -140,7 +140,7 @@ def set_power_status(conn, options):
 				conn.send_eol("3")
 		else:
 			conn.send_eol("2")
-			conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+			conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 			if None == re.compile('.*2- Outlet Restriction.*', re.IGNORECASE | re.S).match(conn.before):
 				admin3 = 0
 			else:
@@ -149,40 +149,40 @@ def set_power_status(conn, options):
 	else:
 		conn.send_eol(options["--switch"])
 
-	while 0 == conn.log_expect(options,
+	while 0 == conn.log_expect(
 			["Press <ENTER>"] + options["--command-prompt"], int(options["--shell-timeout"])):
 		conn.send_eol("")
 
 	conn.send_eol(options["--plug"]+"")
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 	if switch == 0:
 		if admin2 == 1:
 			conn.send_eol("1")
-			conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+			conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 		if admin3 == 1:
 			conn.send_eol("1")
-			conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+			conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	else:
 		conn.send_eol("1")
-		conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+		conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 	conn.send_eol(action)
-	conn.log_expect(options, "Enter 'YES' to continue or <ENTER> to cancel :", int(options["--shell-timeout"]))
+	conn.log_expect("Enter 'YES' to continue or <ENTER> to cancel :", int(options["--shell-timeout"]))
 	conn.send_eol("YES")
-	conn.log_expect(options, "Press <ENTER> to continue...", int(options["--power-timeout"]))
+	conn.log_expect("Press <ENTER> to continue...", int(options["--power-timeout"]))
 	conn.send_eol("")
-	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 	conn.send(chr(03))
-	conn.log_expect(options, "- Logout", int(options["--shell-timeout"]))
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect("- Logout", int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 def get_power_status5(conn, options):
 	outlets = {}
 
 	conn.send_eol("olStatus all")
 
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	lines = conn.before.split("\n")
 
 	show_re = re.compile(r'^\s*(\d+): (.*): (On|Off)\s*$', re.IGNORECASE)
@@ -208,7 +208,7 @@ def set_power_status5(conn, options):
 	}[options["--action"]]
 
 	conn.send_eol(action + " " + options["--plug"])
-	conn.log_expect(options, options["--command-prompt"], int(options["--power-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 
 def main():
 	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", \
