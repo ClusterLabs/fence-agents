@@ -630,7 +630,6 @@ def process_input(avail_opt):
 
 		## Transform short getopt to long one which are used in fencing agents
 		#####
-		old_opt = entered_opt
 		opt = {}
 		for o in dict(entered_opt).keys():
 			if o.startswith("--"):
