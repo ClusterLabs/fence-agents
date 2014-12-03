@@ -47,9 +47,10 @@ def main():
 
 	opt = process_input(device_opt)
 
-	# set default port for telnet only
 	if not opt.has_key("--ssh") and not opt.has_key("--ipport"):
-		opt["--ipport"] = "3172"
+		# set default value like it should be set as usually
+		all_opt["ipport"]["default"] = "3172"
+		opt["--ipport"] = all_opt["ipport"]["default"]
 
 	options = check_input(device_opt, opt)
 

@@ -57,12 +57,9 @@ def main():
 
 	atexit.register(atexit_handler)
 
+	all_opt["ipport"]["default"] = "1234"
+
 	opt = process_input(device_opt)
-
-	# set default port for telnet only
-	if not opt.has_key("--ipport"):
-		opt["--ipport"] = "1234"
-
 	opt["eol"] = "\r\n"
 	options = check_input(device_opt, opt)
 

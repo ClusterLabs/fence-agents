@@ -516,9 +516,8 @@ def metadata(avail_opt, options, docs):
 	print "<?xml version=\"1.0\" ?>"
 	print "<resource-agent name=\"" + os.path.basename(sys.argv[0]) + \
 			"\" shortdesc=\"" + docs["shortdesc"] + "\" >"
-	if "symlink" in docs:
-		for (symlink, desc) in docs["symlink"]:
-			print "<symlink name=\"" + symlink + "\" shortdesc=\"" + desc + "\"/>"
+	for (symlink, desc) in docs.get("symlink", []):
+		print "<symlink name=\"" + symlink + "\" shortdesc=\"" + desc + "\"/>"
 	print "<longdesc>" + docs["longdesc"] + "</longdesc>"
 	if docs.has_key("vendorurl"):
 		print "<vendor-url>" + docs["vendorurl"] + "</vendor-url>"
@@ -530,30 +529,18 @@ def metadata(avail_opt, options, docs):
 			default = ""
 			if all_opt[option].has_key("default"):
 				default = str(all_opt[option]["default"])
-			elif options.has_key("--" + all_opt[option]["longopt"]) and all_opt[option]["getopt"].endswith(":"):
-				if options["--" + all_opt[option]["longopt"]]:
-					try:
-						default = options["--" + all_opt[option]["longopt"]]
-					except TypeError:
-						## @todo/@note: Currently there is no clean way how to handle lists
-						## we can create a string from it but we can't set it on command line
-						default = str(options["--" + all_opt[option]["longopt"]])
 			elif options.has_key("--" + all_opt[option]["longopt"]):
 				default = "true"
 
 			if default:
-				default = default.replace("&", "&amp;")
-				default = default.replace('"', "&quot;")
-				default = default.replace('<', "&lt;")
-				default = default.replace('>', "&gt;")
-				default = default.replace("'", "&apos;")
-				default = "default=\"" + default + "\" "
+				default = "default=\"" + _encode_html_entities(default) + "\" "
 
 			mixed = all_opt[option]["help"]
 			## split it between option and help text
 			res = re.compile(r"^(.*?--\S+)\s+", re.IGNORECASE | re.S).search(mixed)
 			if None != res:
 				mixed = res.group(1)
+			# @todo: replace with _encode_html_entities but update XML metadata in regression tests
 			mixed = mixed.replace("<", "&lt;").replace(">", "&gt;")
 			print "\t\t<getopt mixed=\"" + mixed + "\" />"
 
@@ -571,14 +558,9 @@ def metadata(avail_opt, options, docs):
 			print "\t</parameter>"
 	print "</parameters>"
 	print "<actions>"
-	if avail_opt.count("fabric_fencing") == 1:
-		## do 'unfence' at the start
-		if avail_opt.count("on_target") == 1:
-			print "\t<action name=\"on\" on_target=\"1\" automatic=\"1\"/>"
-		else:
-			print "\t<action name=\"on\" automatic=\"1\"/>"
-	else:
-		print "\t<action name=\"on\" automatic=\"0\"/>"
+
+	on_target = ' on_target="1"' if avail_opt.count("on_target") else ''
+	print "\t<action name=\"on\"%s automatic=\"%d\"/>" % (on_target, avail_opt.count("fabric_fencing"))
 	print "\t<action name=\"off\" />"
 
 	if avail_opt.count("fabric_fencing") == 0:
@@ -796,8 +778,6 @@ def show_docs(options, docs=None):
 		docs["shortdesc"] = "Fence agent"
 		docs["longdesc"] = ""
 
-	## Process special options (and exit)
-	#####
 	if options.has_key("--help"):
 		usage(device_opt)
 		sys.exit(0)
@@ -1257,3 +1237,7 @@ def _validate_input(options):
 							"for %s from the valid values: %s" % \
 							("--" + all_opt[opt]["longopt"], str(all_opt[opt]["choices"])))
 
+
+def _encode_html_entities(text):
+	return text.replace("&", "&amp;").replace('"', "&quot;").replace('<', "&lt;"). \
+		replace('>', "&gt;").replace("'", "&apos;")
