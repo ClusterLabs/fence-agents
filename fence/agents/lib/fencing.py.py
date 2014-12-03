@@ -624,7 +624,7 @@ def process_input(avail_opt):
 	#####
 	if len(sys.argv) > 1:
 		try:
-			obtained_opt = getopt.gnu_getopt(sys.argv[1:], getopt_string, longopt_list)[0]
+			entered_opt = getopt.gnu_getopt(sys.argv[1:], getopt_string, longopt_list)[0]
 		except getopt.GetoptError, error:
 			fail_usage("Parse error: " + error.msg)
 
