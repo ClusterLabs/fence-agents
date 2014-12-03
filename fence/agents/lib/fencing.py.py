@@ -686,72 +686,13 @@ def check_input(device_opt, opt):
 	options = dict(opt)
 	options["device_opt"] = device_opt
 
-	## Set requirements that should be included in metadata
-	#####
-	if device_opt.count("login") and device_opt.count("no_login") == 0:
-		all_opt["login"]["required"] = "1"
-	else:
-		all_opt["login"]["required"] = "0"
-
-	if device_opt.count("fabric_fencing"):
-		all_opt["action"]["default"] = "off"
-		if device_opt.count("no_status"):
-			all_opt["action"]["help"] = "-o, --action=[action]          Action: off (default) or on"
-		else:
-			all_opt["action"]["help"] = "-o, --action=[action]          Action: status, off (default) or on"
-	else:
-		if device_opt.count("no_status"):
-			all_opt["action"]["help"] = "-o, --action=[action]          Action: reboot (default), off or on"
-
-
-	if device_opt.count("ipport"):
-		if options.has_key("--ipport"):
-			all_opt["ipport"]["help"] = "-u, --ipport=[port]            " + \
-					"TCP/UDP port to use (default " + options["--ipport"] +")"
-		elif all_opt.has_key("ipport") and all_opt["ipport"].has_key("default"):
-			all_opt["ipport"]["help"] = "-u, --ipport=[port]            " + \
-					"TCP/UDP port to use (default " + all_opt["ipport"]["default"] +")"
-		elif device_opt.count("snmp_version"):
-			all_opt["ipport"]["default"] = "161"
-			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 161)"
-		elif options.has_key("--ssh") or \
-				(all_opt["secure"].has_key("default") and all_opt["secure"]["default"] == '1'):
-			all_opt["ipport"]["default"] = 22
-			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 22)"
-		elif options.has_key("--ssl") or options.has_key("--ssl-secure") or \
-				options.has_key("--ssl-insecure") or \
-				(all_opt["ssl"].has_key("default") and all_opt["ssl"]["default"] == '1'):
-			all_opt["ipport"]["default"] = 443
-			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 443)"
-		elif device_opt.count("web"):
-			all_opt["ipport"]["default"] = 80
-			if device_opt.count("ssl") == 0:
-				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 80)"
-			else:
-				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use\n\
-                                        (default 80, 443 if --ssl option is used)"
-		else:
-			all_opt["ipport"]["default"] = 23
-			if device_opt.count("secure") == 0:
-				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 23)"
-			else:
-				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use\n\
-       	                                (default 23, 22 if --ssh option is used)"
-
-	## Set default values
-	#####
-	for opt in device_opt:
-		if all_opt[opt].has_key("default"):
-			getopt_long = "--" + all_opt[opt]["longopt"]
-			if not options.has_key(getopt_long):
-				options[getopt_long] = all_opt[opt]["default"]
-
+	_update_metadata(options)
+	options = _set_default_values(options)
 	options["--action"] = options["--action"].lower()
 
 	## In special cases (show help, metadata or version) we don't need to check anything
 	#####
-	if options.has_key("--help") or options.has_key("--version") or \
-			options["--action"] == "metadata":
+	if options["--action"] == "metadata" or any(options.has_key(k) for k in ("--help", "--version")):
 		return options
 
 	if options.has_key("--verbose"):
@@ -759,7 +700,7 @@ def check_input(device_opt, opt):
 
 	## add logging to syslog
 	logging.getLogger().addHandler(SyslogLibHandler())
-	## add loggint to stderr
+	## add logging to stderr
 	logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stderr))
 
 	acceptable_actions = ["on", "off", "status", "list", "monitor"]
@@ -783,36 +724,7 @@ def check_input(device_opt, opt):
 	if options["--action"] == "disable":
 		options["--action"] = "off"
 
-	## automatic detection and set of valid UUID from --plug
-	if not options.has_key("--username") and \
-			device_opt.count("login") and (device_opt.count("no_login") == 0):
-		fail_usage("Failed: You have to set login name")
-
-	if device_opt.count("ipaddr") and not options.has_key("--ip") and not options.has_key("--managed"):
-		fail_usage("Failed: You have to enter fence address")
-
-	if device_opt.count("no_password") == 0:
-		if 0 == device_opt.count("identity_file"):
-			if not (options.has_key("--password") or options.has_key("--password-script")):
-				fail_usage("Failed: You have to enter password or password script")
-		else:
-			if not (options.has_key("--password") or \
-					options.has_key("--password-script") or options.has_key("--identity-file")):
-				fail_usage("Failed: You have to enter password, password script or identity file")
-
-	if not options.has_key("--ssh") and options.has_key("--identity-file"):
-		fail_usage("Failed: You have to use identity file together with ssh connection (-x)")
-
-	if options.has_key("--identity-file"):
-		if not os.path.isfile(options["--identity-file"]):
-			fail_usage("Failed: Identity file " + options["--identity-file"] + " does not exist")
-
-	if (0 == ["list", "monitor"].count(options["--action"])) and \
-		not options.has_key("--plug") and device_opt.count("port") and device_opt.count("no_port") == 0:
-		fail_usage("Failed: You have to enter plug number or machine identification")
-
-	if options.has_key("--password-script"):
-		options["--password"] = os.popen(options["--password-script"]).read().rstrip()
+	_validate_input(options)
 
 	if options.has_key("--debug-file"):
 		try:
@@ -826,20 +738,8 @@ def check_input(device_opt, opt):
 	if options.has_key("--snmp-priv-passwd-script"):
 		options["--snmp-priv-passwd"] = os.popen(options["--snmp-priv-passwd-script"]).read().rstrip()
 
-	if options.has_key("--plug") and len(options["--plug"].split(",")) > 1 and \
-			options.has_key("--method") and options["--method"] == "cycle":
-		fail_usage("Failed: Cannot use --method cycle for more than 1 plug")
-
-	for opt in device_opt:
-		if all_opt[opt].has_key("choices"):
-			longopt = "--" + all_opt[opt]["longopt"]
-			possible_values_upper = [y.upper() for y in all_opt[opt]["choices"]]
-			if options.has_key(longopt):
-				options[longopt] = options[longopt].upper()
-				if not options["--" + all_opt[opt]["longopt"]] in possible_values_upper:
-					fail_usage("Failed: You have to enter a valid choice " + \
-							"for %s from the valid values: %s" % \
-							("--" + all_opt[opt]["longopt"], str(all_opt[opt]["choices"])))
+	if options.has_key("--password-script"):
+		options["--password"] = os.popen(options["--password-script"]).read().rstrip()
 
 	return options
 
@@ -1249,3 +1149,111 @@ def _login_ssh_with_password(options, re_login_string):
 	conn.log_expect(options["--command-prompt"], int(options["--login-timeout"]))
 
 	return conn
+
+#
+# To update metadata, we change values in all_opt
+def _update_metadata(options):
+	device_opt = options["device_opt"]
+
+	if device_opt.count("login") and device_opt.count("no_login") == 0:
+		all_opt["login"]["required"] = "1"
+	else:
+		all_opt["login"]["required"] = "0"
+
+	if device_opt.count("fabric_fencing"):
+		all_opt["action"]["default"] = "off"
+		if device_opt.count("no_status"):
+			all_opt["action"]["help"] = "-o, --action=[action]          Action: off (default) or on"
+		else:
+			all_opt["action"]["help"] = "-o, --action=[action]          Action: status, off (default) or on"
+	else:
+		if device_opt.count("no_status"):
+			all_opt["action"]["help"] = "-o, --action=[action]          Action: reboot (default), off or on"
+
+	if device_opt.count("ipport"):
+		if options.has_key("--ipport"):
+			all_opt["ipport"]["help"] = "-u, --ipport=[port]            " + \
+					"TCP/UDP port to use (default " + options["--ipport"] +")"
+		elif all_opt.has_key("ipport") and all_opt["ipport"].has_key("default"):
+			all_opt["ipport"]["help"] = "-u, --ipport=[port]            " + \
+					"TCP/UDP port to use (default " + all_opt["ipport"]["default"] +")"
+		elif device_opt.count("snmp_version"):
+			all_opt["ipport"]["default"] = "161"
+			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 161)"
+		elif options.has_key("--ssh") or \
+				(all_opt["secure"].has_key("default") and all_opt["secure"]["default"] == '1'):
+			all_opt["ipport"]["default"] = 22
+			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 22)"
+		elif options.has_key("--ssl") or options.has_key("--ssl-secure") or \
+				options.has_key("--ssl-insecure") or \
+				(all_opt["ssl"].has_key("default") and all_opt["ssl"]["default"] == '1'):
+			all_opt["ipport"]["default"] = 443
+			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 443)"
+		elif device_opt.count("web"):
+			all_opt["ipport"]["default"] = 80
+			if device_opt.count("ssl") == 0:
+				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 80)"
+			else:
+				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use\n\
+                                        (default 80, 443 if --ssl option is used)"
+		else:
+			all_opt["ipport"]["default"] = 23
+			if device_opt.count("secure") == 0:
+				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 23)"
+			else:
+				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use\n\
+                                        (default 23, 22 if --ssh option is used)"
+
+def _set_default_values(options):
+	for opt in options["device_opt"]:
+		if all_opt[opt].has_key("default"):
+			getopt_long = "--" + all_opt[opt]["longopt"]
+			if not options.has_key(getopt_long):
+				options[getopt_long] = all_opt[opt]["default"]
+
+	return options
+
+def _validate_input(options):
+	device_opt = options["device_opt"]
+
+	if not options.has_key("--username") and \
+			device_opt.count("login") and (device_opt.count("no_login") == 0):
+		fail_usage("Failed: You have to set login name")
+
+	if device_opt.count("ipaddr") and not options.has_key("--ip") and not options.has_key("--managed"):
+		fail_usage("Failed: You have to enter fence address")
+
+	if device_opt.count("no_password") == 0:
+		if 0 == device_opt.count("identity_file"):
+			if not (options.has_key("--password") or options.has_key("--password-script")):
+				fail_usage("Failed: You have to enter password or password script")
+		else:
+			if not (options.has_key("--password") or \
+					options.has_key("--password-script") or options.has_key("--identity-file")):
+				fail_usage("Failed: You have to enter password, password script or identity file")
+
+	if not options.has_key("--ssh") and options.has_key("--identity-file"):
+		fail_usage("Failed: You have to use identity file together with ssh connection (-x)")
+
+	if options.has_key("--identity-file") and not os.path.isfile(options["--identity-file"]):
+		fail_usage("Failed: Identity file " + options["--identity-file"] + " does not exist")
+
+	if (0 == ["list", "monitor"].count(options["--action"])) and \
+		not options.has_key("--plug") and device_opt.count("port") and device_opt.count("no_port") == 0:
+		fail_usage("Failed: You have to enter plug number or machine identification")
+
+	if options.has_key("--plug") and len(options["--plug"].split(",")) > 1 and \
+			options.has_key("--method") and options["--method"] == "cycle":
+		fail_usage("Failed: Cannot use --method cycle for more than 1 plug")
+
+	for opt in device_opt:
+		if all_opt[opt].has_key("choices"):
+			longopt = "--" + all_opt[opt]["longopt"]
+			possible_values_upper = [y.upper() for y in all_opt[opt]["choices"]]
+			if options.has_key(longopt):
+				options[longopt] = options[longopt].upper()
+				if not options["--" + all_opt[opt]["longopt"]] in possible_values_upper:
+					fail_usage("Failed: You have to enter a valid choice " + \
+							"for %s from the valid values: %s" % \
+							("--" + all_opt[opt]["longopt"], str(all_opt[opt]["choices"])))
+
