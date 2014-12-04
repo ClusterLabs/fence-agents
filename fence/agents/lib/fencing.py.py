@@ -465,7 +465,7 @@ def atexit_handler():
 		logging.error("%s failed to close standard output\n", sys.argv[0])
 		sys.exit(EC_GENERIC_ERROR)
 
-def add_dependency_options(options):
+def _add_dependency_options(options):
 	## Add also options which are available for every fence agent
 	added_opt = []
 	for opt in options + ["default"]:
@@ -575,86 +575,16 @@ def metadata(avail_opt, options, docs):
 	print "</resource-agent>"
 
 def process_input(avail_opt):
-	avail_opt.extend(add_dependency_options(avail_opt))
+	avail_opt.extend(_add_dependency_options(avail_opt))
 
-	##
-	## Set standard environment
-	#####
+	# @todo: this should be put elsewhere?
 	os.putenv("LANG", "C")
 	os.putenv("LC_ALL", "C")
 
-	##
-	## Prepare list of options for getopt
-	#####
-	getopt_string = ""
-	longopt_list = []
-	for k in avail_opt:
-		if all_opt.has_key(k) and all_opt[k]["getopt"] != ":":
-			# getopt == ":" means that opt is without short getopt, but has value
-			getopt_string += all_opt[k]["getopt"]
-		elif not all_opt.has_key(k):
-			fail_usage("Parse error: unknown option '"+k+"'")
-
-		if all_opt.has_key(k) and all_opt[k].has_key("longopt"):
-			if all_opt[k]["getopt"].endswith(":"):
-				longopt_list.append(all_opt[k]["longopt"] + "=")
-			else:
-				longopt_list.append(all_opt[k]["longopt"])
-
-	##
-	## Read options from command line or standard input
-	#####
 	if len(sys.argv) > 1:
-		try:
-			entered_opt = getopt.gnu_getopt(sys.argv[1:], getopt_string, longopt_list)[0]
-		except getopt.GetoptError, error:
-			fail_usage("Parse error: " + error.msg)
-
-		## Transform short getopt to long one which are used in fencing agents
-		#####
-		opt = {}
-		for o in dict(entered_opt).keys():
-			if o.startswith("--"):
-				for x in all_opt.keys():
-					if all_opt[x].has_key("longopt") and "--" + all_opt[x]["longopt"] == o:
-						opt["--" + all_opt[x]["longopt"]] = dict(entered_opt)[o]
-			else:
-				for x in all_opt.keys():
-					if x in avail_opt and all_opt[x].has_key("getopt") and all_opt[x].has_key("longopt") and \
-						("-" + all_opt[x]["getopt"] == o or "-" + all_opt[x]["getopt"].rstrip(":") == o):
-						opt["--" + all_opt[x]["longopt"]] = dict(entered_opt)[o]
-				opt[o] = dict(entered_opt)[o]
-
-		## Compatibility Layer
-		#####
-		z = dict(opt)
-		if z.has_key("--plug"):
-			z["-m"] = z["--plug"]
-
-		opt = z
-		##
-		#####
+		opt = _parse_input_cmdline(avail_opt)
 	else:
-		opt = {}
-		name = ""
-		for line in sys.stdin.readlines():
-			line = line.strip()
-			if (line.startswith("#")) or (len(line) == 0):
-				continue
-
-			(name, value) = (line + "=").split("=", 1)
-			value = value[:-1]
-
-			if avail_opt.count(name) == 0 and name in ["nodename"]:
-				continue
-			elif avail_opt.count(name) == 0:
-				logging.warning("Parse error: Ignoring unknown option '%s'\n", line)
-				continue
-
-			if all_opt[name]["getopt"].endswith(":"):
-				opt["--"+all_opt[name]["longopt"].rstrip(":")] = value
-			elif value.lower() in ["1", "yes", "on", "true"]:
-				opt["--"+all_opt[name]["longopt"]] = "1"
+		opt = _parse_input_stdin(avail_opt)
 	return opt
 
 ##
@@ -663,7 +593,7 @@ def process_input(avail_opt):
 ## password script to set a correct password
 ######
 def check_input(device_opt, opt):
-	device_opt.extend(add_dependency_options(device_opt))
+	device_opt.extend(_add_dependency_options(device_opt))
 
 	options = dict(opt)
 	options["device_opt"] = device_opt
@@ -1241,3 +1171,68 @@ def _validate_input(options):
 def _encode_html_entities(text):
 	return text.replace("&", "&amp;").replace('"', "&quot;").replace('<', "&lt;"). \
 		replace('>', "&gt;").replace("'", "&apos;")
+
+def _prepare_getopt_args(options):
+	getopt_string = ""
+	longopt_list = []
+	for k in options:
+		if all_opt.has_key(k) and all_opt[k]["getopt"] != ":":
+			# getopt == ":" means that opt is without short getopt, but has value
+			getopt_string += all_opt[k]["getopt"]
+		elif not all_opt.has_key(k):
+			fail_usage("Parse error: unknown option '"+k+"'")
+
+		if all_opt.has_key(k) and all_opt[k].has_key("longopt"):
+			if all_opt[k]["getopt"].endswith(":"):
+				longopt_list.append(all_opt[k]["longopt"] + "=")
+			else:
+				longopt_list.append(all_opt[k]["longopt"])
+
+	return (getopt_string, longopt_list)
+
+def _parse_input_stdin(avail_opt):
+	opt = {}
+	name = ""
+	for line in sys.stdin.readlines():
+		line = line.strip()
+		if (line.startswith("#")) or (len(line) == 0):
+			continue
+
+		(name, value) = (line + "=").split("=", 1)
+		value = value[:-1]
+
+		if avail_opt.count(name) == 0 and name in ["nodename"]:
+			continue
+		elif avail_opt.count(name) == 0:
+			logging.warning("Parse error: Ignoring unknown option '%s'\n", line)
+			continue
+
+		if all_opt[name]["getopt"].endswith(":"):
+			opt["--"+all_opt[name]["longopt"].rstrip(":")] = value
+		elif value.lower() in ["1", "yes", "on", "true"]:
+			opt["--"+all_opt[name]["longopt"]] = "1"
+	return opt
+
+def _parse_input_cmdline(avail_opt):
+	(getopt_string, longopt_list) = _prepare_getopt_args(avail_opt)
+
+	try:
+		entered_opt = getopt.gnu_getopt(sys.argv[1:], getopt_string, longopt_list)[0]
+	except getopt.GetoptError, error:
+		fail_usage("Parse error: " + error.msg)
+
+	## Transform short getopt to long one which are used in fencing agents
+	#####
+	opt = {}
+	for o in dict(entered_opt).keys():
+		if o.startswith("--"):
+			for x in all_opt.keys():
+				if all_opt[x].has_key("longopt") and "--" + all_opt[x]["longopt"] == o:
+					opt["--" + all_opt[x]["longopt"]] = dict(entered_opt)[o]
+		else:
+			for x in all_opt.keys():
+				if x in avail_opt and all_opt[x].has_key("getopt") and all_opt[x].has_key("longopt") and \
+					("-" + all_opt[x]["getopt"] == o or "-" + all_opt[x]["getopt"].rstrip(":") == o):
+					opt["--" + all_opt[x]["longopt"]] = dict(entered_opt)[o]
+			opt[o] = dict(entered_opt)[o]
+	return opt
