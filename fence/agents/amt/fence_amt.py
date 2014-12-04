@@ -94,6 +94,8 @@ def main():
 
 	define_new_opts()
 
+	all_opt["ipport"]["default"] = "16994"
+
 	options = check_input(device_opt, process_input(device_opt))
 
 	docs = {}

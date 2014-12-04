@@ -32,7 +32,7 @@ Agent basically works by connecting to hidden page and pass appropriate argument
 	</parameter>
 	<parameter name="ipport" unique="0" required="0">
 		<getopt mixed="-u, --ipport=[port]" />
-		<content type="string" default="23"  />
+		<content type="string" default="80"  />
 		<shortdesc lang="en">TCP/UDP port to use for connection with device</shortdesc>
 	</parameter>
 	<parameter name="login" unique="0" required="0">
