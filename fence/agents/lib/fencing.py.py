@@ -1070,49 +1070,41 @@ def _update_metadata(options):
 	else:
 		all_opt["login"]["required"] = "0"
 
+	available_actions = ["status", "reboot", "off", "on"]
 	if device_opt.count("fabric_fencing"):
+		available_actions.remove("reboot")
 		all_opt["action"]["default"] = "off"
-		if device_opt.count("no_status"):
-			all_opt["action"]["help"] = "-o, --action=[action]          Action: off (default) or on"
-		else:
-			all_opt["action"]["help"] = "-o, --action=[action]          Action: status, off (default) or on"
-	else:
-		if device_opt.count("no_status"):
-			all_opt["action"]["help"] = "-o, --action=[action]          Action: reboot (default), off or on"
+	if device_opt.count("no_status"):
+		available_actions.remove("status")
+	actions_with_default = \
+			[x if not x == all_opt["action"]["default"] else x + " (default)" for x in available_actions]
+	all_opt["action"]["help"] = \
+			"-o, --action=[action]          Action: %s" % (_join2(actions_with_default, last_separator=" or "))
 
 	if device_opt.count("ipport"):
-		if options.has_key("--ipport"):
-			all_opt["ipport"]["help"] = "-u, --ipport=[port]            " + \
-					"TCP/UDP port to use (default " + options["--ipport"] +")"
-		elif all_opt.has_key("ipport") and all_opt["ipport"].has_key("default"):
-			all_opt["ipport"]["help"] = "-u, --ipport=[port]            " + \
-					"TCP/UDP port to use (default " + all_opt["ipport"]["default"] +")"
-		elif device_opt.count("snmp_version"):
-			all_opt["ipport"]["default"] = "161"
-			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 161)"
-		elif options.has_key("--ssh") or \
-				(all_opt["secure"].has_key("default") and all_opt["secure"]["default"] == '1'):
-			all_opt["ipport"]["default"] = 22
-			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 22)"
-		elif options.has_key("--ssl") or options.has_key("--ssl-secure") or \
-				options.has_key("--ssl-insecure") or \
-				(all_opt["ssl"].has_key("default") and all_opt["ssl"]["default"] == '1'):
-			all_opt["ipport"]["default"] = 443
-			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 443)"
-		elif device_opt.count("web"):
-			all_opt["ipport"]["default"] = 80
-			if device_opt.count("ssl") == 0:
-				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 80)"
-			else:
-				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use\n\
-                                        (default 80, 443 if --ssl option is used)"
+		default_value = None
+		default_string = None
+
+		if all_opt["ipport"].has_key("default"):
+			default_value = all_opt["ipport"]["default"]
+		elif device_opt.count("web") and device_opt.count("ssl"):
+			default_value = "80"
+			default_string = "(default 80, 443 if --ssl option is used)"
+		elif device_opt.count("telnet") and device_opt.count("secure"):
+			default_value = "23"
+			default_string = "(default 23, 22 if --ssh option is used)"
 		else:
-			all_opt["ipport"]["default"] = 23
-			if device_opt.count("secure") == 0:
-				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default 23)"
-			else:
-				all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use\n\
-                                        (default 23, 22 if --ssh option is used)"
+			tcp_ports = {"snmp_version" : "161", "secure" : "22", "telnet" : "23", "web" : "80", "ssl" : "443"}
+			# all cases where next command returns multiple results are covered by previous blocks
+			protocol = [x for x in ["snmp_version", "secure", "ssl", "web", "telnet"] if device_opt.count(x)][0]
+			default_value = tcp_ports[protocol]
+
+		all_opt["ipport"]["default"] = default_value
+		if default_string is None:
+			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default %s)" % \
+					(default_value)
+		else:
+			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use\n" + " "*40 + default_string
 
 def _set_default_values(options):
 	for opt in options["device_opt"]:
@@ -1236,3 +1228,10 @@ def _parse_input_cmdline(avail_opt):
 					opt["--" + all_opt[x]["longopt"]] = dict(entered_opt)[o]
 			opt[o] = dict(entered_opt)[o]
 	return opt
+
+# for ["John", "Mary", "Eli"] returns "John, Mary and Eli"
+def _join2(words, normal_separator=", ", last_separator=" and "):
+	if len(words) <= 1:
+		return "".join(words)
+	else:
+		return last_separator.join([normal_separator.join(words[:-1]), words[-1]])
