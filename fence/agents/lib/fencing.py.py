@@ -507,7 +507,7 @@ def usage(avail_opt):
 		if len(value["help"]) != 0:
 			print "   " + value["help"]
 
-def metadata(avail_opt, options, docs):
+def metadata(avail_opt, docs):
 	# avail_opt has to be unique, if there are duplicities then they should be removed
 	sorted_list = [(key, all_opt[key]) for key in list(set(avail_opt))]
 	sorted_list.sort(lambda x, y: cmp(x[0], y[0]))
@@ -519,8 +519,7 @@ def metadata(avail_opt, options, docs):
 	for (symlink, desc) in docs.get("symlink", []):
 		print "<symlink name=\"" + symlink + "\" shortdesc=\"" + desc + "\"/>"
 	print "<longdesc>" + docs["longdesc"] + "</longdesc>"
-	if docs.has_key("vendorurl"):
-		print "<vendor-url>" + docs["vendorurl"] + "</vendor-url>"
+	print "<vendor-url>" + docs["vendorurl"] + "</vendor-url>"
 	print "<parameters>"
 	for option, _ in sorted_list:
 		if all_opt[option].has_key("shortdesc"):
@@ -528,12 +527,7 @@ def metadata(avail_opt, options, docs):
 
 			default = ""
 			if all_opt[option].has_key("default"):
-				default = str(all_opt[option]["default"])
-			elif options.has_key("--" + all_opt[option]["longopt"]):
-				default = "true"
-
-			if default:
-				default = "default=\"" + _encode_html_entities(default) + "\" "
+				default = "default=\"" + _encode_html_entities(str(all_opt[option]["default"])) + "\" "
 
 			mixed = all_opt[option]["help"]
 			## split it between option and help text
@@ -713,7 +707,7 @@ def show_docs(options, docs=None):
 		sys.exit(0)
 
 	if options.get("--action", "") == "metadata":
-		metadata(device_opt, options, docs)
+		metadata(device_opt, docs)
 		sys.exit(0)
 
 	if options.has_key("--version"):

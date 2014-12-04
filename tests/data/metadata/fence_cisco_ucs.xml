@@ -70,7 +70,7 @@
 	</parameter>
 	<parameter name="suborg" unique="0" required="0">
 		<getopt mixed="--suborg=[path]" />
-		<content type="string"  />
+		<content type="string" default=""  />
 		<shortdesc lang="en">Additional path needed to access suborganization</shortdesc>
 	</parameter>
 	<parameter name="verbose" unique="0" required="0">

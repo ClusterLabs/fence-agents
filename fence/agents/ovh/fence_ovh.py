@@ -32,7 +32,6 @@ def define_new_opts():
 		"help" : "-Z, --email=[email]          email for reboot message: admin@domain.com",
 		"required" : "1",
 		"shortdesc" : "Reboot email",
-		"default" : "",
 		"order" : 1}
 
 def netboot_reboot(conn, options, mode):
