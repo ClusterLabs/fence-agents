@@ -534,8 +534,7 @@ def metadata(avail_opt, docs):
 			res = re.compile(r"^(.*?--\S+)\s+", re.IGNORECASE | re.S).search(mixed)
 			if None != res:
 				mixed = res.group(1)
-			# @todo: replace with _encode_html_entities but update XML metadata in regression tests
-			mixed = mixed.replace("<", "&lt;").replace(">", "&gt;")
+			mixed = _encode_html_entities(mixed)
 			print "\t\t<getopt mixed=\"" + mixed + "\" />"
 
 			if all_opt[option].has_key("choices"):
@@ -736,7 +735,7 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 		elif (options["--action"] == "list") or \
 				((options["--action"] == "monitor") and 1 == options["device_opt"].count("port")):
 			outlets = get_outlet_list(connection, options)
-			## keys can be numbers (port numbers) or strings (names of VM)
+			## keys can be numbers (port numbers) or strings (names of VM, UUID)
 			for outlet_id in outlets.keys():
 				(alias, status) = outlets[outlet_id]
 				if options["--action"] != "monitor":
