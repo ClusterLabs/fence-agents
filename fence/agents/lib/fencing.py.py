@@ -1206,21 +1206,14 @@ def _parse_input_cmdline(avail_opt):
 	except getopt.GetoptError, error:
 		fail_usage("Parse error: " + error.msg)
 
-	## Transform short getopt to long one which are used in fencing agents
-	#####
-	opt = {}
-	for o in dict(entered_opt).keys():
-		if o.startswith("--"):
-			for x in all_opt.keys():
-				if all_opt[x].has_key("longopt") and "--" + all_opt[x]["longopt"] == o:
-					opt["--" + all_opt[x]["longopt"]] = dict(entered_opt)[o]
-		else:
-			for x in all_opt.keys():
-				if x in avail_opt and all_opt[x].has_key("getopt") and all_opt[x].has_key("longopt") and \
-					("-" + all_opt[x]["getopt"] == o or "-" + all_opt[x]["getopt"].rstrip(":") == o):
-					opt["--" + all_opt[x]["longopt"]] = dict(entered_opt)[o]
-			opt[o] = dict(entered_opt)[o]
-	return opt
+	# Short and long getopt names are changed to consistent "--" + long name (e.g. --username)
+	long_opts = {}
+	for arg_name in dict(entered_opt).keys():
+		all_key = [key for (key, value) in all_opt.items() \
+			if "--" + value.get("longopt", "") == arg_name or "-" + value.get("getopt", "").rstrip(":") == arg_name][0]
+		long_opts["--" + all_opt[all_key]["longopt"]] = dict(entered_opt)[arg_name]
+
+	return long_opts
 
 # for ["John", "Mary", "Eli"] returns "John, Mary and Eli"
 def _join2(words, normal_separator=", ", last_separator=" and "):
