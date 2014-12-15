@@ -1141,17 +1141,9 @@ def _validate_input(options):
 			options.has_key("--method") and options["--method"] == "cycle":
 		fail_usage("Failed: Cannot use --method cycle for more than 1 plug")
 
-	for opt in device_opt:
-		if all_opt[opt].has_key("choices"):
-			longopt = "--" + all_opt[opt]["longopt"]
-			possible_values_upper = [y.upper() for y in all_opt[opt]["choices"]]
-			if options.has_key(longopt):
-				options[longopt] = options[longopt].upper()
-				if not options["--" + all_opt[opt]["longopt"]] in possible_values_upper:
-					fail_usage("Failed: You have to enter a valid choice " + \
-							"for %s from the valid values: %s" % \
-							("--" + all_opt[opt]["longopt"], str(all_opt[opt]["choices"])))
-
+	for failed_opt in _get_opts_with_invalid_choices(options):
+		fail_usage("Failed: You have to enter a valid choice for %s from the valid values: %s" % \
+			("--" + all_opt[failed_opt]["longopt"], str(all_opt[failed_opt]["choices"])))
 
 def _encode_html_entities(text):
 	return text.replace("&", "&amp;").replace('"', "&quot;").replace('<', "&lt;"). \
@@ -1221,3 +1213,17 @@ def _join2(words, normal_separator=", ", last_separator=" and "):
 		return "".join(words)
 	else:
 		return last_separator.join([normal_separator.join(words[:-1]), words[-1]])
+
+def _get_opts_with_invalid_choices(options):
+	options_failed = []
+	device_opt = options["device_opt"]
+
+	for opt in device_opt:
+		if all_opt[opt].has_key("choices"):
+			longopt = "--" + all_opt[opt]["longopt"]
+			possible_values_upper = [y.upper() for y in all_opt[opt]["choices"]]
+			if options.has_key(longopt):
+				options[longopt] = options[longopt].upper()
+				if not options["--" + all_opt[opt]["longopt"]] in possible_values_upper:
+					options_failed.append(opt)
+	return options_failed
