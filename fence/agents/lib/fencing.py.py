@@ -7,6 +7,7 @@ import subprocess
 import threading
 import shlex
 import exceptions
+import socket
 import __main__
 
 ## do not add code here.
@@ -958,6 +959,9 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list=None, 
 	except pexpect.TIMEOUT:
 		fail(EC_TIMED_OUT)
 	except pycurl.error, ex:
+		logging.error("%s\n", str(ex))
+		fail(EC_TIMED_OUT)
+	except socket.timeout, ex:
 		logging.error("%s\n", str(ex))
 		fail(EC_TIMED_OUT)
 
