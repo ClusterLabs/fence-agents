@@ -181,7 +181,7 @@ be removed from the device(s).",
 		"order": 1
 	}
 	all_opt["mpathpersist_path"] = {
-		"getopt" : "X:",
+		"getopt" : ":",
 		"longopt" : "mpathpersist-path",
 		"help" : "--mpathpersist-path=[path]     Path to mpathpersist binary",
 		"required" : "0",
@@ -190,7 +190,7 @@ be removed from the device(s).",
 		"order": 200
 	}
 	all_opt["store_path"] = {
-		"getopt" : "X:",
+		"getopt" : ":",
 		"longopt" : "store-path",
 		"help" : "--store-path=[path]            Path to directory containing cached keys",
 		"required" : "0",
