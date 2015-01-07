@@ -1196,6 +1196,7 @@ def _parse_input_stdin(avail_opt):
 
 def _parse_input_cmdline(avail_opt):
 	filtered_opts = {}
+	_verify_unique_getopt(avail_opt)
 	(getopt_string, longopt_list) = _prepare_getopt_args(avail_opt)
 
 	try:
@@ -1235,3 +1236,13 @@ def _get_opts_with_invalid_choices(options):
 				if not options["--" + all_opt[opt]["longopt"]] in possible_values_upper:
 					options_failed.append(opt)
 	return options_failed
+
+def _verify_unique_getopt(avail_opt):
+	used_getopt = set()
+
+	for opt in avail_opt:
+		getopt_value = all_opt[opt].get("getopt", "").rstrip(":")
+		if getopt_value and getopt_value in used_getopt:
+			fail_usage("Short getopt for %s (-%s) is not unique" % (opt, getopt_value))
+		else:
+			used_getopt.add(getopt_value)
