@@ -1195,6 +1195,7 @@ def _parse_input_stdin(avail_opt):
 	return opt
 
 def _parse_input_cmdline(avail_opt):
+	filtered_opts = {}
 	(getopt_string, longopt_list) = _prepare_getopt_args(avail_opt)
 
 	try:
@@ -1202,12 +1203,15 @@ def _parse_input_cmdline(avail_opt):
 	except getopt.GetoptError, error:
 		fail_usage("Parse error: " + error.msg)
 
+	for opt in avail_opt:
+		filtered_opts.update({opt : all_opt[opt]})
+
 	# Short and long getopt names are changed to consistent "--" + long name (e.g. --username)
 	long_opts = {}
 	for arg_name in dict(entered_opt).keys():
-		all_key = [key for (key, value) in all_opt.items() \
+		all_key = [key for (key, value) in filtered_opts.items() \
 			if "--" + value.get("longopt", "") == arg_name or "-" + value.get("getopt", "").rstrip(":") == arg_name][0]
-		long_opts["--" + all_opt[all_key]["longopt"]] = dict(entered_opt)[arg_name]
+		long_opts["--" + filtered_opts[all_key]["longopt"]] = dict(entered_opt)[arg_name]
 
 	return long_opts
 
