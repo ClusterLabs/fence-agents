@@ -1096,7 +1096,6 @@ def _update_metadata(options):
 			protocol = [x for x in ["snmp_version", "secure", "ssl", "web", "telnet"] if device_opt.count(x)][0]
 			default_value = tcp_ports[protocol]
 
-		all_opt["ipport"]["default"] = default_value
 		if default_string is None:
 			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use (default %s)" % \
 					(default_value)
@@ -1104,8 +1103,25 @@ def _update_metadata(options):
 			all_opt["ipport"]["help"] = "-u, --ipport=[port]            TCP/UDP port to use\n" + " "*40 + default_string
 
 def _set_default_values(options):
+	if "ipport" in options["device_opt"]:
+		if not "--ipport" in options:
+			if "default" in all_opt["ipport"]:
+				options["--ipport"] = all_opt["ipport"]["default"]
+			elif "snmp_version" in options["device_opt"]:
+				options["--ipport"] = "161"
+			elif "--ssh" in options or all_opt["secure"].get("default", "0") == "1":
+				options["--ipport"] = "22"
+			elif "--ssl" in options or all_opt["ssl"].get("default", "0") == "1":
+				options["--ipport"] = "443"
+			elif "--ssl-secure" in options or all_opt["ssl_secure"].get("default", "0") == "1":
+				options["--ipport"] = "443"
+			elif "web" in options["device_opt"]:
+				options["--ipport"] = "80"
+			elif "telnet" in options["device_opt"]:
+				options["--ipport"] = "23"
+
 	for opt in options["device_opt"]:
-		if all_opt[opt].has_key("default"):
+		if all_opt[opt].has_key("default") and not opt == "ipport":
 			getopt_long = "--" + all_opt[opt]["longopt"]
 			if not options.has_key(getopt_long):
 				options[getopt_long] = all_opt[opt]["default"]
