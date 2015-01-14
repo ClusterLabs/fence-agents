@@ -1091,9 +1091,9 @@ def _update_metadata(options):
 			default_value = "23"
 			default_string = "(default 23, 22 if --ssh option is used)"
 		else:
-			tcp_ports = {"snmp_version" : "161", "secure" : "22", "telnet" : "23", "web" : "80", "ssl" : "443"}
+			tcp_ports = {"community" : "161", "secure" : "22", "telnet" : "23", "web" : "80", "ssl" : "443"}
 			# all cases where next command returns multiple results are covered by previous blocks
-			protocol = [x for x in ["snmp_version", "secure", "ssl", "web", "telnet"] if device_opt.count(x)][0]
+			protocol = [x for x in ["community", "secure", "ssl", "web", "telnet"] if device_opt.count(x)][0]
 			default_value = tcp_ports[protocol]
 
 		if default_string is None:
@@ -1107,13 +1107,15 @@ def _set_default_values(options):
 		if not "--ipport" in options:
 			if "default" in all_opt["ipport"]:
 				options["--ipport"] = all_opt["ipport"]["default"]
-			elif "snmp_version" in options["device_opt"]:
+			elif "community" in options["device_opt"]:
 				options["--ipport"] = "161"
 			elif "--ssh" in options or all_opt["secure"].get("default", "0") == "1":
 				options["--ipport"] = "22"
 			elif "--ssl" in options or all_opt["ssl"].get("default", "0") == "1":
 				options["--ipport"] = "443"
 			elif "--ssl-secure" in options or all_opt["ssl_secure"].get("default", "0") == "1":
+				options["--ipport"] = "443"
+			elif "--ssl-insecure" in options or all_opt["ssl_insecure"].get("default", "0") == "1":
 				options["--ipport"] = "443"
 			elif "web" in options["device_opt"]:
 				options["--ipport"] = "80"
