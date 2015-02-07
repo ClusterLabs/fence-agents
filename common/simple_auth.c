@@ -333,7 +333,7 @@ sha_response(int fd, fence_auth_type_t auth, void *key,
 	HASH_Destroy(h);
 
 	if (write(fd, hash, sizeof(hash)) < sizeof(hash)) {
-		perror("read");
+		perror("write");
 		return 0;
 	}
 
