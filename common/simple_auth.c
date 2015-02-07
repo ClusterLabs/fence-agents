@@ -260,8 +260,14 @@ sha_challenge(int fd, fence_auth_type_t auth, void *key,
 		return 0;
 	}
 
-	if (read(fd, response, sizeof(response)) < sizeof(response)) {
+	ret = read(fd, response, sizeof(response));
+	if (ret < 0) {
 		perror("read");
+		return 0;
+	} else if (ret < sizeof(response)) {
+		fprintf(stderr,
+			"read data from socket is too short(actual: %d, expected: %lu)\n",
+			ret, sizeof(response));
 		return 0;
 	}
 
@@ -291,6 +297,7 @@ sha_response(int fd, fence_auth_type_t auth, void *key,
 	HASHContext *h;
 	HASH_HashType ht;
 	unsigned int rlen;
+	int ret;
 
 	FD_ZERO(&rfds);
 	FD_SET(fd, &rfds);
@@ -332,8 +339,15 @@ sha_response(int fd, fence_auth_type_t auth, void *key,
 	HASH_End(h, hash, &rlen, sizeof(hash));
 	HASH_Destroy(h);
 
-	if (write(fd, hash, sizeof(hash)) < sizeof(hash)) {
+	ret = write(fd, hash, sizeof(hash));
+	if (ret < 0) {
 		perror("write");
+		return 0;
+	} else if (ret < sizeof(hash)) {
+		fprintf(stderr,
+			"Only part of hash is written(actual: %d, expected: %lu)\n",
+			ret,
+			sizeof(hash));
 		return 0;
 	}
 
