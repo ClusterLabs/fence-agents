@@ -1122,6 +1122,9 @@ def _set_default_values(options):
 			elif "telnet" in options["device_opt"]:
 				options["--ipport"] = "23"
 
+			if "--ipport" in options:
+				all_opt["ipport"]["default"] = options["--ipport"]
+
 	for opt in options["device_opt"]:
 		if all_opt[opt].has_key("default") and not opt == "ipport":
 			getopt_long = "--" + all_opt[opt]["longopt"]
