@@ -927,8 +927,9 @@ def _open_ssl_connection(options):
 	if options.has_key("--notls"):
 		gnutls_opts = "--priority \"NORMAL:-VERS-TLS1.2:-VERS-TLS1.1:-VERS-TLS1.0:+VERS-SSL3.0\""
 
-	# --ssl is same as the --ssl-secure; it means we want to verify certificate in these cases
-	if options.has_key("--ssl-insecure"):
+	# --ssl is same as the --ssl-insecure; it means we DO NOT want to verify certificate in these cases
+	# this is unique to RHEL6 environment
+	if options.has_key("--ssl-insecure") or options.has_key("--ssl"):
 		ssl_opts = "--insecure"
 
 	command = '%s %s %s --crlf -p %s %s' % \

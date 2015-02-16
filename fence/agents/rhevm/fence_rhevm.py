@@ -98,11 +98,11 @@ def send_command(opt, command, method="GET"):
 			conn.setopt(pycurl.COOKIEFILE, "")
 
 	conn.setopt(pycurl.TIMEOUT, int(opt["--shell-timeout"]))
-	if opt.has_key("--ssl") or opt.has_key("--ssl-secure"):
+	if opt.has_key("--ssl-secure"):
 		conn.setopt(pycurl.SSL_VERIFYPEER, 1)
 		conn.setopt(pycurl.SSL_VERIFYHOST, 2)
 
-	if opt.has_key("--ssl-insecure"):
+	if opt.has_key("--ssl") or opt.has_key("--ssl-insecure"):
 		conn.setopt(pycurl.SSL_VERIFYPEER, 0)
 		conn.setopt(pycurl.SSL_VERIFYHOST, 0)
 

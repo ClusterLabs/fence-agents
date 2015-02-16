@@ -41,10 +41,10 @@ def soap_login(options):
 	run_delay(options)
 
 	if options.has_key("--ssl") or options.has_key("--ssl-secure") or options.has_key("--ssl-insecure"):
-		if options.has_key("--ssl-insecure"):
-			verify = False
-		else:
+		if options.has_key("--ssl-secure"):
 			verify = True
+		else:
+			verify = False
 		url = "https://"
 	else:
 		verify = False
