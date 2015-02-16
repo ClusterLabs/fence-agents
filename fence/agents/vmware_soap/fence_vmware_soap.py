@@ -215,7 +215,7 @@ def logout():
 def main():
 	global options_global
 	global conn_global
-	device_opt = ["ipaddr", "login", "passwd", "web", "ssl", "notls", "port"]
+	device_opt = ["ipaddr", "login", "passwd", "web", "ssl", "notls", "port", "uuid"]
 
 	atexit.register(atexit_handler)
 	atexit.register(logout)

@@ -371,6 +371,13 @@ all_opt = {
 		"required" : "1",
 		"shortdesc" : "The URL of the XenServer host.",
 		"order" : 1},
+	"uuid" : {
+		"getopt" : "U:",
+		"longopt" : "uuid",
+		"help" : "-U, --uuid                     UUID of the VM to fence",
+		"required" : "0",
+		"shortdesc" : "The UUID of the virtual machine to fence.",
+		"order" : 1},
 	"sudo" : {
 		"getopt" : "",
 		"longopt" : "use-sudo",
@@ -631,7 +638,20 @@ def check_input(device_opt, opt):
 	if options["--action"] == "disable":
 		options["--action"] = "off"
 
+	# UUID is now only alias for --plug; because we can detect it automatically
+	if options.has_key("--uuid"):
+		options["--plug"] == options["--uuid"]
+		del options["--uuid"]
+
 	_validate_input(options)
+
+	## automatic detection and set of valid UUID from --plug
+	try:
+		options["--uuid"] = str(uuid.UUID(options["--plug"]))
+	except ValueError:
+		pass
+	except KeyError:
+		pass
 
 	if options.has_key("--debug-file"):
 		try:

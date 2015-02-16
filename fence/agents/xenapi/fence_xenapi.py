@@ -199,7 +199,7 @@ def return_vm_reference(session, options):
 
 def main():
 
-	device_opt = ["login", "passwd", "port", "no_login", "no_password", "session_url", "web"]
+	device_opt = ["login", "passwd", "port", "no_login", "no_password", "session_url", "web", "uuid"]
 
 	atexit.register(atexit_handler)
 
