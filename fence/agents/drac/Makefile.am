@@ -2,7 +2,7 @@ MAINTAINERCLEANFILES	= Makefile.in
 
 TARGET			= fence_drac
 
-SRC			= $(TARGET).py
+SRC			= $(TARGET).pl
 
 EXTRA_DIST		= $(SRC)
 
@@ -13,5 +13,7 @@ man_MANS		= $(TARGET).8
 FENCE_TEST_ARGS         = -l test -p test -a test
 
 include $(top_srcdir)/make/fencebuild.mk
-include $(top_srcdir)/make/fenceman.mk
-include $(top_srcdir)/make/agentpycheck.mk
+include $(top_srcdir)/make/fencemanperl.mk
+
+clean-local: clean-man
+	rm -f $(TARGET)
