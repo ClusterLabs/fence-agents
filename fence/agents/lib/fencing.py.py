@@ -201,6 +201,7 @@ all_opt = {
 				"Disable TLS negotiation and force SSL3.0.\n"
 				"                                        "
 				"This should only be used for devices that do not support TLS1.0 and up.",
+		"default" : "1",
 		"required" : "0",
 		"shortdesc" : "Disable TLS negotiation",
 		"order" : 1},
