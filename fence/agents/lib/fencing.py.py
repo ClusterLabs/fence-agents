@@ -1244,6 +1244,16 @@ def _parse_input_stdin(avail_opt):
 		(name, value) = (line + "=").split("=", 1)
 		value = value[:-1]
 
+		# Backward compatibility (RHEL6 only)
+		if name == "blade":
+			name = "port"
+		elif name == "option":
+			name = "action"
+		elif name == "fm":
+			name = "port"
+		elif name == "hostname":
+			name = "ipaddr"
+
 		if avail_opt.count(name) == 0 and name in ["nodename"]:
 			continue
 		elif avail_opt.count(name) == 0:
