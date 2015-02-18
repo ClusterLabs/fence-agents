@@ -8,6 +8,7 @@ import threading
 import shlex
 import exceptions
 import socket
+from sets import Set
 import __main__
 
 ## do not add code here.
@@ -314,6 +315,13 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "Forces agent to use IPv6 addresses only",
 		"order" : 1},
+	"udpport" : {
+		"getopt" : "u:",
+		"longopt" : "udpport",
+		"help" : "-u, --udpport                  UDP/TCP port to use",
+		"required" : "0",
+		"shortdesc" : "UDP/TCP port to use for connection with device",
+		"order" : 1},
 	"separator" : {
 		"getopt" : "C:",
 		"longopt" : "separator",
@@ -443,13 +451,14 @@ DEPENDENCY_OPT = {
 			"power_timeout", "shell_timeout", "login_timeout", "power_wait", "retry_on", "delay"],
 		"passwd" : ["passwd_script"],
 		"sudo" : ["sudo_path"],
-		"secure" : ["identity_file", "ssh_options", "ssh_path"],
-		"telnet" : ["telnet_path"],
-		"ipaddr" : ["ipport", "inet4_only", "inet6_only"],
+		"secure" : ["identity_file", "ssh_options", "ssh_path", "ipport"],
+		"telnet" : ["telnet_path", "ipport"],
+		"ipaddr" : ["inet4_only", "inet6_only"],
 		"port" : ["separator"],
+		"web" : ["ipport"],
 		"ssl" : ["ssl_secure", "ssl_insecure", "gnutlscli_path"],
 		"community" : ["snmp_auth_prot", "snmp_sec_level", "snmp_priv_prot", \
-			"snmp_priv_passwd", "snmp_priv_passwd_script"]
+			"snmp_priv_passwd", "snmp_priv_passwd_script", "udpport"]
 	}
 
 class fspawn(pexpect.spawn):
@@ -485,6 +494,8 @@ def _add_dependency_options(options):
 	for opt in options + ["default"]:
 		if DEPENDENCY_OPT.has_key(opt):
 			added_opt.extend([y for y in DEPENDENCY_OPT[opt] if options.count(y) == 0])
+	# It is possible to add same option several times e.g. telnet/ssh adds ipport
+	added_opt = list(Set(added_opt))
 	return added_opt
 
 def fail_usage(message=""):
@@ -604,6 +615,9 @@ def check_input(device_opt, opt):
 
 	options = dict(opt)
 	options["device_opt"] = device_opt
+
+	if "--udpport" in options:
+		options["--ipport"] = options["--udpport"]
 
 	_update_metadata(options)
 	options = _set_default_values(options)
@@ -1105,7 +1119,7 @@ def _update_metadata(options):
 	all_opt["action"]["help"] = \
 			"-o, --action=[action]          Action: %s" % (_join2(actions_with_default, last_separator=" or "))
 
-	if device_opt.count("ipport"):
+	if device_opt.count("ipport") or device_opt.count("udpport"):
 		default_value = None
 		default_string = None
 
