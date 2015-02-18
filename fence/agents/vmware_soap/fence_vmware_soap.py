@@ -2,7 +2,7 @@
 
 import sys
 import shutil, tempfile, suds
-import logging, requests
+import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 
@@ -58,7 +58,7 @@ def soap_login(options):
 
 	try:
 		headers = {"Content-Type" : "text/xml;charset=UTF-8", "SOAPAction" : ""}
-		conn = Client(url + "/vimService.wsdl", location=url, transport=RequestsTransport(verify=verify), headers=headers)
+		conn = Client(url + "/vimService.wsdl", location=url, headers=headers)
 
 		mo_ServiceInstance = Property('ServiceInstance')
 		mo_ServiceInstance._type = 'ServiceInstance'
