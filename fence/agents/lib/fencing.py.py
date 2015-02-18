@@ -8,7 +8,6 @@ import threading
 import shlex
 import exceptions
 import socket
-from sets import Set
 import __main__
 
 ## do not add code here.
@@ -501,7 +500,7 @@ def _add_dependency_options(options):
 		if DEPENDENCY_OPT.has_key(opt):
 			added_opt.extend([y for y in DEPENDENCY_OPT[opt] if options.count(y) == 0])
 	# It is possible to add same option several times e.g. telnet/ssh adds ipport
-	added_opt = list(Set(added_opt))
+	added_opt = list(set(added_opt))
 	return added_opt
 
 def fail_usage(message=""):
