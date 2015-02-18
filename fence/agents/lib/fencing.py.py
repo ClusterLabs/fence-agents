@@ -1253,6 +1253,8 @@ def _parse_input_stdin(avail_opt):
 			name = "port"
 		elif name == "hostname":
 			name = "ipaddr"
+		elif name == "modulename":
+			name = "module_name"
 
 		if avail_opt.count(name) == 0 and name in ["nodename"]:
 			continue

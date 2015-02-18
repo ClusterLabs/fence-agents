@@ -101,10 +101,17 @@ def define_new_opts():
 		"shortdesc" : "Force DRAC version to use (DRAC 5, DRAC CMC, DRAC MC)",
 		"choices" : ["DRAC CMC", "DRAC MC", "DRAC 5"],
 		"order" : 1}
+	all_opt["module_name"] = {
+		"getopt" : "m:",
+		"longopt" : "module-name",
+		"help" : "-m, --module-name=<module>     DRAC/MC module name",
+		"required" : "0",
+		"shortdesc" : "DRAC/MC module name",
+		"order" : 1}
 
 def main():
 	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", \
-			"drac_version", "port", "no_port", "telnet"]
+			"drac_version", "module_name", "port", "no_port", "telnet"]
 
 	atexit.register(atexit_handler)
 
@@ -113,6 +120,9 @@ def main():
 	all_opt["cmd_prompt"]["default"] = [r"\$", r"DRAC\/MC:"]
 
 	options = check_input(device_opt, process_input(device_opt))
+
+	if "--module-name" in options:
+		options["--plug"] = options["--module-name"]
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for Dell DRAC CMC/5"
