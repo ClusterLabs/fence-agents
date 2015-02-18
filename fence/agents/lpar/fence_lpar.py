@@ -120,10 +120,17 @@ def define_new_opts():
 		"default" : "4",
 		"choices" : ["3", "4"],
 		"order" : 1}
+	all_opt["partition"] = {
+		"getopt" : ":",
+		"longopt" : "partition",
+		"help" : "--partition <id>               Name of the partition",
+		"required" : "0",
+		"shortdesc" : "Partition name",
+		"order" : 1 }
 
 def main():
 	device_opt = ["ipaddr", "login", "passwd", "secure", "cmd_prompt", \
-	                "port", "managed", "hmc_version"]
+	                "port", "partition", "managed", "hmc_version"]
 
 	atexit.register(atexit_handler)
 
@@ -133,7 +140,10 @@ def main():
 	all_opt["secure"]["default"] = "1"
 	all_opt["cmd_prompt"]["default"] = [r":~>", r"]\$", r"\$ "]
 
-	options = check_input(device_opt, process_input(device_opt))
+	opt = process_input(device_opt)
+	if opt.has_key("--partition"):
+		opt["--plug"] = opt["--partition"]
+	options = check_input(device_opt, opt)
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for IBM LPAR"
