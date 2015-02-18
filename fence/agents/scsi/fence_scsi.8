@@ -1,0 +1,119 @@
+.TH fence_scsi 8
+
+.SH NAME
+fence_scsi - I/O fencing agent for SCSI persistent reservations
+
+.SH SYNOPSIS
+.B
+fence_scsi
+[\fIOPTION\fR]...
+
+.SH DESCRIPTION
+fence_scsi is an I/O fencing agent that uses SCSI-3 persistent
+reservations to control access to shared storage devices. These
+devices must support SCSI-3 persistent reservations (SPC-3 or greater)
+as well as the "preempt-and-abort" subcommand.
+
+The fence_scsi agent works by having each node in the cluster register
+a unique key with the SCSI devive(s). Once registered, a single node
+will become the reservation holder by creating a "write exclusive,
+registrants only" reservation on the device(s). The result is that
+only registered nodes may write to the device(s). When a node failure
+occurs, the fence_scsi agent will remove the key belonging to the
+failed node from the device(s). The failed node will no longer be able
+to write to the device(s). A manual reboot is required. In the cluster
+environment unfence action should be configured also.
+
+Keys are either be specified manually (see -k option) or generated
+automatically (see -n option). Automatic key generation requires that
+cman be running. Keys will then be generated using the cluster ID and
+node ID such that each node has a unique key that can be determined by
+any other node in the cluster.
+
+Devices can either be specified manually (see -d option) or discovered
+automatically. Multiple devices can be specified manually by using a
+comma-separated list. If no devices are specified, the fence_scsi
+agent will attempt to discover devices by looking for cluster volumes
+and extracting the underlying devices. Devices may be device-mapper
+multipath devices or raw devices. If using a device-mapper multipath
+device, the fence_scsi agent will find the underlying devices (paths)
+and created registrations for each path.
+
+.SH OPTIONS
+.TP
+\fB-o\fP \fIaction\fR
+Fencing action. This value can be "on", "off", "status", or
+"metadata". The "on", "off", and "status" actions require either a key
+(see -k option) or node name (see -n option). For "on", the agent will
+attempt to register with the device(s) and create a reservation if
+none exists. The "off" action will attempt to remove a node's key from
+the device(s). The "status" action will report whether or not a node's
+key is currently register with one or more of the devices. The
+"metadata" action will display the XML metadata. The default action if
+"off".
+.TP
+\fB-d\fP \fIdevices\fR
+List of devices to use for current operation. Devices can be
+comma-separated list of raw device (eg. /dev/sdc) or device-mapper
+multipath devices (eg. /dev/dm-3). Each device must support SCSI-3
+persistent reservations.
+.TP
+\fB-f\fP \fIlogfile\fR
+Log output to file.
+.TP
+\fB-n\fP \fInodename\fR
+Name of the node to be fenced. The node name is used to generate the
+key value used for the current operation. This option will be ignored
+when used with the -k option.
+.TP
+\fB-k\fP \fIkey\fR
+Key to use for the current operation. This key should be unique to a
+node. For the "on" action, the key specifies the key use to register
+the local node. For the "off" action, this key specifies the key to be
+removed from the device(s).
+.TP
+\fB-H\fP \fIdelay\fR
+Wait X seconds before fencing is started (Default Value: 0)
+
+.TP
+\fB-a\fP
+Use the APTPL flag for registrations. This option is only used for the
+"on" action.
+.TP
+\fB-h\fP
+Print out a help message describing available options, then exit.
+.TP
+\fB-v\fP
+Verbose output.
+.TP
+\fB-V\fP
+Print out a version message, then exit.
+
+.SH STDIN PARAMETERS
+.TP
+\fIagent = "param"\fR
+This option is used by fence_node(8) and is ignored by fence_scsi.
+.TP
+\fInodename = "param"\fR
+Same as -n option.
+.TP
+\fIaction = "param" \fR
+Same as -o option.
+.TP
+\fIdevices = "param"\fR
+Same as -d option.
+.TP
+\fIlogfile = "param"\fR
+Same as -f option
+.TP
+\fIkey = "param"\fR
+Same as -k option.
+.TP
+\fIdelay = "param"\fR
+Same as -H option.
+.TP
+\fIaptpl = "1"
+Enable the APTPL flag. Default is 0 (disable).
+
+.SH SEE ALSO
+fence(8), fence_node(8), sg_persist(8), vgs(8), cman_tool(8), cman(5)

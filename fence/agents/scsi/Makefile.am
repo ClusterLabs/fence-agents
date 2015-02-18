@@ -2,25 +2,23 @@ MAINTAINERCLEANFILES	= Makefile.in
 
 TARGET			= fence_scsi
 
-SRC			= $(TARGET).py
+SRC			= $(TARGET).pl
 
-EXTRA_DIST		= $(SRC) 
+EXTRA_DIST		= $(SRC) \
+			  $(TARGET)_check.pl $(TARGET)_check_hardreboot.pl
 
 scsidatadir		= $(CLUSTERDATA)
-scsidata_SCRIPTS	= fence_scsi_check
+
+scsidata_SCRIPTS	= $(TARGET)_check.pl $(TARGET)_check_hardreboot.pl
 
 sbin_SCRIPTS		= $(TARGET)
 
-man_MANS		= $(TARGET).8
-
-FENCE_TEST_ARGS         = -k 1
-
-fence_scsi_check: $(TARGET)
-	cp $^ $@
+dist_man_MANS		= $(TARGET).8
 
 include $(top_srcdir)/make/fencebuild.mk
-include $(top_srcdir)/make/fenceman.mk
-include $(top_srcdir)/make/agentpycheck.mk
 
-clean-local: clean-man
-	rm -f $(TARGET) $(SYMTARGET) fence_scsi_check
+clean-local:
+	rm -f $(TARGET)
+
+fence_scsi_check_hardreboot.pl: fence_scsi_check.pl
+	cp fence_scsi_check.pl fence_scsi_check_hardreboot.pl
