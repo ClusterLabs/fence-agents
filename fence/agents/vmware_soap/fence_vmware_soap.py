@@ -58,7 +58,7 @@ def soap_login(options):
 
 	try:
 		headers = {"Content-Type" : "text/xml;charset=UTF-8", "SOAPAction" : ""}
-		conn = Client(url + "/vimService.wsdl", location=url, headers=headers)
+		conn = Client(url + "/vimService.wsdl", location=url)
 
 		mo_ServiceInstance = Property('ServiceInstance')
 		mo_ServiceInstance._type = 'ServiceInstance'
@@ -67,8 +67,6 @@ def soap_login(options):
 		mo_SessionManager._type = 'SessionManager'
 
 		conn.service.Login(mo_SessionManager, options["--username"], options["--password"])
-	except requests.exceptions.SSLError, ex:
-		fail_usage("Server side certificate verification failed")
 	except Exception:
 		fail(EC_LOGIN_DENIED)
 
