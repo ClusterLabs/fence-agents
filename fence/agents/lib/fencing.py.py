@@ -226,6 +226,12 @@ all_opt = {
 		"required" : "0",
 		"shortdesc" : "Physical switch number on device",
 		"order" : 1},
+	"test" : {
+		"getopt" : "T",
+		"longopt" : "test",
+		"help" : "",
+		"order" : 1,
+		"obsolete" : "use -o status instead" },
 	"exec" : {
 		"getopt" : "e:",
 		"longopt" : "exec",
@@ -447,7 +453,7 @@ all_opt = {
 
 # options which are added automatically if 'key' is encountered ("default" is always added)
 DEPENDENCY_OPT = {
-		"default" : ["help", "debug", "verbose", "quiet", "version", "action", "agent", \
+		"default" : ["help", "debug", "verbose", "quiet", "version", "action", "agent", "test", \
 			"power_timeout", "shell_timeout", "login_timeout", "power_wait", "retry_on", "delay"],
 		"passwd" : ["passwd_script"],
 		"sudo" : ["sudo_path"],
@@ -603,6 +609,10 @@ def process_input(avail_opt):
 		opt = _parse_input_cmdline(avail_opt)
 	else:
 		opt = _parse_input_stdin(avail_opt)
+
+	if "--test" in opt:
+		opt["--action"] = "status"
+
 	return opt
 
 ##
