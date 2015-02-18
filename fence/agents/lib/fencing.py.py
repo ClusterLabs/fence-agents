@@ -643,7 +643,7 @@ def check_input(device_opt, opt):
 	## add logging to syslog
 	logging.getLogger().addHandler(SyslogLibHandler())
 	## add logging to stderr
-	logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stderr))
+	logging.getLogger().addHandler(logging.StreamHandler(sys.stderr))
 
 	acceptable_actions = ["on", "off", "status", "list", "monitor"]
 	if 1 == device_opt.count("fabric_fencing"):
