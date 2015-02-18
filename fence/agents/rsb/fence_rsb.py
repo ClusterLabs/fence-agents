@@ -39,13 +39,24 @@ def set_power_status(conn, options):
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 def main():
-	device_opt = ["ipaddr", "login", "passwd", "secure", "cmd_prompt", "telnet"]
+	device_opt = ["ipaddr", "telnet_port", "login", "passwd", "secure", "cmd_prompt", "telnet"]
 
 	atexit.register(atexit_handler)
 
+	all_opt["telnet_port"] = {
+		"getopt" : "n:",
+                "longopt" : "telnet_port",
+                "help" : "-n                             TCP port to use (deprecated, use -u)",
+                "required" : "0",
+                "shortdesc" : "TCP port to use for connection with device (default is 3172 for telnet)",
+                "order" : 1
+	}
 	all_opt["cmd_prompt"]["default"] = ["to quit:"]
 
 	opt = process_input(device_opt)
+	# option -n for backward compatibility (-n is normally port no)
+	if 1 == opt.has_key("--telnet_port"):
+		opt["--ipport"] = opt["--telnet_port"]
 
 	if not opt.has_key("--ssh") and not opt.has_key("--ipport"):
 		# set default value like it should be set as usually
