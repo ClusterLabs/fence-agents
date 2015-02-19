@@ -65,7 +65,7 @@ def define_new_opts():
 		"order" : 1}
 
 def main():
-	device_opt = ["ipaddr", "login", "passwd", "ssl", "notls", "ribcl"]
+	device_opt = ["ipaddr", "login", "passwd", "ssl", "notls", "ribcl", "web"]
 
 	atexit.register(atexit_handler)
 

@@ -123,7 +123,7 @@ def define_new_opts():
 def main():
 	atexit.register(atexit_handler)
 
-	device_opt = ["ipaddr", "login", "no_login", "no_password", "passwd",
+	device_opt = ["ipaddr", "ipport", "login", "no_login", "no_password", "passwd",
 		"lanplus", "auth", "cipher", "privlvl", "sudo", "ipmitool_path", "method"]
 	define_new_opts()
 
