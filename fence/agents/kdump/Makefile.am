@@ -1,7 +1,6 @@
 MAINTAINERCLEANFILES		= Makefile.in
 
-sbin_PROGRAMS			= fence_kdump
-libexec_PROGRAMS		= fence_kdump_send
+sbin_PROGRAMS			= fence_kdump fence_kdump_send
 
 noinst_HEADERS			= list.h message.h options.h version.h
 
