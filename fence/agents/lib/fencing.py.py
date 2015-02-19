@@ -668,7 +668,7 @@ def check_input(device_opt, opt):
 
 	# UUID is now only alias for --plug; because we can detect it automatically
 	if options.has_key("--uuid"):
-		options["--plug"] == options["--uuid"]
+		options["--plug"] = options["--uuid"]
 		del options["--uuid"]
 
 	_validate_input(options)
