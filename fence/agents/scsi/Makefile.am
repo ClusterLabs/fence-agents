@@ -17,6 +17,9 @@ dist_man_MANS		= $(TARGET).8
 
 include $(top_srcdir)/make/fencebuild.mk
 
+clean-man:
+	echo
+
 clean-local:
 	rm -f $(TARGET)
 
