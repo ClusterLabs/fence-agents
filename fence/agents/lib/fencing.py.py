@@ -977,7 +977,7 @@ def _open_ssl_connection(options):
 
 	# --ssl is same as the --ssl-insecure; it means we DO NOT want to verify certificate in these cases
 	# this is unique to RHEL6 environment
-	if options.has_key("--ssl-insecure") or options.has_key("--ssl"):
+	if not options.has_key("--ssl-secure")
 		ssl_opts = "--insecure"
 
 	command = '%s %s %s --crlf -p %s %s' % \
