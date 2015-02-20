@@ -250,7 +250,7 @@ do_fence_request_tcp(fence_req_t *req, mcast_info *info)
 
 	fd = connect_tcp(req, info->args.auth, info->key, info->key_len);
 	if (fd < 0) {
-		dbg_printf(2, "Could call back for fence request: %s\n", 
+		dbg_printf(2, "Could not send reply to fence request: %s\n",
 			strerror(errno));
 		goto out;
 	}
