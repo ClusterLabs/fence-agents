@@ -189,6 +189,8 @@ set_option_action (fence_kdump_opts_t *opts, const char *arg)
         opts->action = FENCE_KDUMP_ACTION_OFF;
     } else if (!strcasecmp (arg, "metadata")) {
         opts->action = FENCE_KDUMP_ACTION_METADATA;
+    } else if (!strcasecmp (arg, "monitor")) {
+        opts->action = FENCE_KDUMP_ACTION_MONITOR;
     } else {
         fprintf (stderr, "[error]: unsupported action '%s'\n", arg);
         exit (1);
