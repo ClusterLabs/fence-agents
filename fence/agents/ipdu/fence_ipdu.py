@@ -131,7 +131,7 @@ def main():
 	global device
 
 	device_opt = ["ipaddr", "login", "passwd", "no_login", "no_password", \
-		       "port", "snmp_version", "community"]
+		       "port", "snmp_version", "snmp"]
 
 	atexit.register(atexit_handler)
 

@@ -418,6 +418,10 @@ all_opt = {
 		"shortdesc" : "Path to sudo binary",
 		"default" : "@SUDO_PATH@",
 		"order": 300},
+	"snmp": {
+		"getopt" : "",
+		"help" : "",
+		"order" : 1},
 	"on_target": {
 		"getopt" : "",
 		"help" : "",
@@ -435,8 +439,8 @@ DEPENDENCY_OPT = {
 		"ipaddr" : ["ipport", "inet4_only", "inet6_only"],
 		"port" : ["separator"],
 		"ssl" : ["ssl_secure", "ssl_insecure", "gnutlscli_path"],
-		"community" : ["snmp_auth_prot", "snmp_sec_level", "snmp_priv_prot", \
-			"snmp_priv_passwd", "snmp_priv_passwd_script"]
+		"snmp" : ["snmp_auth_prot", "snmp_sec_level", "snmp_priv_prot", \
+			"snmp_priv_passwd", "snmp_priv_passwd_script", "community"]
 	}
 
 class fspawn(pexpect.spawn):
