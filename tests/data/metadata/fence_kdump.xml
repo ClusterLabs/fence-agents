@@ -46,6 +46,7 @@
 </parameters>
 <actions>
 	<action name="off" />
+	<action name="monitor" />
 	<action name="metadata" />
 </actions>
 </resource-agent>
