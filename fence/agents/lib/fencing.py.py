@@ -418,6 +418,30 @@ all_opt = {
 		"shortdesc" : "Path to sudo binary",
 		"default" : "@SUDO_PATH@",
 		"order": 300},
+	"snmpwalk_path" : {
+		"getopt" : ":",
+		"longopt" : "snmpwalk-path",
+		"help" : "--snmpwalk-path=[path]         Path to snmpwalk binary",
+		"required" : "0",
+		"shortdesc" : "Path to snmpwalk binary",
+		"default" : "@SNMPWALK_PATH@",
+		"order" : 300},
+	"snmpset_path" : {
+		"getopt" : ":",
+		"longopt" : "snmpset-path",
+		"help" : "--snmpset-path=[path]         Path to snmpset binary",
+		"required" : "0",
+		"shortdesc" : "Path to snmpset binary",
+		"default" : "@SNMPSET_PATH@",
+		"order" : 300},
+	"snmpget_path" : {
+		"getopt" : ":",
+		"longopt" : "snmpget-path",
+		"help" : "--snmpget-path=[path]         Path to snmpget binary",
+		"required" : "0",
+		"shortdesc" : "Path to snmpget binary",
+		"default" : "@SNMPGET_PATH@",
+		"order" : 300},
 	"snmp": {
 		"getopt" : "",
 		"help" : "",
@@ -440,7 +464,8 @@ DEPENDENCY_OPT = {
 		"port" : ["separator"],
 		"ssl" : ["ssl_secure", "ssl_insecure", "gnutlscli_path"],
 		"snmp" : ["snmp_auth_prot", "snmp_sec_level", "snmp_priv_prot", \
-			"snmp_priv_passwd", "snmp_priv_passwd_script", "community"]
+			"snmp_priv_passwd", "snmp_priv_passwd_script", "community", \
+			"snmpset_path", "snmpget_path", "snmpwalk_path"]
 	}
 
 class fspawn(pexpect.spawn):

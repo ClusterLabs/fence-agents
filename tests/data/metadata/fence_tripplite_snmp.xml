@@ -152,6 +152,21 @@
 		<content type="string" default="1"  />
 		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
 	</parameter>
+	<parameter name="snmpget_path" unique="0" required="0">
+		<getopt mixed="--snmpget-path=[path]" />
+		<content type="string" default="/usr/bin/snmpget"  />
+		<shortdesc lang="en">Path to snmpget binary</shortdesc>
+	</parameter>
+	<parameter name="snmpset_path" unique="0" required="0">
+		<getopt mixed="--snmpset-path=[path]" />
+		<content type="string" default="/usr/bin/snmpset"  />
+		<shortdesc lang="en">Path to snmpset binary</shortdesc>
+	</parameter>
+	<parameter name="snmpwalk_path" unique="0" required="0">
+		<getopt mixed="--snmpwalk-path=[path]" />
+		<content type="string" default="/usr/bin/snmpwalk"  />
+		<shortdesc lang="en">Path to snmpwalk binary</shortdesc>
+	</parameter>
 </parameters>
 <actions>
 	<action name="on" automatic="0"/>

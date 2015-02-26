@@ -108,12 +108,6 @@ AC_ARG_WITH([fenceagentslibdir],
 	[ FENCEAGENTSLIBDIR="$withval" ],
 	[ FENCEAGENTSLIBDIR="${datadir}/fence" ])
 
-AC_ARG_WITH([snmpbin],
-	[  --with-snmpbin=PATH
-                          path to snmp binaries (snmpwalk/get). ],
-	[ SNMPBIN="$withval" ],
-	[ SNMPBIN="${bindir}" ])
-
 AC_ARG_WITH([default-config-dir],
 	[  --with-default-config-dir=DIR
 			  cluster config directory. ],
@@ -177,6 +171,9 @@ AC_PATH_PROG([SSH_PATH], [ssh], [/usr/bin/ssh])
 AC_PATH_PROG([TELNET_PATH], [telnet], [/usr/bin/telnet])
 AC_PATH_PROG([MPATH_PATH], [mpathpersist], [/usr/sbin/mpathpersist])
 AC_PATH_PROG([SUDO_PATH], [sudo], [/usr/bin/sudo])
+AC_PATH_PROG([SNMPWALK_PATH], [snmpwalk], [/usr/bin/snmpwalk])
+AC_PATH_PROG([SNMPSET_PATH], [snmpset], [/usr/bin/snmpset])
+AC_PATH_PROG([SNMPGET_PATH], [snmpget], [/usr/bin/snmpget])
 
 ## do subst
 

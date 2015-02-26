@@ -5,7 +5,6 @@ $(TARGET): $(SRC)
 		$(abs_srcdir) $@ | \
 	sed \
 		-e 's#@''FENCEAGENTSLIBDIR@#${FENCEAGENTSLIBDIR}#g' \
-		-e 's#@''SNMPBIN@#${SNMPBIN}#g' \
 		-e 's#@''LOGDIR@#${LOGDIR}#g' \
 		-e 's#@''SBINDIR@#${sbindir}#g' \
 		-e 's#@''LIBEXECDIR@#${libexecdir}#g' \
@@ -22,6 +21,9 @@ $(TARGET): $(SRC)
 		-e 's#@''MPATH_PATH@#${MPATH_PATH}#g' \
 		-e 's#@''STORE_PATH@#${CLUSTERVARRUN}#g' \
 		-e 's#@''SUDO_PATH@#${SUDO_PATH}#g' \
+		-e 's#@''SNMPWALK_PATH@#${SNMPWALK_PATH}#g' \
+		-e 's#@''SNMPSET_PATH@#${SNMPSET_PATH}#g' \
+		-e 's#@''SNMPGET_PATH@#${SNMPGET_PATH}#g' \
 	> $@
 
 	if [ 0 -eq `echo "$(SRC)" | grep fence_ &> /dev/null; echo $$?` ]; then \

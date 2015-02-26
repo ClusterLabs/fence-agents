@@ -51,7 +51,7 @@ class FencingSnmp:
 				exec(val[1])
 
 	def prepare_cmd(self, command):
-		cmd = "@SNMPBIN@/%s -m '' -Oeqn "% (command)
+		cmd = "%s -m '' -Oeqn "% (command)
 
 		self.complete_missed_params()
 
@@ -105,7 +105,7 @@ class FencingSnmp:
 		return res_output
 
 	def get(self, oid, additional_timemout=0):
-		cmd = "%s '%s'"% (self.prepare_cmd("snmpget"), self.quote_for_run(oid))
+		cmd = "%s '%s'"% (self.prepare_cmd(self.options["--snmpget-path"]), self.quote_for_run(oid))
 
 		output = self.run_command(cmd, additional_timemout).splitlines()
 
@@ -121,13 +121,13 @@ class FencingSnmp:
 				type_of_value = item[1]
 				break
 
-		cmd = "%s '%s' %s '%s'" % (self.prepare_cmd("snmpset"),
+		cmd = "%s '%s' %s '%s'" % (self.prepare_cmd(self.options["--snmpset-path"]),
 				self.quote_for_run(oid), type_of_value, self.quote_for_run(str(value)))
 
 		self.run_command(cmd, additional_timemout)
 
 	def walk(self, oid, additional_timemout=0):
-		cmd = "%s '%s'"% (self.prepare_cmd("snmpwalk"), self.quote_for_run(oid))
+		cmd = "%s '%s'"% (self.prepare_cmd(self.options["--snmpwalk-path"]), self.quote_for_run(oid))
 
 		output = self.run_command(cmd, additional_timemout).splitlines()
 
