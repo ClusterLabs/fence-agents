@@ -119,5 +119,6 @@ Agent basically works by connecting to hidden page and pass appropriate argument
 	<action name="list" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="validate-all" />
 </actions>
 </resource-agent>

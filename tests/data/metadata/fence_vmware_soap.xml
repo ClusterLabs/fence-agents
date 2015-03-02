@@ -139,5 +139,6 @@ Name of virtual machine (-n / port) has to be used in inventory path format (e.g
 	<action name="list" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="validate-all" />
 </actions>
 </resource-agent>

@@ -388,7 +388,7 @@ def main():
 	if os.path.basename(sys.argv[0]) == "fence_scsi_check":
 		sys.exit(scsi_check())
 
-	options = check_input(device_opt, process_input(device_opt))
+	options = check_input(device_opt, process_input(device_opt), other_conditions=True)
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for SCSI persistentl reservation"
@@ -421,15 +421,20 @@ longer be able to write to the device(s). A manual reboot is required."
 	options["store_path"] = STORE_PATH
 
 	# Input control BEGIN
+	stop_after_error = False if options["--action"] == "validate-all" else True
+
 	if not (("--nodename" in options and options["--nodename"])\
 	or ("--key" in options and options["--key"])):
-		fail_usage("Failed: nodename or key is required")
+		fail_usage("Failed: nodename or key is required", stop_after_error)
 
 	if not ("--key" in options and options["--key"]):
 		options["--key"] = generate_key(options)
 
 	if options["--key"] == "0" or not options["--key"]:
-		fail_usage("Failed: key cannot be 0")
+		fail_usage("Failed: key cannot be 0", stop_after_error)
+
+	if options["--action"] == "validate-all":
+		sys.exit(0)
 
 	options["--key"] = options["--key"].lstrip('0')
 

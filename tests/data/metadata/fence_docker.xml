@@ -140,5 +140,6 @@
 	<action name="list" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="validate-all" />
 </actions>
 </resource-agent>

@@ -207,7 +207,7 @@ def main():
 
 	define_new_opts()
 
-	options = check_input(device_opt, process_input(device_opt))
+	options = check_input(device_opt, process_input(device_opt), other_conditions=True)
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for multipath persistent reservation"
@@ -230,6 +230,9 @@ longer be able to write to the device(s). A manual reboot is required."
 	# Input control BEGIN
 	if not "--key" in options:
 		fail_usage("Failed: key is required")
+
+        if options["--action"] == "validate-all":
+                sys.exit(0)
 
 	options["devices"] = options["--devices"].split(",")
 

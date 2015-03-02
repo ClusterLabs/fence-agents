@@ -139,10 +139,13 @@ def main():
 
 	all_opt["ipport"]["default"] = "44444"
 	all_opt["shell_timeout"]["default"] = "5.0"
-	options = check_input(device_opt, process_input(device_opt))
+	options = check_input(device_opt, process_input(device_opt), other_conditions=True)
 
 	if len(options.get("--plug", "")) > 8:
 		fail_usage("Failed: Name of image can not be longer than 8 characters")
+
+        if options["--action"] == "validate-all":
+                sys.exit(0)
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for use with z/VM Virtual Machines"

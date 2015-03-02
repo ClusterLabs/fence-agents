@@ -178,5 +178,6 @@ Note: Since firmware update version 2.7, SNMP v2 write support is removed, and r
 	<action name="list" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="validate-all" />
 </actions>
 </resource-agent>

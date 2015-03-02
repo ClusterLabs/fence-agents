@@ -134,5 +134,6 @@ Where XXXXXXX is the name of the virtual machine used in the authuser field of t
 	<action name="list" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="validate-all" />
 </actions>
 </resource-agent>

@@ -96,5 +96,6 @@ The fence_mpath agent works by having an unique key for each pair of node and de
 	<action name="list" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="validate-all" />
 </actions>
 </resource-agent>

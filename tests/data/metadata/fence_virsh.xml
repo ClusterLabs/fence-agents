@@ -149,5 +149,6 @@ By default, virsh needs root account to do properly work. So you must allow ssh 
 	<action name="list" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="validate-all" />
 </actions>
 </resource-agent>

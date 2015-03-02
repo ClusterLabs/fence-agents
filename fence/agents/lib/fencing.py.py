@@ -20,6 +20,7 @@ BUILD_DATE = "March, 2008"
 __all__ = ['atexit_handler', 'check_input', 'process_input', 'all_opt', 'show_docs',
 		'fence_login', 'fence_action', 'fence_logout']
 
+EC_OK = 0
 EC_GENERIC_ERROR = 1
 EC_BAD_ARGS = 2
 EC_LOGIN_DENIED = 3
@@ -503,11 +504,12 @@ def _add_dependency_options(options):
 			added_opt.extend([y for y in DEPENDENCY_OPT[opt] if options.count(y) == 0])
 	return added_opt
 
-def fail_usage(message=""):
+def fail_usage(message="", stop=True):
 	if len(message) > 0:
 		logging.error("%s\n", message)
-	logging.error("Please use '-h' for usage\n")
-	sys.exit(EC_GENERIC_ERROR)
+	if stop:
+		logging.error("Please use '-h' for usage\n")
+		sys.exit(EC_GENERIC_ERROR)
 
 def fail(error_code):
 	message = {
@@ -594,6 +596,7 @@ def metadata(avail_opt, docs):
 	print "\t<action name=\"list\" />"
 	print "\t<action name=\"monitor\" />"
 	print "\t<action name=\"metadata\" />"
+	print "\t<action name=\"validate-all\" />"
 	print "</actions>"
 	print "</resource-agent>"
 
@@ -615,7 +618,7 @@ def process_input(avail_opt):
 ## in each of the fencing agents. It looks for possible errors and run
 ## password script to set a correct password
 ######
-def check_input(device_opt, opt):
+def check_input(device_opt, opt, other_conditions = False):
 	device_opt.extend(_add_dependency_options(device_opt))
 
 	options = dict(opt)
@@ -638,7 +641,7 @@ def check_input(device_opt, opt):
 	## add logging to stderr
 	logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stderr))
 
-	acceptable_actions = ["on", "off", "status", "list", "monitor"]
+	acceptable_actions = ["on", "off", "status", "list", "monitor", "validate-all"]
 	if 1 == device_opt.count("fabric_fencing"):
 		## Compatibility layer
 		#####
@@ -659,7 +662,10 @@ def check_input(device_opt, opt):
 	if options["--action"] == "disable":
 		options["--action"] = "off"
 
-	_validate_input(options)
+	_validate_input(options, False)
+
+	if options["--action"] == "validate-all" and not other_conditions:
+		sys.exit(EC_OK)
 
 	if options.has_key("--debug-file"):
 		try:
@@ -1162,42 +1168,55 @@ def _set_default_values(options):
 
 	return options
 
-def _validate_input(options):
+# stop = True/False : exit fence agent when problem is encountered
+def _validate_input(options, stop = True):
 	device_opt = options["device_opt"]
+	valid_input = True
 
 	if not options.has_key("--username") and \
 			device_opt.count("login") and (device_opt.count("no_login") == 0):
-		fail_usage("Failed: You have to set login name")
+		valid_input = False
+		fail_usage("Failed: You have to set login name", stop)
 
 	if device_opt.count("ipaddr") and not options.has_key("--ip") and not options.has_key("--managed"):
-		fail_usage("Failed: You have to enter fence address")
+		valid_input = False
+		fail_usage("Failed: You have to enter fence address", stop)
 
 	if device_opt.count("no_password") == 0:
 		if 0 == device_opt.count("identity_file"):
 			if not (options.has_key("--password") or options.has_key("--password-script")):
-				fail_usage("Failed: You have to enter password or password script")
+				valid_input = False
+				fail_usage("Failed: You have to enter password or password script", stop)
 		else:
 			if not (options.has_key("--password") or \
 					options.has_key("--password-script") or options.has_key("--identity-file")):
-				fail_usage("Failed: You have to enter password, password script or identity file")
+				valid_input = False
+				fail_usage("Failed: You have to enter password, password script or identity file", stop)
 
 	if not options.has_key("--ssh") and options.has_key("--identity-file"):
-		fail_usage("Failed: You have to use identity file together with ssh connection (-x)")
+		valid_input = False
+		fail_usage("Failed: You have to use identity file together with ssh connection (-x)", stop)
 
 	if options.has_key("--identity-file") and not os.path.isfile(options["--identity-file"]):
-		fail_usage("Failed: Identity file " + options["--identity-file"] + " does not exist")
+		valid_input = False
+		fail_usage("Failed: Identity file " + options["--identity-file"] + " does not exist", stop)
 
 	if (0 == ["list", "monitor"].count(options["--action"])) and \
 		not options.has_key("--plug") and device_opt.count("port") and device_opt.count("no_port") == 0:
-		fail_usage("Failed: You have to enter plug number or machine identification")
+		valid_input = False
+		fail_usage("Failed: You have to enter plug number or machine identification", stop)
 
 	if options.has_key("--plug") and len(options["--plug"].split(",")) > 1 and \
 			options.has_key("--method") and options["--method"] == "cycle":
-		fail_usage("Failed: Cannot use --method cycle for more than 1 plug")
+		valid_input = False
+		fail_usage("Failed: Cannot use --method cycle for more than 1 plug", stop)
 
 	for failed_opt in _get_opts_with_invalid_choices(options):
+		valid_input = False
 		fail_usage("Failed: You have to enter a valid choice for %s from the valid values: %s" % \
-			("--" + all_opt[failed_opt]["longopt"], str(all_opt[failed_opt]["choices"])))
+			("--" + all_opt[failed_opt]["longopt"], str(all_opt[failed_opt]["choices"])), stop)
+
+	return valid_input
 
 def _encode_html_entities(text):
 	return text.replace("&", "&amp;").replace('"', "&quot;").replace('<', "&lt;"). \

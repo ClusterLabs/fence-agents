@@ -133,7 +133,7 @@ def main():
 	all_opt["secure"]["default"] = "1"
 	all_opt["cmd_prompt"]["default"] = [r":~>", r"]\$", r"\$ "]
 
-	options = check_input(device_opt, process_input(device_opt))
+	options = check_input(device_opt, process_input(device_opt), other_conditions = True)
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for IBM LPAR"
@@ -143,6 +143,9 @@ def main():
 
 	if not options.has_key("--managed"):
 		fail_usage("Failed: You have to enter name of managed system")
+
+        if options["--action"] == "validate-all":
+                sys.exit(0)
 
 	##
 	## Operate the fencing device

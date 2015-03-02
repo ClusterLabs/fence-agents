@@ -177,5 +177,6 @@ It was written with managed ethernet switches in mind, in order to fence iSCSI S
 	<action name="list" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="validate-all" />
 </actions>
 </resource-agent>

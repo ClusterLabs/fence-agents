@@ -81,7 +81,7 @@ def main():
 	atexit.register(atexit_handler)
 
 	define_new_opts()
-	options = check_input(device_opt, process_input(device_opt))
+	options = check_input(device_opt, process_input(device_opt), other_conditions=True)
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for OVH"
@@ -95,11 +95,14 @@ Poweroff is simulated with a reboot into rescue-pro mode."
 	if options["--action"] == "list":
 		fail_usage("Action 'list' is not supported in this fence agent")
 
-	if options["--action"] != "monitor" and not options["--plug"].endswith(".ovh.net"):
-		options["--plug"] += ".ovh.net"
-
 	if not options.has_key("--email"):
 		fail_usage("You have to enter e-mail address which is notified by fence agent")
+
+	if options["--action"] == "validate-all":
+		sys.exit(0)
+
+	if options["--action"] != "monitor" and not options["--plug"].endswith(".ovh.net"):
+		options["--plug"] += ".ovh.net"
 
 	run_delay(options)
 
