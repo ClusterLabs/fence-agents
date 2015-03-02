@@ -118,21 +118,22 @@ do_action_monitor (void)
 {
     const char cmdline_path[] = "/proc/cmdline";
     FILE *procFile;
-    size_t sz;
-    char *lines;
-    int result;
+    size_t sz = 0;
+    char *lines = NULL;
+    int result = 1;
 
     procFile = fopen(cmdline_path, "r");
-    sz = 0;
 
-    while (!feof (procFile)) {
-        getline (&lines, &sz, procFile);
+    if (procFile == NULL) {
+        log_error (0, "Unable to open file %s (%s)\n", cmdline_path, strerror (errno));
+        return 1;
     }
 
-    if (strstr(lines, "crashkernel=") == NULL) {
-        result = 1;
-    } else {
-        result = 0;
+    while (!feof (procFile)) {
+        ssize_t rv = getline (&lines, &sz, procFile);
+        if ((rv != -1) && (strstr(lines, "crashkernel=") != NULL)) {
+            result = 0;
+        }
     }
 
     free (lines);
