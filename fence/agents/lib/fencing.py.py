@@ -630,6 +630,10 @@ def check_input(device_opt, opt, other_conditions = False):
 
 	## In special cases (show help, metadata or version) we don't need to check anything
 	#####
+	# OCF compatibility
+	if options["--action"] == "meta-data":
+		options["--action"] = "metadata"
+
 	if options["--action"] == "metadata" or any(options.has_key(k) for k in ("--help", "--version")):
 		return options
 
@@ -651,6 +655,7 @@ def check_input(device_opt, opt, other_conditions = False):
 
 	if 1 == device_opt.count("no_status"):
 		acceptable_actions.remove("status")
+
 
 	if 0 == acceptable_actions.count(options["--action"]):
 		fail_usage("Failed: Unrecognised action '" + options["--action"] + "'")
