@@ -134,7 +134,7 @@ assign_port(fence_virt_args_t *args, struct arg_info *arg, char *value)
 		return;
 
 	args->net.port = atoi(value);
-	if (args->net.port <= 0 || args->net.port >= 65500) {
+	if (args->net.port <= 0 || args->net.port >= 65536) {
 		printf("Invalid port: '%s'\n", value);
 		args->flags |= F_ERR;
 	}
