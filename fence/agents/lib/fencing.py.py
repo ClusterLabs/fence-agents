@@ -584,19 +584,16 @@ def metadata(avail_opt, docs):
 	print "</parameters>"
 	print "<actions>"
 
+	(available_actions, _) = _get_available_actions(avail_opt)
+
+	if "on" in available_actions:
+		available_actions.remove("on")
+
 	on_target = ' on_target="1"' if avail_opt.count("on_target") else ''
 	print "\t<action name=\"on\"%s automatic=\"%d\"/>" % (on_target, avail_opt.count("fabric_fencing"))
-	print "\t<action name=\"off\" />"
 
-	if avail_opt.count("fabric_fencing") == 0:
-		print "\t<action name=\"reboot\" />"
-
-	if avail_opt.count("no_status") == 0:
-		print "\t<action name=\"status\" />"
-	print "\t<action name=\"list\" />"
-	print "\t<action name=\"monitor\" />"
-	print "\t<action name=\"metadata\" />"
-	print "\t<action name=\"validate-all\" />"
+	for action in available_actions:
+		print "\t<action name=\"%s\" />" % (action)
 	print "</actions>"
 	print "</resource-agent>"
 
@@ -645,17 +642,11 @@ def check_input(device_opt, opt, other_conditions = False):
 	## add logging to stderr
 	logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stderr))
 
-	acceptable_actions = ["on", "off", "status", "list", "monitor", "validate-all"]
+	(acceptable_actions, _) = _get_available_actions(device_opt)
+
+	## Compatibility layer
 	if 1 == device_opt.count("fabric_fencing"):
-		## Compatibility layer
-		#####
 		acceptable_actions.extend(["enable", "disable"])
-	else:
-		acceptable_actions.extend(["reboot"])
-
-	if 1 == device_opt.count("no_status"):
-		acceptable_actions.remove("status")
-
 
 	if 0 == acceptable_actions.count(options["--action"]):
 		fail_usage("Failed: Unrecognised action '" + options["--action"] + "'")
@@ -1109,12 +1100,9 @@ def _update_metadata(options):
 	else:
 		all_opt["login"]["required"] = "0"
 
-	available_actions = ["status", "reboot", "off", "on"]
-	if device_opt.count("fabric_fencing"):
-		available_actions.remove("reboot")
-		all_opt["action"]["default"] = "off"
-	if device_opt.count("no_status"):
-		available_actions.remove("status")
+	(available_actions, default_value) = _get_available_actions(device_opt)
+	all_opt["action"]["default"] = default_value
+
 	actions_with_default = \
 			[x if not x == all_opt["action"]["default"] else x + " (default)" for x in available_actions]
 	all_opt["action"]["help"] = \
@@ -1322,3 +1310,17 @@ def _verify_unique_getopt(avail_opt):
 			fail_usage("Short getopt for %s (-%s) is not unique" % (opt, getopt_value))
 		else:
 			used_getopt.add(getopt_value)
+
+def _get_available_actions(device_opt):
+	available_actions = ["on", "off", "reboot", "status", "list", "monitor", "metadata", "validate-all"]
+	default_value = "reboot"
+
+	if device_opt.count("fabric_fencing"):
+		available_actions.remove("reboot")
+		default_value = "off"
+	if device_opt.count("no_status"):
+		available_actions.remove("status")
+	if not device_opt.count("separator"):
+		available_actions.remove("list")
+
+	return (available_actions, default_value)
