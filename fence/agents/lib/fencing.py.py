@@ -644,7 +644,6 @@ def check_input(device_opt, opt, other_conditions = False):
 
 	(acceptable_actions, _) = _get_available_actions(device_opt)
 
-	## Compatibility layer
 	if 1 == device_opt.count("fabric_fencing"):
 		acceptable_actions.extend(["enable", "disable"])
 
@@ -757,23 +756,34 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 
 		## Process options that manipulate fencing device
 		#####
-		if options["--action"] == "list" and 0 == options["device_opt"].count("port"):
-			print "N/A"
-			return
-		elif options["--action"] == "list" and get_outlet_list == None:
-			## @todo: exception?
-			## This is just temporal solution, we will remove default value
-			## None as soon as all existing agent will support this operation
-			print "NOTICE: List option is not working on this device yet"
-			return
-		elif (options["--action"] == "list") or \
-				((options["--action"] == "monitor") and 1 == options["device_opt"].count("port")):
-			outlets = get_outlet_list(connection, options)
-			## keys can be numbers (port numbers) or strings (names of VM, UUID)
-			for outlet_id in outlets.keys():
-				(alias, status) = outlets[outlet_id]
-				if options["--action"] != "monitor":
-					print outlet_id + options["--separator"] + alias
+		if (options["--action"] in ["list", "list-status"]) or \
+			((options["--action"] == "monitor") and 1 == options["device_opt"].count("port")):
+
+			if 0 == options["device_opt"].count("port"):
+				print "N/A"
+			elif get_outlet_list == None:
+				## @todo: exception?
+				## This is just temporal solution, we will remove default value
+				## None as soon as all existing agent will support this operation
+				print "NOTICE: List option is not working on this device yet"
+			else:
+				original_action = options["--action"]
+				options["--action"] = "list"
+				outlets = get_outlet_list(connection, options)
+				options["--action"] = original_action
+
+				## keys can be numbers (port numbers) or strings (names of VM, UUID)
+				for outlet_id in outlets.keys():
+					(alias, status) = outlets[outlet_id]
+					status = status.upper()
+					if not status in ["ON", "OFF"]:
+						status = "UNKNOWN"
+
+					if options["--action"] == "list":
+						print outlet_id + options["--separator"] + alias
+					elif options["--action"] == "list-status":
+						print outlet_id + options["--separator"] + alias + options["--separator"] + status
+
 			return
 
 		status = get_multi_power_fn(connection, options, get_power_fn)
@@ -1196,7 +1206,7 @@ def _validate_input(options, stop = True):
 		valid_input = False
 		fail_usage("Failed: Identity file " + options["--identity-file"] + " does not exist", stop)
 
-	if (0 == ["list", "monitor"].count(options["--action"])) and \
+	if (0 == ["list", "list-status", "monitor"].count(options["--action"])) and \
 		not options.has_key("--plug") and device_opt.count("port") and device_opt.count("no_port") == 0:
 		valid_input = False
 		fail_usage("Failed: You have to enter plug number or machine identification", stop)
@@ -1312,7 +1322,8 @@ def _verify_unique_getopt(avail_opt):
 			used_getopt.add(getopt_value)
 
 def _get_available_actions(device_opt):
-	available_actions = ["on", "off", "reboot", "status", "list", "monitor", "metadata", "validate-all"]
+	available_actions = ["on", "off", "reboot", "status", "list", "list-status", \
+		"monitor", "metadata", "validate-all"]
 	default_value = "reboot"
 
 	if device_opt.count("fabric_fencing"):
@@ -1322,5 +1333,6 @@ def _get_available_actions(device_opt):
 		available_actions.remove("status")
 	if not device_opt.count("separator"):
 		available_actions.remove("list")
+		available_actions.remove("list-status")
 
 	return (available_actions, default_value)

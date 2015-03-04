@@ -117,6 +117,7 @@ Agent basically works by connecting to hidden page and pass appropriate argument
 	<action name="reboot" />
 	<action name="status" />
 	<action name="list" />
+	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
 	<action name="validate-all" />

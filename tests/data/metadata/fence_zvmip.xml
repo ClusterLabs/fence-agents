@@ -132,6 +132,7 @@ Where XXXXXXX is the name of the virtual machine used in the authuser field of t
 	<action name="reboot" />
 	<action name="status" />
 	<action name="list" />
+	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
 	<action name="validate-all" />

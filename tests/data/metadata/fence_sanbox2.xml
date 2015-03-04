@@ -119,6 +119,7 @@
 	<action name="off" />
 	<action name="status" />
 	<action name="list" />
+	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
 	<action name="validate-all" />
