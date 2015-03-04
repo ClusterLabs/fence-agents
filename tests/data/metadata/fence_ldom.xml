@@ -137,6 +137,7 @@ Very useful parameter is -c (or cmd_prompt in stdin mode). This must be set to s
 	<action name="reboot" />
 	<action name="status" />
 	<action name="list" />
+	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
 </actions>

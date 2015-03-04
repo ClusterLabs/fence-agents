@@ -94,6 +94,7 @@
 	<action name="off" />
 	<action name="reboot" />
 	<action name="list" />
+	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
 </actions>

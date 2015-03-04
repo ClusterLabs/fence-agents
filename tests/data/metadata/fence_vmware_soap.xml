@@ -137,6 +137,7 @@ Name of virtual machine (-n / port) has to be used in inventory path format (e.g
 	<action name="reboot" />
 	<action name="status" />
 	<action name="list" />
+	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
 </actions>

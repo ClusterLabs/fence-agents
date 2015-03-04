@@ -161,6 +161,7 @@ Note: Since firmware update version 2.7, SNMP v2 write support is removed, and r
 	<action name="reboot" />
 	<action name="status" />
 	<action name="list" />
+	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
 </actions>

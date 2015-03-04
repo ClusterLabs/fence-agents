@@ -147,6 +147,7 @@ By default, virsh needs root account to do properly work. So you must allow ssh 
 	<action name="reboot" />
 	<action name="status" />
 	<action name="list" />
+	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
 </actions>
