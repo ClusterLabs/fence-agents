@@ -8,6 +8,7 @@ import threading
 import shlex
 import exceptions
 import socket
+import textwrap
 import __main__
 
 ## do not add code here.
@@ -201,7 +202,9 @@ all_opt = {
 		"help" : "-t, --notls                    "
 				"Disable TLS negotiation and force SSL3.0.\n"
 				"                                        "
-				"This should only be used for devices that do not support TLS1.0 and up.",
+				"This should only be used for devices that\n"
+				"                                        "
+				"do not support TLS1.0 and up.",
 		"required" : "0",
 		"shortdesc" : "Disable TLS negotiation",
 		"order" : 1},
@@ -1116,7 +1119,7 @@ def _update_metadata(options):
 	actions_with_default = \
 			[x if not x == all_opt["action"]["default"] else x + " (default)" for x in available_actions]
 	all_opt["action"]["help"] = \
-			"-o, --action=[action]          Action: %s" % (_join2(actions_with_default, last_separator=" or "))
+			"-o, --action=[action]          Action: %s" % (_join_wrap(actions_with_default, last_separator=" or "))
 
 	if device_opt.count("ipport"):
 		default_value = None
@@ -1296,6 +1299,19 @@ def _join2(words, normal_separator=", ", last_separator=" and "):
 		return "".join(words)
 	else:
 		return last_separator.join([normal_separator.join(words[:-1]), words[-1]])
+
+def _join_wrap(words, normal_separator=", ", last_separator=" and "):
+	x = _join2(words, normal_separator, last_separator)
+	wrapper = textwrap.TextWrapper()
+	wrapper.initial_indent = " "*42
+	wrapper.subsequent_indent = " "*40
+	wrapper.width = 80
+	wrapper.break_on_hyphens = False
+	wrapper.break_long_words = False
+	wrapped_text = ""
+	for line in wrapper.wrap(x):
+		wrapped_text += line + "\n"
+	return wrapped_text.lstrip().rstrip("\n")
 
 def _get_opts_with_invalid_choices(options):
 	options_failed = []
