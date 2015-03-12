@@ -35,7 +35,12 @@ def reboot_cycle(_, options):
 
 def amt_run_command(options, command, timeout=None):
 	env = os.environ.copy()
-	env["AMT_PASSWORD"] = quote(options["--password"])
+
+	x = quote(options["--password"])
+	x = x[:-1] if x.endswith("'") else x
+	x = x[1:] if x.startswith("'") else x
+	env["AMT_PASSWORD"] = x
+
 	return run_command(options, command, timeout, env)
 
 def create_command(options, action):
