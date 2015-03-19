@@ -61,7 +61,7 @@
 	</parameter>
 	<parameter name="cipher" unique="0" required="0">
 		<getopt mixed="-C, --cipher=[cipher]" />
-		<content type="string" default="0"  />
+		<content type="string"  />
 		<shortdesc lang="en">Ciphersuite to use (same as ipmitool -C parameter)</shortdesc>
 	</parameter>
 	<parameter name="privlvl" unique="0" required="0">
