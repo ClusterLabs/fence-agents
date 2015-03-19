@@ -53,7 +53,8 @@ def create_command(options, action):
 		cmd += " -P ''"
 
 	# --cipher / -C
-	cmd += " -C " + options["--cipher"]
+	if "--cipher" in options:
+		cmd += " -C " + options["--cipher"]
 
 	# --port / -n
 	if options.has_key("--ipport"):
@@ -96,7 +97,6 @@ def define_new_opts():
 		"help" : "-C, --cipher=[cipher]          Ciphersuite to use (same as ipmitool -C parameter)",
 		"required" : "0",
 		"shortdesc" : "Ciphersuite to use (same as ipmitool -C parameter)",
-		"default" : "0",
 		"order": 1
 	}
 	all_opt["privlvl"] = {
