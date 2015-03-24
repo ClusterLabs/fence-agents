@@ -208,7 +208,19 @@ all_opt = {
 				"This should only be used for devices that do not support TLS1.0 and up.",
 		"default" : "1",
 		"required" : "0",
-		"shortdesc" : "Disable TLS negotiation",
+		"shortdesc" : "Disable TLS negotiation, force SSL 3.0",
+		"order" : 1},
+	"tls1.0" : {
+		"getopt" : "",
+		"longopt" : "tls1.0",
+		"help" : "--tls1.0                       "
+				"Disable TLS negotiation and force TLS1.0\n"
+				"                                        "
+				"This should only be used for devices that\n"
+				"                                        "
+				"do not support TLS1.1 and up.",
+		"required" : "0",
+		"shortdesc" : "Disable TLS negotiaton, force TLS 1.0",
 		"order" : 1},
 	"port" : {
 		"getopt" : "n:",
@@ -972,7 +984,9 @@ def _open_ssl_connection(options):
 	gnutls_opts = ""
 	ssl_opts = ""
 
-	if options.has_key("--notls"):
+	if options.has_key("--tls1.0"):
+		gnutls_opts = "--priority \"NORMAL:-VERS-TLS1.2:-VERS-TLS1.1:+VERS-TLS1.0:-VERS-SSL3.0\""
+	elif options.has_key("--notls"):
 		gnutls_opts = "--priority \"NORMAL:-VERS-TLS1.2:-VERS-TLS1.1:-VERS-TLS1.0:+VERS-SSL3.0\""
 
 	# --ssl is same as the --ssl-insecure; it means we DO NOT want to verify certificate in these cases
