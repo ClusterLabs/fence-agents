@@ -12,7 +12,7 @@
 	<parameter name="notls" unique="0" required="0">
 		<getopt mixed="-t, --notls" />
 		<content type="boolean"  />
-		<shortdesc lang="en">Disable TLS negotiation</shortdesc>
+		<shortdesc lang="en">Disable TLS negotiation, force SSL 3.0</shortdesc>
 	</parameter>
 	<parameter name="ribcl" unique="0" required="0">
 		<getopt mixed="-r, --ribcl-version=[version]" />
@@ -48,6 +48,11 @@
 		<getopt mixed="-S, --password-script=[script]" />
 		<content type="string"  />
 		<shortdesc lang="en">Script to retrieve password</shortdesc>
+	</parameter>
+	<parameter name="tls1.0" unique="0" required="0">
+		<getopt mixed="--tls1.0" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Disable TLS negotiaton, force TLS 1.0</shortdesc>
 	</parameter>
 	<parameter name="passwd" unique="0" required="0">
 		<getopt mixed="-p, --password=[password]" />

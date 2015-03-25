@@ -203,7 +203,19 @@ all_opt = {
 				"                                        "
 				"This should only be used for devices that do not support TLS1.0 and up.",
 		"required" : "0",
-		"shortdesc" : "Disable TLS negotiation",
+		"shortdesc" : "Disable TLS negotiation, force SSL 3.0",
+		"order" : 1},
+	"tls1.0" : {
+		"getopt" : "",
+		"longopt" : "tls1.0",
+		"help" : "--tls1.0                       "
+				"Disable TLS negotiation and force TLS1.0\n"
+				"                                        "
+				"This should only be used for devices that\n"
+				"                                        "
+				"do not support TLS1.1 and up.",
+		"required" : "0",
+		"shortdesc" : "Disable TLS negotiaton, force TLS 1.0",
 		"order" : 1},
 	"port" : {
 		"getopt" : "n:",
@@ -995,6 +1007,8 @@ def fence_login(options, re_login_string=r"(login\s*: )|(Login Name:  )|(usernam
 
 			if options.has_key("--notls"):
 				gnutls_opts = "--priority \"NORMAL:-VERS-TLS1.2:-VERS-TLS1.1:-VERS-TLS1.0:+VERS-SSL3.0\""
+			elif options.has_key("--tls1.0"):
+				gnutls_opts = "--priority \"NORMAL:-VERS-TLS1.2:-VERS-TLS1.1:+VERS-TLS1.0:%LATEST_RECORD_VERSION\""
 
 			# --ssl is same as the --ssl-secure
 			if options.has_key("--ssl-insecure"):
