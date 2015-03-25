@@ -387,7 +387,7 @@ def main():
 	all_opt["delay"]["getopt"] = "H:"
 
 	#fence_scsi_check
-	if os.path.basename(sys.argv[0]) == "fence_scsi_check":
+	if os.path.basename(sys.argv[0]) == "fence_scsi_check.pl":
 		sys.exit(scsi_check())
 
 	options = check_input(device_opt, process_input(device_opt))
