@@ -124,6 +124,12 @@
         <xsl:value-of select="$NL"/>
 
         <xsl:for-each select="parameters/parameter">
+            <xsl:variable name="escapeddesc">
+                <xsl:call-template name="escape_quot">
+                    <xsl:with-param name="replace" select="shortdesc"/>
+                </xsl:call-template>
+        </xsl:variable>
+
             <!-- optional (start) -->
             <xsl:call-template name="tag-start">
                 <xsl:with-param name="name" select="'optional'"/>
@@ -136,7 +142,7 @@
                 <xsl:with-param name="name" select="'attribute'"/>
                 <xsl:with-param name="attrs" select="concat(
                     'name=',            $Q, @name,                      $Q, $SP,
-                    'rha:description=', $Q, normalize-space(shortdesc), $Q, $SP)"/>
+                    'rha:description=', $Q, normalize-space($escapeddesc), $Q, $SP)"/>
                 <xsl:with-param name="indent" select="concat($indent, $indent)"/>
             </xsl:call-template>
             <xsl:value-of select="$NL"/>
@@ -157,5 +163,22 @@
 
     <xsl:value-of select="$NL"/>
 </xsl:template>
+
+<xsl:template name="escape_quot">
+    <xsl:param name="replace"/>
+    <xsl:choose>
+        <xsl:when test="contains($replace,'&quot;')">
+            <xsl:value-of select="substring-before($replace,'&quot;')"/>
+            <!-- escape quot-->
+            <xsl:text>&amp;quot;</xsl:text>
+            <xsl:call-template name="escape_quot">
+                <xsl:with-param name="replace" select="substring-after($replace,'&quot;')"/>
+            </xsl:call-template>
+        </xsl:when>
+    <xsl:otherwise>
+        <xsl:value-of select="$replace"/>
+    </xsl:otherwise>
+    </xsl:choose>
+    </xsl:template>
 
 </xsl:stylesheet>
