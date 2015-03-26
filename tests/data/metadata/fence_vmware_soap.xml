@@ -38,7 +38,7 @@ Name of virtual machine (-n / port) has to be used in inventory path format (e.g
 	<parameter name="notls" unique="0" required="0">
 		<getopt mixed="-t, --notls" />
 		<content type="boolean"  />
-		<shortdesc lang="en">Disable TLS negotiation</shortdesc>
+		<shortdesc lang="en">Disable TLS negotiation, force SSL 3.0</shortdesc>
 	</parameter>
 	<parameter name="passwd" unique="0" required="0">
 		<getopt mixed="-p, --password=[password]" />
