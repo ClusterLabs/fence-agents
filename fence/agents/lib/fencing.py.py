@@ -54,7 +54,6 @@ all_opt = {
 		"longopt" : "verbose",
 		"help" : "-v, --verbose                  Verbose mode",
 		"required" : "0",
-		"shortdesc" : "Verbose mode",
 		"order" : 51},
 	"debug" : {
 		"getopt" : "D:",
@@ -68,7 +67,6 @@ all_opt = {
 		"longopt" : "delay",
 		"help" : "--delay=[seconds]              Wait X seconds before fencing is started",
 		"required" : "0",
-		"shortdesc" : "Wait X seconds before fencing is started",
 		"default" : "0",
 		"order" : 200},
 	"agent"   : {
@@ -137,7 +135,6 @@ all_opt = {
 		"longopt" : "password",
 		"help" : "-p, --password=[password]      Login password or passphrase",
 		"required" : "0",
-		"shortdesc" : "Login password or passphrase",
 		"order" : 1},
 	"passwd_script" : {
 		"getopt" : "S:",
@@ -157,7 +154,6 @@ all_opt = {
 		"getopt" : "c:",
 		"longopt" : "command-prompt",
 		"help" : "-c, --command-prompt=[prompt]  Force Python regex for command prompt",
-		"shortdesc" : "Force Python regex for command prompt",
 		"required" : "0",
 		"order" : 1},
 	"secure" : {
@@ -170,8 +166,7 @@ all_opt = {
 	"ssh_options" : {
 		"getopt" : ":",
 		"longopt" : "ssh-options",
-		"help" : "--ssh-options=[options]	  SSH options to use",
-		"shortdesc" : "SSH options to use",
+		"help" : "--ssh-options=[options]        SSH options to use",
 		"required" : "0",
 		"order" : 1},
 	"ssl" : {
@@ -233,21 +228,18 @@ all_opt = {
 		"longopt" : "switch",
 		"help" : "-s, --switch=[id]              Physical switch number on device",
 		"required" : "0",
-		"shortdesc" : "Physical switch number on device",
 		"order" : 1},
 	"exec" : {
 		"getopt" : "e:",
 		"longopt" : "exec",
 		"help" : "-e, --exec=[command]           Command to execute",
 		"required" : "0",
-		"shortdesc" : "Command to execute",
 		"order" : 1},
 	"vmware_type" : {
 		"getopt" : "d:",
 		"longopt" : "vmware_type",
 		"help" : "-d, --vmware_type=[type]       Type of VMware to connect",
 		"required" : "0",
-		"shortdesc" : "Type of VMware to connect",
 		"order" : 1},
 	"vmware_datacenter" : {
 		"getopt" : "s:",
@@ -269,7 +261,6 @@ all_opt = {
 		"longopt" : "community",
 		"help" : "-c, --community=[community]    Set the community string",
 		"required" : "0",
-		"shortdesc" : "Set the community string",
 		"order" : 1},
 	"snmp_auth_prot" : {
 		"getopt" : "b:",
@@ -301,28 +292,24 @@ all_opt = {
 		"longopt" : "snmp-priv-passwd",
 		"help" : "-P, --snmp-priv-passwd=[pass]  Set privacy protocol password",
 		"required" : "0",
-		"shortdesc" : "Set privacy protocol password",
 		"order" : 1},
 	"snmp_priv_passwd_script" : {
 		"getopt" : "R:",
 		"longopt" : "snmp-priv-passwd-script",
 		"help" : "-R, --snmp-priv-passwd-script  Script to run to retrieve privacy password",
 		"required" : "0",
-		"shortdesc" : "Script to run to retrieve privacy password",
 		"order" : 1},
 	"inet4_only" : {
 		"getopt" : "4",
 		"longopt" : "inet4-only",
 		"help" : "-4, --inet4-only               Forces agent to use IPv4 addresses only",
 		"required" : "0",
-		"shortdesc" : "Forces agent to use IPv4 addresses only",
 		"order" : 1},
 	"inet6_only" : {
 		"getopt" : "6",
 		"longopt" : "inet6-only",
 		"help" : "-6, --inet6-only               Forces agent to use IPv6 addresses only",
 		"required" : "0",
-		"shortdesc" : "Forces agent to use IPv6 addresses only",
 		"order" : 1},
 	"separator" : {
 		"getopt" : "C:",
@@ -338,7 +325,6 @@ all_opt = {
 		"help" : "--login-timeout=[seconds]      Wait X seconds for cmd prompt after login",
 		"default" : "5",
 		"required" : "0",
-		"shortdesc" : "Wait X seconds for cmd prompt after login",
 		"order" : 200},
 	"shell_timeout" : {
 		"getopt" : ":",
@@ -346,7 +332,6 @@ all_opt = {
 		"help" : "--shell-timeout=[seconds]      Wait X seconds for cmd prompt after issuing command",
 		"default" : "3",
 		"required" : "0",
-		"shortdesc" : "Wait X seconds for cmd prompt after issuing command",
 		"order" : 200},
 	"power_timeout" : {
 		"getopt" : ":",
@@ -354,7 +339,6 @@ all_opt = {
 		"help" : "--power-timeout=[seconds]      Test X seconds for status change after ON/OFF",
 		"default" : "20",
 		"required" : "0",
-		"shortdesc" : "Test X seconds for status change after ON/OFF",
 		"order" : 200},
 	"power_wait" : {
 		"getopt" : ":",
@@ -362,14 +346,12 @@ all_opt = {
 		"help" : "--power-wait=[seconds]         Wait X seconds after issuing ON/OFF",
 		"default" : "0",
 		"required" : "0",
-		"shortdesc" : "Wait X seconds after issuing ON/OFF",
 		"order" : 200},
 	"missing_as_off" : {
 		"getopt" : "",
 		"longopt" : "missing-as-off",
 		"help" : "--missing-as-off               Missing port returns OFF instead of failure",
 		"required" : "0",
-		"shortdesc" : "Missing port returns OFF instead of failure",
 		"order" : 200},
 	"retry_on" : {
 		"getopt" : ":",
@@ -377,7 +359,6 @@ all_opt = {
 		"help" : "--retry-on=[attempts]          Count of attempts to retry power on",
 		"default" : "1",
 		"required" : "0",
-		"shortdesc" : "Count of attempts to retry power on",
 		"order" : 201},
 	"session_url" : {
 		"getopt" : "s:",
@@ -407,7 +388,6 @@ all_opt = {
 		"longopt" : "telnet-path",
 		"help" : "--telnet-path=[path]           Path to telnet binary",
 		"required" : "0",
-		"shortdesc" : "Path to telnet binary",
 		"default" : "@TELNET_PATH@",
 		"order": 300},
 	"ssh_path" : {
@@ -415,7 +395,6 @@ all_opt = {
 		"longopt" : "ssh-path",
 		"help" : "--ssh-path=[path]              Path to ssh binary",
 		"required" : "0",
-		"shortdesc" : "Path to ssh binary",
 		"default" : "@SSH_PATH@",
 		"order": 300},
 	"gnutlscli_path" : {
@@ -423,7 +402,6 @@ all_opt = {
 		"longopt" : "gnutlscli-path",
 		"help" : "--gnutlscli-path=[path]        Path to gnutls-cli binary",
 		"required" : "0",
-		"shortdesc" : "Path to gnutls-cli binary",
 		"default" : "@GNUTLSCLI_PATH@",
 		"order": 300},
 	"sudo_path" : {
@@ -431,7 +409,6 @@ all_opt = {
 		"longopt" : "sudo-path",
 		"help" : "--sudo-path=[path]             Path to sudo binary",
 		"required" : "0",
-		"shortdesc" : "Path to sudo binary",
 		"default" : "@SUDO_PATH@",
 		"order": 300},
 	"snmpwalk_path" : {
@@ -439,23 +416,20 @@ all_opt = {
 		"longopt" : "snmpwalk-path",
 		"help" : "--snmpwalk-path=[path]         Path to snmpwalk binary",
 		"required" : "0",
-		"shortdesc" : "Path to snmpwalk binary",
 		"default" : "@SNMPWALK_PATH@",
 		"order" : 300},
 	"snmpset_path" : {
 		"getopt" : ":",
 		"longopt" : "snmpset-path",
-		"help" : "--snmpset-path=[path]         Path to snmpset binary",
+		"help" : "--snmpset-path=[path]          Path to snmpset binary",
 		"required" : "0",
-		"shortdesc" : "Path to snmpset binary",
 		"default" : "@SNMPSET_PATH@",
 		"order" : 300},
 	"snmpget_path" : {
 		"getopt" : ":",
 		"longopt" : "snmpget-path",
-		"help" : "--snmpget-path=[path]         Path to snmpget binary",
+		"help" : "--snmpget-path=[path]          Path to snmpget binary",
 		"required" : "0",
-		"shortdesc" : "Path to snmpget binary",
 		"default" : "@SNMPGET_PATH@",
 		"order" : 300},
 	"snmp": {
@@ -569,7 +543,7 @@ def metadata(avail_opt, docs):
 	print "<vendor-url>" + docs["vendorurl"] + "</vendor-url>"
 	print "<parameters>"
 	for option, _ in sorted_list:
-		if all_opt[option].has_key("shortdesc"):
+		if all_opt[option].has_key("help") and len(all_opt[option]["help"]) > 0:
 			print "\t<parameter name=\"" + option + "\" unique=\"0\" required=\"" + all_opt[option]["required"] + "\">"
 
 			default = ""
@@ -582,8 +556,13 @@ def metadata(avail_opt, docs):
 			if None != res:
 				mixed = res.group(1)
 			mixed = _encode_html_entities(mixed)
-			print "\t\t<getopt mixed=\"" + mixed + "\" />"
 
+			if not "shortdesc" in all_opt[option]:
+				shortdesc = re.sub("\s\s+", " ", all_opt[option]["help"][31:])
+			else:
+				shortdesc = all_opt[option]["shortdesc"]
+
+			print "\t\t<getopt mixed=\"" + mixed + "\" />"
 			if all_opt[option].has_key("choices"):
 				print "\t\t<content type=\"select\" "+default+" >"
 				for choice in all_opt[option]["choices"]:
@@ -593,8 +572,7 @@ def metadata(avail_opt, docs):
 				print "\t\t<content type=\"string\" "+default+" />"
 			else:
 				print "\t\t<content type=\"boolean\" "+default+" />"
-
-			print "\t\t<shortdesc lang=\"en\">" + all_opt[option]["shortdesc"] + "</shortdesc>"
+			print "\t\t<shortdesc lang=\"en\">" + shortdesc + "</shortdesc>"
 			print "\t</parameter>"
 	print "</parameters>"
 	print "<actions>"
