@@ -53,8 +53,7 @@ Name of virtual machine (-n / port) has to be used in inventory path format (e.g
 	<parameter name="port" unique="0" required="1">
 		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />
-		<shortdesc lang="en">Physical plug number on device, UUID or
-identification of machine</shortdesc>
+		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
 	</parameter>
 	<parameter name="ssl" unique="0" required="0">
 		<getopt mixed="-z, --ssl" />

@@ -504,7 +504,7 @@ def usage(avail_opt):
 
 	for key, value in sorted_list:
 		if len(value["help"]) != 0:
-			print "   " + value["help"]
+			print "   " + _join_wrap([value["help"]], first_indent=3)
 
 def metadata(avail_opt, docs):
 	# avail_opt has to be unique, if there are duplicities then they should be removed
@@ -1270,12 +1270,12 @@ def _join2(words, normal_separator=", ", last_separator=" and "):
 	else:
 		return last_separator.join([normal_separator.join(words[:-1]), words[-1]])
 
-def _join_wrap(words, normal_separator=", ", last_separator=" and "):
+def _join_wrap(words, normal_separator=", ", last_separator=" and ", first_indent=42):
 	x = _join2(words, normal_separator, last_separator)
 	wrapper = textwrap.TextWrapper()
-	wrapper.initial_indent = " "*42
+	wrapper.initial_indent = " "*first_indent
 	wrapper.subsequent_indent = " "*40
-	wrapper.width = 80
+	wrapper.width = 85
 	wrapper.break_on_hyphens = False
 	wrapper.break_long_words = False
 	wrapped_text = ""

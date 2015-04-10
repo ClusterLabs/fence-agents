@@ -58,8 +58,7 @@ Very useful parameter is -c (or cmd_prompt in stdin mode). This must be set to s
 	<parameter name="port" unique="0" required="1">
 		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />
-		<shortdesc lang="en">Physical plug number on device, UUID or
-identification of machine</shortdesc>
+		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
 	</parameter>
 	<parameter name="secure" unique="0" required="0">
 		<getopt mixed="-x, --ssh" />
