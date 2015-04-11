@@ -7,6 +7,16 @@
 <xsl:if test="$show = 'stdin'">.B <xsl:value-of select="@name"/></xsl:if>
 . 
 <xsl:value-of select="normalize-space(shortdesc)"/>
+<xsl:if test="count(content/option) > 1">
+	<xsl:text> (</xsl:text>
+	<xsl:for-each select="content/option">
+		<xsl:value-of select="@value" />
+		<xsl:if test="position() &lt; last()">
+			<xsl:text>|</xsl:text>
+		</xsl:if>
+	</xsl:for-each>
+	<xsl:text>)</xsl:text>
+</xsl:if>
 <xsl:if test="not(content/@default)"><xsl:if test="@required = 1"> This parameter is always required.</xsl:if></xsl:if>
 <xsl:if test="content/@default"> (Default Value: <xsl:value-of select="content/@default"/>)</xsl:if>
 </xsl:template>

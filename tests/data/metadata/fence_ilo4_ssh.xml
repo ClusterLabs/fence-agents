@@ -51,7 +51,7 @@
 			<option value="onoff" />
 			<option value="cycle" />
 		</content>
-		<shortdesc lang="en">Method to fence (onoff|cycle)</shortdesc>
+		<shortdesc lang="en">Method to fence</shortdesc>
 	</parameter>
 	<parameter name="passwd" unique="0" required="0">
 		<getopt mixed="-p, --password=[password]" />

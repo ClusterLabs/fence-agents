@@ -20,7 +20,7 @@
 			<option value="DRAC MC" />
 			<option value="DRAC 5" />
 		</content>
-		<shortdesc lang="en">Force DRAC version to use (DRAC 5, DRAC CMC, DRAC MC)</shortdesc>
+		<shortdesc lang="en">Force DRAC version to use</shortdesc>
 	</parameter>
 	<parameter name="identity_file" unique="0" required="0">
 		<getopt mixed="-k, --identity-file=[filename]" />

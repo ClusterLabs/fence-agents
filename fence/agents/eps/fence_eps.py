@@ -88,7 +88,7 @@ def eps_define_new_opts():
 	all_opt["hidden_page"] = {
 		"getopt" : "c:",
 		"longopt" : "page",
-		"help":"-c, --page=[page]              Name of hidden page (default hidden.htm)",
+		"help":"-c, --page=[page]              Name of hidden page (default: hidden.htm)",
 		"required" : "0",
 		"shortdesc" : "Name of hidden page",
 		"default" : "hidden.htm",

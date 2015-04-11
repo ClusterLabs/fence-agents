@@ -59,7 +59,7 @@
 			<option value="MD5" />
 			<option value="SHA" />
 		</content>
-		<shortdesc lang="en">Set authentication protocol (MD5|SHA)</shortdesc>
+		<shortdesc lang="en">Set authentication protocol</shortdesc>
 	</parameter>
 	<parameter name="snmp_priv_passwd" unique="0" required="0">
 		<getopt mixed="-P, --snmp-priv-passwd=[pass]" />
@@ -77,7 +77,7 @@
 			<option value="DES" />
 			<option value="AES" />
 		</content>
-		<shortdesc lang="en">Set privacy protocol (DES|AES)</shortdesc>
+		<shortdesc lang="en">Set privacy protocol</shortdesc>
 	</parameter>
 	<parameter name="snmp_sec_level" unique="0" required="0">
 		<getopt mixed="-E, --snmp-sec-level=[level]" />
@@ -86,7 +86,7 @@
 			<option value="authNoPriv" />
 			<option value="authPriv" />
 		</content>
-		<shortdesc lang="en">Set security level (noAuthNoPriv|authNoPriv|authPriv)</shortdesc>
+		<shortdesc lang="en">Set security level</shortdesc>
 	</parameter>
 	<parameter name="snmp_version" unique="0" required="0">
 		<getopt mixed="-d, --snmp-version=[version]" />
@@ -95,7 +95,7 @@
 			<option value="2c" />
 			<option value="3" />
 		</content>
-		<shortdesc lang="en">Specifies SNMP version to use (1,2c,3)</shortdesc>
+		<shortdesc lang="en">Specifies SNMP version to use</shortdesc>
 	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />

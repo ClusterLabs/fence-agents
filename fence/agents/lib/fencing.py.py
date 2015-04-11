@@ -232,9 +232,9 @@ all_opt = {
 	"snmp_version" : {
 		"getopt" : "d:",
 		"longopt" : "snmp-version",
-		"help" : "-d, --snmp-version=[version]   Specifies SNMP version to use",
+		"help" : "-d, --snmp-version=[version]   Specifies SNMP version to use (1|2c|3)",
 		"required" : "0",
-		"shortdesc" : "Specifies SNMP version to use (1,2c,3)",
+		"shortdesc" : "Specifies SNMP version to use",
 		"choices" : ["1", "2c", "3"],
 		"order" : 1},
 	"community" : {
@@ -248,7 +248,7 @@ all_opt = {
 		"longopt" : "snmp-auth-prot",
 		"help" : "-b, --snmp-auth-prot=[prot]    Set authentication protocol (MD5|SHA)",
 		"required" : "0",
-		"shortdesc" : "Set authentication protocol (MD5|SHA)",
+		"shortdesc" : "Set authentication protocol",
 		"choices" : ["MD5", "SHA"],
 		"order" : 1},
 	"snmp_sec_level" : {
@@ -257,7 +257,7 @@ all_opt = {
 		"help" : "-E, --snmp-sec-level=[level]   "
 				"Set security level (noAuthNoPriv|authNoPriv|authPriv)",
 		"required" : "0",
-		"shortdesc" : "Set security level (noAuthNoPriv|authNoPriv|authPriv)",
+		"shortdesc" : "Set security level",
 		"choices" : ["noAuthNoPriv", "authNoPriv", "authPriv"],
 		"order" : 1},
 	"snmp_priv_prot" : {
@@ -265,7 +265,7 @@ all_opt = {
 		"longopt" : "snmp-priv-prot",
 		"help" : "-B, --snmp-priv-prot=[prot]    Set privacy protocol (DES|AES)",
 		"required" : "0",
-		"shortdesc" : "Set privacy protocol (DES|AES)",
+		"shortdesc" : "Set privacy protocol",
 		"choices" : ["DES", "AES"],
 		"order" : 1},
 	"snmp_priv_passwd" : {
@@ -357,7 +357,7 @@ all_opt = {
 		"longopt" : "method",
 		"help" : "-m, --method=[method]          Method to fence (onoff|cycle) (Default: onoff)",
 		"required" : "0",
-		"shortdesc" : "Method to fence (onoff|cycle)",
+		"shortdesc" : "Method to fence",
 		"default" : "onoff",
 		"choices" : ["onoff", "cycle"],
 		"order" : 1},
