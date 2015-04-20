@@ -83,6 +83,21 @@ def set_status(conn, options):
 		sys.exit(1)
 
 
+# check if host is ready to execute actions
+def do_action_monitor(options):
+	if bool(run_cmd(options, options["--sg_persist-path"] + " -V")["err"]):
+		logging.error("Unable to run " + options["--sg_persist-path"])
+		return 1
+	elif bool(run_cmd(options, options["--sg_turs-path"] + " -V")["err"]):
+		logging.error("Unable to run " + options["--sg_turs-path"])
+		return 1
+	elif ("--devices" not in options and 
+			bool(run_cmd(options,	options["--vgs-path"] + " --version")["err"])):
+		logging.error("Unable to run " + options["--vgs-path"])
+		return 1
+	return 0
+
+
 #run command, returns dict, ret["err"] = exit code; ret["out"] = output
 def run_cmd(options, cmd):
 	ret = {}
@@ -422,6 +437,9 @@ longer be able to write to the device(s). A manual reboot is required."
 
 	# Input control BEGIN
 	stop_after_error = False if options["--action"] == "validate-all" else True
+
+	if options["--action"] == "monitor":
+		sys.exit(do_action_monitor(options))
 
 	if not (("--nodename" in options and options["--nodename"])\
 	or ("--key" in options and options["--key"])):
