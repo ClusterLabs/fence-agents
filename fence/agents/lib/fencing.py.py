@@ -414,6 +414,12 @@ all_opt = {
 		"getopt" : "",
 		"help" : "",
 		"order" : 1},
+	"port_as_ip": {
+		"getopt" : "",
+		"longopt" : "port-as-ip",
+		"help" : "--port-as-ip                   Make \"port/plug\" to be an alias to IP address",
+		"required" : "0",
+		"order" : 200},
 	"on_target": {
 		"getopt" : "",
 		"help" : "",
@@ -469,6 +475,12 @@ def _add_dependency_options(options):
 	for opt in options + ["default"]:
 		if DEPENDENCY_OPT.has_key(opt):
 			added_opt.extend([y for y in DEPENDENCY_OPT[opt] if options.count(y) == 0])
+
+	if not "port" in (options + added_opt) and not "nodename" in (options + added_opt):
+		added_opt.append("port_as_ip")
+		all_opt["port"]["help"] = "-n, --plug=[ip]                IP address or hostname of fencing device " \
+			"(together with --port-as-ip)"
+
 	return added_opt
 
 def fail_usage(message="", stop=True):
@@ -575,10 +587,17 @@ def process_input(avail_opt):
 	os.putenv("LANG", "C")
 	os.putenv("LC_ALL", "C")
 
+	if "port_as_ip" in avail_opt:
+		avail_opt.append("port")
+
 	if len(sys.argv) > 1:
 		opt = _parse_input_cmdline(avail_opt)
 	else:
 		opt = _parse_input_stdin(avail_opt)
+
+	if "--port-as-ip" in opt and "--plug" in opt:
+		opt["--ip"] = opt["--plug"]
+
 	return opt
 
 ##
@@ -710,6 +729,8 @@ def show_docs(options, docs=None):
 		sys.exit(0)
 
 	if options.get("--action", "") == "metadata":
+		if "port_as_ip" in device_opt:
+			device_opt.remove("separator")
 		metadata(device_opt, docs)
 		sys.exit(0)
 
@@ -1151,6 +1172,9 @@ def _validate_input(options, stop = True):
 	device_opt = options["device_opt"]
 	valid_input = True
 
+	if "port_as_ip" in device_opt and not "--port-as-ip" in options and "--plug" in options:
+		fail_usage("Parser error: option -n/--plug is not recognized")
+
 	if not options.has_key("--username") and \
 			device_opt.count("login") and (device_opt.count("no_login") == 0):
 		valid_input = False
@@ -1180,7 +1204,8 @@ def _validate_input(options, stop = True):
 		fail_usage("Failed: Identity file " + options["--identity-file"] + " does not exist", stop)
 
 	if (0 == ["list", "list-status", "monitor"].count(options["--action"])) and \
-		not options.has_key("--plug") and device_opt.count("port") and device_opt.count("no_port") == 0:
+		not options.has_key("--plug") and device_opt.count("port") and \
+		device_opt.count("no_port") == 0 and not device_opt.count("port_as_ip"):
 		valid_input = False
 		fail_usage("Failed: You have to enter plug number or machine identification", stop)
 

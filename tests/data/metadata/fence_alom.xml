@@ -53,6 +53,11 @@
 		<content type="string"  />
 		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
 	</parameter>
+	<parameter name="port" unique="0" required="1">
+		<getopt mixed="-n, --plug=[ip]" />
+		<content type="string"  />
+		<shortdesc lang="en">IP address or hostname of fencing device (together with --port-as-ip)</shortdesc>
+	</parameter>
 	<parameter name="secure" unique="0" required="0">
 		<getopt mixed="-x, --ssh" />
 		<content type="boolean" default="1"  />
@@ -92,6 +97,11 @@
 		<getopt mixed="--login-timeout=[seconds]" />
 		<content type="string" default="5"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
+	</parameter>
+	<parameter name="port_as_ip" unique="0" required="0">
+		<getopt mixed="--port-as-ip" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Make "port/plug" to be an alias to IP address</shortdesc>
 	</parameter>
 	<parameter name="power_timeout" unique="0" required="0">
 		<getopt mixed="--power-timeout=[seconds]" />
