@@ -7,7 +7,7 @@ The fence_mpath agent works by having an unique key for each pair of node and de
 	<parameter name="action" unique="0" required="1">
 		<getopt mixed="-o, --action=[action]" />
 		<content type="string" default="off"  />
-		<shortdesc lang="en">Fencing Action</shortdesc>
+		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
 	<parameter name="devices" unique="0" required="0">
 		<getopt mixed="-d, --devices=[devices]" />
@@ -81,7 +81,7 @@ The fence_mpath agent works by having an unique key for each pair of node and de
 	<parameter name="sudo" unique="0" required="0">
 		<getopt mixed="--use-sudo" />
 		<content type="boolean"  />
-		<shortdesc lang="en">Use sudo (without password) when calling 3rd party sotfware.</shortdesc>
+		<shortdesc lang="en">Use sudo (without password) when calling 3rd party software</shortdesc>
 	</parameter>
 	<parameter name="sudo_path" unique="0" required="0">
 		<getopt mixed="--sudo-path=[path]" />

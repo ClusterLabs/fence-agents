@@ -10,7 +10,7 @@
 	<parameter name="action" unique="0" required="1">
 		<getopt mixed="-o, --action=[action]" />
 		<content type="string" default="reboot"  />
-		<shortdesc lang="en">Fencing Action</shortdesc>
+		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
 	<parameter name="auth" unique="0" required="0">
 		<getopt mixed="-A, --auth=[auth]" />
@@ -39,7 +39,7 @@
 	<parameter name="ipaddr" unique="0" required="1">
 		<getopt mixed="-a, --ip=[ip]" />
 		<content type="string"  />
-		<shortdesc lang="en">IP Address or Hostname</shortdesc>
+		<shortdesc lang="en">IP address or hostname of fencing device</shortdesc>
 	</parameter>
 	<parameter name="ipport" unique="0" required="0">
 		<getopt mixed="-u, --ipport=[port]" />
@@ -54,7 +54,7 @@
 	<parameter name="login" unique="0" required="0">
 		<getopt mixed="-l, --username=[name]" />
 		<content type="string"  />
-		<shortdesc lang="en">Login Name</shortdesc>
+		<shortdesc lang="en">Login name</shortdesc>
 	</parameter>
 	<parameter name="method" unique="0" required="0">
 		<getopt mixed="-m, --method=[method]" />
@@ -72,7 +72,7 @@
 	<parameter name="passwd_script" unique="0" required="0">
 		<getopt mixed="-S, --password-script=[script]" />
 		<content type="string"  />
-		<shortdesc lang="en">Script to retrieve password</shortdesc>
+		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
 	</parameter>
 	<parameter name="privlvl" unique="0" required="0">
 		<getopt mixed="-L, --privlvl=[level]" />
@@ -142,7 +142,7 @@
 	<parameter name="sudo" unique="0" required="0">
 		<getopt mixed="--use-sudo" />
 		<content type="boolean"  />
-		<shortdesc lang="en">Use sudo (without password) when calling 3rd party sotfware.</shortdesc>
+		<shortdesc lang="en">Use sudo (without password) when calling 3rd party software</shortdesc>
 	</parameter>
 	<parameter name="sudo_path" unique="0" required="0">
 		<getopt mixed="--sudo-path=[path]" />

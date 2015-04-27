@@ -6,7 +6,7 @@
 	<parameter name="action" unique="0" required="1">
 		<getopt mixed="-o, --action=[action]" />
 		<content type="string" default="reboot"  />
-		<shortdesc lang="en">Fencing Action</shortdesc>
+		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
 	<parameter name="inet4_only" unique="0" required="0">
 		<getopt mixed="-4, --inet4-only" />
@@ -21,7 +21,7 @@
 	<parameter name="ipaddr" unique="0" required="1">
 		<getopt mixed="-a, --ip=[ip]" />
 		<content type="string"  />
-		<shortdesc lang="en">IP Address or Hostname</shortdesc>
+		<shortdesc lang="en">IP address or hostname of fencing device</shortdesc>
 	</parameter>
 	<parameter name="ipport" unique="0" required="0">
 		<getopt mixed="-u, --ipport=[port]" />
@@ -39,22 +39,23 @@
 	<parameter name="port" unique="0" required="1">
 		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />
-		<shortdesc lang="en">Physical plug number, name of virtual machine or UUID</shortdesc>
+		<shortdesc lang="en">Physical plug number on device, UUID or
+identification of machine</shortdesc>
 	</parameter>
 	<parameter name="ssl" unique="0" required="0">
 		<getopt mixed="-z, --ssl" />
 		<content type="boolean"  />
-		<shortdesc lang="en">SSL connection</shortdesc>
+		<shortdesc lang="en">Use SSL connection with verifying certificate</shortdesc>
 	</parameter>
 	<parameter name="ssl_insecure" unique="0" required="0">
 		<getopt mixed="--ssl-insecure" />
 		<content type="boolean"  />
-		<shortdesc lang="en">SSL connection without verifying fence device's certificate</shortdesc>
+		<shortdesc lang="en">Use SSL connection without verifying certificate</shortdesc>
 	</parameter>
 	<parameter name="ssl_secure" unique="0" required="0">
 		<getopt mixed="--ssl-secure" />
 		<content type="boolean"  />
-		<shortdesc lang="en">SSL connection with verifying fence device's certificate</shortdesc>
+		<shortdesc lang="en">Use SSL connection with verifying certificate</shortdesc>
 	</parameter>
 	<parameter name="tlscacert" unique="0" required="0">
 		<getopt mixed="--tlscacert" />
@@ -94,7 +95,7 @@
 	<parameter name="separator" unique="0" required="0">
 		<getopt mixed="-C, --separator=[char]" />
 		<content type="string" default=","  />
-		<shortdesc lang="en">Separator for CSV created by operation list</shortdesc>
+		<shortdesc lang="en">Separator for CSV created by 'list' operation</shortdesc>
 	</parameter>
 	<parameter name="delay" unique="0" required="0">
 		<getopt mixed="--delay=[seconds]" />

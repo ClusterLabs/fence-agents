@@ -7,7 +7,7 @@ The fence_scsi agent works by having each node in the cluster register a unique 
 	<parameter name="action" unique="0" required="1">
 		<getopt mixed="-o, --action=[action]" />
 		<content type="string" default="off"  />
-		<shortdesc lang="en">Fencing Action</shortdesc>
+		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
 	<parameter name="aptpl" unique="0" required="0">
 		<getopt mixed="-a, --aptpl" />

@@ -6,7 +6,7 @@
 	<parameter name="action" unique="0" required="1">
 		<getopt mixed="-o, --action=[action]" />
 		<content type="string" default="reboot"  />
-		<shortdesc lang="en">Fencing Action</shortdesc>
+		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
 	<parameter name="email" unique="0" required="1">
 		<getopt mixed="-Z, --email=[email]" />
@@ -16,7 +16,7 @@
 	<parameter name="login" unique="0" required="1">
 		<getopt mixed="-l, --username=[name]" />
 		<content type="string"  />
-		<shortdesc lang="en">Login Name</shortdesc>
+		<shortdesc lang="en">Login name</shortdesc>
 	</parameter>
 	<parameter name="passwd" unique="0" required="0">
 		<getopt mixed="-p, --password=[password]" />
@@ -26,12 +26,13 @@
 	<parameter name="passwd_script" unique="0" required="0">
 		<getopt mixed="-S, --password-script=[script]" />
 		<content type="string"  />
-		<shortdesc lang="en">Script to retrieve password</shortdesc>
+		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
 	</parameter>
 	<parameter name="port" unique="0" required="1">
 		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />
-		<shortdesc lang="en">Physical plug number, name of virtual machine or UUID</shortdesc>
+		<shortdesc lang="en">Physical plug number on device, UUID or
+identification of machine</shortdesc>
 	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
@@ -56,7 +57,7 @@
 	<parameter name="separator" unique="0" required="0">
 		<getopt mixed="-C, --separator=[char]" />
 		<content type="string" default=","  />
-		<shortdesc lang="en">Separator for CSV created by operation list</shortdesc>
+		<shortdesc lang="en">Separator for CSV created by 'list' operation</shortdesc>
 	</parameter>
 	<parameter name="delay" unique="0" required="0">
 		<getopt mixed="--delay=[seconds]" />

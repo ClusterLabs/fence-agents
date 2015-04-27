@@ -45,7 +45,7 @@ all_opt = {
 	"version" : {
 		"getopt" : "V",
 		"longopt" : "version",
-		"help" : "-V, --version                  Output version information and exit",
+		"help" : "-V, --version                  Display version information and exit",
 		"required" : "0",
 		"shortdesc" : "Display version information and exit",
 		"order" : 53},
@@ -82,7 +82,7 @@ all_opt = {
 		"longopt" : "action",
 		"help" : "-o, --action=[action]          Action: status, reboot (default), off or on",
 		"required" : "1",
-		"shortdesc" : "Fencing Action",
+		"shortdesc" : "Fencing action",
 		"default" : "reboot",
 		"order" : 1},
 	"fabric_fencing" : {
@@ -94,12 +94,11 @@ all_opt = {
 		"longopt" : "ip",
 		"help" : "-a, --ip=[ip]                  IP address or hostname of fencing device",
 		"required" : "1",
-		"shortdesc" : "IP Address or Hostname",
 		"order" : 1},
 	"ipport" : {
 		"getopt" : "u:",
 		"longopt" : "ipport",
-		"help" : "-u, --ipport=[port]            TCP/UDP port to use",
+		"help" : "-u, --ipport=[port]            TCP/UDP port to use for connection",
 		"required" : "0",
 		"shortdesc" : "TCP/UDP port to use for connection with device",
 		"order" : 1},
@@ -108,7 +107,6 @@ all_opt = {
 		"longopt" : "username",
 		"help" : "-l, --username=[name]          Login name",
 		"required" : "?",
-		"shortdesc" : "Login Name",
 		"order" : 1},
 	"no_login" : {
 		"getopt" : "",
@@ -141,14 +139,12 @@ all_opt = {
 		"longopt" : "password-script",
 		"help" : "-S, --password-script=[script] Script to run to retrieve password",
 		"required" : "0",
-		"shortdesc" : "Script to retrieve password",
 		"order" : 1},
 	"identity_file" : {
 		"getopt" : "k:",
 		"longopt" : "identity-file",
-		"help" : "-k, --identity-file=[filename] Identity file (private key) for ssh ",
+		"help" : "-k, --identity-file=[filename] Identity file (private key) for SSH",
 		"required" : "0",
-		"shortdesc" : "Identity file for ssh",
 		"order" : 1},
 	"cmd_prompt" : {
 		"getopt" : "c:",
@@ -159,8 +155,7 @@ all_opt = {
 	"secure" : {
 		"getopt" : "x",
 		"longopt" : "ssh",
-		"help" : "-x, --ssh                      Use ssh connection",
-		"shortdesc" : "SSH connection",
+		"help" : "-x, --ssh                      Use SSH connection",
 		"required" : "0",
 		"order" : 1},
 	"ssh_options" : {
@@ -172,56 +167,43 @@ all_opt = {
 	"ssl" : {
 		"getopt" : "z",
 		"longopt" : "ssl",
-		"help" : "-z, --ssl                      Use ssl connection",
+		"help" : "-z, --ssl                      Use SSL connection with verifying certificate",
 		"required" : "0",
-		"shortdesc" : "SSL connection",
 		"order" : 1},
 	"ssl_insecure" : {
 		"getopt" : "",
 		"longopt" : "ssl-insecure",
-		"help" : "--ssl-insecure                 Use ssl connection without verifying certificate",
+		"help" : "--ssl-insecure                 Use SSL connection without verifying certificate",
 		"required" : "0",
-		"shortdesc" : "SSL connection without verifying fence device's certificate",
 		"order" : 1},
 	"ssl_secure" : {
 		"getopt" : "",
 		"longopt" : "ssl-secure",
-		"help" : "--ssl-secure                   Use ssl connection with verifying certificate",
+		"help" : "--ssl-secure                   Use SSL connection with verifying certificate",
 		"required" : "0",
-		"shortdesc" : "SSL connection with verifying fence device's certificate",
 		"order" : 1},
-
 	"notls" : {
 		"getopt" : "t",
 		"longopt" : "notls",
 		"help" : "-t, --notls                    "
-				"Disable TLS negotiation and force SSL3.0.\n"
-				"                                        "
-				"This should only be used for devices that\n"
-				"                                        "
-				"do not support TLS1.0 and up.",
+				"Disable TLS negotiation and force SSL3.0. "
+				"This should only be used for devices that do not support TLS1.0 and up.",
 		"required" : "0",
-		"shortdesc" : "Disable TLS negotiation, force SSL 3.0",
 		"order" : 1},
 	"tls1.0" : {
 		"getopt" : "",
 		"longopt" : "tls1.0",
 		"help" : "--tls1.0                       "
-				"Disable TLS negotiation and force TLS1.0\n"
-				"                                        "
-				"This should only be used for devices that\n"
-				"                                        "
-				"do not support TLS1.1 and up.",
+				"Disable TLS negotiation and force TLS1.0. "
+				"This should only be used for devices that do not support TLS1.1 and up.",
 		"required" : "0",
-		"shortdesc" : "Disable TLS negotiaton, force TLS 1.0",
 		"order" : 1},
 	"port" : {
 		"getopt" : "n:",
 		"longopt" : "plug",
-		"help" : "-n, --plug=[id]                Physical plug number on device, UUID or\n" +
-        "                                        identification of machine",
+		"help" : "-n, --plug=[id]                "
+				"Physical plug number on device, UUID or identification of machine",
 		"required" : "1",
-		"shortdesc" : "Physical plug number, name of virtual machine or UUID",
 		"order" : 1},
 	"switch" : {
 		"getopt" : "s:",
@@ -246,7 +228,6 @@ all_opt = {
 		"longopt" : "vmware-datacenter",
 		"help" : "-s, --vmware-datacenter=[dc]   VMWare datacenter filter",
 		"required" : "0",
-		"shortdesc" : "Show only machines in specified datacenter",
 		"order" : 2},
 	"snmp_version" : {
 		"getopt" : "d:",
@@ -273,8 +254,8 @@ all_opt = {
 	"snmp_sec_level" : {
 		"getopt" : "E:",
 		"longopt" : "snmp-sec-level",
-		"help" : "-E, --snmp-sec-level=[level]   Set security level\n"+
-		"                                  (noAuthNoPriv|authNoPriv|authPriv)",
+		"help" : "-E, --snmp-sec-level=[level]   "
+				"Set security level (noAuthNoPriv|authNoPriv|authPriv)",
 		"required" : "0",
 		"shortdesc" : "Set security level (noAuthNoPriv|authNoPriv|authPriv)",
 		"choices" : ["noAuthNoPriv", "authNoPriv", "authPriv"],
@@ -317,7 +298,6 @@ all_opt = {
 		"help" : "-C, --separator=[char]         Separator for CSV created by 'list' operation",
 		"default" : ",",
 		"required" : "0",
-		"shortdesc" : "Separator for CSV created by operation list",
 		"order" : 100},
 	"login_timeout" : {
 		"getopt" : ":",
@@ -365,14 +345,12 @@ all_opt = {
 		"longopt" : "session-url",
 		"help" : "-s, --session-url              URL to connect to XenServer on",
 		"required" : "1",
-		"shortdesc" : "The URL of the XenServer host.",
 		"order" : 1},
 	"sudo" : {
 		"getopt" : "",
 		"longopt" : "use-sudo",
 		"help" : "--use-sudo                     Use sudo (without password) when calling 3rd party software",
 		"required" : "0",
-		"shortdesc" : "Use sudo (without password) when calling 3rd party sotfware.",
 		"order" : 205},
 	"method" : {
 		"getopt" : "m:",

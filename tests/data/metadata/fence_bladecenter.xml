@@ -6,7 +6,7 @@
 	<parameter name="action" unique="0" required="1">
 		<getopt mixed="-o, --action=[action]" />
 		<content type="string" default="reboot"  />
-		<shortdesc lang="en">Fencing Action</shortdesc>
+		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
 	<parameter name="cmd_prompt" unique="0" required="0">
 		<getopt mixed="-c, --command-prompt=[prompt]" />
@@ -16,7 +16,7 @@
 	<parameter name="identity_file" unique="0" required="0">
 		<getopt mixed="-k, --identity-file=[filename]" />
 		<content type="string"  />
-		<shortdesc lang="en">Identity file for ssh</shortdesc>
+		<shortdesc lang="en">Identity file (private key) for SSH</shortdesc>
 	</parameter>
 	<parameter name="inet4_only" unique="0" required="0">
 		<getopt mixed="-4, --inet4-only" />
@@ -31,7 +31,7 @@
 	<parameter name="ipaddr" unique="0" required="1">
 		<getopt mixed="-a, --ip=[ip]" />
 		<content type="string"  />
-		<shortdesc lang="en">IP Address or Hostname</shortdesc>
+		<shortdesc lang="en">IP address or hostname of fencing device</shortdesc>
 	</parameter>
 	<parameter name="ipport" unique="0" required="0">
 		<getopt mixed="-u, --ipport=[port]" />
@@ -41,7 +41,7 @@
 	<parameter name="login" unique="0" required="1">
 		<getopt mixed="-l, --username=[name]" />
 		<content type="string"  />
-		<shortdesc lang="en">Login Name</shortdesc>
+		<shortdesc lang="en">Login name</shortdesc>
 	</parameter>
 	<parameter name="passwd" unique="0" required="0">
 		<getopt mixed="-p, --password=[password]" />
@@ -51,17 +51,18 @@
 	<parameter name="passwd_script" unique="0" required="0">
 		<getopt mixed="-S, --password-script=[script]" />
 		<content type="string"  />
-		<shortdesc lang="en">Script to retrieve password</shortdesc>
+		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
 	</parameter>
 	<parameter name="port" unique="0" required="1">
 		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />
-		<shortdesc lang="en">Physical plug number, name of virtual machine or UUID</shortdesc>
+		<shortdesc lang="en">Physical plug number on device, UUID or
+identification of machine</shortdesc>
 	</parameter>
 	<parameter name="secure" unique="0" required="0">
 		<getopt mixed="-x, --ssh" />
 		<content type="boolean"  />
-		<shortdesc lang="en">SSH connection</shortdesc>
+		<shortdesc lang="en">Use SSH connection</shortdesc>
 	</parameter>
 	<parameter name="ssh_options" unique="0" required="0">
 		<getopt mixed="--ssh-options=[options]" />
@@ -91,7 +92,7 @@
 	<parameter name="separator" unique="0" required="0">
 		<getopt mixed="-C, --separator=[char]" />
 		<content type="string" default=","  />
-		<shortdesc lang="en">Separator for CSV created by operation list</shortdesc>
+		<shortdesc lang="en">Separator for CSV created by 'list' operation</shortdesc>
 	</parameter>
 	<parameter name="delay" unique="0" required="0">
 		<getopt mixed="--delay=[seconds]" />
