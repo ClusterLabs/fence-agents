@@ -1,10 +1,10 @@
-TEMPFILE:=$(shell mktemp)
 DATADIR:=$(abs_top_srcdir)/tests/data/metadata
 
 check: $(TARGET:%=xml-check.%) $(SYMTARGET:%=xml-check.%)
 
 xml-check.%: %
 	$(eval INPUT=$(subst xml-check.,,$@))
+	$(eval TEMPFILE = $(shell mktemp))
 	./$(INPUT) -o metadata > $(TEMPFILE)
 	diff $(TEMPFILE) $(DATADIR)/$(INPUT).xml
 	rm $(TEMPFILE)
