@@ -24,6 +24,7 @@ $(TARGET): $(SRC)
 		-e 's#@''SNMPWALK_PATH@#${SNMPWALK_PATH}#g' \
 		-e 's#@''SNMPSET_PATH@#${SNMPSET_PATH}#g' \
 		-e 's#@''SNMPGET_PATH@#${SNMPGET_PATH}#g' \
+		-e 's#@''NOVA_PATH@#${NOVA_PATH}#g' \
 	> $@
 
 	if [ 0 -eq `echo "$(SRC)" | grep fence_ &> /dev/null; echo $$?` ]; then \

@@ -174,6 +174,7 @@ AC_PATH_PROG([SUDO_PATH], [sudo], [/usr/bin/sudo])
 AC_PATH_PROG([SNMPWALK_PATH], [snmpwalk], [/usr/bin/snmpwalk])
 AC_PATH_PROG([SNMPSET_PATH], [snmpset], [/usr/bin/snmpset])
 AC_PATH_PROG([SNMPGET_PATH], [snmpget], [/usr/bin/snmpget])
+AC_PATH_PROG([NOVA_PATH], [nova], [/usr/bin/nova])
 
 ## do subst
 
@@ -274,6 +275,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/brocade/Makefile
 		 fence/agents/cisco_mds/Makefile
 		 fence/agents/cisco_ucs/Makefile
+		 fence/agents/compute/Makefile
 		 fence/agents/docker/Makefile
 		 fence/agents/drac/Makefile
 		 fence/agents/drac5/Makefile
