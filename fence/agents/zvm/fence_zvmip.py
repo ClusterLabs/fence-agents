@@ -144,8 +144,8 @@ def main():
 	if len(options.get("--plug", "")) > 8:
 		fail_usage("Failed: Name of image can not be longer than 8 characters")
 
-        if options["--action"] == "validate-all":
-                sys.exit(0)
+	if options["--action"] == "validate-all":
+		sys.exit(0)
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for use with z/VM Virtual Machines"

@@ -144,8 +144,8 @@ def main():
 	if not options.has_key("--managed"):
 		fail_usage("Failed: You have to enter name of managed system")
 
-        if options["--action"] == "validate-all":
-                sys.exit(0)
+	if options["--action"] == "validate-all":
+		sys.exit(0)
 
 	##
 	## Operate the fencing device

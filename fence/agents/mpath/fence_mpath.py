@@ -231,8 +231,8 @@ longer be able to write to the device(s). A manual reboot is required."
 	if not "--key" in options:
 		fail_usage("Failed: key is required")
 
-        if options["--action"] == "validate-all":
-                sys.exit(0)
+	if options["--action"] == "validate-all":
+		sys.exit(0)
 
 	options["devices"] = options["--devices"].split(",")
 
