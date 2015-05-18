@@ -40,7 +40,7 @@ def get_power_status(_, options):
 				if service.state == "up":
 					status = "on"
 				elif service.state == "down":
-					status = "down"
+					status = "off"
 				else:
 					logging.debug("Unknown status detected from nova: " + service.state)
 				break
