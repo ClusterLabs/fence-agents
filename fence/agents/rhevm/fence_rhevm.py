@@ -87,7 +87,7 @@ def send_command(opt, command, method="GET"):
 	conn = pycurl.Curl()
 	web_buffer = StringIO.StringIO()
 	conn.setopt(pycurl.URL, url)
-	conn.setopt(pycurl.HTTPHEADER, ["Content-type: application/xml", "Accept: application/xml", "Prefer: persistent-auth"])
+	conn.setopt(pycurl.HTTPHEADER, ["Content-type: application/xml", "Accept: application/xml", "Prefer: persistent-auth", "Filter: true"])
 
 	if opt.has_key("cookie"):
 		conn.setopt(pycurl.COOKIE, opt["cookie"])
