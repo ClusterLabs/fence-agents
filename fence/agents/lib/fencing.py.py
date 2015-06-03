@@ -865,9 +865,11 @@ def fence_login(options, re_login_string=r"(login\s*: )|((?!Last )Login Name:  )
 			conn = _login_ssh_with_identity_file(options)
 		else:
 			conn = _login_telnet(options, re_login_string)
-	except pexpect.EOF:
+	except pexpect.EOF, exception:
+		logging.debug("%s", str(exception))
 		fail(EC_LOGIN_DENIED)
-	except pexpect.TIMEOUT:
+	except pexpect.TIMEOUT, exception:
+		logging.debug("%s", str(exception))
 		fail(EC_LOGIN_DENIED)
 	return conn
 
