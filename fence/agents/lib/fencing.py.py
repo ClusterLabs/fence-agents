@@ -1109,9 +1109,11 @@ def fence_login(options, re_login_string=r"(login\s*: )|(Login Name:  )|(usernam
 					conn.log_expect(options, options["--command-prompt"], int(options["--login-timeout"]))
 			except KeyError:
 				fail(EC_PASSWORD_MISSING)
-	except pexpect.EOF:
+	except pexpect.EOF, exception:
+		logging.debug("%s", str(exception))
 		fail(EC_LOGIN_DENIED)
-	except pexpect.TIMEOUT:
+	except pexpect.TIMEOUT, exception:
+		logging.debug("%s", str(exception))
 		fail(EC_LOGIN_DENIED)
 	return conn
 

@@ -4,11 +4,11 @@ import sys
 import time
 import atexit
 import logging
+import requests.exceptions
 
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail_usage, is_executable, run_command, run_delay
-from novaclient import client as nova_client
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="4.0.11"
@@ -32,18 +32,18 @@ def get_power_status(_, options):
 	if nova:
 		try:
 			services = nova.services.list(host=options["--plug"])
-		except Exception, e:
-			fail_usage(str(e))
 
-		for service in services:
-			if service.binary == "nova-compute":
-				if service.state == "up":
-					status = "on"
-				elif service.state == "down":
-					status = "down"
-				else:
-					logging.debug("Unknown status detected from nova: " + service.state)
-				break
+			for service in services:
+				if service.binary == "nova-compute":
+					if service.state == "up":
+						status = "on"
+					elif service.state == "down":
+						status = "off"
+					else:
+						logging.debug("Unknown status detected from nova: " + service.state)
+					break
+		except ConnectionError as (err):
+			logging.warning("Nova connection failed: " + str(err))
 	return status
 
 # NOTE(sbauza); We mimic the host-evacuate module since it's only a contrib
@@ -143,15 +143,6 @@ def define_new_opts():
 		"default" : "",
 		"order": 1,
 	}
-	all_opt["novatool-path"] = {
-		"getopt" : "i:",
-		"longopt" : "novatool-path",
-		"help" : "-i, --novatool-path=[path]     Path to nova binary",
-		"required" : "0",
-		"shortdesc" : "Path to nova binary",
-		"default" : "@NOVA_PATH@",
-		"order": 6,
-	}
 	all_opt["domain"] = {
 		"getopt" : "d:",
 		"longopt" : "domain",
@@ -177,7 +168,7 @@ def main():
 	atexit.register(atexit_handler)
 
 	device_opt = ["login", "passwd", "tenant-name", "auth-url",
-		"novatool-path", "no_login", "no_password", "port", "domain", "no-shared-storage"]
+		"no_login", "no_password", "port", "domain", "no-shared-storage"]
 	define_new_opts()
 	all_opt["shell_timeout"]["default"] = "180"
 
@@ -192,12 +183,44 @@ def main():
 
 	run_delay(options)
 
+	try:
+		from novaclient import client as nova_client
+	except ImportError:
+		fail_usage("nova not found or not accessible")
+
+	# Potentially we should make this a pacemaker feature
+	if options["--action"] != "list" and options["--domain"] != "" and options.has_key("--plug"):
+		options["--plug"] = options["--plug"] + "." + options["--domain"]
+
 	# The first argument is the Nova client version
 	nova = nova_client.Client('2',
 		options["--username"],
 		options["--password"],
 		options["--tenant-name"],
 		options["--auth-url"])
+
+	if options["--action"] in ["on", "off", "reboot" ]:
+		try:
+			nova.services.list(host=options["--plug"])
+		except ConnectionError as (err):
+			# Yes, exit(0)
+			#
+			# Its possible that the control plane on which this
+			# agent depends is not functional
+			#
+			# In this situation, fencing is waiting for resource
+			# recovery and resource recovery is waiting for
+			# fencing.
+			#
+			# To break the cycle, we all the fencing agent to
+			# return 'done' immediately so that we can recover the
+			# control plane. We then rely on the NovaCompute RA
+			# to call this agent directly once the control plane
+			# is up.
+			#
+			# Yes its horrible, but still better than nova itself.
+			logging.warning("Nova connection failed: %s " % str(err))
+			sys.exit(0)
 
 	if options["--action"] in ["off", "reboot"]:
 		# Pretend we're 'on' so that the fencing library will always call set_power_status(off)
@@ -206,10 +229,6 @@ def main():
 	if options["--action"] == "on":
 		# Pretend we're 'off' so that the fencing library will always call set_power_status(on)
 		override_status = "off"
-
-	# Potentially we should make this a pacemaker feature
-	if options["--action"] != "list" and options["--domain"] != "" and options.has_key("--plug"):
-		options["--plug"] = options["--plug"]+"."+options["--domain"]
 
 	result = fence_action(None, options, set_power_status, get_power_status, get_plugs_list, None)
 	sys.exit(result)
