@@ -16,6 +16,7 @@ $(TARGET): $(SRC)
 		-e 's#@''SG_PERSIST_PATH@#${SG_PERSIST_PATH}#g' \
 		-e 's#@''SG_TURS_PATH@#${SG_TURS_PATH}#g' \
 		-e 's#@''VGS_PATH@#${VGS_PATH}#g' \
+		-e 's#@''NOVA_PATH@#${NOVA_PATH}#g' \
 	> $@
 
 	if [ 0 -eq `echo "$(SRC)" | grep fence_ &> /dev/null; echo $$?` ]; then \

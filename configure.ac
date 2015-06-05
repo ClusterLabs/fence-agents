@@ -167,6 +167,7 @@ AC_PATH_PROG([COROSYNC_CMAPCTL_PATH], [corosync-cmapctl], [/usr/sbin/corosync-cm
 AC_PATH_PROG([SG_PERSIST_PATH], [sg_persist], [/usr/bin/sg_persist])
 AC_PATH_PROG([SG_TURS_PATH], [sg_turs], [/usr/bin/sg_turs])
 AC_PATH_PROG([VGS_PATH], [vgs], [/usr/sbin/vgs])
+AC_PATH_PROG([NOVA_PATH], [nova], [/usr/bin/nova])
 ## do subst
 
 AC_SUBST([DEFAULT_CONFIG_DIR])
@@ -265,6 +266,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/brocade/Makefile
 		 fence/agents/cisco_mds/Makefile
 		 fence/agents/cisco_ucs/Makefile
+		 fence/agents/compute/Makefile
 		 fence/agents/docker/Makefile
 		 fence/agents/drac/Makefile
 		 fence/agents/drac5/Makefile
