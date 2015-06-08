@@ -98,12 +98,10 @@ def set_power_status(_, options):
 		logging.debug("Waiting for nova to update it's internal state")
 		time.sleep(1)
 
-	if "--no-shared-storage" not in options:
-		# If the admin sets this when they DO have shared
-		# storage in use, then they get what they asked for
-		on_shared_storage = True
-	else:
+	if options["--no-shared-storage"] != "False":
 		on_shared_storage = False
+	else:
+		on_shared_storage = True
 
 	_host_evacuate(options["--plug"], on_shared_storage)
 	return
