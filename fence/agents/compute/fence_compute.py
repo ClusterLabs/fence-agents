@@ -123,6 +123,15 @@ def get_plugs_list(_, options):
 
 
 def define_new_opts():
+	all_opt["endpoint-type"] = {
+		"getopt" : "e:",
+		"longopt" : "endpoint-type",
+		"help" : "-e, --endpoint-type=[endpoint] Nova Endpoint type (publicURL, internalURL, adminURL)",
+		"required" : "0",
+		"shortdesc" : "Nova Endpoint type",
+		"default" : "internalURL",
+		"order": 1,
+	}
 	all_opt["tenant-name"] = {
 		"getopt" : "t:",
 		"longopt" : "tenant-name",
@@ -140,15 +149,6 @@ def define_new_opts():
 		"shortdesc" : "Keystone Admin Auth URL",
 		"default" : "",
 		"order": 1,
-	}
-	all_opt["novatool-path"] = {
-		"getopt" : "i:",
-		"longopt" : "novatool-path",
-		"help" : "-i, --novatool-path=[path]     Path to nova binary",
-		"required" : "0",
-		"shortdesc" : "Path to nova binary",
-		"default" : "@NOVA_PATH@",
-		"order": 6,
 	}
 	all_opt["domain"] = {
 		"getopt" : "d:",
@@ -175,7 +175,7 @@ def main():
 	atexit.register(atexit_handler)
 
 	device_opt = ["login", "passwd", "tenant-name", "auth-url",
-		"novatool-path", "no_login", "no_password", "port", "domain", "no-shared-storage"]
+		"no_login", "no_password", "port", "domain", "no-shared-storage", "endpoint-type"]
 	define_new_opts()
 	all_opt["shell_timeout"]["default"] = "180"
 
@@ -195,7 +195,8 @@ def main():
 		options["--username"],
 		options["--password"],
 		options["--tenant-name"],
-		options["--auth-url"])
+		options["--auth-url"],
+		endpoint_type=options["--endpoint-type"])
 
 	if options["--action"] in ["off", "reboot"]:
 		# Pretend we're 'on' so that the fencing library will always call set_power_status(off)
