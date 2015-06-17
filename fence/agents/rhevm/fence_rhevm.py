@@ -87,9 +87,16 @@ def send_command(opt, command, method="GET"):
 	conn = pycurl.Curl()
 	web_buffer = StringIO.StringIO()
 	conn.setopt(pycurl.URL, url)
-	conn.setopt(pycurl.HTTPHEADER, ["Content-type: application/xml", "Accept: application/xml"])
-	conn.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_BASIC)
-	conn.setopt(pycurl.USERPWD, opt["--username"] + ":" + opt["--password"])
+	conn.setopt(pycurl.HTTPHEADER, ["Content-type: application/xml", "Accept: application/xml", "Prefer: persistent-auth"])
+
+	if opt.has_key("cookie"):
+		conn.setopt(pycurl.COOKIE, opt["cookie"])
+	else:
+		conn.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_BASIC)
+		conn.setopt(pycurl.USERPWD, opt["--username"] + ":" + opt["--password"])
+		if opt.has_key("--use-cookies"):
+			conn.setopt(pycurl.COOKIEFILE, "")
+
 	conn.setopt(pycurl.TIMEOUT, int(opt["--shell-timeout"]))
 	if opt.has_key("--ssl") or opt.has_key("--ssl-secure"):
 		conn.setopt(pycurl.SSL_VERIFYPEER, 1)
@@ -104,6 +111,15 @@ def send_command(opt, command, method="GET"):
 
 	conn.setopt(pycurl.WRITEFUNCTION, web_buffer.write)
 	conn.perform()
+
+	if not opt.has_key("cookie") and opt.has_key("--use-cookies"):
+		cookie = ""
+		for c in conn.getinfo(pycurl.INFO_COOKIELIST):
+			tokens = c.split("\t",7)
+			cookie = cookie + tokens[5] + "=" + tokens[6] + ";"
+
+		opt["cookie"] = cookie
+
 	result = web_buffer.getvalue()
 
 	logging.debug("%s\n", command)
@@ -111,10 +127,20 @@ def send_command(opt, command, method="GET"):
 
 	return result
 
+def define_new_opts():
+	all_opt["use_cookies"] = {
+		"getopt" : "s",
+		"longopt" : "use-cookies",
+		"help" : "--use-cookies                  Reuse cookies for authentication",
+		"required" : "0",
+		"shortdesc" : "Reuse cookies for authentication",
+		"order" : 1}
+
 def main():
-	device_opt = ["ipaddr", "login", "passwd", "ssl", "notls", "web", "port"]
+	device_opt = ["ipaddr", "login", "passwd", "ssl", "notls", "web", "port", "use_cookies" ]
 
 	atexit.register(atexit_handler)
+	define_new_opts()
 
 	all_opt["power_wait"]["default"] = "1"
 
