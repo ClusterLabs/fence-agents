@@ -32,6 +32,9 @@ def get_status(conn, options):
 		else:
 			logging.debug("No registration for key "\
 				+ options["--key"] + " on device " + dev + "\n")
+			if options["--action"] == "on":
+				status = "off"
+				break
 	return status
 
 
