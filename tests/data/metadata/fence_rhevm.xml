@@ -11,7 +11,7 @@
 	<parameter name="notls" unique="0" required="0">
 		<getopt mixed="-t, --notls" />
 		<content type="boolean"  />
-		<shortdesc lang="en">Disable TLS negotiation</shortdesc>
+		<shortdesc lang="en">Disable TLS negotiation, force SSL 3.0</shortdesc>
 	</parameter>
 	<parameter name="ssl_secure" unique="0" required="0">
 		<getopt mixed="--ssl-secure" />
