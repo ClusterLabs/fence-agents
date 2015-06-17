@@ -62,24 +62,39 @@ def prepare_smapi_command(options, smapi_function, additional_args):
 def get_power_status(conn, options):
 	del conn
 
-	# '*' = list all active images
-	(return_code, reason_code, images_active) = \
-			get_list_of_images(options, "Image_Status_Query", "*")
-	logging.debug("Image_Status_Query results are (%d,%d)", return_code, reason_code)
-	(return_code, reason_code, images_defined) = \
-			get_list_of_images(options, "Image_Name_Query_DM", options["--username"])
-	logging.debug("Image_Name_Query_DM results are (%d,%d)", return_code, reason_code)
+	if options.get("--original-action", None) == "monitor":
+		(return_code, reason_code, images_active) = \
+			get_list_of_images(options, "Check_Authentication", None)
 
-	if ["list", "monitor"].count(options["--action"]) == 1:
-		return dict([(i, ("", "on" if i in images_active else "off")) for i in images_defined])
+		logging.debug("Check_Authenticate (%d,%d)", return_code, reason_code)
+		if return_code == 0:
+			return {}
+		else:
+			fail(EC_LOGIN_DENIED)
+
+	if options["--action"] == "list":
+		# '*' = list all active images
+		options["--plug"] = "*"
+
+	(return_code, reason_code, images_active) = \
+			get_list_of_images(options, "Image_Status_Query", options["--plug"])
+	logging.debug("Image_Status_Query results are (%d,%d)", return_code, reason_code)
+
+	if not options["--action"] == "list":
+		if (return_code == 0) and (reason_code == 0):
+			return "on"
+		elif (return_code == 0) and (reason_code == 12):
+			# We are running always with --missing-as-off because we can not check if image
+			# is defined or not (look at rhbz#1188750)
+			return "off"
+		else:
+			return "unknown"
 	else:
-		status = "error"
-		if options["--plug"].upper() in images_defined:
-			if options["--plug"].upper() in images_active:
-				status = "on"
-			else:
-				status = "off"
-		return status
+		(return_code, reason_code, images_defined) = \
+			get_list_of_images(options, "Image_Name_Query_DM", options["--username"])
+		logging.debug("Image_Name_Query_DM results are (%d,%d)", return_code, reason_code)
+
+		return dict([(i, ("", "on" if i in images_active else "off")) for i in images_defined])
 
 def set_power_status(conn, options):
 	conn = open_socket(options)
@@ -101,7 +116,11 @@ def set_power_status(conn, options):
 def get_list_of_images(options, command, data_as_plug):
 	conn = open_socket(options)
 
-	packet = prepare_smapi_command(options, command, [data_as_plug])
+	if data_as_plug is None:
+		packet = prepare_smapi_command(options, command, [])
+	else:
+		packet = prepare_smapi_command(options, command, [data_as_plug])
+
 	conn.send(packet)
 
 	request_id = struct.unpack("!i", conn.recv(INT4))[0]
@@ -133,12 +152,13 @@ def get_list_of_images(options, command, data_as_plug):
 	return (return_code, reason_code, images)
 
 def main():
-	device_opt = ["ipaddr", "login", "passwd", "port", "method"]
+	device_opt = ["ipaddr", "login", "passwd", "port", "method", "missing_as_off"]
 
 	atexit.register(atexit_handler)
 
 	all_opt["ipport"]["default"] = "44444"
 	all_opt["shell_timeout"]["default"] = "5.0"
+	all_opt["missing_as_off"]["default"] = "1"
 	options = check_input(device_opt, process_input(device_opt), other_conditions=True)
 
 	if len(options.get("--plug", "")) > 8:

@@ -759,10 +759,11 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 				## None as soon as all existing agent will support this operation
 				print "NOTICE: List option is not working on this device yet"
 			else:
-				original_action = options["--action"]
+				options["--original-action"] = options["--action"]
 				options["--action"] = "list"
 				outlets = get_outlet_list(connection, options)
-				options["--action"] = original_action
+				options["--action"] = options["--original-action"]
+				del options["--original-action"]
 
 				## keys can be numbers (port numbers) or strings (names of VM, UUID)
 				for outlet_id in outlets.keys():
