@@ -233,7 +233,6 @@ do_action_metadata (const char *self)
 
     fprintf (stdout, "\t<parameter name=\"action\" unique=\"0\" required=\"0\">\n");
     fprintf (stdout, "\t\t<getopt mixed=\"-o, --action\" />\n");
-    fprintf (stdout, "\t\t<content type=\"string\" default=\"monitor\" />\n");
     fprintf (stdout, "\t\t<content type=\"string\" default=\"off\" />\n");
     fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
              "Fencing action");
