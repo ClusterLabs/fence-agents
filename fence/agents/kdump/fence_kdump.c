@@ -114,6 +114,34 @@ out:
 }
 
 static int
+do_action_monitor (void)
+{
+    const char cmdline_path[] = "/proc/cmdline";
+    FILE *procFile;
+    size_t sz;
+    char *lines;
+    int result;
+
+    procFile = fopen(cmdline_path, "r");
+    sz = 0;
+
+    while (!feof (procFile)) {
+        getline (&lines, &sz, procFile);
+    }
+
+    if (strstr(lines, "crashkernel=") == NULL) {
+        result = 1;
+    } else {
+        result = 0;
+    }
+
+    free (lines);
+    fclose (procFile);
+
+    return result;
+}
+
+static int
 do_action_off (const fence_kdump_opts_t *opts)
 {
     int error;
@@ -205,6 +233,7 @@ do_action_metadata (const char *self)
 
     fprintf (stdout, "\t<parameter name=\"action\" unique=\"0\" required=\"0\">\n");
     fprintf (stdout, "\t\t<getopt mixed=\"-o, --action\" />\n");
+    fprintf (stdout, "\t\t<content type=\"string\" default=\"monitor\" />\n");
     fprintf (stdout, "\t\t<content type=\"string\" default=\"off\" />\n");
     fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
              "Fencing action");
@@ -242,6 +271,7 @@ do_action_metadata (const char *self)
 
     fprintf (stdout, "<actions>\n");
     fprintf (stdout, "\t<action name=\"off\" />\n");
+    fprintf (stdout, "\t<action name=\"monitor\" />\n");
     fprintf (stdout, "\t<action name=\"metadata\" />\n");
     fprintf (stdout, "</actions>\n");
 
@@ -264,7 +294,7 @@ print_usage (const char *self)
     fprintf (stdout, "%s\n",
              "  -f, --family=FAMILY          Network family: ([auto], ipv4, ipv6)");
     fprintf (stdout, "%s\n",
-             "  -o, --action=ACTION          Fencing action: ([off], metadata)");
+             "  -o, --action=ACTION          Fencing action: ([off], monitor, metadata)");
     fprintf (stdout, "%s\n",
              "  -t, --timeout=TIMEOUT        Timeout in seconds (default: 60)");
     fprintf (stdout, "%s\n",
@@ -500,6 +530,9 @@ main (int argc, char **argv)
         break;
     case FENCE_KDUMP_ACTION_METADATA:
         error = do_action_metadata (argv[0]);
+        break;
+    case FENCE_KDUMP_ACTION_MONITOR:
+        error = do_action_monitor ();
         break;
     default:
         break;
