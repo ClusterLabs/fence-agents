@@ -50,6 +50,7 @@ def main():
 
 	atexit.register(atexit_handler)
 
+	all_opt["power_wait"]["default"] = "5"
 	options = check_input(device_opt, process_input(device_opt))
 
 	docs = {}
