@@ -105,6 +105,11 @@ Where XXXXXXX is the name of the virtual machine used in the authuser field of t
 		<content type="string" default="5"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
 	</parameter>
+	<parameter name="missing_as_off" unique="0" required="0">
+		<getopt mixed="--missing-as-off" />
+		<content type="boolean" default="1"  />
+		<shortdesc lang="en">Missing port returns OFF instead of failure</shortdesc>
+	</parameter>
 	<parameter name="power_timeout" unique="0" required="0">
 		<getopt mixed="--power-timeout=[seconds]" />
 		<content type="string" default="20"  />
