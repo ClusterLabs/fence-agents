@@ -233,29 +233,6 @@ def main():
 		options["--auth-url"],
 		endpoint_type=options["--endpoint-type"])
 
-	if options["--action"] in ["on", "off", "reboot" ]:
-		try:
-			nova.services.list(host=options["--plug"])
-		except ConnectionError as (err):
-			# Yes, exit(0)
-			#
-			# Its possible that the control plane on which this
-			# agent depends is not functional
-			#
-			# In this situation, fencing is waiting for resource
-			# recovery and resource recovery is waiting for
-			# fencing.
-			#
-			# To break the cycle, we all the fencing agent to
-			# return 'done' immediately so that we can recover the
-			# control plane. We then rely on the NovaCompute RA
-			# to call this agent directly once the control plane
-			# is up.
-			#
-			# Yes its horrible, but still better than nova itself.
-			logging.warning("Nova connection failed: %s " % str(err))
-			sys.exit(0)
-
 	if options["--action"] in ["off", "reboot"]:
 		# Pretend we're 'on' so that the fencing library will always call set_power_status(off)
 		override_status = "on"
