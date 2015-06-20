@@ -71,6 +71,10 @@ def _host_evacuate(host, on_shared_storage):
 			for server in hyper.servers:
 				response.append(_server_evacuate(server, on_shared_storage))
 
+def set_attrd_status(host, status, options):
+	logging.debug("Setting fencing status for %s to %s" % (host, status))
+	run_command(options, "attrd_updater -p -n evacute -Q -N %s -v %s" % (host, status))
+
 def set_power_status(_, options):
 	global override_status
 
@@ -159,6 +163,15 @@ def define_new_opts():
 		"default" : "",
 		"order": 5,
 	}
+	all_opt["record-only"] = {
+		"getopt" : "",
+		"longopt" : "record-only",
+		"help" : "--record-only                  Record the target as needing evacuation but as yet do not intiate it",
+		"required" : "0",
+		"shortdesc" : "Only record the target as needing evacuation",
+		"default" : "False",
+		"order": 5,
+	}
 	all_opt["no-shared-storage"] = {
 		"getopt" : "",
 		"longopt" : "no-shared-storage",
@@ -175,7 +188,8 @@ def main():
 	atexit.register(atexit_handler)
 
 	device_opt = ["login", "passwd", "tenant-name", "auth-url",
-		"no_login", "no_password", "port", "domain", "no-shared-storage", "endpoint-type"]
+		"no_login", "no_password", "port", "domain", "no-shared-storage", "endpoint-type",
+		"record-only"]
 	define_new_opts()
 	all_opt["shell_timeout"]["default"] = "180"
 
@@ -189,6 +203,27 @@ def main():
 	show_docs(options, docs)
 
 	run_delay(options)
+
+	try:
+		from novaclient import client as nova_client
+	except ImportError:
+		fail_usage("nova not found or not accessible")
+
+	# Potentially we should make this a pacemaker feature
+	if options["--action"] != "list" and options["--domain"] != "" and options.has_key("--plug"):
+		options["--plug"] = options["--plug"] + "." + options["--domain"]
+
+	if options["--record-only"] != "False":
+		if options["--action"] == "on":
+			set_attrd_status(options["--plug"], "no", options)
+			sys.exit(0)
+
+		elif options["--action"] in ["off", "reboot"]:
+			set_attrd_status(options["--plug"], "yes", options)
+			sys.exit(0)
+
+		elif options["--action"] in ["status", "monitor"]:
+			sys.exit(0)
 
 	# The first argument is the Nova client version
 	nova = nova_client.Client('2',
@@ -205,10 +240,6 @@ def main():
 	if options["--action"] == "on":
 		# Pretend we're 'off' so that the fencing library will always call set_power_status(on)
 		override_status = "off"
-
-	# Potentially we should make this a pacemaker feature
-	if options["--action"] != "list" and options["--domain"] != "" and options.has_key("--plug"):
-		options["--plug"] = options["--plug"]+"."+options["--domain"]
 
 	result = fence_action(None, options, set_power_status, get_power_status, get_plugs_list, None)
 	sys.exit(result)
