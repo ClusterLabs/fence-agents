@@ -902,7 +902,12 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list=None, 
 			return
 		elif (options["--action"] == "list") or \
 				((options["--action"] == "monitor") and 1 == options["device_opt"].count("port")):
+			options["--original-action"] = options["--action"]
+			options["--action"] = "list"
 			outlets = get_outlet_list(tn, options)
+			options["--action"] = options["--original-action"]
+			del options["--original-action"]
+
 			## keys can be numbers (port numbers) or strings (names of VM)
 			for outlet_id in outlets.keys():
 				(alias, status) = outlets[outlet_id]
