@@ -53,6 +53,11 @@
 		<content type="boolean" default="False"  />
 		<shortdesc lang="en">Disable functionality for dealing with shared storage</shortdesc>
 	</parameter>
+	<parameter name="record-only" unique="0" required="0">
+		<getopt mixed="--record-only" />
+		<content type="boolean" default="False"  />
+		<shortdesc lang="en">Only record the target as needing evacuation</shortdesc>
+	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
 		<content type="boolean"  />
