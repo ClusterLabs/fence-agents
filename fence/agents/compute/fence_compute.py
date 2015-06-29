@@ -4,11 +4,11 @@ import sys
 import time
 import atexit
 import logging
+import requests.exceptions
 
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail_usage, is_executable, run_command, run_delay
-from novaclient import client as nova_client
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="4.0.11"
@@ -32,18 +32,18 @@ def get_power_status(_, options):
 	if nova:
 		try:
 			services = nova.services.list(host=options["--plug"])
-		except Exception, e:
-			fail_usage(str(e))
 
-		for service in services:
-			if service.binary == "nova-compute":
-				if service.state == "up":
-					status = "on"
-				elif service.state == "down":
-					status = "off"
-				else:
-					logging.debug("Unknown status detected from nova: " + service.state)
-				break
+			for service in services:
+				if service.binary == "nova-compute":
+					if service.state == "up":
+						status = "on"
+					elif service.state == "down":
+						status = "off"
+					else:
+						logging.debug("Unknown status detected from nova: " + service.state)
+					break
+		except ConnectionError as (err):
+			logging.warning("Nova connection failed: " + str(err))
 	return status
 
 # NOTE(sbauza); We mimic the host-evacuate module since it's only a contrib
