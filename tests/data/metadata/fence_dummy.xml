@@ -3,6 +3,11 @@
 <longdesc>fence_dummy</longdesc>
 <vendor-url>http://www.example.com</vendor-url>
 <parameters>
+	<parameter name="port" unique="0" required="1">
+		<getopt mixed="-n, --plug=[ip]" />
+		<content type="string"  />
+		<shortdesc lang="en">IP address or hostname of fencing device (together with --port-as-ip)</shortdesc>
+	</parameter>
 	<parameter name="status_file" unique="0" required="0">
 		<getopt mixed="--status-file=[file]" />
 		<content type="string" default="/tmp/fence_dummy.status"  />
@@ -43,11 +48,6 @@
 		<content type="boolean"  />
 		<shortdesc lang="en">Display help and exit</shortdesc>
 	</parameter>
-	<parameter name="separator" unique="0" required="0">
-		<getopt mixed="-C, --separator=[char]" />
-		<content type="string" default=","  />
-		<shortdesc lang="en">Separator for CSV created by operation list</shortdesc>
-	</parameter>
 	<parameter name="shell_timeout" unique="0" required="0">
 		<getopt mixed="--shell-timeout=[seconds]" />
 		<content type="string" default="3"  />
@@ -62,6 +62,11 @@
 		<getopt mixed="--power-timeout=[seconds]" />
 		<content type="string" default="20"  />
 		<shortdesc lang="en">Test X seconds for status change after ON/OFF</shortdesc>
+	</parameter>
+	<parameter name="port_as_ip" unique="0" required="0">
+		<getopt mixed="--port-as-ip" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Make "port/plug" to be an alias to IP address</shortdesc>
 	</parameter>
 	<parameter name="delay" unique="0" required="0">
 		<getopt mixed="--delay=[seconds]" />

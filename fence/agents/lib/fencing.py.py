@@ -399,6 +399,13 @@ all_opt = {
 		"default" : "onoff",
 		"choices" : ["onoff", "cycle"],
 		"order" : 1},
+	"port_as_ip": {
+		"getopt" : "",
+		"longopt" : "port-as-ip",
+		"help" : "--port-as-ip                   Make \"port/plug\" to be an alias to IP address",
+		"required" : "0",
+		"shortdesc" : "Make \"port/plug\" to be an alias to IP address",
+		"order" : 200},
 	"on_target": {
 		"getopt" : "",
 		"help" : "",
@@ -451,6 +458,13 @@ def add_dependency_options(options):
 	for opt in options + ["default"]:
 		if DEPENDENCY_OPT.has_key(opt):
 			added_opt.extend([y for y in DEPENDENCY_OPT[opt] if options.count(y) == 0])
+
+	if not "port" in (options + added_opt) and not "nodename" in (options + added_opt):
+		added_opt.append("port_as_ip")
+		all_opt["port"]["help"] = "-n, --plug=[ip]                IP address or hostname of fencing device " \
+			"(together with --port-as-ip)"
+		all_opt["port"]["shortdesc"] = "IP address or hostname of fencing device (together with --port-as-ip)"
+
 	return added_opt
 
 def fail_usage(message=""):
@@ -580,6 +594,9 @@ def process_input(avail_opt):
 	os.putenv("LANG", "C")
 	os.putenv("LC_ALL", "C")
 
+	if "port_as_ip" in avail_opt:
+		avail_opt.append("port")
+
 	##
 	## Prepare list of options for getopt
 	#####
@@ -653,6 +670,10 @@ def process_input(avail_opt):
 				opt["--"+all_opt[name]["longopt"].rstrip(":")] = value
 			elif value.lower() in ["1", "yes", "on", "true"]:
 				opt["--"+all_opt[name]["longopt"]] = "1"
+
+	if "--port-as-ip" in opt and "--plug" in opt:
+		opt["--ip"] = opt["--plug"]
+
 	return opt
 
 ##
@@ -755,6 +776,10 @@ def check_input(device_opt, opt):
 		options["--action"] = "off"
 
 	## automatic detection and set of valid UUID from --plug
+
+	if "port_as_ip" in device_opt and not "--port-as-ip" in options and "--plug" in options:
+		fail_usage("Parser error: option -n/--plug is not recognized")
+
 	if not options.has_key("--username") and \
 			device_opt.count("login") and (device_opt.count("no_login") == 0):
 		fail_usage("Failed: You have to set login name")
@@ -779,7 +804,8 @@ def check_input(device_opt, opt):
 			fail_usage("Failed: Identity file " + options["--identity-file"] + " does not exist")
 
 	if (0 == ["list", "monitor"].count(options["--action"])) and \
-		not options.has_key("--plug") and device_opt.count("port") and device_opt.count("no_port") == 0:
+		not options.has_key("--plug") and device_opt.count("port") and \
+		device_opt.count("no_port") == 0 and not device_opt.count("port_as_ip"):
 		fail_usage("Failed: You have to enter plug number or machine identification")
 
 	if options.has_key("--password-script"):
@@ -874,6 +900,8 @@ def show_docs(options, docs=None):
 		sys.exit(0)
 
 	if options.get("--action", "") == "metadata":
+		if "port_as_ip" in device_opt:
+			device_opt.remove("separator")
 		metadata(device_opt, options, docs)
 		sys.exit(0)
 

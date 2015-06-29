@@ -13,6 +13,11 @@
 		<content type="string"  />
 		<shortdesc lang="en">IP Address or Hostname</shortdesc>
 	</parameter>
+	<parameter name="port" unique="0" required="1">
+		<getopt mixed="-n, --plug=[ip]" />
+		<content type="string"  />
+		<shortdesc lang="en">IP address or hostname of fencing device (together with --port-as-ip)</shortdesc>
+	</parameter>
 	<parameter name="secure" unique="0" required="0">
 		<getopt mixed="-x, --ssh" />
 		<content type="boolean" default="1"  />
@@ -107,6 +112,11 @@
 		<getopt mixed="--shell-timeout=[seconds]" />
 		<content type="string" default="3"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
+	</parameter>
+	<parameter name="port_as_ip" unique="0" required="0">
+		<getopt mixed="--port-as-ip" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Make "port/plug" to be an alias to IP address</shortdesc>
 	</parameter>
 	<parameter name="retry_on" unique="0" required="0">
 		<getopt mixed="--retry-on=[attempts]" />
