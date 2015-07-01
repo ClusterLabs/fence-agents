@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_hpblade" shortdesc="Fence agent for HP BladeSystem" >
-<longdesc>fence_hpblade is an I/O Fencing agent which can be used with HP BladeSystem. It logs into an enclosure via telnet or ssh and uses the command line interface to power on and off blades.</longdesc>
+<longdesc>fence_hpblade is an I/O Fencing agent which can be used with HP BladeSystem and HP Integrity Superdome X. It logs into the onboard administrator of an enclosure via telnet or ssh and uses the command line interface to power blades or partitions on or off.</longdesc>
 <vendor-url>http://www.hp.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
@@ -100,7 +100,7 @@
 	</parameter>
 	<parameter name="login_timeout" unique="0" required="0">
 		<getopt mixed="--login-timeout=[seconds]" />
-		<content type="string" default="5"  />
+		<content type="string" default="10"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
 	</parameter>
 	<parameter name="missing_as_off" unique="0" required="0">

@@ -13,6 +13,11 @@
 		<content type="string" default=""  />
 		<shortdesc lang="en">Keystone Admin Auth URL</shortdesc>
 	</parameter>
+	<parameter name="endpoint-type" unique="0" required="0">
+		<getopt mixed="-e, --endpoint-type=[endpoint]" />
+		<content type="string" default="internalURL"  />
+		<shortdesc lang="en">Nova Endpoint type</shortdesc>
+	</parameter>
 	<parameter name="login" unique="0" required="0">
 		<getopt mixed="-l, --username=[name]" />
 		<content type="string"  />
@@ -48,10 +53,10 @@
 		<content type="boolean" default="False"  />
 		<shortdesc lang="en">Disable functionality for dealing with shared storage</shortdesc>
 	</parameter>
-	<parameter name="novatool-path" unique="0" required="0">
-		<getopt mixed="-i, --novatool-path=[path]" />
-		<content type="string" default="/usr/bin/nova"  />
-		<shortdesc lang="en">Path to nova binary</shortdesc>
+	<parameter name="record-only" unique="0" required="0">
+		<getopt mixed="--record-only" />
+		<content type="boolean" default="False"  />
+		<shortdesc lang="en">Only record the target as needing evacuation</shortdesc>
 	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
