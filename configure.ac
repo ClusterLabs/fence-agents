@@ -307,6 +307,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/rhevm/Makefile
 		 fence/agents/rsa/Makefile
 		 fence/agents/rsb/Makefile
+		 fence/agents/sbd/Makefile
 		 fence/agents/sanbox2/Makefile
 		 fence/agents/scsi/Makefile
 		 fence/agents/virsh/Makefile
