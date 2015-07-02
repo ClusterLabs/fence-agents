@@ -19,6 +19,7 @@ $(TARGET): $(SRC)
 		-e 's#@''SSH_PATH@#${SSH_PATH}#g' \
 		-e 's#@''TELNET_PATH@#${TELNET_PATH}#g' \
 		-e 's#@''MPATH_PATH@#${MPATH_PATH}#g' \
+		-e 's#@''SBD_PATH@#${SBD_PATH}#g' \
 		-e 's#@''STORE_PATH@#${CLUSTERVARRUN}#g' \
 		-e 's#@''SUDO_PATH@#${SUDO_PATH}#g' \
 		-e 's#@''SNMPWALK_PATH@#${SNMPWALK_PATH}#g' \
