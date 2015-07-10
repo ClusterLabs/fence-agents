@@ -1182,7 +1182,11 @@ def run_command(options, command, timeout=None, env=None):
 	if timeout is not None:
 		timeout = float(timeout)
 
-	logging.info("Executing: %s\n", command)
+	# For IPMI password occurs on command line, it should not be part of debug info
+	log_command = command
+	if "ipmitool" in log_command:
+		log_command = re.sub("-P (.+?) -p", "-P [set] -p", log_command)
+	logging.info("Executing: %s\n", log_command)
 
 	try:
 		process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
