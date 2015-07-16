@@ -396,7 +396,7 @@ def main():
 
 	device_opt = ["no_login", "no_password", "devices", "nodename", "key",\
 	"aptpl", "fabric_fencing", "on_target", "corosync-cmap_path",\
-	"sg_persist_path", "sg_turs_path", "logfile", "vgs_path"]
+	"sg_persist_path", "sg_turs_path", "logfile", "vgs_path", "force_on"]
 
 	define_new_opts()
 
