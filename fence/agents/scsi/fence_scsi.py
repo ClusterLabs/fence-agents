@@ -88,6 +88,7 @@ def set_status(conn, options):
 
 # check if host is ready to execute actions
 def do_action_monitor(options):
+	# Check if required binaries are installed
 	if bool(run_cmd(options, options["--sg_persist-path"] + " -V")["err"]):
 		logging.error("Unable to run " + options["--sg_persist-path"])
 		return 1
@@ -98,6 +99,11 @@ def do_action_monitor(options):
 			bool(run_cmd(options,	options["--vgs-path"] + " --version")["err"])):
 		logging.error("Unable to run " + options["--vgs-path"])
 		return 1
+
+	# Keys have to be present in order to fence/unfence
+	get_key()
+	dev_read()
+
 	return 0
 
 
