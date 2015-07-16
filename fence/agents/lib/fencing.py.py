@@ -82,6 +82,10 @@ all_opt = {
 		"getopt" : "",
 		"help" : "",
 		"order" : 1},
+	"force_on" : {
+		"getopt" : "",
+		"help" : "",
+		"order" : 1},
 	"action" : {
 		"getopt" : "o:",
 		"longopt" : "action",
@@ -949,8 +953,9 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list=None, 
 			fail(EC_STATUS)
 
 		if options["--action"] == status:
-			print "Success: Already %s" % (status.upper())
-			return 0
+			if not (status == "on" and "force_on" in options["device_opt"]):
+				print "Success: Already %s" % (status.upper())
+				return 0
 
 		if options["--action"] == "on":
 			if set_multi_power_fn(tn, options, set_power_fn, get_power_fn, 1 + int(options["--retry-on"])):
