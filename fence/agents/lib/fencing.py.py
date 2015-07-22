@@ -128,6 +128,14 @@ all_opt = {
 		"getopt" : "",
 		"help" : "",
 		"order" : 1},
+	"no_on" : {
+		"getopt" : "",
+		"help" : "",
+		"order" : 1},
+	"no_off" : {
+		"getopt" : "",
+		"help" : "",
+		"order" : 1},
 	"telnet" : {
 		"getopt" : "",
 		"help" : "",
@@ -577,9 +585,8 @@ def metadata(avail_opt, docs):
 
 	if "on" in available_actions:
 		available_actions.remove("on")
-
-	on_target = ' on_target="1"' if avail_opt.count("on_target") else ''
-	print "\t<action name=\"on\"%s automatic=\"%d\"/>" % (on_target, avail_opt.count("fabric_fencing"))
+		on_target = ' on_target="1"' if avail_opt.count("on_target") else ''
+		print "\t<action name=\"on\"%s automatic=\"%d\"/>" % (on_target, avail_opt.count("fabric_fencing"))
 
 	for action in available_actions:
 		print "\t<action name=\"%s\" />" % (action)
@@ -1363,6 +1370,10 @@ def _get_available_actions(device_opt):
 		default_value = "off"
 	if device_opt.count("no_status"):
 		available_actions.remove("status")
+	if device_opt.count("no_on"):
+		available_actions.remove("on")
+	if device_opt.count("no_off"):
+		available_actions.remove("off")
 	if not device_opt.count("separator"):
 		available_actions.remove("list")
 		available_actions.remove("list-status")
