@@ -789,10 +789,11 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 			# Unable to do standard monitoring because 'status' action is not available
 			return 0
 
-		status = get_multi_power_fn(connection, options, get_power_fn)
-
-		if status != "on" and status != "off":
-			fail(EC_STATUS)
+		status = None
+		if not "no_status" in options["device_opt"]:
+			status = get_multi_power_fn(connection, options, get_power_fn)
+			if status != "on" and status != "off":
+				fail(EC_STATUS)
 
 		if options["--action"] == status:
 			if not (status == "on" and "force_on" in options["device_opt"]):
