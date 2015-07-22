@@ -480,7 +480,9 @@ def _add_dependency_options(options):
 		if DEPENDENCY_OPT.has_key(opt):
 			added_opt.extend([y for y in DEPENDENCY_OPT[opt] if options.count(y) == 0])
 
-	if not "port" in (options + added_opt) and not "nodename" in (options + added_opt):
+	if not "port" in (options + added_opt) and \
+			not "nodename" in (options + added_opt) and \
+			"ipaddr" in (options + added_opt):
 		added_opt.append("port_as_ip")
 		all_opt["port"]["help"] = "-n, --plug=[ip]                IP address or hostname of fencing device " \
 			"(together with --port-as-ip)"
