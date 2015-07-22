@@ -785,6 +785,10 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 
 			return
 
+		if options["--action"] == "monitor" and not "port" in options["device_opt"] and "no_status" in options["device_opt"]:
+			# Unable to do standard monitoring because 'status' action is not available
+			return 0
+
 		status = get_multi_power_fn(connection, options, get_power_fn)
 
 		if status != "on" and status != "off":
