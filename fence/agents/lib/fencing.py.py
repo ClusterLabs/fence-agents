@@ -1054,7 +1054,7 @@ def _login_telnet(options, re_login_string):
 		options["eol"] = "\n"
 		conn.send_eol(options["--username"])
 		conn.log_expect(re_pass, int(options["--login-timeout"]))
-	elif re_pass.search(screen) != None:
+	elif re_pass.search(screen) == None:
 		conn.log_expect(re_pass, int(options["--shell-timeout"]))
 
 	try:
