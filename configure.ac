@@ -303,6 +303,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/ovh/Makefile
 		 fence/agents/pve/Makefile
 		 fence/agents/raritan/Makefile
+		 fence/agents/rcd_serial/Makefile
 		 fence/agents/rhevm/Makefile
 		 fence/agents/rsa/Makefile
 		 fence/agents/rsb/Makefile
