@@ -109,8 +109,7 @@ def send_cmd(options, cmd, post=None):
 	if options.has_key("--ssl") or opt.has_key("--ssl-secure"):
 		conn.setopt(pycurl.SSL_VERIFYPEER, 1)
 		conn.setopt(pycurl.SSL_VERIFYHOST, 2)
-
-	if options.has_key("--ssl-insecure"):
+	else:
 		conn.setopt(pycurl.SSL_VERIFYPEER, 0)
 		conn.setopt(pycurl.SSL_VERIFYHOST, 0)
 
