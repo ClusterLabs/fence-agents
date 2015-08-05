@@ -85,7 +85,7 @@ def main():
 	docs["longdesc"] = "fence_rcd_serial operates a serial cable that toggles a \
 reset of an opposing server using the reset switch on its motherboard. The \
 cable itself is simple with no power, network or moving parts. An example of \
-the cable is available here: https://smcleod.net/rcd-stonith/ & the circuit \
+the cable is available here: https://smcleod.net/rcd-stonith/ and the circuit \
 design is available in the fence-agents src as SVG"
 	docs["vendorurl"] = "http://www.scl.co.uk/rcd_serial/"
 	show_docs(options, docs)
