@@ -160,6 +160,7 @@ It was written with managed ethernet switches in mind, in order to fence iSCSI S
 	<action name="off" />
 	<action name="status" />
 	<action name="list" />
+	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
 </actions>
