@@ -10,7 +10,7 @@ sbin_SCRIPTS		= $(TARGET)
 
 man_MANS		= $(TARGET).8
 
-FENCE_TEST_ARGS         = -k 1
+FENCE_TEST_ARGS         = 
 
 fence_rcd_serial_check: $(TARGET)
 
