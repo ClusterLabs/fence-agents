@@ -16,6 +16,7 @@ import atexit
 import os
 import struct
 import logging
+import time
 from fcntl import ioctl
 from termios import TIOCMBIC, TIOCMBIS, TIOCM_RTS, TIOCM_DTR
 from time import sleep
@@ -89,6 +90,9 @@ the cable is available here: https://smcleod.net/rcd-stonith/ and the circuit \
 design is available in the fence-agents src as SVG"
 	docs["vendorurl"] = "http://www.scl.co.uk/rcd_serial/"
 	show_docs(options, docs)
+
+	if options["--action"] in ["off", "reboot"]:
+		time.sleep(int(options["--delay"]))
 
 	## Operate the fencing device
 	conn = RCDSerial(port=options["--serial-port"])
