@@ -1131,6 +1131,10 @@ def _update_metadata(options):
 	else:
 		all_opt["login"]["required"] = "0"
 
+	if device_opt.count("port_as_ip"):
+		all_opt["ipaddr"]["required"] = "0"
+		all_opt["port"]["required"] = "0"
+
 	(available_actions, default_value) = _get_available_actions(device_opt)
 	all_opt["action"]["default"] = default_value
 
