@@ -115,6 +115,7 @@ def main():
 	if (pinput.has_key("--type") and pinput["--type"] == "file") or (pinput.has_key("--type") == False):
 		# hack to have fence agents that require ports 'fail' and one that do not 'file'
 		device_opt.remove("port")
+		device_opt.remove("separator")
 
 	options = check_input(device_opt, process_input(device_opt))
 

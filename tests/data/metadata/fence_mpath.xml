@@ -4,25 +4,20 @@
 The fence_mpath agent works by having an unique key for each pair of node and device that has to be set also in /etc/multipath.conf. Once registered, a single node will become the reservation holder by creating a "write exclusive, registrants only" reservation on the device(s). The result is that only registered nodes may write to the device(s). When a node failure occurs, the fence_mpath agent will remove the key belonging to the failed node from the device(s). The failed node will no longer be able to write to the device(s). A manual reboot is required.</longdesc>
 <vendor-url>https://www.sourceware.org/dm/</vendor-url>
 <parameters>
-	<parameter name="port" unique="0" required="1">
-		<getopt mixed="-n, --plug=[ip]" />
+	<parameter name="devices" unique="0" required="0">
+		<getopt mixed="-d, --devices=[devices]" />
 		<content type="string"  />
-		<shortdesc lang="en">IP address or hostname of fencing device (together with --port-as-ip)</shortdesc>
-	</parameter>
-	<parameter name="action" unique="0" required="1">
-		<getopt mixed="-o, --action=[action]" />
-		<content type="string" default="off"  />
-		<shortdesc lang="en">Fencing Action</shortdesc>
+		<shortdesc lang="en">List of devices to use for current operation. Devices can be comma-separated list of device-mapper multipath devices (eg. /dev/dm-3). Each device must support SCSI-3 persistent reservations.</shortdesc>
 	</parameter>
 	<parameter name="key" unique="0" required="1">
 		<getopt mixed="-k, --key=[key]" />
 		<content type="string"  />
 		<shortdesc lang="en">Key to use for the current operation. This key should be unique to a node and have to be written in /etc/multipath.conf. For the "on" action, the key specifies the key use to register the local node. For the "off" action, this key specifies the key to be removed from the device(s).</shortdesc>
 	</parameter>
-	<parameter name="devices" unique="0" required="0">
-		<getopt mixed="-d, --devices=[devices]" />
-		<content type="string"  />
-		<shortdesc lang="en">List of devices to use for current operation. Devices can be comma-separated list of device-mapper multipath devices (eg. /dev/dm-3). Each device must support SCSI-3 persistent reservations.</shortdesc>
+	<parameter name="action" unique="0" required="1">
+		<getopt mixed="-o, --action=[action]" />
+		<content type="string" default="off"  />
+		<shortdesc lang="en">Fencing Action</shortdesc>
 	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
@@ -44,30 +39,10 @@ The fence_mpath agent works by having an unique key for each pair of node and de
 		<content type="boolean"  />
 		<shortdesc lang="en">Display help and exit</shortdesc>
 	</parameter>
-	<parameter name="power_wait" unique="0" required="0">
-		<getopt mixed="--power-wait=[seconds]" />
-		<content type="string" default="0"  />
-		<shortdesc lang="en">Wait X seconds after issuing ON/OFF</shortdesc>
-	</parameter>
-	<parameter name="login_timeout" unique="0" required="0">
-		<getopt mixed="--login-timeout=[seconds]" />
-		<content type="string" default="5"  />
-		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
-	</parameter>
-	<parameter name="port_as_ip" unique="0" required="0">
-		<getopt mixed="--port-as-ip" />
-		<content type="boolean"  />
-		<shortdesc lang="en">Make "port/plug" to be an alias to IP address</shortdesc>
-	</parameter>
 	<parameter name="delay" unique="0" required="0">
 		<getopt mixed="--delay=[seconds]" />
 		<content type="string" default="0"  />
 		<shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
-	</parameter>
-	<parameter name="mpathpersist_path" unique="0" required="0">
-		<getopt mixed="--mpathpersist-path=[path]" />
-		<content type="string" default="/usr/sbin/mpathpersist"  />
-		<shortdesc lang="en">Path to mpathpersist binary</shortdesc>
 	</parameter>
 	<parameter name="shell_timeout" unique="0" required="0">
 		<getopt mixed="--shell-timeout=[seconds]" />
@@ -83,6 +58,21 @@ The fence_mpath agent works by having an unique key for each pair of node and de
 		<getopt mixed="--power-timeout=[seconds]" />
 		<content type="string" default="20"  />
 		<shortdesc lang="en">Test X seconds for status change after ON/OFF</shortdesc>
+	</parameter>
+	<parameter name="power_wait" unique="0" required="0">
+		<getopt mixed="--power-wait=[seconds]" />
+		<content type="string" default="0"  />
+		<shortdesc lang="en">Wait X seconds after issuing ON/OFF</shortdesc>
+	</parameter>
+	<parameter name="login_timeout" unique="0" required="0">
+		<getopt mixed="--login-timeout=[seconds]" />
+		<content type="string" default="5"  />
+		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
+	</parameter>
+	<parameter name="mpathpersist_path" unique="0" required="0">
+		<getopt mixed="--mpathpersist-path=[path]" />
+		<content type="string" default="/usr/sbin/mpathpersist"  />
+		<shortdesc lang="en">Path to mpathpersist binary</shortdesc>
 	</parameter>
 	<parameter name="retry_on" unique="0" required="0">
 		<getopt mixed="--retry-on=[attempts]" />

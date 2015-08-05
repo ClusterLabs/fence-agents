@@ -8,12 +8,12 @@
 		<content type="string" default="3172"  />
 		<shortdesc lang="en">TCP/UDP port to use for connection with device</shortdesc>
 	</parameter>
-	<parameter name="ipaddr" unique="0" required="1">
+	<parameter name="ipaddr" unique="0" required="0">
 		<getopt mixed="-a, --ip=[ip]" />
 		<content type="string"  />
 		<shortdesc lang="en">IP Address or Hostname</shortdesc>
 	</parameter>
-	<parameter name="port" unique="0" required="1">
+	<parameter name="port" unique="0" required="0">
 		<getopt mixed="-n, --plug=[ip]" />
 		<content type="string"  />
 		<shortdesc lang="en">IP address or hostname of fencing device (together with --port-as-ip)</shortdesc>
