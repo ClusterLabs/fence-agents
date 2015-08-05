@@ -700,6 +700,10 @@ def check_input(device_opt, opt):
 	else:
 		all_opt["login"]["required"] = "0"
 
+	if device_opt.count("port_as_ip"):
+		all_opt["ipaddr"]["required"] = "0"
+		all_opt["port"]["required"] = "0"
+
 	if device_opt.count("fabric_fencing"):
 		all_opt["action"]["default"] = "off"
 		all_opt["action"]["help"] = "-o, --action=[action]          Action: status, off (default) or on"
