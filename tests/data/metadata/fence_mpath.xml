@@ -19,11 +19,6 @@ The fence_mpath agent works by having an unique key for each pair of node and de
 		<content type="string"  />
 		<shortdesc lang="en">Key to use for the current operation. This key should be unique to a node and have to be written in /etc/multipath.conf. For the "on" action, the key specifies the key use to register the local node. For the "off" action, this key specifies the key to be removed from the device(s).</shortdesc>
 	</parameter>
-	<parameter name="port" unique="0" required="1">
-		<getopt mixed="-n, --plug=[ip]" />
-		<content type="string"  />
-		<shortdesc lang="en">IP address or hostname of fencing device (together with --port-as-ip)</shortdesc>
-	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
 		<content type="boolean"  />
@@ -58,11 +53,6 @@ The fence_mpath agent works by having an unique key for each pair of node and de
 		<getopt mixed="--mpathpersist-path=[path]" />
 		<content type="string" default="/usr/sbin/mpathpersist"  />
 		<shortdesc lang="en">Path to mpathpersist binary</shortdesc>
-	</parameter>
-	<parameter name="port_as_ip" unique="0" required="0">
-		<getopt mixed="--port-as-ip" />
-		<content type="boolean"  />
-		<shortdesc lang="en">Make "port/plug" to be an alias to IP address</shortdesc>
 	</parameter>
 	<parameter name="power_timeout" unique="0" required="0">
 		<getopt mixed="--power-timeout=[seconds]" />

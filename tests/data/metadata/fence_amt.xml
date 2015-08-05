@@ -29,7 +29,7 @@
 		<content type="boolean"  />
 		<shortdesc lang="en">Forces agent to use IPv6 addresses only</shortdesc>
 	</parameter>
-	<parameter name="ipaddr" unique="0" required="1">
+	<parameter name="ipaddr" unique="0" required="0">
 		<getopt mixed="-a, --ip=[ip]" />
 		<content type="string"  />
 		<shortdesc lang="en">IP address or hostname of fencing device</shortdesc>
@@ -57,7 +57,7 @@
 		<content type="string"  />
 		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
 	</parameter>
-	<parameter name="port" unique="0" required="1">
+	<parameter name="port" unique="0" required="0">
 		<getopt mixed="-n, --plug=[ip]" />
 		<content type="string"  />
 		<shortdesc lang="en">IP address or hostname of fencing device (together with --port-as-ip)</shortdesc>
