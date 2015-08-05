@@ -1140,7 +1140,7 @@ def fence_login(options, re_login_string=r"(login\s*: )|(Login Name:  )|(usernam
 				options["eol"] = "\n"
 				conn.send_eol(options["--username"])
 				result = conn.log_expect(options, re_pass, int(options["--login-timeout"]))
-			elif re_pass.search(screen) != None:
+			elif re_pass.search(screen) == None:
 				conn.log_expect(options, re_pass, int(options["--shell-timeout"]))
 
 			try:
