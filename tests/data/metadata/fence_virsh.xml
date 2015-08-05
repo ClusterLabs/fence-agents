@@ -67,7 +67,7 @@ By default, virsh needs root account to do properly work. So you must allow ssh 
 	</parameter>
 	<parameter name="ssh_options" unique="0" required="0">
 		<getopt mixed="--ssh-options=[options]" />
-		<content type="string" default="-t &apos;/bin/bash -c &quot;PS1=\[EXPECT\]#\  /bin/bash --noprofile --norc&quot;&apos;"  />
+		<content type="string" default="-t &apos;/bin/bash -c &quot;PS1=\\[EXPECT\\]#\  /bin/bash --noprofile --norc&quot;&apos;"  />
 		<shortdesc lang="en">SSH options to use</shortdesc>
 	</parameter>
 	<parameter name="verbose" unique="0" required="0">
