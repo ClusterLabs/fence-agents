@@ -41,7 +41,17 @@ def amt_run_command(options, command, timeout=None):
 	x = x[1:] if x.startswith("'") else x
 	env["AMT_PASSWORD"] = x
 
-	return run_command(options, command, timeout, env)
+	# This is needed because setting the AMT_PASSWORD env
+	# variable only works when no pipe is involved. E.g.:
+	# - Broken:
+	# $ AMT_PASSWORD='foobar' echo 'y' |  /usr/bin/amttool nuc2 powerdown
+	# 401 Unauthorized at /usr/bin/amttool line 129.
+	# - Working:
+	# $ AMT_PASSWORD='foobar' sh -c "(echo 'y' | /usr/bin/amttool nuc2 powerdown)"
+	# execute: powerdown
+	# result: pt_status: success
+	newcommand = "sh -c \"(%s)\"" % command
+	return run_command(options, newcommand, timeout, env)
 
 def create_command(options, action):
 	cmd = options["--amttool-path"]
