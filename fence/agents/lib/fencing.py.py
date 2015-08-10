@@ -1203,9 +1203,6 @@ def _validate_input(options, stop = True):
 	device_opt = options["device_opt"]
 	valid_input = True
 
-	if "port_as_ip" in device_opt and not "--port-as-ip" in options and "--plug" in options:
-		fail_usage("Parser error: option -n/--plug is not recognized")
-
 	if not options.has_key("--username") and \
 			device_opt.count("login") and (device_opt.count("no_login") == 0):
 		valid_input = False
@@ -1318,6 +1315,10 @@ def _parse_input_cmdline(avail_opt):
 		all_key = [key for (key, value) in filtered_opts.items() \
 			if "--" + value.get("longopt", "") == arg_name or "-" + value.get("getopt", "").rstrip(":") == arg_name][0]
 		long_opts["--" + filtered_opts[all_key]["longopt"]] = dict(entered_opt)[arg_name]
+
+	# This test is specific because it does not apply to input on stdin
+	if "port_as_ip" in avail_opt and not "--port-as-ip" in long_opts and "--plug" in long_opts:
+		fail_usage("Parser error: option -n/--plug is not recognized")
 
 	return long_opts
 
