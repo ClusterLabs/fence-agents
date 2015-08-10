@@ -951,9 +951,9 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list=None, 
 				## keys can be numbers (port numbers) or strings (names of VM)
 				for outlet_id in outlets.keys():
 					(alias, status) = outlets[outlet_id]
-					status = status.upper()
-					if not status in ["ON", "OFF"]:
+					if status is None or (not status.upper() in ["ON", "OFF"]):
 						status = "UNKNOWN"
+						status = status.upper()
 
 					if options["--action"] == "list":
 						print outlet_id + options["--separator"] + alias
