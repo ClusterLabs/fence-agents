@@ -657,6 +657,10 @@ def process_input(avail_opt):
 		opt = z
 		##
 		#####
+
+		# This test should NOT be used for stdin input where it should be allowed (and ignored)
+		if "port_as_ip" in device_opt and not "--port-as-ip" in options and "--plug" in options:
+			fail_usage("Parser error: option -n/--plug is not recognized")
 	else:
 		opt = {}
 		name = ""
@@ -788,10 +792,6 @@ def check_input(device_opt, opt):
 		options["--action"] = "off"
 
 	## automatic detection and set of valid UUID from --plug
-
-	if "port_as_ip" in device_opt and not "--port-as-ip" in options and "--plug" in options:
-		fail_usage("Parser error: option -n/--plug is not recognized")
-
 	if not options.has_key("--username") and \
 			device_opt.count("login") and (device_opt.count("no_login") == 0):
 		fail_usage("Failed: You have to set login name")
