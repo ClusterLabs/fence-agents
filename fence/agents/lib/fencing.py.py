@@ -659,7 +659,7 @@ def process_input(avail_opt):
 		#####
 
 		# This test should NOT be used for stdin input where it should be allowed (and ignored)
-		if "port_as_ip" in device_opt and not "--port-as-ip" in options and "--plug" in options:
+		if "port_as_ip" in avail_opt and not "--port-as-ip" in opt and "--plug" in opt:
 			fail_usage("Parser error: option -n/--plug is not recognized")
 	else:
 		opt = {}
