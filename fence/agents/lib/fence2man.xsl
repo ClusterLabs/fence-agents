@@ -33,7 +33,9 @@
 <xsl:when test="@name = 'monitor'">Check the health of fence device</xsl:when>
 <xsl:when test="@name = 'metadata'">Display the XML metadata describing this resource.</xsl:when>
 <xsl:when test="@name = 'list'">List available plugs with aliases/virtual machines if there is support for more then one device. Returns N/A otherwise.</xsl:when>
+<xsl:when test="@name = 'list-status'">List available plugs with aliases/virtual machines and their power state if it can be obtained without additional commands.</xsl:when>
 <xsl:when test="@name = 'status'">This returns the status of the plug/virtual machine.</xsl:when>
+<xsl:when test="@name = 'validate-all'">Validate if all required parameters are entered.</xsl:when>
 <!-- Ehhh -->
 <xsl:otherwise> The operational behavior of this is not known.</xsl:otherwise>
 </xsl:choose>
