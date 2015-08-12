@@ -26,6 +26,10 @@ def get_status(conn, options):
 		else:
 			logging.debug("No registration for key "\
 				+ options["--key"] + " on device " + dev + "\n")
+
+	if options["--action"] == "monitor":
+		dev_read(options)
+
 	return status
 
 
@@ -133,8 +137,8 @@ def get_registration_keys(options, dev):
 def dev_write(options, dev):
 	file_path = options["--store-path"] + "/mpath.devices"
 
-	if not os.path.isdir(os.path.dirname(options["--store-path"])):
-		os.makedirs(os.path.dirname(options["--store-path"]))
+	if not os.path.isdir(options["--store-path"]):
+		os.makedirs(options["--store-path"])
 
 	try:
 		store_fh = open(file_path, "a+")
@@ -203,7 +207,7 @@ def main():
 	atexit.register(atexit_handler)
 
 	device_opt = ["no_login", "no_password", "devices", "key", "sudo", \
-	        "fabric_fencing", "on_target", "store_path", "mpathpersist_path"]
+	        "fabric_fencing", "on_target", "store_path", "mpathpersist_path", "force_on"]
 
 	define_new_opts()
 
