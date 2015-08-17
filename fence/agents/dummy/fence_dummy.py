@@ -6,7 +6,7 @@ import time
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail_usage
+from fencing import fail_usage, run_delay
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New Dummy Agent - test release on steroids"
@@ -124,6 +124,8 @@ def main():
 	docs["longdesc"] = "fence_dummy"
 	docs["vendorurl"] = "http://www.example.com"
 	show_docs(options, docs)
+
+	run_delay(options)
 
 	# random sleep for testing
 	if options.has_key("--random_sleep_range"):

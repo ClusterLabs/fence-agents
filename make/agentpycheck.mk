@@ -19,9 +19,9 @@ delay-check.%: %
 	$(eval INPUT=$(subst delay-check.,,$@))
 	test `PYTHONPATH=$(abs_srcdir)/../lib:$(abs_builddir)/../lib /usr/bin/time -f "%e" \
 	python ./$(INPUT) --delay 10 $(FENCE_TEST_ARGS) -- 2>&1 |\
-	sed 's/\.//' | tail -n 1` -ge 1000 || \
+	sed 's/\.//' | tail -n 1` -ge 1000 || ( \
 	PYTHONPATH=$(abs_srcdir)/../lib:$(abs_builddir)/../lib /usr/bin/time -f "%e" \
-	python ./$(INPUT) --delay 0 $(FENCE_TEST_ARGS) --
+	python ./$(INPUT) --delay 0 $(FENCE_TEST_ARGS) --; false )
 
 rng-check.%: %
 	PYTHONPATH=$(abs_srcdir)/../lib:$(abs_builddir)/../lib python ./$(INPUT) -o metadata | \
