@@ -9,7 +9,7 @@ The fence_mpath agent works by having an unique key for each pair of node and de
 		<content type="string" default="off"  />
 		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
-	<parameter name="devices" unique="0" required="0">
+	<parameter name="devices" unique="0" required="1">
 		<getopt mixed="-d, --devices=[devices]" />
 		<content type="string"  />
 		<shortdesc lang="en">List of devices to use for current operation. Devices can be comma-separated list of device-mapper multipath devices (eg. /dev/dm-3). Each device must support SCSI-3 persistent reservations.</shortdesc>
