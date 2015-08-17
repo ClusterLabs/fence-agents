@@ -205,12 +205,15 @@ def set_key(options):
 
 
 # read node key from file
-def get_key():
+def get_key(fail=True):
 	file_path = STORE_PATH + ".key"
 	try:
 		f = open(file_path, "r")
 	except IOError:
-		fail_usage("Failed: Cannot open file \""+ file_path + "\"")
+		if fail:
+			fail_usage("Failed: Cannot open file \""+ file_path + "\"")
+		else:
+			return None
 	return f.readline().strip().lower()
 
 
@@ -228,12 +231,15 @@ def dev_write(dev, options):
 	f.close()
 
 
-def dev_read():
+def dev_read(fail=True):
 	file_path = STORE_PATH + ".dev"
 	try:
 		f = open(file_path, "r")
 	except IOError:
-		fail_usage("Failed: Cannot open file \"" + file_path + "\"")
+		if fail:
+			fail_usage("Failed: Cannot open file \"" + file_path + "\"")
+		else:
+			return None
 	# get not empty lines from file
 	devs = [line.strip() for line in f if line.strip()]
 	f.close()
@@ -378,11 +384,11 @@ def scsi_check():
 	options["--power-timeout"] = "5"
 	if scsi_check_get_verbose():
 		logging.getLogger().setLevel(logging.DEBUG)
-	devs = dev_read()
+	devs = dev_read(fail=False)
 	if not devs:
 		logging.error("No devices found")
 		return 0
-	key = get_key()
+	key = get_key(fail=False)
 	if not key:
 		logging.error("Key not found")
 		return 0
