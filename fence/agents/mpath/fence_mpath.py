@@ -167,7 +167,7 @@ def define_new_opts():
 		"getopt" : "d:",
 		"longopt" : "devices",
 		"help" : "-d, --devices=[devices]        List of devices to use for current operation",
-		"required" : "0",
+		"required" : "1",
 		"shortdesc" : "List of devices to use for current operation. Devices can \
 be comma-separated list of device-mapper multipath devices (eg. /dev/dm-3). \
 Each device must support SCSI-3 persistent reservations.",
