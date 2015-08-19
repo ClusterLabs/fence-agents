@@ -54,6 +54,8 @@ def get_power_status(conn, options):
 	for line in conn.before.splitlines():
 		if line.strip() in ["running", "blocked", "idle", "no state", "paused"]:
 			return "on"
+		if "error: failed to get domain" in line.strip() and options.has_key("missing_as_off"):
+			return "off"
 		if "error:" in line.strip():
 			fail_usage("Failed: You have to enter existing name/UUID of virtual machine!")
 
@@ -68,7 +70,7 @@ def set_power_status(conn, options):
 	time.sleep(int(options["--power-wait"]))
 
 def main():
-	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", "port", "sudo"]
+	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", "port", "sudo", "missing_as_off"]
 
 	atexit.register(atexit_handler)
 
