@@ -120,6 +120,11 @@ By default, virsh needs root account to do properly work. So you must allow ssh 
 		<content type="string" default="3"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
 	</parameter>
+	<parameter name="missing_as_off" unique="0" required="0">
+		<getopt mixed="--missing-as-off" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Missing port returns OFF instead of failure</shortdesc>
+	</parameter>
 	<parameter name="retry_on" unique="0" required="0">
 		<getopt mixed="--retry-on=[attempts]" />
 		<content type="string" default="1"  />
