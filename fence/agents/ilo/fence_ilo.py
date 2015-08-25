@@ -74,6 +74,7 @@ def main():
 	all_opt["login_timeout"]["default"] = "10"
 	all_opt["retry_on"]["default"] = "3"
 	all_opt["ssl"]["default"] = "1"
+	all_opt["tls1.0"]["default"] = "1"
 
 	options = check_input(device_opt, process_input(device_opt))
 
