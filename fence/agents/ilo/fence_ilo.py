@@ -95,6 +95,23 @@ the iLO card through an XML stream."
 	try:
 		conn.send("<?xml version=\"1.0\"?>\r\n")
 		conn.log_expect(options, ["</RIBCL>", "<END_RIBCL/>"], int(options["--login-timeout"]))
+	except pexpect.TIMEOUT:
+		fail(EC_LOGIN_DENIED)
+	except pexpect.EOF:
+		if "--tls1.0" in options:
+			fail(EC_LOGIN_DENIED)
+		options["--tls1.0"] = "1"
+		conn.close()
+		conn = fence_login(options)
+		try:
+			conn.send("<?xml version=\"1.0\"?>\r\n")
+			conn.log_expect(options, ["</RIBCL>", "<END_RIBCL/>"], int(options["--login-timeout"]))
+		except pexpect.TIMEOUT:
+			fail(EC_LOGIN_DENIED)
+		except pexpect.EOF:
+			fail(EC_LOGIN_DENIED)
+
+	try:
 		version = re.compile("<RIBCL VERSION=\"(.*?)\"", re.IGNORECASE).search(conn.before).group(1)
 		if not options.has_key("--ribcl-version"):
 			options["--ribcl-version"] = float(version)
