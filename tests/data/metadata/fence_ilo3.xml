@@ -64,6 +64,11 @@
 		</content>
 		<shortdesc lang="en">IPMI Lan Auth type.</shortdesc>
 	</parameter>
+	<parameter name="action" unique="0" required="1">
+		<getopt mixed="-o, --action=[action]" />
+		<content type="string" default="reboot"  />
+		<shortdesc lang="en">Fencing Action</shortdesc>
+	</parameter>
 	<parameter name="cipher" unique="0" required="0">
 		<getopt mixed="-C, --cipher=[cipher]" />
 		<content type="string"  />
@@ -79,10 +84,10 @@
 		</content>
 		<shortdesc lang="en">Privilege level on IPMI device</shortdesc>
 	</parameter>
-	<parameter name="action" unique="0" required="1">
-		<getopt mixed="-o, --action=[action]" />
-		<content type="string" default="reboot"  />
-		<shortdesc lang="en">Fencing Action</shortdesc>
+	<parameter name="timeout" unique="0" required="0">
+		<getopt mixed="-t [seconds]                   Timeout (sec) for IPMI operation" />
+		<content type="string"  />
+		<shortdesc lang="en">Timeout (sec) for IPMI operation</shortdesc>
 	</parameter>
 	<parameter name="login" unique="0" required="0">
 		<getopt mixed="-l, --username=[name]" />
@@ -119,15 +124,15 @@
 		<content type="string" default="5"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
 	</parameter>
-	<parameter name="power_timeout" unique="0" required="0">
-		<getopt mixed="--power-timeout=[seconds]" />
-		<content type="string" default="20"  />
-		<shortdesc lang="en">Test X seconds for status change after ON/OFF</shortdesc>
-	</parameter>
 	<parameter name="delay" unique="0" required="0">
 		<getopt mixed="--delay=[seconds]" />
 		<content type="string" default="0"  />
 		<shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
+	</parameter>
+	<parameter name="power_timeout" unique="0" required="0">
+		<getopt mixed="--power-timeout=[seconds]" />
+		<content type="string" default="20"  />
+		<shortdesc lang="en">Test X seconds for status change after ON/OFF</shortdesc>
 	</parameter>
 	<parameter name="ipmitool_path" unique="0" required="0">
 		<getopt mixed="--ipmitool-path=[path]" />
