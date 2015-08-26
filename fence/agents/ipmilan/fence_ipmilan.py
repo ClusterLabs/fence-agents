@@ -125,12 +125,21 @@ def define_new_opts():
 		"help" : "",
 		"order" : 1
 	}
+	all_opt["timeout"] = {
+		"getopt" : "t:",
+		"longopt" : "timeout",
+		"help" : "-t [seconds]                   Timeout (sec) for IPMI operation",
+		"required" : "0",
+		"shortdesc" : "Timeout (sec) for IPMI operation",
+		"order" : 1
+	}
 
 def main():
 	atexit.register(atexit_handler)
 
 	device_opt = ["ipaddr", "ipport", "login", "no_login", "no_password", "passwd",
-		"lanplus", "auth", "cipher", "privlvl", "sudo", "ipmitool_path", "method", "obsolete_ip"]
+		"lanplus", "auth", "cipher", "privlvl", "sudo", "ipmitool_path", "method",
+		"obsolete_ip", "timeout"]
 	define_new_opts()
 
 	if os.path.basename(sys.argv[0]) == "fence_ilo3":
@@ -147,6 +156,11 @@ def main():
 	if "--obsolete-ip" in pi:
 		pi["--ip"] = pi["--obsolete-ip"]
 	options = check_input(device_opt, pi)
+
+	if "--timeout" in options:
+		options["--shell-timeout"] = options["--timeout"]
+		options["--power-timeout"] = options["--timeout"]
+		options["--login-timeout"] = options["--timeout"]
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for IPMI"

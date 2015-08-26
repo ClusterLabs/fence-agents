@@ -84,6 +84,11 @@
 		</content>
 		<shortdesc lang="en">Privilege level on IPMI device</shortdesc>
 	</parameter>
+	<parameter name="timeout" unique="0" required="0">
+		<getopt mixed="-t [seconds]                   Timeout (sec) for IPMI operation" />
+		<content type="string"  />
+		<shortdesc lang="en">Timeout (sec) for IPMI operation</shortdesc>
+	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
 		<content type="boolean"  />
