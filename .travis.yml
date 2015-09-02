@@ -22,4 +22,3 @@ script:
   - ./configure
   - make
   - make check
-  - PYTHONPATH=fence/agents/lib python fence/agents/lib/tests/test_fencing.py
