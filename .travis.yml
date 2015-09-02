@@ -1,0 +1,25 @@
+language: python
+sudo: false
+
+python:
+  - "2.6"
+
+addons:
+  apt:
+    packages:
+    - python-pexpect
+    - xsltproc
+    - time
+
+before_install:
+  - pip install suds
+  - pip install pycurl
+  - pip install requests
+  - pip install pexpect
+
+script:
+  - ./autogen.sh
+  - ./configure
+  - make
+  - make check
+  - PYTHONPATH=fence/agents/lib python fence/agents/lib/tests/test_fencing.py
