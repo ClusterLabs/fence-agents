@@ -119,12 +119,18 @@ def define_new_opts():
 		"default" : "@IPMITOOL_PATH@",
 		"order": 200
 	}
+	all_opt["obsolete_ip"] = {
+		"getopt" : "i:",
+		"longopt" : "obsolete-ip",
+		"help" : "",
+		"order" : 1
+	}
 
 def main():
 	atexit.register(atexit_handler)
 
-	device_opt = ["ipaddr", "login", "no_login", "no_password", "passwd",
-		"lanplus", "auth", "cipher", "privlvl", "sudo", "ipmitool_path", "method"]
+	device_opt = ["ipaddr", "ipport", "login", "no_login", "no_password", "passwd",
+		"lanplus", "auth", "cipher", "privlvl", "sudo", "ipmitool_path", "method", "obsolete_ip"]
 	define_new_opts()
 
 	if os.path.basename(sys.argv[0]) == "fence_ilo3":
@@ -136,7 +142,11 @@ def main():
 
 	all_opt["ipport"]["default"] = "623"
 
-	options = check_input(device_opt, process_input(device_opt))
+	pi = process_input(device_opt)
+	# Accept also deprecated option but do not propagate it at all
+	if "--obsolete-ip" in pi:
+		pi["--ip"] = pi["--obsolete-ip"]
+	options = check_input(device_opt, pi)
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for IPMI"
