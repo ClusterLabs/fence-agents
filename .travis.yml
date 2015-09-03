@@ -20,7 +20,6 @@ before_install:
 
 script:
   - ./autogen.sh
-  - ./configure
+  - ./configure --with-agents='apc apc_snmp bladecenter brocade cisco_mds cisco_ucs compute drac5 eaton_snmp emerson eps hpblade ibmblade ifmib ilo ilo_moonshot ilo_mp ilo_ssh intelmodular ipdu ipmilan mpath kdump rhevm rsa rsb scsi vmware_soap wti virsh'
   - make
   - make check
-  - PYTHONPATH=fence/agents/lib python fence/agents/lib/tests/test_fencing.py
