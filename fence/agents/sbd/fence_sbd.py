@@ -7,6 +7,7 @@ import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import fail_usage, run_command, fence_action, all_opt
 from fencing import atexit_handler, check_input, process_input, show_docs
+from fencing import run_delay
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION=""
@@ -14,8 +15,10 @@ REDHAT_COPYRIGHT=""
 BUILD_DATE=""
 #END_VERSION_GENERATION
 
-# global variables
-SBD = "/sbin/sbd"	# path to sbd
+DEVICE_INIT = 1
+DEVICE_NOT_INIT = -3
+PATH_NOT_EXISTS = -1
+PATH_NOT_BLOCK = -2
 
 def is_block_device(filename):
     """Checks if a given path is a valid block device
@@ -61,15 +64,15 @@ def check_sbd_device(options, device_path):
     device_path -- device path to check
 
     Return Codes:
-    1 if the device exists and is initialized
-    -1 if the path does not exists
-    -2 if the path exists but is not a valid block device
-    -3 if the sbd device is not initialized
+    1 / DEVICE_INIT if the device exists and is initialized
+    -1 / PATH_NOT_EXISTS if the path does not exists
+    -2 / PATH_NOT_BLOCK if the path exists but is not a valid block device
+    -3 / DEVICE_NOT_INIT if the sbd device is not initialized
     """
 
     # First of all we need to check if the device is valid
     if not os.path.exists(device_path):
-        return -1
+        return PATH_NOT_EXISTS
 
     # We need to check if device path is a symbolic link. If so we resolve that
     # link.
@@ -79,9 +82,9 @@ def check_sbd_device(options, device_path):
 
     # As second step we make sure it's a valid block device
     if not is_block_device(device_path):
-        return -2
+        return PATH_NOT_BLOCK
 
-    cmd = "%s -d %s dump" % (SBD, device_path)
+    cmd = "%s -d %s dump" % (options["--sbd-path"], device_path)
 
     (return_code, out, err) = run_command(options, cmd)
 
@@ -92,9 +95,9 @@ def check_sbd_device(options, device_path):
         # If we read "NOT dumped" something went wrong, e.g. the device is not
         # initialized.
         if "NOT dumped" in line:
-            return -3
+            return DEVICE_NOT_INIT
 
-    return 1
+    return DEVICE_INIT
 
 def generate_sbd_command(options, command, arguments=None):
     """Generates a sbd command based on given arguments.
@@ -102,7 +105,7 @@ def generate_sbd_command(options, command, arguments=None):
     Return Value:
     generated sbd command (string)
     """
-    cmd = SBD
+    cmd = options["--sbd-path"]
 
     # add "-d" for each sbd device
     for device in parse_sbd_devices(options):
@@ -335,16 +338,13 @@ Comma separated list of sbd devices",
         "order": 1
         }
 
-    all_opt["method"] = {
-        "getopt" : "m:",
-        "longopt" : "method",
-        "help" : "-m, --method=[method] \
-         Method to fence (Default: cycle)",
+    all_opt["sbd_path"] = {
+        "getopt" : ":",
+        "longopt" : "sbd-path",
+        "help" : "--sbd-path=[path]              Path to SBD binary",
         "required" : "0",
-        "shortdesc" : "Method to fence (cycle|onoff)",
-        "default" : "cycle",
-        "choices" : ["cycle", "onoff"],
-        "order" : 1
+        "default" : "@SBD_PATH@",
+        "order": 200
         }
 
 def main():
@@ -352,12 +352,15 @@ def main():
     """
     # We need to define "no_password" otherwise we will be ask about it if
     # we don't provide any password.
-    device_opt = ["no_password", "sbd_devices", "port", "method"]
+    device_opt = ["no_password", "sbd_devices", "port", "method", "sbd_path"]
 
     # close stdout if we get interrupted
     atexit.register(atexit_handler)
 
     define_new_opts()
+
+    all_opt["method"]["default"] = "cycle"
+    all_opt["method"]["help"] = "-m, --method=[method]          Method to fence (onoff|cycle) (Default: cycle)"
 
     options = check_input(device_opt, process_input(device_opt))
 
@@ -374,24 +377,26 @@ which can be used in environments where sbd can be used (shared storage)."
         fail_usage("No SBD devices specified. \
                 At least one SBD device is required.")
 
+    run_delay(options)
+
     # We need to check if the provided sbd_devices exists. We need to do
     # that for every given device.
     for device_path in parse_sbd_devices(options):
         logging.debug("check device \"%s\"", device_path)
 
         return_code = check_sbd_device(options, device_path)
-        if -1 == return_code:
+        if PATH_NOT_EXISTS == return_code:
             logging.error("\"%s\" does not exist", device_path)
-        elif -2 == return_code:
+        elif PATH_NOT_BLOCK == return_code:
             logging.error("\"%s\" is not a valid block device", device_path)
-        elif -3 == return_code:
+        elif DEVICE_NOT_INIT == return_code:
             logging.error("\"%s\" is not initialized", device_path)
-        elif 1 != return_code:
+        elif DEVICE_INIT != return_code:
             logging.error("UNKNOWN error while checking \"%s\"", device_path)
 
         # If we get any error while checking the device we need to exit at this
         # point.
-        if 1 != return_code:
+        if DEVICE_INIT != return_code:
             exit(return_code)
 
     # we check against the defined timeouts. If the pacemaker timeout is smaller
