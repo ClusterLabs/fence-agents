@@ -338,24 +338,11 @@ Comma separated list of sbd devices",
         "order": 1
         }
 
-    all_opt["method"] = {
-        "getopt" : "m:",
-        "longopt" : "method",
-        "help" : "-m, --method=[method] \
-         Method to fence (Default: cycle)",
-        "required" : "0",
-        "shortdesc" : "Method to fence (cycle|onoff)",
-        "default" : "cycle",
-        "choices" : ["cycle", "onoff"],
-        "order" : 1
-        }
-
     all_opt["sbd_path"] = {
         "getopt" : ":",
         "longopt" : "sbd-path",
         "help" : "--sbd-path=[path]              Path to SBD binary",
         "required" : "0",
-        "shortdesc" : "Path to SBD binary",
         "default" : "@SBD_PATH@",
         "order": 200
         }
@@ -371,6 +358,9 @@ def main():
     atexit.register(atexit_handler)
 
     define_new_opts()
+
+    all_opt["method"]["default"] = "cycle"
+    all_opt["method"]["help"] = "-m, --method=[method]          Method to fence (onoff|cycle) (Default: cycle)"
 
     options = check_input(device_opt, process_input(device_opt))
 
