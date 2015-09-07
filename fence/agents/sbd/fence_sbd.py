@@ -14,9 +14,6 @@ REDHAT_COPYRIGHT=""
 BUILD_DATE=""
 #END_VERSION_GENERATION
 
-# global variables
-SBD = "/sbin/sbd"	# path to sbd
-
 def is_block_device(filename):
     """Checks if a given path is a valid block device
 
@@ -81,7 +78,7 @@ def check_sbd_device(options, device_path):
     if not is_block_device(device_path):
         return -2
 
-    cmd = "%s -d %s dump" % (SBD, device_path)
+    cmd = "%s -d %s dump" % (options["--sbd-path"], device_path)
 
     (return_code, out, err) = run_command(options, cmd)
 
@@ -102,7 +99,7 @@ def generate_sbd_command(options, command, arguments=None):
     Return Value:
     generated sbd command (string)
     """
-    cmd = SBD
+    cmd = options["--sbd-path"]
 
     # add "-d" for each sbd device
     for device in parse_sbd_devices(options):
@@ -347,12 +344,22 @@ Comma separated list of sbd devices",
         "order" : 1
         }
 
+    all_opt["sbd_path"] = {
+        "getopt" : ":",
+        "longopt" : "sbd-path",
+        "help" : "--sbd-path=[path]              Path to SBD binary",
+        "required" : "0",
+        "shortdesc" : "Path to SBD binary",
+        "default" : "@SBD_PATH@",
+        "order": 200
+        }
+
 def main():
     """Main function
     """
     # We need to define "no_password" otherwise we will be ask about it if
     # we don't provide any password.
-    device_opt = ["no_password", "sbd_devices", "port", "method"]
+    device_opt = ["no_password", "sbd_devices", "port", "method", "sbd_path"]
 
     # close stdout if we get interrupted
     atexit.register(atexit_handler)
