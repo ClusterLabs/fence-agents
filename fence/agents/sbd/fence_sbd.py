@@ -7,6 +7,7 @@ import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import fail_usage, run_command, fence_action, all_opt
 from fencing import atexit_handler, check_input, process_input, show_docs
+from fencing import run_delay
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION=""
@@ -385,6 +386,8 @@ which can be used in environments where sbd can be used (shared storage)."
     if not options.has_key("--sbd-devices"):
         fail_usage("No SBD devices specified. \
                 At least one SBD device is required.")
+
+    run_delay(options)
 
     # We need to check if the provided sbd_devices exists. We need to do
     # that for every given device.
