@@ -406,7 +406,7 @@ which can be used in environments where sbd can be used (shared storage)."
 
         # If we get any error while checking the device we need to exit at this
         # point.
-        if 1 != return_code:
+        if DEVICE_INIT != return_code:
             exit(return_code)
 
     # we check against the defined timeouts. If the pacemaker timeout is smaller
