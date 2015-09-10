@@ -247,7 +247,7 @@ will block any necessary fencing actions."
 	####
 	result = -1
 	firmware_version = re.compile(r'\s*v(\d)*\.').search(conn.before)
-	if (firmware_version != None) and (firmware_version.group(1) == "5"):
+	if (firmware_version != None) and (firmware_version.group(1) in [ "5", "6" ]):
 		result = fence_action(conn, options, set_power_status5, get_power_status5, get_power_status5)
 	else:
 		result = fence_action(conn, options, set_power_status, get_power_status, get_power_status)

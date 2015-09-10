@@ -1067,7 +1067,7 @@ def _login_telnet(options, re_login_string):
 			conn.send_eol("")
 			screen = conn.read_nonblocking(size=100, timeout=int(options["--shell-timeout"]))
 			## after sending EOL the fence device can either show 'Login' or 'Password'
-			if re_login.search(screen) != None:
+			if re_login.search(conn.after + screen) != None:
 				conn.send_eol("")
 			conn.send_eol(options["--username"])
 			conn.log_expect(re_pass, int(options["--login-timeout"]))
