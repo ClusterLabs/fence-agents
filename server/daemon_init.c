@@ -209,12 +209,16 @@ daemon_init(const char *prog, int nofork)
 		exit(1);
 	}
 
-	if (check_process_running(prog, &pid) && (pid != getpid())) {
+/* Prevents multiple instances of the daemon from running.
+    needs to be fixed by the devs.
+*/
+/*	if (check_process_running(prog, &pid) && (pid != getpid())) {
 		syslog(LOG_ERR,
 			"daemon_init: Process \"%s\" already running.\n",
 			prog);
 		exit(1);
 	}
+*/
 
 	if (setup_sigmask() < 0) {
 		syslog(LOG_ERR, "daemon_init: Unable to set signal mask.\n");
@@ -226,7 +230,8 @@ daemon_init(const char *prog, int nofork)
 		exit(1);
 	}
 
-	update_pidfile(prog);
+/*	update_pidfile(prog); */
+
 }
 
 
