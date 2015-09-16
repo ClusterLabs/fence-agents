@@ -8,23 +8,23 @@
 		<content type="string" default="reboot"  />
 		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
+	<parameter name="devices" unique="0" required="1">
+		<getopt mixed="--devices=[device_a,device_b]" />
+		<content type="string"  />
+		<shortdesc lang="en">SBD Device</shortdesc>
+	</parameter>
 	<parameter name="method" unique="0" required="0">
 		<getopt mixed="-m, --method=[method]" />
 		<content type="select" default="cycle"  >
-			<option value="cycle" />
 			<option value="onoff" />
+			<option value="cycle" />
 		</content>
-		<shortdesc lang="en">Method to fence (cycle|onoff)</shortdesc>
+		<shortdesc lang="en">Method to fence</shortdesc>
 	</parameter>
 	<parameter name="port" unique="0" required="1">
 		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />
 		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
-	</parameter>
-	<parameter name="sbd_devices" unique="0" required="1">
-		<getopt mixed="--sbd-devices=[device_a,device_b]" />
-		<content type="string"  />
-		<shortdesc lang="en">SBD Device</shortdesc>
 	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
