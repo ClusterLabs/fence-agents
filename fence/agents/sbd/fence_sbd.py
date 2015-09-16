@@ -321,17 +321,17 @@ def parse_sbd_devices(options):
     """
 
     devices = [str.strip(dev) \
-            for dev in str.split(options["--sbd-devices"], ",")]
+            for dev in str.split(options["--devices"], ",")]
 
     return devices
 
 def define_new_opts():
     """Defines the all opt list
     """
-    all_opt["sbd_devices"] = {
+    all_opt["devices"] = {
         "getopt" : ":",
-        "longopt" : "sbd-devices",
-        "help":"--sbd-devices=[device_a,device_b] \
+        "longopt" : "devices",
+        "help":"--devices=[device_a,device_b] \
 Comma separated list of sbd devices",
         "required" : "1",
         "shortdesc" : "SBD Device",
@@ -352,7 +352,7 @@ def main():
     """
     # We need to define "no_password" otherwise we will be ask about it if
     # we don't provide any password.
-    device_opt = ["no_password", "sbd_devices", "port", "method", "sbd_path"]
+    device_opt = ["no_password", "devices", "port", "method", "sbd_path"]
 
     # close stdout if we get interrupted
     atexit.register(atexit_handler)
@@ -372,8 +372,8 @@ which can be used in environments where sbd can be used (shared storage)."
     docs["vendorurl"] = ""
     show_docs(options, docs)
 
-    # We need to check if --sbd-devices is given and not empty.
-    if not options.has_key("--sbd-devices"):
+    # We need to check if --devices is given and not empty.
+    if not options.has_key("--devices"):
         fail_usage("No SBD devices specified. \
                 At least one SBD device is required.")
 
