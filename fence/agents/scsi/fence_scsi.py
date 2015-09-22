@@ -101,6 +101,7 @@ def is_block_device(dev):
 
 # cancel registration
 def preempt_abort(options, host, dev):
+	reset_dev(options,dev)
 	cmd = options["--sg_persist-path"] + " -n -o -A -T 5 -K " + host + " -S " + options["--key"] + " -d " + dev
 	return not bool(run_cmd(options, cmd)["err"])
 
@@ -123,11 +124,13 @@ def register_dev(options, dev):
 
 
 def reserve_dev(options, dev):
+	reset_dev(options,dev)
 	cmd = options["--sg_persist-path"] + " -n -o -R -T 5 -K " + options["--key"] + " -d " + dev
 	return not bool(run_cmd(options, cmd)["err"])
 
 
 def get_reservation_key(options, dev):
+	reset_dev(options,dev)
 	cmd = options["--sg_persist-path"] + " -n -i -r -d " + dev
 	out = run_cmd(options, cmd)
 	if out["err"]:
@@ -137,6 +140,7 @@ def get_reservation_key(options, dev):
 
 
 def get_registration_keys(options, dev):
+	reset_dev(options,dev)
 	keys = []
 	cmd = options["--sg_persist-path"] + " -n -i -k -d " + dev
 	out = run_cmd(options, cmd)
