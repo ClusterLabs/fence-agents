@@ -345,7 +345,7 @@ def scsi_check_get_verbose():
 	return bool(match)
 
 
-def scsi_check():
+def scsi_check(hardreboot=False):
 	if len(sys.argv) >= 3 and sys.argv[1] == "repair":
 		return int(sys.argv[2])
 	options = {}
@@ -369,6 +369,9 @@ def scsi_check():
 		else:
 			logging.debug("key " + key + " not registered with device " + dev)
 	logging.debug("key " + key + " registered with any devices")
+
+	if hardreboot == True:
+		os.system("reboot -f")
 	return 2
 
 
@@ -387,6 +390,8 @@ def main():
 	#fence_scsi_check
 	if os.path.basename(sys.argv[0]) == "fence_scsi_check":
 		sys.exit(scsi_check())
+	elif os.path.basename(sys.argv[0]) == "fence_scsi_check_hardreboot":
+		sys.exit(scsi_check(True))
 
 	options = check_input(device_opt, process_input(device_opt), other_conditions=True)
 
