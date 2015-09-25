@@ -49,7 +49,7 @@ def get_list(conn, options):
 
 
 def send_cmd(options, cmd, post = False):
-	url = "http%s://%s:%s/v1.11/%s" % ("s" if "--ssl" in options else "", options["--ip"], options["--ipport"], cmd)
+	url = "http%s://%s:%s/v%s/%s" % ("s" if "--ssl" in options else "", options["--ip"], options["--ipport"], options["--api-version"], cmd)
 	conn = pycurl.Curl()
 	output_buffer = StringIO.StringIO()
 	if logging.getLogger().getEffectiveLevel() < logging.WARNING:
@@ -128,7 +128,17 @@ TLS authentication.  Required if --ssl option is used.",
 		"order": 2
 	}
 
-	device_opt = ["ipaddr", "no_password", "no_login", "port", "method", "web", "tlscert", "tlskey", "tlscacert", "ssl"]
+	all_opt["api_version"] = {
+		"getopt" : ":",
+		"longopt" : "api-version",
+		"help" : "--api-version                  "
+			"Version of Docker Remote API (default: 1.11)",
+		"required" : "0",
+		"order" : "2",
+		"default" : "1.11",
+	}
+
+	device_opt = ["ipaddr", "no_password", "no_login", "port", "method", "web", "tlscert", "tlskey", "tlscacert", "ssl", "api_version"]
 
 	options = check_input(device_opt, process_input(device_opt))
 
