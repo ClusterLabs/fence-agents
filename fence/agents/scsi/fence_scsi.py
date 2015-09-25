@@ -426,6 +426,8 @@ def main():
 	#fence_scsi_check
 	if os.path.basename(sys.argv[0]) == "fence_scsi_check.pl":
 		sys.exit(scsi_check())
+	elif os.path.basename(sys.argv[0]) == "fence_scsi_check":
+		sys.exit(scsi_check())
 	elif os.path.basename(sys.argv[0]) == "fence_scsi_check_hardreboot":
 		sys.exit(scsi_check(True))
 

@@ -7,7 +7,7 @@ SRC			= $(TARGET).py
 EXTRA_DIST		= $(SRC)
 
 scsidatadir		= $(CLUSTERDATA)
-scsidata_SCRIPTS	= fence_scsi_check.pl
+scsidata_SCRIPTS	= fence_scsi_check fence_scsi_check_hardreboot fence_scsi_check.pl
 
 sbin_SCRIPTS		= $(TARGET)
 
@@ -18,9 +18,15 @@ FENCE_TEST_ARGS         = -k 1
 fence_scsi_check.pl: $(TARGET)
 	cp $^ $@
 
+fence_scsi_check: $(TARGET)
+	cp $^ $@
+
+fence_scsi_check_hardreboot: $(TARGET)
+	cp $^ $@
+
 include $(top_srcdir)/make/fencebuild.mk
 include $(top_srcdir)/make/fenceman.mk
 include $(top_srcdir)/make/agentpycheck.mk
 
 clean-local: clean-man
-	rm -f $(TARGET) $(SYMTARGET) fence_scsi_check.pl
+	rm -f $(TARGET) $(SYMTARGET) $(scsidata_SCRIPTS)
