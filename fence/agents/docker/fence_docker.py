@@ -88,6 +88,8 @@ specify: --tlscert, --tlskey and --tlscacert")
 	except pycurl.error:
 		logging.error("Connection failed")
 	except:
+		if result is not None:
+			logging.error(result)
 		logging.error("Cannot parse json")
 	return None
 
