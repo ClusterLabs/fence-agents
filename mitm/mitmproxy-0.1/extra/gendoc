@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+# helper script for generating api documentation of mitmproxy with pydoc
+# must be executed from extra directory
+
+set -e
+cd ..
+mkdir -p doc
+pydoc -w mitmproxy
+pydoc -w mitmproxy.mitmproxy
+pydoc -w mitmproxy.sshdebug
+mv *.html doc

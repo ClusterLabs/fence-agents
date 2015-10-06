@@ -1,0 +1,40 @@
+#!/usr/bin/env python2
+'''
+SNMP interceptor and logger.
+See --help for usage.
+'''
+
+from twisted.internet import reactor
+import sys
+import mitmproxy
+
+def got_ip(ipaddr, opts):
+    '''
+    Start UDP proxy when ip address is resolved.
+    '''
+    # set logger
+    log = mitmproxy.Logger()
+    if opts.logfile is not None:
+        log.open_log(opts.logfile)
+
+    server = mitmproxy.UDPProxyServer(log, ipaddr, opts.port)
+    reactor.listenUDP(opts.localport, server)
+
+def main():
+    '''
+    Parse options, open log and start proxy server
+    '''
+    (opts, _) = mitmproxy.proxy_option_parser(161, 1610)
+
+    sys.stderr.write(
+        'Server running on localhost:%d...\n' % (opts.localport))
+
+    reactor.resolve(opts.host).addCallback(got_ip, opts)
+    reactor.run()
+    sys.exit(mitmproxy.exit_code.pop())
+
+if __name__ == "__main__":
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit(0)

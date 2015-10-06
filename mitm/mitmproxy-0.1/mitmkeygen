@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+mkdir -p ~/.mitmkeys
+
+
+### SSH
+echo "=> Generating SSH keypair with empty passphrase in ~/.mitmkeys"
+ssh-keygen -t rsa -N '' -f ~/.mitmkeys/id_rsa
+
+
+### SSL
+echo "=> Generating self-signed SSL certificate with empty passphrase in ~/.mitmkeys"
+# Generate the Private Key
+openssl genrsa -des3 -passout pass:0000 -out ~/.mitmkeys/server.key 1024
+
+# Generate a Certificate Signing Request
+openssl req -new -key ~/.mitmkeys/server.key -passin pass:0000 -batch -out ~/.mitmkeys/server.csr
+
+# Remove Passphrase from Key
+cp ~/.mitmkeys/server.key ~/.mitmkeys/server.key.orig
+openssl rsa -passin pass:0000 -in ~/.mitmkeys/server.key.orig -out ~/.mitmkeys/server.key
+rm ~/.mitmkeys/server.key.orig
+
+# Generate a Self-Signed Certificate
+openssl x509 -req -days 365 -in ~/.mitmkeys/server.csr -signkey ~/.mitmkeys/server.key -out ~/.mitmkeys/server.crt
+
+echo "=> Done."

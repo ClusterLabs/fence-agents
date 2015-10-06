@@ -1,0 +1,38 @@
+.\" Manpage for mitmproxy.
+.\" Contact saironiq@gmail.com to correct errors or typos.
+.TH man 8 "22 Jan 2013" "1.0" "mitmproxy man page"
+.SH NAME
+mitmproxy \- collection of logging proxy/replay servers for multiple protocols
+.SH SYNOPSIS
+Proxy servers:
+  mitmproxy_http
+  mitmproxy_snmp
+  mitmproxy_ssh
+  mitmproxy_ssl
+  mitmproxy_telnet
+
+Replay servers:
+  mitmreplay_http
+  mitmreplay_snmp
+  mitmreplay_ssh
+  mitmreplay_ssl
+  mitmreplay_telnet
+
+Utils:
+  mitmkeygen - generate private/public keypairs for proxies
+  mitmlogdiff - compare two proxy logs
+  mitmlogview - view a single log file
+
+Fencing-specific:
+  fencegenlog - tool for capturing fencing traffic
+  fencetestlog - utility to replay and compare results
+.SH DESCRIPTION
+mitmproxy is a suite man-in-the-middle proxies and replay servers designed for quality assurance purposes (regression testing). The proxy scripts act as a pass-through with logging, replay scripts in turn mimic the communication and report any differences. See --help output of specific script for more information. Also see README.md and INTERNAL.md in your system's doc directory.
+.SH OPTIONS
+See --help output of specific script for a list of options.
+.SH BUGS
+Solar flares.
+.SH AUTHOR
+See the project's repository/homepage at http://github.com/saironiq/mitmproxy
+.SH COPYRIGHT
+Distributed under GNU General Public License version 2.
