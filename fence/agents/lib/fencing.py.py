@@ -897,6 +897,7 @@ def fence_login(options, re_login_string=r"(login\s*: )|((?!Last )Login Name:  )
 	return conn
 
 def is_executable(path):
+	path = shlex.split(path)[0]
 	if os.path.exists(path):
 		stats = os.stat(path)
 		if stat.S_ISREG(stats.st_mode) and os.access(path, os.X_OK):
