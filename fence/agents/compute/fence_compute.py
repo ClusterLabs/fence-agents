@@ -86,21 +86,45 @@ def set_power_status(_, options):
 
 	if options["--action"] == "on":
 		if get_power_status(_, options) == "on":
+			# Forcing the service back up in case it was disabled
 			nova.services.enable(options["--plug"], 'nova-compute')
+			try:
+				# Forcing the host back up
+				nova.services.force_down(
+					options["--plug"], "nova-compute", force_down=False)
+			except Exception:
+				# In theory, if foce_down=False fails, that's for the exact
+				# same possible reasons that below with force_down=True
+				# eg. either an incompatible version or an old client.
+				# Since it's about forcing back to a default value, there is
+				# no real worries to just consider it's still okay even if the
+				# command failed
+				pass
 		else:
 			# Pretend we're 'on' so that the fencing library doesn't loop forever waiting for the node to boot
 			override_status = "on"
 		return
 
-	# need to wait for nova to update its internal status or we
-	# cannot call host-evacuate
-	while get_power_status(_, options) != "off":
-		# Loop forever if need be.
-		#
-		# Some callers (such as Pacemaker) will have a timer
-		# running and kill us if necessary
-		logging.debug("Waiting for nova to update it's internal state")
-		time.sleep(1)
+	try:
+		nova.services.force_down(
+			options["--plug"], "nova-compute", force_down=True)
+	except Exception:
+		# Something went wrong when we tried to force the host down.
+		# That could come from either an incompatible API version
+		# eg. UnsupportedVersion or VersionNotFoundForAPIMethod
+		# or because novaclient is old and doesn't include force_down yet
+		# eg. AttributeError
+		# In that case, fallbacking to wait for Nova to catch the right state.
+
+		# need to wait for nova to update its internal status or we
+		# cannot call host-evacuate
+		while get_power_status(_, options) != "off":
+			# Loop forever if need be.
+			#
+			# Some callers (such as Pacemaker) will have a timer
+			# running and kill us if necessary
+			logging.debug("Waiting for nova to update it's internal state")
+			time.sleep(1)
 
 	if options["--no-shared-storage"] != "False":
 		on_shared_storage = False
