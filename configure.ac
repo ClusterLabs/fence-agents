@@ -311,6 +311,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/sbd/Makefile
 		 fence/agents/sanbox2/Makefile
 		 fence/agents/scsi/Makefile
+		 fence/agents/vbox/Makefile
 		 fence/agents/virsh/Makefile
 		 fence/agents/vmware/Makefile
 		 fence/agents/vmware_soap/Makefile
