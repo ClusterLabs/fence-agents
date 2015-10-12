@@ -12,6 +12,7 @@ import atexit
 import logging
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import fail, EC_LOGIN_DENIED, atexit_handler, all_opt, check_input, process_input, show_docs, fence_action, run_delay
+import fencing_pycurl
 
 if sys.version_info.major > 2: import urllib.parse as urllib
 else: import urllib
@@ -95,7 +96,7 @@ def get_ticket(options):
 
 def send_cmd(options, cmd, post=None):
 	url = options["url"] + cmd
-	conn = pycurl.Curl()
+	conn = fencing_pycurl.FencingPyCurl()
 	output_buffer = io.StringIO()
 	if logging.getLogger().getEffectiveLevel() < logging.WARNING:
 		conn.setopt(pycurl.VERBOSE, True)

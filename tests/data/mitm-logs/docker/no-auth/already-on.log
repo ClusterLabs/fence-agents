@@ -1,0 +1,19 @@
+[
+    {
+        "request": {
+            "10002": "http://fedora1:80/v1.11/containers/594388bee400fbe4d20885e08def4ba98e1b96f7c5196f586749f4ad650d5bc7/json",
+            "13": 3,
+            "64": 0,
+            "80": 1,
+            "81": 0
+        },
+        "response": {
+            "2097154": 200,
+            "output": "{\"ID\":\"594388bee400fbe4d20885e08def4ba98e1b96f7c5196f586749f4ad650d5bc7\",\"Created\":\"2014-05-14T08:36:21.317950112Z\",\"Path\":\"ping\",\"Args\":[\"192.168.122.1\"],\"Config\":{\"Hostname\":\"594388bee400\",\"Domainname\":\"\",\"User\":\"\",\"Memory\":0,\"MemorySwap\":0,\"CpuShares\":0,\"Cpuset\":\"\",\"AttachStdin\":false,\"AttachStdout\":true,\"AttachStderr\":true,\"PortSpecs\":null,\"ExposedPorts\":null,\"Tty\":false,\"OpenStdin\":false,\"StdinOnce\":false,\"Env\":[\"HOME=/\",\"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\"],\"Cmd\":[\"ping\",\"192.168.122.1\"],\"Image\":\"fedora:20\",\"Volumes\":null,\"WorkingDir\":\"\",\"Entrypoint\":null,\"NetworkDisabled\":false,\"OnBuild\":null},\"State\":{\"Running\":true,\"Paused\":false,\"Pid\":759,\"ExitCode\":0,\"StartedAt\":\"2014-10-16T12:54:24.655481895Z\",\"FinishedAt\":\"2014-10-14T14:38:09.451955433Z\"},\"Image\":\"105182bb5e8bed742e4063e9486afa5f51328fc007e74f6c9f29cd1f75971357\",\"NetworkSettings\":{\"IPAddress\":\"172.17.0.2\",\"IPPrefixLen\":16,\"Gateway\":\"172.17.42.1\",\"Bridge\":\"docker0\",\"PortMapping\":null,\"Ports\":{}},\"ResolvConfPath\":\"/etc/resolv.conf\",\"HostnamePath\":\"/var/lib/docker/containers/594388bee400fbe4d20885e08def4ba98e1b96f7c5196f586749f4ad650d5bc7/hostname\",\"HostsPath\":\"/var/lib/docker/containers/594388bee400fbe4d20885e08def4ba98e1b96f7c5196f586749f4ad650d5bc7/hosts\",\"Name\":\"/cocky_poincare\",\"Driver\":\"devicemapper\",\"ExecDriver\":\"native-0.1\",\"MountLabel\":\"\",\"ProcessLabel\":\"\",\"Volumes\":{},\"VolumesRW\":{},\"HostConfig\":{\"Binds\":null,\"ContainerIDFile\":\"\",\"LxcConf\":null,\"Privileged\":false,\"PortBindings\":null,\"Links\":null,\"PublishAllPorts\":false,\"Dns\":null,\"DnsSearch\":null,\"VolumesFrom\":null,\"NetworkMode\":\"\"}}"
+        },
+        "time": {
+            "perform_duration": 0.006002902984619141,
+            "time_from_last_request": 0.0
+        }
+    }
+]
