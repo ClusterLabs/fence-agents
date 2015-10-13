@@ -156,7 +156,7 @@ def set_power_status(_, options):
 				nova.services.force_down(
 					options["--plug"], "nova-compute", force_down=False)
 			except Exception as e:
-				# In theory, if foce_down=False fails, that's for the exact
+				# In theory, if force_down=False fails, that's for the exact
 				# same possible reasons that below with force_down=True
 				# eg. either an incompatible version or an old client.
 				# Since it's about forcing back to a default value, there is
