@@ -19,6 +19,9 @@ REDHAT_COPYRIGHT="Copyright (C) Red Hat, Inc. 2004-2010 All rights reserved."
 override_status = ""
 nova = None
 
+EVACUABLE_TAG = "evacuable"
+TRUE_TAGS = ['true']
+
 def get_power_status(_, options):
 	global override_status
 
@@ -63,13 +66,43 @@ def _server_evacuate(server, on_shared_storage):
 		"error_message": error_message,
 		}
 
+def _is_server_evacuable(server, evac_flavors, evac_images):
+    if server.flavor.get('id') in evac_flavors:
+        return True
+    if server.image.get('id') in evac_images:
+        return True
+    return False
+
+def _get_evacuable_flavors():
+    result = []
+    flavors = nova.flavors.list()
+    # Since the detailed view for all flavors doesn't provide the extra specs,
+    # we need to call each of the flavor to get them.
+    for flavor in flavors:
+        if flavor.get_keys().get(EVACUABLE_TAG).strip().lower() in TRUE_TAGS:
+            result.append(flavor.id)
+    return result
+
+def _get_evacuable_images():
+    result = []
+    images = nova.images.list(detailed=True)
+    for image in images:
+        if hasattr(image, 'metadata'):
+            if image.metadata.get(EVACUABLE_TAG).strip.lower() in TRUE_TAGS:
+                result.append(image.id)
+    return result
+
 def _host_evacuate(host, on_shared_storage):
-	hypervisors = nova.hypervisors.search(host, servers=True)
 	response = []
-	for hyper in hypervisors:
-		if hasattr(hyper, 'servers'):
-			for server in hyper.servers:
-				response.append(_server_evacuate(server, on_shared_storage))
+	flavors = _get_evacuable_flavors()
+	images = _get_evacuable_images()
+	servers = nova.servers.list(search_opts={'hypervisor': host})
+	# Identify all evacuable servers
+	evacuables = [server for server in servers
+	              if _is_server_evacuable(server, flavors, images)]
+	# If no evacuable servers, then evacuate all the host servers
+	for server in evacuables or servers:
+		response.append(_server_evacuate(server, on_shared_storage))
 
 def set_attrd_status(host, status, options):
 	logging.debug("Setting fencing status for %s to %s" % (host, status))
