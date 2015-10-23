@@ -36,7 +36,7 @@ def get_power_status(conn, options):
 			status = "off" if len(tokens) > 7 and tokens[7] == "Disabled" else "on"
 			outlets[tokens[0]] = ("", status)
 
-	if options["--action"] == "status":
+	if ["list", "monitor"].count(options["--action"]) == 0:
 		(_, status) = outlets[options["--plug"]]
 		return status
 	else:
