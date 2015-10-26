@@ -14,6 +14,9 @@ fence_zvm_CFLAGS	= -D_GNU_SOURCE
 
 man_MANS		= $(TARGET).8 fence_zvm.8
 
+fence_zvm.8: fence_zvm_man_page
+	cp fence_zvm_man_page fence_zvm.8
+
 FENCE_TEST_ARGS         = -l test -p test -a test -n 1
 
 include $(top_srcdir)/make/fencebuild.mk
