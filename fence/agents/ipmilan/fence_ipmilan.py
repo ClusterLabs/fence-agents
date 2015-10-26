@@ -127,6 +127,7 @@ def main():
 		"lanplus", "auth", "cipher", "privlvl", "sudo", "ipmitool_path", "method"]
 	define_new_opts()
 
+	all_opt["power_wait"]["default"] = 2
 	if os.path.basename(sys.argv[0]) == "fence_ilo3":
 		all_opt["power_wait"]["default"] = "4"
 		all_opt["method"]["default"] = "cycle"
