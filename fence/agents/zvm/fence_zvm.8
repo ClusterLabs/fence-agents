@@ -1,0 +1,87 @@
+.TH fence_zvm 8
+
+.SH NAME
+fence_zvm - Power Fencing agent for GFS on System z z/VM Clusters
+
+.SH SYNOPSIS
+.B
+fence_zvm
+[\fIOPTION\fR]...
+
+.SH DESCRIPTION
+fence_zvm is a Power Fencing agent used on a GFS virtual machine in a System z z/VM cluster.
+It uses the SMAPI interface to recycle an active image.
+
+fence_zvm accepts options on the command line as well as from stdin.
+fence_node sends the options through stdin when it execs the agent.
+fence_zvm can be run by itself with command line options which is useful
+for testing.
+
+Vendor URL: http://www.sinenomine.net
+
+.SH OPTIONS
+.TP
+\fB-o --action\fP
+Fencing action: "off" - deactivate virtual machine; "on" - activate virtual machine; "metadata" - display device metadata" - describe fence agent parameters; "status" - state of virtual machine
+.TP
+\fB--delay\fP \fIseconds\fP
+Time to delay fencing action in seconds
+.TP
+\fB-n --plug\fP \fItarget\fP
+Name of virtual machine to recycle.
+.TP
+\fB-h --help\fP
+Print out a help message describing available options, then exit.
+.TP
+\fB-a --ip\fP \fIsmapi Server\fP
+\fBName\fP of SMAPI server virtual machine. To be consistent with other fence agents this name is a little misleading: it is the name of the virtual machine not its IP address or hostname.
+.TP
+\fB--zvmsys\fP \fIz/VM System\fP
+\fBName\fP of z/VM on which the SMAPI server virtual machine resides. Optional - defaults to system on which the node is running.
+.TP
+\fB-h --help\fP
+Display usage information
+.TP
+\fI-t --timeout = < shutdown timeout >\fP
+Amount of \fIgrace\fP time to give the virtual machine to shutdown cleanly before being
+forcibly terminated. Currently, this option is ignored.
+
+.SH STDIN PARAMETERS
+.TP
+\fIagent = < param >\fP
+This option is used by fence_node(8) and is ignored by fence_zvm.
+.TP
+\fIaction = < action >\fP
+Fencing action: "off" - fence off device; "metadata" - display device metadata; "status" - state of device
+.TP
+\fIport = < target >\fP
+Name of virtual machine to recycle.
+.TP
+\fIipaddr= < server name >\fP
+\fBName\fP of SMAPI server virtual machine. To be consistent with other fence agents thisname is a little misleading: it is the name of the virtual machine not its IP address or hostname.
+.TP
+\fItimeout = < shutdown timeout >\fP
+Amount of \fIgrace\fP time to give the virtual machine to shutdown cleanly before being
+forcibly terminated. Currently, this option is ignored.
+
+.SH SEE ALSO
+fence(8), fenced(8), fence_node(8)
+
+.SH NOTES
+To use this agent the z/VM SMAPI service needs to be configured to allow the virtual
+machine running this agent to connect to it and issue the image_recycle operation.
+This involves updating the VSMWORK1 AUTHLIST VMSYS:VSMWORK1. file. The entry should look
+something similar to this:
+
+.nf
+Column 1                   Column 66                Column 131
+|                          |                        |
+V                          V                        V
+XXXXXXXX                   ALL                      IMAGE_OPERATIONS
+.fi
+
+Where XXXXXXX is the name of the virtual machine where the agent resides. 
+
+In addition, the VM directory entry that defines this virtual machine requires the
+IUCV ANY statement (or IUCV <userid of SMAPI Server>). This authorizes use of IUCV
+to connect to the SMAPI server.
