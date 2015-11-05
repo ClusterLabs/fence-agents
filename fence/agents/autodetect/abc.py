@@ -13,34 +13,24 @@ import fence_bladecenter
 import fence_brocade
 import fence_ilo_moonshot
 
-def fix_additional_newlines():
+def _fix_additional_newlines():
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
-class fspawn(pexpect.spawn):
-	def __init__(self, options, command):
-		logging.info("Running command: %s", command)
-		pexpect.spawn.__init__(self, command)
-		self.opt = options
-
-	def log_expect(self, pattern, timeout):
-		result = self.expect(pattern, timeout)
-		logging.debug("Received: %s", str(self.before) + str(self.after))
-		return result
-
-	def send(self, message):
-		logging.debug("Sent: %s", message)
-		return pexpect.spawn.send(self, message)
-
-	# send EOL according to what was detected in login process (telnet)
-	def send_eol(self, message):
-		return self.send(message + self.opt["eol"])
-
+def get_list(conn, options, found_prompt, prompts, list_fn):
+	options["--action"] = "list"
+	options["--command-prompt"] = found_cmd_prompt
+	if any(x in options["--command-prompt"][0] for x in prompts):
+		options["--command-prompt"] = prompts
+	
+		if len(list_fn(conn, options)) > 0:
+			return True
+	return False
 
 """ *************************** MAIN ******************************** """
 
 ## login mechanism as in fencing.py.py - differences is that we do not know command prompt
-logging.getLogger().setLevel(logging.DEBUG)
+#logging.getLogger().setLevel(logging.DEBUG)
 
 options = {}
 options["--ssh-path"] = "/usr/bin/ssh"
@@ -65,14 +55,14 @@ options["--password"] = "100yard-"
 options["--ip"] = "blade-mm.englab.brq.redhat.com"
 
 # Brocade
-options["--ip"] = "hp-fcswitch-01.lab.bos.redhat.com"
-options["--password"] = "password"
-options["--username"] = "admin"
+#options["--ip"] = "hp-fcswitch-01.lab.bos.redhat.com"
+#options["--password"] = "password"
+#options["--username"] = "admin"
 
 # iLO Moonshot
-options["--password"] = "Access@gis"
-options["--username"] = "rcuser"
-options["--ip"] = "hp-m1500-mgmt.gsslab.pnq.redhat.com"
+#options["--password"] = "Access@gis"
+#options["--username"] = "rcuser"
+#options["--ip"] = "hp-m1500-mgmt.gsslab.pnq.redhat.com"
 
 options["--login-timeout"] = "10"
 options["--shell-timeout"] = "5"
@@ -86,10 +76,9 @@ re_login = re.compile(re_login_string, re.IGNORECASE)
 re_pass = re.compile("(password)|(pass phrase)", re.IGNORECASE)
 
 command = '%s %s@%s -p %s -1 -c blowfish -o PubkeyAuthentication=no' % (options["--ssh-path"], options["--username"], options["--ip"], options["--ipport"])
-command = '%s %s@%s -v -p %s -o PubkeyAuthentication=no' % (options["--ssh-path"], options["--username"], options["--ip"], options["--ipport"])
+command = '%s %s@%s -p %s -o PubkeyAuthentication=no' % (options["--ssh-path"], options["--username"], options["--ip"], options["--ipport"])
 
-conn = fspawn(options, command)
-conn.interact()
+conn = fencing.fspawn(options, command)
 result = conn.log_expect(["ssword:", "Are you sure you want to continue connecting (yes/no)?"], int(options["--login-timeout"]))
 if result == 1:
 	conn.send("yes\n")
@@ -138,20 +127,24 @@ options["--action"] = "list"
 options["--command-prompt"] = found_cmd_prompt
 if any(x in options["--command-prompt"][0] for x in cmd_possible):
 	options["--command-prompt"] = cmd_possible
-	options["--hmc-version"] = "3"
+#	options["--hmc-version"] = "3"
 #	plugs = fence_lpar.get_lpar_list(conn, options)
 #	if len(plugs) > 0:
 #		print "fence_lpar # v3"
 #		fence_logout("quit")
 #		sys.exit(0)
 	options["eol"] = "\n"
-	fix_additional_newlines()
+	_fix_additional_newlines()
 	conn.send_eol("lssyscfg > /dev/null | echo $?")
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	if "\n0\n" in conn.before:
 		print "fence_lpar # v4"
 		fencing.fence_logout(conn, "quit")
 		sys.exit(0)
+
+if get_list(conn, options, found_cmd_prompt, prompts=["system>"], list_fn=fence_bladecenter.get_blades_list):
+	print "fence_bladecenter #"
+	sys.exit(0)
 
 ## Test fence_bladecenter
 cmd_possible = ["system>"]
@@ -174,7 +167,7 @@ options["eol"] = "\n"
 if any(x in options["--command-prompt"][0] for x in cmd_possible):
 	options["--command-prompt"] = cmd_possible
 
-	fix_additional_newlines()
+	_fix_additional_newlines()
 
 	plugs = fence_brocade.get_power_status(conn, options)
 	if len(plugs) > 0:

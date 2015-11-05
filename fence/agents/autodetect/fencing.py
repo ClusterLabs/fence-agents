@@ -462,7 +462,7 @@ class fspawn(pexpect.spawn):
 
 	def log_expect(self, pattern, timeout):
 		result = self.expect(pattern, timeout)
-		logging.debug("Received: %s", self.before + self.after)
+		logging.debug("Received: %s", str(self.before) + str(self.after))
 		return result
 
 	def send(self, message):
