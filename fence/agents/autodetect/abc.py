@@ -17,12 +17,22 @@ def _fix_additional_newlines():
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
-def get_list(conn, options, found_prompt, prompts, list_fn):
+def get_list(conn, options, found_prompt, prompts, list_fn, eol=None):
 	options["--action"] = "list"
 	options["--command-prompt"] = found_cmd_prompt
 	if any(x in options["--command-prompt"][0] for x in prompts):
+		if not (eol == options["eol"] or eol is None):
+			options["eol"] = eol
+			# At the beginning eol is CRLF what could lead to twice as many enters as expected
+			# we need to parse all previous one so list_fn can work as expected
+
+			# @note: This should be done only once per session
+			# @note: after sequence crlf -> lf -> crlf = strange things can occur
+			conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
+			conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
+
 		options["--command-prompt"] = prompts
-	
+
 		if len(list_fn(conn, options)) > 0:
 			return True
 	return False
@@ -52,14 +62,14 @@ options["--ip"] = "ppc-hmc-01.mgmt.lab.eng.bos.redhat.com"
 options["--password"] = "100yard-"
 
 # Bladecenter
-options["--ip"] = "blade-mm.englab.brq.redhat.com"
+#options["--ip"] = "blade-mm.englab.brq.redhat.com"
 
 # Brocade
-#options["--ip"] = "hp-fcswitch-01.lab.bos.redhat.com"
-#options["--password"] = "password"
-#options["--username"] = "admin"
+options["--ip"] = "hp-fcswitch-01.lab.bos.redhat.com"
+options["--password"] = "password"
+options["--username"] = "admin"
 
-# iLO Moonshot
+# iLO Moonshot - chova sa to divne
 #options["--password"] = "Access@gis"
 #options["--username"] = "rcuser"
 #options["--ip"] = "hp-m1500-mgmt.gsslab.pnq.redhat.com"
@@ -143,37 +153,12 @@ if any(x in options["--command-prompt"][0] for x in cmd_possible):
 		sys.exit(0)
 
 if get_list(conn, options, found_cmd_prompt, prompts=["system>"], list_fn=fence_bladecenter.get_blades_list):
-	print "fence_bladecenter #"
+	print "fence_bladecenter #2"
 	sys.exit(0)
 
-## Test fence_bladecenter
-cmd_possible = ["system>"]
-options["--action"] = "list"
-options["--command-prompt"] = found_cmd_prompt
-if any(x in options["--command-prompt"][0] for x in cmd_possible):
-	options["--command-prompt"] = cmd_possible
-	
-	plugs = fence_bladecenter.get_blades_list(conn, options)
-	if len(plugs) > 0:
-		print "fence_bladeceter # "
-		fencing.fence_logout(conn, "exit")
-		sys.exit(0)
-
-## Test fence_brocade
-cmd_possible = ["> "]
-options["--action"] = "list"
-options["--command-prompt"] = found_cmd_prompt
-options["eol"] = "\n"
-if any(x in options["--command-prompt"][0] for x in cmd_possible):
-	options["--command-prompt"] = cmd_possible
-
-	_fix_additional_newlines()
-
-	plugs = fence_brocade.get_power_status(conn, options)
-	if len(plugs) > 0:
-		print "fence_brocade # "
-		fencing.fence_logout(conn, "exit")
-		sys.exit(0)
+if get_list(conn, options, found_cmd_prompt, prompts=["> "], list_fn=fence_brocade.get_power_status, eol="\n"):
+	print "fence_brocade #2"
+	sys.exit(0)
 
 # Test fence ilo moonshot
 cmd_possible = ["MP>", "hpiLO->"]
