@@ -13,28 +13,13 @@ import fence_bladecenter
 import fence_brocade
 import fence_ilo_moonshot
 
-def _fix_additional_newlines():
-	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
-	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
-
 def check_agent(conn, options, found_prompt, prompts, test_fn, eol=None):
 	options["--action"] = "list"
 	options["--command-prompt"] = found_cmd_prompt
 	if any(x in options["--command-prompt"][0] for x in prompts):
-		if not (eol == options["eol"] or eol is None):
-			options["eol"] = eol
-			# At the beginning eol is CRLF what could lead to twice as many enters as expected
-			# we need to parse all previous one so list_fn can work as expected
-
-			# @note: This should be done only once per session
-			# @note: after sequence crlf -> lf -> crlf = strange things can occur
-			conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
-			conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
-
 		options["--command-prompt"] = prompts
 
-		if test_fn(conn, options):
-			return True
+		return test_fn(conn, options)
 	return False
 
 def get_list(conn, options, found_prompt, prompts, list_fn, eol=None):
@@ -60,9 +45,9 @@ options["--ssh-path"] = "/usr/bin/ssh"
 #options["--password"] = "batalion"
 
 # APC
-options["--username"] = "labuser"
-options["--ip"] = "pdu-bar.englab.brq.redhat.com"
-options["--password"] = "labuser"
+#options["--username"] = "labuser"
+#options["--ip"] = "pdu-bar.englab.brq.redhat.com"
+#options["--password"] = "labuser"
 
 # LPAR
 options["--username"] = "rhts"
@@ -71,7 +56,7 @@ options["--ip"] = "ppc-hmc-01.mgmt.lab.eng.bos.redhat.com"
 options["--password"] = "100yard-"
 
 # Bladecenter
-#options["--ip"] = "blade-mm.englab.brq.redhat.com"
+options["--ip"] = "blade-mm.englab.brq.redhat.com"
 
 # Brocade
 #options["--ip"] = "hp-fcswitch-01.lab.bos.redhat.com"
@@ -94,8 +79,8 @@ re_login_string=r"(login\s*: )|((?!Last )Login Name:  )|(username: )|(User Name 
 re_login = re.compile(re_login_string, re.IGNORECASE)
 re_pass = re.compile("(password)|(pass phrase)", re.IGNORECASE)
 
-command = '%s %s@%s -p %s -1 -c blowfish -o PubkeyAuthentication=no' % (options["--ssh-path"], options["--username"], options["--ip"], options["--ipport"])
-#command = '%s %s@%s -p %s -o PubkeyAuthentication=no' % (options["--ssh-path"], options["--username"], options["--ip"], options["--ipport"])
+#command = '%s %s@%s -p %s -1 -c blowfish -o PubkeyAuthentication=no' % (options["--ssh-path"], options["--username"], options["--ip"], options["--ipport"])
+command = '%s %s@%s -p %s -o PubkeyAuthentication=no' % (options["--ssh-path"], options["--username"], options["--ip"], options["--ipport"])
 
 conn = fencing.fspawn(options, command)
 result = conn.log_expect(["ssword:", "Are you sure you want to continue connecting (yes/no)?"], int(options["--login-timeout"]))
@@ -116,12 +101,43 @@ logging.info("Cmd-prompt candidate: %s" % (lines[1]))
 if lines.count(lines[-1]) >= 3:
 	found_cmd_prompt = ["\n" + lines[-1]]
 else:
-	print "Unable to obtain command prompt automatically"
-	sys.exit(1)
+	if lines.count(lines[-1]) == 2:
+		conn.log_expect(lines[-1], int(options["--shell-timeout"]))
+		conn.log_expect(lines[-1], int(options["--shell-timeout"]))
+		options["eol"] = "\r"
+		conn.send_eol("")
+		time.sleep(0.1)
+		conn.send_eol("")
+		time.sleep(0.1)
+		conn.send_eol("")
+		time.sleep(0.1)
+		idx = conn.log_expect(pexpect.TIMEOUT, int(options["--login-timeout"]))
+		lines = re.split(r'\r|\n', conn.before)
+		cmd_prompt = None
+		logging.info("Cmd-prompt candidate: %s" % (lines[1]))
+		print lines
+		if lines.count(lines[-1]) >= 3:
+        		found_cmd_prompt = ["\n" + lines[-1]]
+		else:
+			print "Unable to obtain command prompt automatically"
+			sys.exit(1)
+	else:
+		print "Unable to obtain command prompt automatically"
+		print lines[-1]
+		print conn.before
+		sys.exit(1)
 
 conn.log_expect(found_cmd_prompt, int(options["--shell-timeout"]))
 conn.log_expect(found_cmd_prompt, int(options["--shell-timeout"]))
 conn.log_expect(found_cmd_prompt, int(options["--shell-timeout"]))
+
+# Handle situation when CR/LF is interpreted as ENTER, ENTER
+# In such case we will have get two additional command prompts to get on right position
+res = conn.log_expect([pexpect.TIMEOUT] + found_cmd_prompt, int(options["--shell-timeout"]))
+if res > 0:
+	# @note: store that information?
+	print "CMD twice"
+	conn.log_expect(found_cmd_prompt, int(options["--shell-timeout"]))
 
 if get_list(conn, options, found_cmd_prompt, prompts=["\n>", "\napc>"], list_fn=fence_apc.get_power_status):
 	print "fence_apc # older series"
@@ -135,10 +151,7 @@ if get_list(conn, options, found_cmd_prompt, prompts=["\n>", "\napc>"], list_fn=
 
 ## Test fence_lpar with list action (HMC version 3 and 4)
 def test_lpar(conn, options):
-	# bug - eol?
-	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	conn.send_eol("lssyscfg; echo $?")
-	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	if "\n0\r\n" in conn.before:
 		return True
@@ -167,8 +180,6 @@ options["--command-prompt"] = found_cmd_prompt
 options["eol"] = "\n"
 if any(x in options["--command-prompt"][0] for x in cmd_possible):
 	options["--command-prompt"] = cmd_possible
-
-	fix_additional_newlines()
 
 	plugs = fence_ilo_moonshot.get_power_status(conn, options)
 	if len(plugs) > 0:
