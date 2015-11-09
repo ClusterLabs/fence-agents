@@ -17,7 +17,7 @@ def _fix_additional_newlines():
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
-def get_list(conn, options, found_prompt, prompts, list_fn, eol=None):
+def check_agent(conn, options, found_prompt, prompts, test_fn, eol=None):
 	options["--action"] = "list"
 	options["--command-prompt"] = found_cmd_prompt
 	if any(x in options["--command-prompt"][0] for x in prompts):
@@ -33,9 +33,18 @@ def get_list(conn, options, found_prompt, prompts, list_fn, eol=None):
 
 		options["--command-prompt"] = prompts
 
-		if len(list_fn(conn, options)) > 0:
+		if test_fn(conn, options):
 			return True
 	return False
+
+def get_list(conn, options, found_prompt, prompts, list_fn, eol=None):
+	def test_fn(conn, options):
+		if len(list_fn(conn, options)) > 0:
+			return True
+		else:
+			return False
+		
+	return check_agent(conn, options, found_prompt, prompts, test_fn, eol)
 
 """ *************************** MAIN ******************************** """
 
@@ -65,9 +74,9 @@ options["--password"] = "100yard-"
 #options["--ip"] = "blade-mm.englab.brq.redhat.com"
 
 # Brocade
-options["--ip"] = "hp-fcswitch-01.lab.bos.redhat.com"
-options["--password"] = "password"
-options["--username"] = "admin"
+#options["--ip"] = "hp-fcswitch-01.lab.bos.redhat.com"
+#options["--password"] = "password"
+#options["--username"] = "admin"
 
 # iLO Moonshot - chova sa to divne
 #options["--password"] = "Access@gis"
@@ -86,7 +95,7 @@ re_login = re.compile(re_login_string, re.IGNORECASE)
 re_pass = re.compile("(password)|(pass phrase)", re.IGNORECASE)
 
 command = '%s %s@%s -p %s -1 -c blowfish -o PubkeyAuthentication=no' % (options["--ssh-path"], options["--username"], options["--ip"], options["--ipport"])
-command = '%s %s@%s -p %s -o PubkeyAuthentication=no' % (options["--ssh-path"], options["--username"], options["--ip"], options["--ipport"])
+#command = '%s %s@%s -p %s -o PubkeyAuthentication=no' % (options["--ssh-path"], options["--username"], options["--ip"], options["--ipport"])
 
 conn = fencing.fspawn(options, command)
 result = conn.log_expect(["ssword:", "Are you sure you want to continue connecting (yes/no)?"], int(options["--login-timeout"]))
@@ -114,50 +123,41 @@ conn.log_expect(found_cmd_prompt, int(options["--shell-timeout"]))
 conn.log_expect(found_cmd_prompt, int(options["--shell-timeout"]))
 conn.log_expect(found_cmd_prompt, int(options["--shell-timeout"]))
 
-## Test fence_apc with list action (old vs v5+ firmware)
-cmd_possible = ["\n>", "\napc>"]
-options["--action"] = "list"
-options["--command-prompt"] = found_cmd_prompt
-if any(options["--command-prompt"][0].startswith(x) for x in cmd_possible):
-	options["--command-prompt"] = cmd_possible
-	plugs = fence_apc.get_power_status5(conn, options)
-	if len(plugs) > 0:
-		print "fence_apc # APC - old firmware found"
-		fencing.fence_logout(conn, "4")
-		sys.exit(0)
-	plugs = fence_apc.get_power_status(conn, options)
-	if len(plugs) > 0:
-		print "fence_apc # APC - v5 found"
-		fencing.fence_logout(conn, "4")
-		sys.exit(0)
+if get_list(conn, options, found_cmd_prompt, prompts=["\n>", "\napc>"], list_fn=fence_apc.get_power_status):
+	print "fence_apc # older series"
+	fencing.fence_logout(conn, "4")
+	sys.exit(0)
+
+if get_list(conn, options, found_cmd_prompt, prompts=["\n>", "\napc>"], list_fn=fence_apc.get_power_status5):
+	print "fence_apc # v5+"
+	fencing.fence_logout(conn, "exit")
+	sys.exit(0)
 
 ## Test fence_lpar with list action (HMC version 3 and 4)
-cmd_possible = [r":~>", r"]\$", r"\$ "]
-options["--action"] = "list"
-options["--command-prompt"] = found_cmd_prompt
-if any(x in options["--command-prompt"][0] for x in cmd_possible):
-	options["--command-prompt"] = cmd_possible
-#	options["--hmc-version"] = "3"
-#	plugs = fence_lpar.get_lpar_list(conn, options)
-#	if len(plugs) > 0:
-#		print "fence_lpar # v3"
-#		fence_logout("quit")
-#		sys.exit(0)
-	options["eol"] = "\n"
-	_fix_additional_newlines()
-	conn.send_eol("lssyscfg > /dev/null | echo $?")
+def test_lpar(conn, options):
+	# bug - eol?
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
-	if "\n0\n" in conn.before:
-		print "fence_lpar # v4"
-		fencing.fence_logout(conn, "quit")
-		sys.exit(0)
+	conn.send_eol("lssyscfg; echo $?")
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
+	if "\n0\r\n" in conn.before:
+		return True
+	else:
+		return False
+
+if check_agent(conn, options, found_cmd_prompt, [r":~>", r"]\$", r"\$ "], test_lpar):
+	print "fence_lpar # 2"
+	fencing.fence_logout(conn, "quit")
+	sys.exit(0)
 
 if get_list(conn, options, found_cmd_prompt, prompts=["system>"], list_fn=fence_bladecenter.get_blades_list):
 	print "fence_bladecenter #2"
+	fencing.fence_logout(conn, "exit")
 	sys.exit(0)
 
 if get_list(conn, options, found_cmd_prompt, prompts=["> "], list_fn=fence_brocade.get_power_status, eol="\n"):
 	print "fence_brocade #2"
+	fencing.fence_logout(conn, "exit")
 	sys.exit(0)
 
 # Test fence ilo moonshot
