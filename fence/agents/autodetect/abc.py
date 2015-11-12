@@ -75,69 +75,74 @@ options["--ipport"] = "22"
 
 options["eol"] = "\r\n"
 
-re_login_string=r"(login\s*: )|((?!Last )Login Name:  )|(username: )|(User Name :)"
-re_login = re.compile(re_login_string, re.IGNORECASE)
-re_pass = re.compile("(password)|(pass phrase)", re.IGNORECASE)
+def detect_login_ssh(options, version=2):
+	re_login_string=r"(login\s*: )|((?!Last )Login Name:  )|(username: )|(User Name :)"
+	re_login = re.compile(re_login_string, re.IGNORECASE)
+	re_pass = re.compile("(password)|(pass phrase)", re.IGNORECASE)
 
-#command = '%s %s@%s -p %s -1 -c blowfish -o PubkeyAuthentication=no' % (options["--ssh-path"], options["--username"], options["--ip"], options["--ipport"])
-command = '%s %s@%s -p %s -o PubkeyAuthentication=no' % (options["--ssh-path"], options["--username"], options["--ip"], options["--ipport"])
+	if version == "1":
+		command = '%s %s@%s -p %s -1 -c blowfish -o PubkeyAuthentication=no' % (options["--ssh-path"], options["--username"], options["--ip"], options["--ipport"])
+	else:
+		command = '%s %s@%s -p %s -o PubkeyAuthentication=no' % (options["--ssh-path"], options["--username"], options["--ip"], options["--ipport"])
 
-conn = fencing.fspawn(options, command)
-result = conn.log_expect(["ssword:", "Are you sure you want to continue connecting (yes/no)?"], int(options["--login-timeout"]))
-if result == 1:
-	conn.send("yes\n")
-	conn.log_expect("ssword:", int(options["--login-timeout"]))
+	conn = fencing.fspawn(options, command)
+	result = conn.log_expect(["ssword:", "Are you sure you want to continue connecting (yes/no)?"], int(options["--login-timeout"]))
+	if result == 1:
+		conn.send("yes\n")
+		conn.log_expect("ssword:", int(options["--login-timeout"]))
 
-conn.send(options["--password"] + "\n")
+	conn.send(options["--password"] + "\n")
 
-time.sleep(2)
-conn.send_eol("")
-conn.send_eol("")
+	time.sleep(2)
+	conn.send_eol("")
+	conn.send_eol("")
 
-idx = conn.log_expect(pexpect.TIMEOUT, int(options["--login-timeout"]))
-lines = re.split(r'\r|\n', conn.before)
-cmd_prompt = None
-logging.info("Cmd-prompt candidate: %s" % (lines[1]))
-if lines.count(lines[-1]) >= 3:
-	found_cmd_prompt = ["\n" + lines[-1]]
-else:
-	if lines.count(lines[-1]) == 2:
-		conn.log_expect(lines[-1], int(options["--shell-timeout"]))
-		conn.log_expect(lines[-1], int(options["--shell-timeout"]))
-		options["eol"] = "\r"
-		conn.send_eol("")
-		time.sleep(0.1)
-		conn.send_eol("")
-		time.sleep(0.1)
-		conn.send_eol("")
-		time.sleep(0.1)
-		idx = conn.log_expect(pexpect.TIMEOUT, int(options["--login-timeout"]))
-		lines = re.split(r'\r|\n', conn.before)
-		cmd_prompt = None
-		logging.info("Cmd-prompt candidate: %s" % (lines[1]))
-		print lines
-		if lines.count(lines[-1]) >= 3:
-        		found_cmd_prompt = ["\n" + lines[-1]]
+	idx = conn.log_expect(pexpect.TIMEOUT, int(options["--login-timeout"]))
+	lines = re.split(r'\r|\n', conn.before)
+	cmd_prompt = None
+	logging.info("Cmd-prompt candidate: %s" % (lines[1]))
+	if lines.count(lines[-1]) >= 3:
+		found_cmd_prompt = ["\n" + lines[-1]]
+	else:
+		if lines.count(lines[-1]) == 2:
+			conn.log_expect(lines[-1], int(options["--shell-timeout"]))
+			conn.log_expect(lines[-1], int(options["--shell-timeout"]))
+			options["eol"] = "\r"
+			conn.send_eol("")
+			time.sleep(0.1)
+			conn.send_eol("")
+			time.sleep(0.1)
+			conn.send_eol("")
+			time.sleep(0.1)
+			idx = conn.log_expect(pexpect.TIMEOUT, int(options["--login-timeout"]))
+			lines = re.split(r'\r|\n', conn.before)
+			cmd_prompt = None
+			logging.info("Cmd-prompt candidate: %s" % (lines[1]))
+			if lines.count(lines[-1]) >= 3:
+        			found_cmd_prompt = ["\n" + lines[-1]]
+			else:
+				print "Unable to obtain command prompt automatically"
+				sys.exit(1)
 		else:
 			print "Unable to obtain command prompt automatically"
+			print lines[-1]
+			print conn.before
 			sys.exit(1)
-	else:
-		print "Unable to obtain command prompt automatically"
-		print lines[-1]
-		print conn.before
-		sys.exit(1)
 
-conn.log_expect(found_cmd_prompt, int(options["--shell-timeout"]))
-conn.log_expect(found_cmd_prompt, int(options["--shell-timeout"]))
-conn.log_expect(found_cmd_prompt, int(options["--shell-timeout"]))
-
-# Handle situation when CR/LF is interpreted as ENTER, ENTER
-# In such case we will have get two additional command prompts to get on right position
-res = conn.log_expect([pexpect.TIMEOUT] + found_cmd_prompt, int(options["--shell-timeout"]))
-if res > 0:
-	# @note: store that information?
-	print "CMD twice"
 	conn.log_expect(found_cmd_prompt, int(options["--shell-timeout"]))
+	conn.log_expect(found_cmd_prompt, int(options["--shell-timeout"]))
+	conn.log_expect(found_cmd_prompt, int(options["--shell-timeout"]))
+
+	# Handle situation when CR/LF is interpreted as ENTER, ENTER
+	# In such case we will have get two additional command prompts to get on right position
+	res = conn.log_expect([pexpect.TIMEOUT] + found_cmd_prompt, int(options["--shell-timeout"]))
+	if res > 0:
+		# @note: store that information?
+		print "CMD twice"
+		conn.log_expect(found_cmd_prompt, int(options["--shell-timeout"]))
+	return (found_cmd_prompt, conn)
+
+(found_cmd_prompt, conn) = detect_login_ssh(options)
 
 if get_list(conn, options, found_cmd_prompt, prompts=["\n>", "\napc>"], list_fn=fence_apc.get_power_status):
 	print "fence_apc # older series"
