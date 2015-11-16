@@ -75,7 +75,7 @@ def detect_login_telnet(options):
     except KeyError:
         fencing.fail(fencing.EC_PASSWORD_MISSING)
 
-    found_cmd_prompt = guess_prompt(conn, conn.before)
+    found_cmd_prompt = guess_prompt(conn, options, conn.before)
     return (found_cmd_prompt, conn)
 
 def guess_prompt(conn, options, before=""):
