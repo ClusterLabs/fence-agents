@@ -367,11 +367,11 @@ all_opt = {
 	"method" : {
 		"getopt" : "m:",
 		"longopt" : "method",
-		"help" : "-m, --method=[method]          Method to fence (onoff|cycle) (Default: onoff)",
+		"help" : "-m, --method=[method]          Method to fence (onoff|cycle|diag) (Default: onoff)",
 		"required" : "0",
 		"shortdesc" : "Method to fence",
 		"default" : "onoff",
-		"choices" : ["onoff", "cycle"],
+		"choices" : ["onoff", "cycle", "diag"],
 		"order" : 1},
 	"telnet_path" : {
 		"getopt" : ":",
@@ -752,7 +752,7 @@ def show_docs(options, docs=None):
 		print __main__.REDHAT_COPYRIGHT
 		sys.exit(0)
 
-def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_list=None, reboot_cycle_fn=None):
+def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_list=None, reboot_fn=None):
 	result = 0
 
 	try:
@@ -820,9 +820,9 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 				fail(EC_WAITING_OFF)
 		elif options["--action"] == "reboot":
 			power_on = False
-			if options.get("--method", "").lower() == "cycle" and reboot_cycle_fn is not None:
+			if options.get("--method", "").lower() in ["cycle", "diag"] and reboot_fn is not None:
 				for _ in range(1, 1 + int(options["--retry-on"])):
-					if reboot_cycle_fn(connection, options):
+					if reboot_fn(connection, options):
 						power_on = True
 						break
 
