@@ -52,6 +52,7 @@ Where XXXXXXX is the name of the virtual machine used in the authuser field of t
 		<content type="select" default="onoff"  >
 			<option value="onoff" />
 			<option value="cycle" />
+			<option value="diag" />
 		</content>
 		<shortdesc lang="en">Method to fence</shortdesc>
 	</parameter>
