@@ -4,7 +4,7 @@ Fence agents were developed as device "drivers" which are able to prevent comput
 
   * Power - A computer that is switched off cannot corrupt data, but it is important to not do a "soft-reboot" as we won't know if this is possible. This also works for virtual machines when the fence device is a hypervisor.
   * Network - Switches can prevent routing to a given computer, so even if a computer is powered on it won't be able to harm the data.
-  * Configuration - Fiber-channel switches or SCSI devices allow us to limit who can write to managed disks.
+  * Configuration - Fibre-channel switches or SCSI devices allow us to limit who can write to managed disks.
 
 Fence agents do not use configuration files, as configuration management is outside of their scope. All of the configuration has to be specified either as command-line arguments or lines of standard input (see the complete list for more info).
 
