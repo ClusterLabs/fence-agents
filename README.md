@@ -1,9 +1,11 @@
-# fence-agents
 Fence agents
- Fence agents were developed as "drivers" for devices that are able to prevent computers of destroying data on shared storage. Their target is to isolate corrupted computer, there are three main ways:
+============
+Fence agents were developed as device "drivers" which are able to prevent computers from destroying data on shared storage. Their aim is to isolate a corrupted computer, using one of three methods:
 
-  * electric power - computer that is switched off can not corrupt data but it is important to not perform so called "soft- reboot" where applications are closed correctly as we do not know if this is possible. Similarly it works also for virtual machines when fence device is a hypervisor.
-  * network - network switches can forbid routing from selected computer, so even if computer is running it is not able to work with data
-  * data - Fibre-channel switches or SCSI devices allows us to limit who can write to managed disks 
+  * Power - A computer that is switched off cannot corrupt data, but it is important to not do a "soft-reboot" as we won't know if this is possible. This also works for virtual machines when the fence device is a hypervisor.
+  * Network - Switches can prevent routing to a given computer, so even if a computer is powered on it won't be able to harm the data.
+  * Configuration - Fibre-channel switches or SCSI devices allow us to limit who can write to managed disks.
 
-Fence agents do not use configuration files as configuration management is outside their scope. All of the arguments have to be specified either as command-line arguments or lines on standard input (take a look at complete list). Because fence agents are quite similar, fencing library (in Python) was developed and we will assume that you will use it for further developing. Creating or modifying a new fence agent should be quite simple. 
+Fence agents do not use configuration files, as configuration management is outside of their scope. All of the configuration has to be specified either as command-line arguments or lines of standard input (see the complete list for more info).
+
+Because many fence agents are quite similar to each other, a fencing library (in Python) was developed. Please use it for further development. Creating or modifying a new fence agent should be quite simple using this library.
