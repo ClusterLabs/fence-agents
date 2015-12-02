@@ -61,6 +61,7 @@
 		<content type="select" default="cycle"  >
 			<option value="onoff" />
 			<option value="cycle" />
+			<option value="diag" />
 		</content>
 		<shortdesc lang="en">Method to fence</shortdesc>
 	</parameter>

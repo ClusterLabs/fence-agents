@@ -27,6 +27,10 @@ def reboot_cycle(_, options):
 	output = run_command(options, create_command(options, "cycle"))
 	return bool(re.search('chassis power control: cycle', str(output).lower()))
 
+def reboot_diag(_, options):
+	output = run_command(options, create_command(options, "diag"))
+	return bool(re.search('chassis power control: diag', str(output).lower()))
+
 def create_command(options, action):
 	cmd = options["--ipmitool-path"]
 
@@ -156,7 +160,12 @@ This agent calls support software ipmitool (http://ipmitool.sf.net/)."
 	if not is_executable(options["--ipmitool-path"]):
 		fail_usage("Ipmitool not found or not accessible")
 
-	result = fence_action(None, options, set_power_status, get_power_status, None, reboot_cycle)
+	if options["--method"].lower() == "diag":
+		reboot_fn = reboot_diag
+	else:
+		reboot_fn = reboot_cycle
+
+	result = fence_action(None, options, set_power_status, get_power_status, None, reboot_fn)
 	sys.exit(result)
 
 if __name__ == "__main__":
