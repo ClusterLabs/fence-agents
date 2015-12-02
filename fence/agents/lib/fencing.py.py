@@ -140,6 +140,10 @@ all_opt = {
 		"getopt" : "",
 		"help" : "",
 		"order" : ""},
+	"diag" : {
+		"getopt" : "",
+		"help" : "",
+		"order" : ""},
 	"passwd" : {
 		"getopt" : "p:",
 		"longopt" : "password",
@@ -1385,5 +1389,7 @@ def _get_available_actions(device_opt):
 	if not device_opt.count("separator"):
 		available_actions.remove("list")
 		available_actions.remove("list-status")
+	if device_opt.count("diag"):
+		available_actions.append("diag")
 
 	return (available_actions, default_value)

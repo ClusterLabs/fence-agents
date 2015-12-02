@@ -168,5 +168,6 @@
 	<action name="monitor" />
 	<action name="metadata" />
 	<action name="validate-all" />
+	<action name="diag" />
 </actions>
 </resource-agent>
