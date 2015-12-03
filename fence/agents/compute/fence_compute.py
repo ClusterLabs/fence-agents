@@ -100,8 +100,8 @@ def _host_evacuate(host, on_shared_storage):
 	# Identify all evacuable servers
 	evacuables = [server for server in servers
 	              if _is_server_evacuable(server, flavors, images)]
-	# If no evacuable servers, then evacuate all the host servers
-	for server in evacuables or servers:
+
+	for server in evacuables:
 		response.append(_server_evacuate(server, on_shared_storage))
 
 def set_attrd_status(host, status, options):
