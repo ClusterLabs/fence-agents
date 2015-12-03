@@ -244,7 +244,7 @@ def main():
 	global nova
 	atexit.register(atexit_handler)
 
-	device_opt = ["login", "passwd", "tenant-name", "auth-url",
+	device_opt = ["login", "passwd", "tenant-name", "auth-url", "fabric_fencing", "on_target",
 		"no_login", "no_password", "port", "domain", "no-shared-storage", "endpoint-type",
 		"record-only"]
 	define_new_opts()
