@@ -174,9 +174,9 @@ def get_plugs_list(_, options):
 		hypervisors = nova.hypervisors.list()
 		for hypervisor in hypervisors:
 			longhost = hypervisor.hypervisor_hostname
-			if options["--action"] == "list" and options["--domain"] != "":
-				shorthost = longhost.replace("." + options["--domain"],
-                                                 "")
+			if options["--domain"] != "":
+				shorthost = longhost.replace("." + options["--domain"], "")
+				result[longhost] = ("", None)
 				result[shorthost] = ("", None)
 			else:
 				result[longhost] = ("", None)
