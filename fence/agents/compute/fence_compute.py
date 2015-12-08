@@ -92,14 +92,18 @@ def _get_evacuable_images():
                 result.append(image.id)
     return result
 
-def _host_evacuate(host, on_shared_storage):
+def _host_evacuate(host, on_shared_storage, options):
 	response = []
-	flavors = _get_evacuable_flavors()
-	images = _get_evacuable_images()
+
 	servers = nova.servers.list(search_opts={'hypervisor': host})
-	# Identify all evacuable servers
-	evacuables = [server for server in servers
-	              if _is_server_evacuable(server, flavors, images)]
+	if options["--instance-filtering"] == "False":
+		evacuables = servers
+	else:
+		flavors = _get_evacuable_flavors()
+		images = _get_evacuable_images()
+		# Identify all evacuable servers
+		evacuables = [server for server in servers
+			      if _is_server_evacuable(server, flavors, images)]
 
 	for server in evacuables:
 		response.append(_server_evacuate(server, on_shared_storage))
@@ -164,7 +168,7 @@ def set_power_status(_, options):
 	else:
 		on_shared_storage = True
 
-	_host_evacuate(options["--plug"], on_shared_storage)
+	_host_evacuate(options["--plug"], on_shared_storage, options)
 	return
 
 def get_plugs_list(_, options):
@@ -229,6 +233,15 @@ def define_new_opts():
 		"default" : "False",
 		"order": 5,
 	}
+	all_opt["instance-filtering"] = {
+		"getopt" : "",
+		"longopt" : "instance-filtering",
+		"help" : "--instance-filtering           Only evacuate instances create from images and flavors with evacuable=true",
+		"required" : "0",
+		"shortdesc" : "Only evacuate flagged instances",
+		"default" : "False",
+		"order": 5,
+	}
 	all_opt["no-shared-storage"] = {
 		"getopt" : "",
 		"longopt" : "no-shared-storage",
@@ -246,7 +259,7 @@ def main():
 
 	device_opt = ["login", "passwd", "tenant-name", "auth-url", "fabric_fencing", "on_target",
 		"no_login", "no_password", "port", "domain", "no-shared-storage", "endpoint-type",
-		"record-only"]
+		"record-only", "instance-filtering"]
 	define_new_opts()
 	all_opt["shell_timeout"]["default"] = "180"
 

@@ -48,6 +48,11 @@
 		<content type="string" default=""  />
 		<shortdesc lang="en">DNS domain in which hosts live</shortdesc>
 	</parameter>
+	<parameter name="instance-filtering" unique="0" required="0">
+		<getopt mixed="--instance-filtering" />
+		<content type="boolean" default="False"  />
+		<shortdesc lang="en">Only evacuate flagged instances</shortdesc>
+	</parameter>
 	<parameter name="no-shared-storage" unique="0" required="0">
 		<getopt mixed="--no-shared-storage" />
 		<content type="boolean" default="False"  />
