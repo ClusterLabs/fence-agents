@@ -221,7 +221,7 @@ def define_new_opts():
 		"order": 5,
 	}
 	all_opt["record-only"] = {
-		"getopt" : "",
+		"getopt" : "r:",
 		"longopt" : "record-only",
 		"help" : "--record-only                  Record the target as needing evacuation but as yet do not intiate it",
 		"required" : "0",
@@ -270,7 +270,10 @@ def main():
 	if options["--action"] != "list" and options["--domain"] != "" and options.has_key("--plug"):
 		options["--plug"] = options["--plug"] + "." + options["--domain"]
 
-	if options["--record-only"] != "False":
+	if options["--record-only"] in [ "2", "Disabled", "disabled" ]:
+		sys.exit(0)
+
+	elif options["--record-only"] in [ "1", "True", "true", "Yes", "yes"]:
 		if options["--action"] == "on":
 			set_attrd_status(options["--plug"], "no", options)
 			sys.exit(0)
