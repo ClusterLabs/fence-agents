@@ -253,8 +253,8 @@ def main():
 	options = check_input(device_opt, process_input(device_opt))
 
 	docs = {}
-	docs["shortdesc"] = "Fence agent for nova compute nodes"
-	docs["longdesc"] = "fence_nova_host is a Nova fencing notification agent"
+	docs["shortdesc"] = "Fence agent for the automatic resurrection of OpenStack compute instances"
+	docs["longdesc"] = "Used to tell Nova that compute nodes are down and to reschedule flagged instances"
 	docs["vendorurl"] = ""
 
 	show_docs(options, docs)
