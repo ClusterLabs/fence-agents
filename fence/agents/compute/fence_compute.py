@@ -129,14 +129,16 @@ def set_power_status(_, options):
 				# Forcing the host back up
 				nova.services.force_down(
 					options["--plug"], "nova-compute", force_down=False)
-			except Exception:
+			except Exception as e:
 				# In theory, if foce_down=False fails, that's for the exact
 				# same possible reasons that below with force_down=True
 				# eg. either an incompatible version or an old client.
 				# Since it's about forcing back to a default value, there is
 				# no real worries to just consider it's still okay even if the
 				# command failed
-				pass
+				logging.debug("Exception from attempt to force "
+					      "host back up via nova API: "
+					      "%s: %s" % (e.__class__.__name__, e))
 		else:
 			# Pretend we're 'on' so that the fencing library doesn't loop forever waiting for the node to boot
 			override_status = "on"
@@ -145,7 +147,7 @@ def set_power_status(_, options):
 	try:
 		nova.services.force_down(
 			options["--plug"], "nova-compute", force_down=True)
-	except Exception:
+	except Exception as e:
 		# Something went wrong when we tried to force the host down.
 		# That could come from either an incompatible API version
 		# eg. UnsupportedVersion or VersionNotFoundForAPIMethod
@@ -153,6 +155,8 @@ def set_power_status(_, options):
 		# eg. AttributeError
 		# In that case, fallbacking to wait for Nova to catch the right state.
 
+		logging.debug("Exception from attempt to force host down via nova API: "
+			      "%s: %s" % (e.__class__.__name__, e))
 		# need to wait for nova to update its internal status or we
 		# cannot call host-evacuate
 		while get_power_status(_, options) != "off":
@@ -160,7 +164,7 @@ def set_power_status(_, options):
 			#
 			# Some callers (such as Pacemaker) will have a timer
 			# running and kill us if necessary
-			logging.debug("Waiting for nova to update it's internal state")
+			logging.debug("Waiting for nova to update it's internal state for %s" % options["--plug"])
 			time.sleep(1)
 
 	if options["--no-shared-storage"] != "False":
