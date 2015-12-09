@@ -52,12 +52,21 @@ def get_power_status(_, options):
 # NOTE(sbauza); We mimic the host-evacuate module since it's only a contrib
 # module which is not stable
 def _server_evacuate(server, on_shared_storage):
-	success = True
+	success = False
 	error_message = ""
 	try:
-		nova.servers.evacuate(server=server['uuid'], on_shared_storage=on_shared_storage)
+		logging.debug("Resurrecting instance: %s" % server['uuid'])
+		(response, dictionary) = nova.servers.evacuate(server=server['uuid'], on_shared_storage=on_shared_storage)
+
+                if response == None:
+		        error_message = "No response while evacuating instance"
+                elif response.status_code == 200:
+	                success = True
+	                error_message = response.reason
+                else:
+	                error_message = response.reason
+
 	except Exception as e:
-		success = False
 		error_message = "Error while evacuating instance: %s" % e
 
 	return {
