@@ -92,10 +92,10 @@ def _get_evacuable_images():
                 result.append(image.id)
     return result
 
-def _host_evacuate(host, on_shared_storage, options):
+def _host_evacuate(options):
 	response = []
 
-	servers = nova.servers.list(search_opts={'hypervisor': host})
+	servers = nova.servers.list(search_opts={'hypervisor': options["--plug"]})
 	if options["--instance-filtering"] == "False":
 		evacuables = servers
 	else:
@@ -104,6 +104,11 @@ def _host_evacuate(host, on_shared_storage, options):
 		# Identify all evacuable servers
 		evacuables = [server for server in servers
 			      if _is_server_evacuable(server, flavors, images)]
+
+	if options["--no-shared-storage"] != "False":
+		on_shared_storage = False
+	else:
+		on_shared_storage = True
 
 	for server in evacuables:
 		response.append(_server_evacuate(server, on_shared_storage))
@@ -167,12 +172,7 @@ def set_power_status(_, options):
 			logging.debug("Waiting for nova to update it's internal state for %s" % options["--plug"])
 			time.sleep(1)
 
-	if options["--no-shared-storage"] != "False":
-		on_shared_storage = False
-	else:
-		on_shared_storage = True
-
-	_host_evacuate(options["--plug"], on_shared_storage, options)
+	_host_evacuate(options)
 	return
 
 def get_plugs_list(_, options):
