@@ -35,8 +35,8 @@ def get_power_status(_, options):
 	if nova:
 		try:
 			services = nova.services.list(host=options["--plug"])
-
 			for service in services:
+				logging.debug("Status of %s is %s" % (service.binary, service.state))
 				if service.binary == "nova-compute":
 					if service.state == "up":
 						status = "on"
@@ -162,7 +162,7 @@ def set_power_status(_, options):
 				# Since it's about forcing back to a default value, there is
 				# no real worries to just consider it's still okay even if the
 				# command failed
-				logging.debug("Exception from attempt to force "
+				logging.info("Exception from attempt to force "
 					      "host back up via nova API: "
 					      "%s: %s" % (e.__class__.__name__, e))
 		else:
@@ -181,7 +181,7 @@ def set_power_status(_, options):
 		# eg. AttributeError
 		# In that case, fallbacking to wait for Nova to catch the right state.
 
-		logging.debug("Exception from attempt to force host down via nova API: "
+		logging.error("Exception from attempt to force host down via nova API: "
 			      "%s: %s" % (e.__class__.__name__, e))
 		# need to wait for nova to update its internal status or we
 		# cannot call host-evacuate
