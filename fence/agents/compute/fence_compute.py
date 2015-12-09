@@ -103,7 +103,7 @@ def _get_evacuable_images():
 
 def _host_evacuate(options):
 	result = True
-	servers = nova.servers.list(search_opts={'hypervisor': options["--plug"]})
+	servers = nova.servers.list(search_opts={'host': options["--plug"]})
 	if options["--instance-filtering"] == "False":
 		evacuables = servers
 	else:
