@@ -119,8 +119,8 @@ def _host_evacuate(options):
 		on_shared_storage = True
 
 	for server in evacuables:
-		if hasattr(server, 'uuid'):
-			response = _server_evacuate(server['uuid'], on_shared_storage)
+		if hasattr(server, 'id'):
+			response = _server_evacuate(server.id, on_shared_storage)
 			if response["accepted"]:
 				logging.debug("Evacuated %s from %s: %s" %
 					      (response["uuid"], options["--plug"], response["reason"]))
