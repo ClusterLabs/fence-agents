@@ -55,8 +55,8 @@ def _server_evacuate(server, on_shared_storage):
 	success = False
 	error_message = ""
 	try:
-		logging.debug("Resurrecting instance: %s" % server['uuid'])
-		(response, dictionary) = nova.servers.evacuate(server=server['uuid'], on_shared_storage=on_shared_storage)
+		logging.debug("Resurrecting instance: %s" % server)
+		(response, dictionary) = nova.servers.evacuate(server=server, on_shared_storage=on_shared_storage)
 
                 if response == None:
 		        error_message = "No response while evacuating instance"
@@ -70,7 +70,7 @@ def _server_evacuate(server, on_shared_storage):
 		error_message = "Error while evacuating instance: %s" % e
 
 	return {
-		"server_uuid": server['uuid'],
+		"server_uuid": server,
 		"evacuate_accepted": success,
 		"error_message": error_message,
 		}
@@ -120,7 +120,7 @@ def _host_evacuate(options):
 		on_shared_storage = True
 
 	for server in evacuables:
-		response.append(_server_evacuate(server, on_shared_storage))
+		response.append(_server_evacuate(server['uuid'], on_shared_storage))
 
 def set_attrd_status(host, status, options):
 	logging.debug("Setting fencing status for %s to %s" % (host, status))
