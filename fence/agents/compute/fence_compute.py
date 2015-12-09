@@ -58,21 +58,21 @@ def _server_evacuate(server, on_shared_storage):
 		logging.debug("Resurrecting instance: %s" % server)
 		(response, dictionary) = nova.servers.evacuate(server=server, on_shared_storage=on_shared_storage)
 
-                if response == None:
-		        error_message = "No response while evacuating instance"
-                elif response.status_code == 200:
-	                success = True
-	                error_message = response.reason
-                else:
-	                error_message = response.reason
+		if response == None:
+			error_message = "No response while evacuating instance"
+		elif response.status_code == 200:
+			success = True
+			error_message = response.reason
+		else:
+			error_message = response.reason
 
 	except Exception as e:
 		error_message = "Error while evacuating instance: %s" % e
 
 	return {
-		"server_uuid": server,
-		"evacuate_accepted": success,
-		"error_message": error_message,
+		"uuid": server,
+		"accepted": success,
+		"reason": error_message,
 		}
 
 def _is_server_evacuable(server, evac_flavors, evac_images):
@@ -102,8 +102,7 @@ def _get_evacuable_images():
     return result
 
 def _host_evacuate(options):
-	response = []
-
+	result = True
 	servers = nova.servers.list(search_opts={'hypervisor': options["--plug"]})
 	if options["--instance-filtering"] == "False":
 		evacuables = servers
@@ -120,7 +119,20 @@ def _host_evacuate(options):
 		on_shared_storage = True
 
 	for server in evacuables:
-		response.append(_server_evacuate(server['uuid'], on_shared_storage))
+		if hasattr(server, 'uuid'):
+			response = _server_evacuate(server['uuid'], on_shared_storage)
+			if response["accepted"]:
+				logging.debug("Evacuated %s from %s: %s" %
+					      (response["uuid"], options["--plug"], response["reason"]))
+			else:
+				logging.error("Evacuation of %s on %s failed: %s" %
+					      (response["uuid"], options["--plug"], response["reason"]))
+				result = False
+		else:
+			logging.error("Could not evacuate instance: %s" % server.to_dict())
+			# Should a malformed instance result in a failed evacuation?
+			# result = False
+	return result
 
 def set_attrd_status(host, status, options):
 	logging.debug("Setting fencing status for %s to %s" % (host, status))
@@ -181,7 +193,9 @@ def set_power_status(_, options):
 			logging.debug("Waiting for nova to update it's internal state for %s" % options["--plug"])
 			time.sleep(1)
 
-	_host_evacuate(options)
+	if not _host_evacuate(options):
+		sys.exit(1)
+
 	return
 
 def get_plugs_list(_, options):
