@@ -160,7 +160,7 @@ This agent calls support software ipmitool (http://ipmitool.sf.net/)."
 	if not is_executable(options["--ipmitool-path"]):
 		fail_usage("Ipmitool not found or not accessible")
 
-	reboot_fn = reboo_cycle
+	reboot_fn = reboot_cycle
 	if options["--action"] == "diag":
 		# Diag is a special action that can't be verified so we will reuse reboot functionality
 		# to minimize impact on generic library
