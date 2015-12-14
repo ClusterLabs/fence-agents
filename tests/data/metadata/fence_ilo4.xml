@@ -131,7 +131,7 @@
 	</parameter>
 	<parameter name="power_wait" unique="0" required="0">
 		<getopt mixed="--power-wait=[seconds]" />
-		<content type="string" default="0"  />
+		<content type="string" default="2"  />
 		<shortdesc lang="en">Wait X seconds after issuing ON/OFF</shortdesc>
 	</parameter>
 	<parameter name="shell_timeout" unique="0" required="0">
