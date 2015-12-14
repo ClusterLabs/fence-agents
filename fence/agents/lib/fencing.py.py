@@ -139,6 +139,10 @@ all_opt = {
 		"getopt" : "",
 		"help" : "",
 		"order" : ""},
+	"diag" : {
+		"getopt" : "",
+		"help" : "",
+		"order" : ""},
 	"passwd" : {
 		"getopt" : "p:",
 		"longopt" : "password",
@@ -610,6 +614,8 @@ def metadata(avail_opt, docs):
 	print "\t<action name=\"list\" />"
 	print "\t<action name=\"monitor\" />"
 	print "\t<action name=\"metadata\" />"
+	if avail_opt.count("diag") == 1:
+		print "\t<action name=\"diag\" />"
 	print "</actions>"
 	print "</resource-agent>"
 
@@ -661,13 +667,16 @@ def check_input(device_opt, opt):
 	## add logging to stderr
 	logging.getLogger().addHandler(logging.StreamHandler(sys.stderr))
 
-	acceptable_actions = ["on", "off", "status", "list", "monitor"]
+	acceptable_actions = ["on", "off", "status", "list", "monitor", "diag"]
 	if 1 == device_opt.count("fabric_fencing"):
 		## Compatibility layer
 		#####
 		acceptable_actions.extend(["enable", "disable"])
 	else:
 		acceptable_actions.extend(["reboot"])
+
+	if 0 == device_opt.count("diag"):
+		acceptable_actions.remove("diag")
 
 	if 1 == device_opt.count("no_status"):
 		acceptable_actions.remove("status")
@@ -1136,12 +1145,14 @@ def _update_metadata(options):
 	else:
 		all_opt["login"]["required"] = "0"
 
-	available_actions = ["status", "reboot", "off", "on"]
+	available_actions = ["status", "reboot", "off", "on", "diag"]
 	if device_opt.count("fabric_fencing"):
 		available_actions.remove("reboot")
 		all_opt["action"]["default"] = "off"
 	if device_opt.count("no_status"):
 		available_actions.remove("status")
+	if device_opt.count("diag") == 0:
+		available_actions.remove("diag")
 	actions_with_default = \
 			[x if not x == all_opt["action"]["default"] else x + " (default)" for x in available_actions]
 	all_opt["action"]["help"] = \
