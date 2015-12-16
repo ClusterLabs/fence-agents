@@ -8,6 +8,7 @@ import time
 import logging
 import atexit
 import hashlib
+import ctypes
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import fail_usage, run_command, atexit_handler, check_input, process_input, show_docs, fence_action, all_opt
 from fencing import run_delay
@@ -405,7 +406,8 @@ def scsi_check(hardreboot=False):
 	logging.debug("key " + key + " registered with any devices")
 
 	if hardreboot == True:
-		os.system("reboot -f")
+		libc = ctypes.cdll['libc.so.6']
+		libc.reboot(0x1234567)
 	return 2
 
 
