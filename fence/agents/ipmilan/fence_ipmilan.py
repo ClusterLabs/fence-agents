@@ -189,6 +189,7 @@ This agent calls support software ipmitool (http://ipmitool.sf.net/)."
 		# Diag is a special action that can't be verified so we will reuse reboot functionality
 		# to minimize impact on generic library
 		options["--action"] = "reboot"
+		options["--method"] = "cycle"
 		reboot_fn = reboot_diag
 
 	result = fence_action(None, options, set_power_status, get_power_status, None, reboot_fn)
