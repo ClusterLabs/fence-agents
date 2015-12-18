@@ -96,7 +96,8 @@ def _host_evacuate(host, on_shared_storage):
 	response = []
 	flavors = _get_evacuable_flavors()
 	images = _get_evacuable_images()
-	servers = nova.servers.list(search_opts={'hypervisor': host})
+	# Get the list of servers belonging to the host
+	servers = nova.servers.list(search_opts={'host': host})
 	# Identify all evacuable servers
 	evacuables = [server for server in servers
 	              if _is_server_evacuable(server, flavors, images)]
