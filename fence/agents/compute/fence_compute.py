@@ -322,7 +322,7 @@ def main():
 			set_attrd_status(options["--plug"], "yes", options)
 			sys.exit(0)
 
-		elif options["--action"] in ["monitor"]:
+		elif options["--action"] in ["monitor", "status"]:
 			sys.exit(0)
 
 	# The first argument is the Nova client version
