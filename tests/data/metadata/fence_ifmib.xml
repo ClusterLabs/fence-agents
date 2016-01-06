@@ -30,11 +30,6 @@ It was written with managed ethernet switches in mind, in order to fence iSCSI S
 		<content type="string"  />
 		<shortdesc lang="en">IP Address or Hostname</shortdesc>
 	</parameter>
-	<parameter name="ipport" unique="0" required="0">
-		<getopt mixed="-u, --ipport=[port]" />
-		<content type="string" default="161"  />
-		<shortdesc lang="en">TCP/UDP port to use for connection with device</shortdesc>
-	</parameter>
 	<parameter name="login" unique="0" required="0">
 		<getopt mixed="-l, --username=[name]" />
 		<content type="string"  />
@@ -98,6 +93,11 @@ It was written with managed ethernet switches in mind, in order to fence iSCSI S
 			<option value="3" />
 		</content>
 		<shortdesc lang="en">Specifies SNMP version to use (1,2c,3)</shortdesc>
+	</parameter>
+	<parameter name="udpport" unique="0" required="0">
+		<getopt mixed="-u, --udpport" />
+		<content type="string"  />
+		<shortdesc lang="en">UDP/TCP port to use for connection with device</shortdesc>
 	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
