@@ -16,7 +16,7 @@ before_install:
   - pip install suds
   - pip install pycurl
   - pip install requests
-  - pip install pexpect==2.3
+  - pip install pexpect==2.4
 
 script:
   - ./autogen.sh
