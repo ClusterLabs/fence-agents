@@ -43,6 +43,11 @@
 		<content type="string" default=""  />
 		<shortdesc lang="en">Keystone Admin Tenant</shortdesc>
 	</parameter>
+	<parameter name="insecure" unique="0" required="0">
+		<getopt mixed="--insecure" />
+		<content type="boolean" default="False"  />
+		<shortdesc lang="en">Allow Insecure TLS Requests</shortdesc>
+	</parameter>
 	<parameter name="domain" unique="0" required="0">
 		<getopt mixed="-d, --domain=[string]" />
 		<content type="string" default=""  />
