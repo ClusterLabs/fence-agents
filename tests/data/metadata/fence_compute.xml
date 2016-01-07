@@ -38,6 +38,11 @@
 		<content type="string"  />
 		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
 	</parameter>
+	<parameter name="region-name" unique="0" required="0">
+		<getopt mixed="--region-name=[region]" />
+		<content type="boolean" default=""  />
+		<shortdesc lang="en">Region Name</shortdesc>
+	</parameter>
 	<parameter name="tenant-name" unique="0" required="0">
 		<getopt mixed="-t, --tenant-name=[tenant]" />
 		<content type="string" default=""  />
