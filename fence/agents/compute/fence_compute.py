@@ -76,30 +76,30 @@ def _server_evacuate(server, on_shared_storage):
 		}
 
 def _is_server_evacuable(server, evac_flavors, evac_images):
-    if server.flavor.get('id') in evac_flavors:
-        return True
-    if server.image.get('id') in evac_images:
-        return True
-    return False
+	if server.flavor.get('id') in evac_flavors:
+		return True
+	if server.image.get('id') in evac_images:
+		return True
+	return False
 
 def _get_evacuable_flavors():
-    result = []
-    flavors = nova.flavors.list()
-    # Since the detailed view for all flavors doesn't provide the extra specs,
-    # we need to call each of the flavor to get them.
-    for flavor in flavors:
-        if flavor.get_keys().get(EVACUABLE_TAG).strip().lower() in TRUE_TAGS:
-            result.append(flavor.id)
-    return result
+	result = []
+	flavors = nova.flavors.list()
+	# Since the detailed view for all flavors doesn't provide the extra specs,
+	# we need to call each of the flavor to get them.
+	for flavor in flavors:
+		if flavor.get_keys().get(EVACUABLE_TAG).strip().lower() in TRUE_TAGS:
+			result.append(flavor.id)
+	return result
 
 def _get_evacuable_images():
-    result = []
-    images = nova.images.list(detailed=True)
-    for image in images:
-        if hasattr(image, 'metadata'):
-            if image.metadata.get(EVACUABLE_TAG).strip.lower() in TRUE_TAGS:
-                result.append(image.id)
-    return result
+	result = []
+	images = nova.images.list(detailed=True)
+	for image in images:
+		if hasattr(image, 'metadata'):
+			if image.metadata.get(EVACUABLE_TAG).strip.lower() in TRUE_TAGS:
+				result.append(image.id)
+	return result
 
 def _host_evacuate(options):
 	result = True
@@ -111,7 +111,7 @@ def _host_evacuate(options):
 		images = _get_evacuable_images()
 		# Identify all evacuable servers
 		evacuables = [server for server in servers
-			      if _is_server_evacuable(server, flavors, images)]
+				if _is_server_evacuable(server, flavors, images)]
 
 	if options["--no-shared-storage"] != "False":
 		on_shared_storage = False
