@@ -9,3 +9,5 @@ Fence agents were developed as device "drivers" which are able to prevent comput
 Fence agents do not use configuration files, as configuration management is outside of their scope. All of the configuration has to be specified either as command-line arguments or lines of standard input (see the complete list for more info).
 
 Because many fence agents are quite similar to each other, a fencing library (in Python) was developed. Please use it for further development. Creating or modifying a new fence agent should be quite simple using this library.
+
+Detailed user and developer documentation can be found here: [https://fedorahosted.org/cluster/wiki/fence-agents](https://fedorahosted.org/cluster/wiki/fence-agents)
