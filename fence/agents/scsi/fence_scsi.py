@@ -432,7 +432,7 @@ def main():
 	options = check_input(device_opt, process_input(device_opt), other_conditions=True)
 
 	docs = {}
-	docs["shortdesc"] = "Fence agent for SCSI persistentl reservation"
+	docs["shortdesc"] = "Fence agent for SCSI persistent reservation"
 	docs["longdesc"] = "fence_scsi is an I/O fencing agent that uses SCSI-3 \
 persistent reservations to control access to shared storage devices. These \
 devices must support SCSI-3 persistent reservations (SPC-3 or greater) as \
