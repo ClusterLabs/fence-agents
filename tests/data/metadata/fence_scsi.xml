@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<resource-agent name="fence_scsi" shortdesc="Fence agent for SCSI persistentl reservation" >
+<resource-agent name="fence_scsi" shortdesc="Fence agent for SCSI persistent reservation" >
 <longdesc>fence_scsi is an I/O fencing agent that uses SCSI-3 persistent reservations to control access to shared storage devices. These devices must support SCSI-3 persistent reservations (SPC-3 or greater) as well as the "preempt-and-abort" subcommand.
 The fence_scsi agent works by having each node in the cluster register a unique key with the SCSI devive(s). Once registered, a single node will become the reservation holder by creating a "write exclusive, registrants only" reservation on the device(s). The result is that only registered nodes may write to the device(s). When a node failure occurs, the fence_scsi agent will remove the key belonging to the failed node from the device(s). The failed node will no longer be able to write to the device(s). A manual reboot is required.</longdesc>
 <vendor-url></vendor-url>
