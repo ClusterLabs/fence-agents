@@ -17,7 +17,9 @@ BUILD_DATE="March, 2008"
 RE_COOKIE = re.compile("<aaaLogin .* outCookie=\"(.*?)\"", re.IGNORECASE)
 RE_STATUS = re.compile("<lsPower .*? state=\"(.*?)\"", re.IGNORECASE)
 RE_GET_DN = re.compile(" dn=\"(.*?)\"", re.IGNORECASE)
+RE_GET_PNDN = re.compile(" pndn=\"(.*?)\"", re.IGNORECASE)
 RE_GET_DESC = re.compile(" descr=\"(.*?)\"", re.IGNORECASE)
+RE_GET_OPERPOWER = re.compile(" operPower=\"(.*?)\"", re.IGNORECASE)
 
 options_global = None
 
@@ -26,15 +28,25 @@ def get_power_status(conn, options):
 
 	res = send_command(options, "<configResolveDn cookie=\"" + options["cookie"] +
 			"\" inHierarchical=\"false\" dn=\"org-root" + options["--suborg"] + "/ls-" +
-			options["--plug"] + "/power\"/>", int(options["--shell-timeout"]))
+			options["--plug"] + "\"/>", int(options["--shell-timeout"]))
 
-	result = RE_STATUS.search(res)
+	result = RE_GET_PNDN.search(res)
+	if result == None:
+		fail(EC_STATUS)
+	else:
+		pndn = result.group(1)
+
+	res = send_command(options, "<configResolveDn cookie=\"" + options["cookie"] +
+			"\" inHierarchical=\"false\" dn=\"" + pndn +
+			"\"/>", int(options["--shell-timeout"]))
+
+	result = RE_GET_OPERPOWER.search(res)
 	if result == None:
 		fail(EC_STATUS)
 	else:
 		status = result.group(1)
 
-	if status == "up":
+	if status == "on":
 		return "on"
 	else:
 		return "off"
