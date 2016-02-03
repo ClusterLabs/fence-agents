@@ -348,7 +348,7 @@ def main():
 			sys.exit(0)
 
 	# The first argument is the Nova client version
-	nova = nova_client.Client('2',
+	nova = nova_client.Client('2.11',
 		options["--username"],
 		options["--password"],
 		options["--tenant-name"],
