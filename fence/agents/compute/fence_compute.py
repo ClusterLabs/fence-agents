@@ -34,7 +34,7 @@ def get_power_status(_, options):
 
 	if nova:
 		try:
-			services = nova.services.list(host=options["--plug"])
+			services = nova.services.list(host=options["--plug"], binary="nova-compute")
 			for service in services:
 				logging.debug("Status of %s is %s" % (service.binary, service.state))
 				if service.binary == "nova-compute":
