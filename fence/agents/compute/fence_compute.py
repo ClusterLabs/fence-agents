@@ -218,23 +218,23 @@ def fix_domain(options):
 	if nova:
 		# Find it in nova
 
-		hypervisors = nova.hypervisors.list()
-		for hypervisor in hypervisors:
-			shorthost = hypervisor.hypervisor_hostname.split('.')[0]
+		services = nova.services.list(binary="nova-compute")
+		for service in services:
+			shorthost = service.host.split('.')[0]
 
-			if shorthost == hypervisor.hypervisor_hostname:
+			if shorthost == service.host:
 				# Nova is not using FQDN 
 				calculated = ""
 			else:
 				# Compute nodes are named as FQDN, strip off the hostname
-				calculated = hypervisor.hypervisor_hostname.replace(shorthost+".", "")
+				calculated = service.host.replace(shorthost+".", "")
 
 			domains[calculated] = shorthost
 
 			if calculated == last_domain:
 				# Avoid complaining for each compute node with the same name
 				# One hopes they don't appear interleaved as A.com B.com A.com B.com
-				logging.debug("Calculated the same domain from: %s" % hypervisor.hypervisor_hostname)
+				logging.debug("Calculated the same domain from: %s" % service.host)
 
 			elif "--domain" in options and options["--domain"] == calculated:
 				# Supplied domain name is valid 
@@ -243,7 +243,7 @@ def fix_domain(options):
 			elif "--domain" in options:
 				# Warn in case nova isn't available at some point
 				logging.warning("Supplied domain '%s' does not match the one calculated from: %s"
-					      % (options["--domain"], hypervisor.hypervisor_hostname))
+					      % (options["--domain"], service.host))
 
 			last_domain = calculated
 
@@ -256,7 +256,7 @@ def fix_domain(options):
 
 	elif len(domains) == 1:
 		logging.error("Overriding supplied domain '%s' does not match the one calculated from: %s"
-			      % (options["--domain"], hypervisor.hypervisor_hostname))
+			      % (options["--domain"], service.host))
 		options["--domain"] = last_domain
 		return options["--domain"]
 
@@ -298,9 +298,9 @@ def get_plugs_list(_, options):
 	result = {}
 
 	if nova:
-		hypervisors = nova.hypervisors.list()
-		for hypervisor in hypervisors:
-			longhost = hypervisor.hypervisor_hostname
+		services = nova.services.list(binary="nova-compute")
+		for service in services:
+			longhost = service.host
 			shorthost = longhost.split('.')[0]
 			result[longhost] = ("", None)
 			result[shorthost] = ("", None)
