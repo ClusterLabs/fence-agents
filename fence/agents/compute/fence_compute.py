@@ -202,15 +202,9 @@ def get_plugs_list(_, options):
 	result = {}
 
 	if nova:
-		hypervisors = nova.hypervisors.list()
-		for hypervisor in hypervisors:
-			longhost = hypervisor.hypervisor_hostname
-			if options["--domain"] != "":
-				shorthost = longhost.replace("." + options["--domain"], "")
-				result[longhost] = ("", None)
-				result[shorthost] = ("", None)
-			else:
-				result[longhost] = ("", None)
+		services = nova.services.list(binary="nova-compute")
+		for service in services:
+			result[service.host] = ("", None)
 	return result
 
 
