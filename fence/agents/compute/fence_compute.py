@@ -239,9 +239,9 @@ def define_new_opts():
 	all_opt["domain"] = {
 		"getopt" : "d:",
 		"longopt" : "domain",
-		"help" : "-d, --domain=[string]          DNS domain in which hosts live, useful when the cluster uses short names and nova uses FQDN",
+		"help" : "-d, --domain=[string]          Deprecated option; do not do anything anymore",
 		"required" : "0",
-		"shortdesc" : "DNS domain in which hosts live",
+		"shortdesc" : "Deprecated option",
 		"default" : "",
 		"order": 5,
 	}
@@ -299,10 +299,6 @@ def main():
 		from novaclient import client as nova_client
 	except ImportError:
 		fail_usage("nova not found or not accessible")
-
-	# Potentially we should make this a pacemaker feature
-	if options["--action"] != "list" and options["--domain"] != "" and options.has_key("--plug"):
-		options["--plug"] = options["--plug"] + "." + options["--domain"]
 
 	if options["--record-only"] in [ "2", "Disabled", "disabled" ]:
 		sys.exit(0)
