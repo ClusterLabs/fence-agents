@@ -12,6 +12,8 @@ sbin_PROGRAMS           = fence_zvm
 fence_zvm_SOURCES	= fence_zvm.c
 fence_zvm_CFLAGS	= -D_GNU_SOURCE
 
+noinst_HEADERS		= fence_zvm.h
+
 man_MANS		= $(TARGET).8 fence_zvm.8
 
 fence_zvm.8: fence_zvm_man_page
