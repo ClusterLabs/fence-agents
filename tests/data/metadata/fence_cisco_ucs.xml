@@ -13,6 +13,11 @@
 		<content type="boolean"  />
 		<shortdesc lang="en">Disable TLS negotiation, force SSL 3.0</shortdesc>
 	</parameter>
+	<parameter name="suborg" unique="0" required="0">
+		<getopt mixed="--suborg=[path]" />
+		<content type="string"  />
+		<shortdesc lang="en">Additional path needed to access suborganization</shortdesc>
+	</parameter>
 	<parameter name="ssl_secure" unique="0" required="0">
 		<getopt mixed="--ssl-secure" />
 		<content type="boolean"  />
@@ -52,11 +57,6 @@
 		<getopt mixed="-z, --ssl" />
 		<content type="boolean"  />
 		<shortdesc lang="en">SSL connection</shortdesc>
-	</parameter>
-	<parameter name="suborg" unique="0" required="0">
-		<getopt mixed="--suborg=[path]" />
-		<content type="string"  />
-		<shortdesc lang="en">Additional path needed to access suborganization</shortdesc>
 	</parameter>
 	<parameter name="ssl_insecure" unique="0" required="0">
 		<getopt mixed="--ssl-insecure" />
@@ -108,11 +108,6 @@
 		<content type="string" default="5"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
 	</parameter>
-	<parameter name="missing_as_off" unique="0" required="0">
-		<getopt mixed="--missing-as-off" />
-		<content type="boolean"  />
-		<shortdesc lang="en">Missing port returns OFF instead of failure</shortdesc>
-	</parameter>
 	<parameter name="power_timeout" unique="0" required="0">
 		<getopt mixed="--power-timeout=[seconds]" />
 		<content type="string" default="20"  />
@@ -122,6 +117,11 @@
 		<getopt mixed="--delay=[seconds]" />
 		<content type="string" default="0"  />
 		<shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
+	</parameter>
+	<parameter name="missing_as_off" unique="0" required="0">
+		<getopt mixed="--missing-as-off" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Missing port returns OFF instead of failure</shortdesc>
 	</parameter>
 	<parameter name="shell_timeout" unique="0" required="0">
 		<getopt mixed="--shell-timeout=[seconds]" />
