@@ -19,7 +19,7 @@ RE_STATUS = re.compile("<lsPower .*? state=\"(.*?)\"", re.IGNORECASE)
 RE_GET_DN = re.compile(" dn=\"(.*?)\"", re.IGNORECASE)
 RE_GET_PNDN = re.compile(" pndn=\"(.*?)\"", re.IGNORECASE)
 RE_GET_DESC = re.compile(" descr=\"(.*?)\"", re.IGNORECASE)
-RE_GET_OPERPOWER = re.compile(" operPower=\"(.*?)\"", re.IGNORECASE)
+RE_GET_PRESENCE = re.compile(" presence=\"(.*?)\"", re.IGNORECASE)
 
 options_global = None
 
@@ -40,16 +40,16 @@ def get_power_status(conn, options):
 			"\" inHierarchical=\"false\" dn=\"" + pndn +
 			"\"/>", int(options["--shell-timeout"]))
 
-	result = RE_GET_OPERPOWER.search(res)
+	result = RE_GET_PRESENCE.search(res)
 	if result == None:
 		fail(EC_STATUS)
 	else:
 		status = result.group(1)
 
-	if status == "on":
-		return "on"
-	else:
+	if status in ["missing", "mismatch"]:
 		return "off"
+	else:
+		return "on"
 
 def set_power_status(conn, options):
 	del conn
