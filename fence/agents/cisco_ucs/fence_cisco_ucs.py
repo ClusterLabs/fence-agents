@@ -32,9 +32,15 @@ def get_power_status(conn, options):
 
 	result = RE_GET_PNDN.search(res)
 	if result == None:
-		fail(EC_STATUS)
+		pndn = ""
 	else:
 		pndn = result.group(1)
+
+	if pndn.strip() == "":
+		if "--missing-as-off" in options:
+			return "off"
+		else:
+			fail(EC_STATUS)
 
 	res = send_command(options, "<configResolveDn cookie=\"" + options["cookie"] +
 			"\" inHierarchical=\"false\" dn=\"" + pndn +
@@ -139,7 +145,7 @@ def logout():
 
 def main():
 	global options_global
-	device_opt = ["ipaddr", "login", "passwd", "ssl", "notls", "port", "web", "suborg"]
+	device_opt = ["ipaddr", "login", "passwd", "ssl", "notls", "port", "web", "suborg", "missing_as_off"]
 
 	atexit.register(atexit_handler)
 	atexit.register(logout)
