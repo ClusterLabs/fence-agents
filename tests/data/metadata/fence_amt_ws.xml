@@ -1,0 +1,130 @@
+<?xml version="1.0" ?>
+<resource-agent name="fence_amt_ws" shortdesc="Fence agent for AMT (WS)" >
+<longdesc>fence_amt_ws is an I/O Fencing agent which can be used with Intel AMT (WS). This agent requires the pywsman Python library which is included in OpenWSMAN. (http://openwsman.github.io/).</longdesc>
+<vendor-url>http://www.intel.com/</vendor-url>
+<parameters>
+	<parameter name="action" unique="0" required="1">
+		<getopt mixed="-o, --action=[action]" />
+		<content type="string" default="reboot"  />
+		<shortdesc lang="en">Fencing action</shortdesc>
+	</parameter>
+	<parameter name="boot_option" unique="0" required="0">
+		<getopt mixed="-b, --boot-option=[option]" />
+		<content type="select"  >
+			<option value="pxe" />
+			<option value="hd" />
+			<option value="hdsafe" />
+			<option value="cd" />
+			<option value="diag" />
+		</content>
+		<shortdesc lang="en">Change the default boot behavior of the machine.</shortdesc>
+	</parameter>
+	<parameter name="inet4_only" unique="0" required="0">
+		<getopt mixed="-4, --inet4-only" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Forces agent to use IPv4 addresses only</shortdesc>
+	</parameter>
+	<parameter name="inet6_only" unique="0" required="0">
+		<getopt mixed="-6, --inet6-only" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Forces agent to use IPv6 addresses only</shortdesc>
+	</parameter>
+	<parameter name="ipaddr" unique="0" required="0">
+		<getopt mixed="-a, --ip=[ip]" />
+		<content type="string"  />
+		<shortdesc lang="en">IP address or hostname of fencing device</shortdesc>
+	</parameter>
+	<parameter name="ipport" unique="0" required="0">
+		<getopt mixed="-u, --ipport=[port]" />
+		<content type="string" default="16992"  />
+		<shortdesc lang="en">TCP/UDP port to use for connection with device</shortdesc>
+	</parameter>
+	<parameter name="method" unique="0" required="0">
+		<getopt mixed="-m, --method=[method]" />
+		<content type="select" default="onoff"  >
+			<option value="onoff" />
+			<option value="cycle" />
+		</content>
+		<shortdesc lang="en">Method to fence</shortdesc>
+	</parameter>
+	<parameter name="passwd" unique="0" required="0">
+		<getopt mixed="-p, --password=[password]" />
+		<content type="string"  />
+		<shortdesc lang="en">Login password or passphrase</shortdesc>
+	</parameter>
+	<parameter name="passwd_script" unique="0" required="0">
+		<getopt mixed="-S, --password-script=[script]" />
+		<content type="string"  />
+		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
+	</parameter>
+	<parameter name="port" unique="0" required="0">
+		<getopt mixed="-n, --plug=[ip]" />
+		<content type="string"  />
+		<shortdesc lang="en">IP address or hostname of fencing device (together with --port-as-ip)</shortdesc>
+	</parameter>
+	<parameter name="verbose" unique="0" required="0">
+		<getopt mixed="-v, --verbose" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Verbose mode</shortdesc>
+	</parameter>
+	<parameter name="debug" unique="0" required="0">
+		<getopt mixed="-D, --debug-file=[debugfile]" />
+		<content type="string"  />
+		<shortdesc lang="en">Write debug information to given file</shortdesc>
+	</parameter>
+	<parameter name="version" unique="0" required="0">
+		<getopt mixed="-V, --version" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Display version information and exit</shortdesc>
+	</parameter>
+	<parameter name="help" unique="0" required="0">
+		<getopt mixed="-h, --help" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Display help and exit</shortdesc>
+	</parameter>
+	<parameter name="delay" unique="0" required="0">
+		<getopt mixed="--delay=[seconds]" />
+		<content type="string" default="0"  />
+		<shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
+	</parameter>
+	<parameter name="login_timeout" unique="0" required="0">
+		<getopt mixed="--login-timeout=[seconds]" />
+		<content type="string" default="5"  />
+		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
+	</parameter>
+	<parameter name="port_as_ip" unique="0" required="0">
+		<getopt mixed="--port-as-ip" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Make "port/plug" to be an alias to IP address</shortdesc>
+	</parameter>
+	<parameter name="power_timeout" unique="0" required="0">
+		<getopt mixed="--power-timeout=[seconds]" />
+		<content type="string" default="20"  />
+		<shortdesc lang="en">Test X seconds for status change after ON/OFF</shortdesc>
+	</parameter>
+	<parameter name="power_wait" unique="0" required="0">
+		<getopt mixed="--power-wait=[seconds]" />
+		<content type="string" default="0"  />
+		<shortdesc lang="en">Wait X seconds after issuing ON/OFF</shortdesc>
+	</parameter>
+	<parameter name="shell_timeout" unique="0" required="0">
+		<getopt mixed="--shell-timeout=[seconds]" />
+		<content type="string" default="3"  />
+		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
+	</parameter>
+	<parameter name="retry_on" unique="0" required="0">
+		<getopt mixed="--retry-on=[attempts]" />
+		<content type="string" default="1"  />
+		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
+	</parameter>
+</parameters>
+<actions>
+	<action name="on" automatic="0"/>
+	<action name="off" />
+	<action name="reboot" />
+	<action name="status" />
+	<action name="monitor" />
+	<action name="metadata" />
+	<action name="validate-all" />
+</actions>
+</resource-agent>
