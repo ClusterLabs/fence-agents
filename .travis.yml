@@ -10,6 +10,7 @@ addons:
     - python-pexpect
     - xsltproc
     - time
+    - openwsman
 
 before_install:
   - pip install suds
