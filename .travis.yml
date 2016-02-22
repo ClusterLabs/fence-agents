@@ -1,5 +1,5 @@
 language: python
-sudo: false
+sudo: true
 
 python:
   - "2.7"
@@ -10,12 +10,14 @@ addons:
     - python-pexpect
     - xsltproc
     - time
+    - openwsman
 
 before_install:
   - pip install suds
   - pip install pycurl
   - pip install requests
   - pip install pexpect
+  - pip install pywsman
 
 script:
   - ./autogen.sh

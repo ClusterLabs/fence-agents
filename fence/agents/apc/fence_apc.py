@@ -15,6 +15,7 @@
 #####
 
 import sys, re
+import pywsman
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
