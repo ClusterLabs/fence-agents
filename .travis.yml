@@ -1,5 +1,5 @@
 language: python
-sudo: false
+sudo: true
 
 python:
   - "2.7"
@@ -12,6 +12,7 @@ addons:
     - time
 
 before_install:
+  - sudo apt-get install openwsman
   - pip install suds
   - pip install pycurl
   - pip install requests
