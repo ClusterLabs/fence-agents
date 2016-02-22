@@ -1,5 +1,5 @@
 language: python
-sudo: false
+sudo: true
 
 python:
   - "2.7"
@@ -12,10 +12,13 @@ addons:
     - time
 
 before_install:
+  - wget http://cz.archive.ubuntu.com/ubuntu/pool/universe/o/openwsman/openwsman_2.2.3-0ubuntu4_amd64.deb
+  - sudo dpkg -i openwsman_2.2.3-0ubuntu4_amd64.deb
   - pip install suds
   - pip install pycurl
   - pip install requests
   - pip install pexpect
+  - pip install pywsman
 
 script:
   - ./autogen.sh
