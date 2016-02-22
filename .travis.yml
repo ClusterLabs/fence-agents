@@ -16,6 +16,7 @@ before_install:
   - pip install pycurl
   - pip install requests
   - pip install pexpect
+  - pip install pywsman
 
 script:
   - ./autogen.sh
