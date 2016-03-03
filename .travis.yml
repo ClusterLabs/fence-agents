@@ -1,5 +1,5 @@
 language: python
-sudo: false
+sudo: required
 
 python:
   - "2.7"
@@ -10,12 +10,23 @@ addons:
     - python-pexpect
     - xsltproc
     - time
+    - libpam0g-dev
+    - libcimcclient0-dev
 
 before_install:
   - pip install suds
   - pip install pycurl
   - pip install requests
   - pip install pexpect
+
+before_script:
+  - wget https://github.com/Openwsman/openwsman/archive/v2.6.2.tar.gz -O /tmp/openwsman-2.6.2.tar.gz
+  - tar zxvf /tmp/openwsman-2.6.2.tar.gz
+  - cd openwsman-2.6.2
+  - mkdir build && cd build
+  - cmake ..
+  - make
+  - sudo make install
 
 script:
   - ./autogen.sh
