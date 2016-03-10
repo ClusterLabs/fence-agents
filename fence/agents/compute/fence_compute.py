@@ -22,6 +22,18 @@ nova = None
 EVACUABLE_TAG = "evacuable"
 TRUE_TAGS = ['true']
 
+def _get_alternative_host(host, options):
+	alt_host = None
+
+	# build alternative hostname, with the domain option: see if we got passed
+	# a short hostname or a FQDN, and give back the other one
+	if options["--domain"] != "":
+		alt_host = host.replace("." + options["--domain"], "")
+		if alt_host == host:
+			alt_host = host + "." + options["--domain"]
+
+	return alt_host
+
 def get_power_status(_, options):
 	global override_status
 
@@ -34,7 +46,12 @@ def get_power_status(_, options):
 
 	if nova:
 		try:
-			services = nova.services.list(host=options["--plug"])
+			host = options["--plug"]
+			alt_host = _get_alternative_host(host, options)
+			services = nova.services.list(host=host)
+			if len(services) == 0 and alt_host is not None:
+				services = nova.services.list(host=alt_host)
+
 			for service in services:
 				logging.debug("Status of %s is %s" % (service.binary, service.state))
 				if service.binary == "nova-compute":
@@ -101,9 +118,9 @@ def _get_evacuable_images():
 				result.append(image.id)
 	return result
 
-def _host_evacuate(options):
+def _host_evacuate(host, options):
 	result = True
-	servers = nova.servers.list(search_opts={'host': options["--plug"]})
+	servers = nova.servers.list(search_opts={'host': host})
 	if options["--instance-filtering"] == "False":
 		evacuables = servers
 	else:
@@ -123,10 +140,10 @@ def _host_evacuate(options):
 			response = _server_evacuate(server.id, on_shared_storage)
 			if response["accepted"]:
 				logging.debug("Evacuated %s from %s: %s" %
-					      (response["uuid"], options["--plug"], response["reason"]))
+					      (response["uuid"], host, response["reason"]))
 			else:
 				logging.error("Evacuation of %s on %s failed: %s" %
-					      (response["uuid"], options["--plug"], response["reason"]))
+					      (response["uuid"], host, response["reason"]))
 				result = False
 		else:
 			logging.error("Could not evacuate instance: %s" % server.to_dict())
@@ -147,14 +164,20 @@ def set_power_status(_, options):
 	if not nova:
 		return
 
+	host = options["--plug"]
+	alt_host = _get_alternative_host(host, options)
+	services = nova.services.list(host=host)
+	if len(services) == 0 and alt_host is not None:
+		host = alt_host
+
 	if options["--action"] == "on":
 		if get_power_status(_, options) == "on":
 			# Forcing the service back up in case it was disabled
-			nova.services.enable(options["--plug"], 'nova-compute')
+			nova.services.enable(host, 'nova-compute')
 			try:
 				# Forcing the host back up
 				nova.services.force_down(
-					options["--plug"], "nova-compute", force_down=False)
+					host, "nova-compute", force_down=False)
 			except Exception as e:
 				# In theory, if foce_down=False fails, that's for the exact
 				# same possible reasons that below with force_down=True
@@ -172,7 +195,7 @@ def set_power_status(_, options):
 
 	try:
 		nova.services.force_down(
-			options["--plug"], "nova-compute", force_down=True)
+			host, "nova-compute", force_down=True)
 	except Exception as e:
 		# Something went wrong when we tried to force the host down.
 		# That could come from either an incompatible API version
@@ -190,10 +213,10 @@ def set_power_status(_, options):
 			#
 			# Some callers (such as Pacemaker) will have a timer
 			# running and kill us if necessary
-			logging.debug("Waiting for nova to update it's internal state for %s" % options["--plug"])
+			logging.debug("Waiting for nova to update it's internal state for %s" % host)
 			time.sleep(1)
 
-	if not _host_evacuate(options):
+	if not _host_evacuate(host, options):
 		sys.exit(1)
 
 	return
@@ -305,10 +328,6 @@ def main():
 		from novaclient import client as nova_client
 	except ImportError:
 		fail_usage("nova not found or not accessible")
-
-	# Potentially we should make this a pacemaker feature
-	if options["--action"] != "list" and options["--domain"] != "" and options.has_key("--plug"):
-		options["--plug"] = options["--plug"] + "." + options["--domain"]
 
 	if options["--record-only"] in [ "2", "Disabled", "disabled" ]:
 		sys.exit(0)
