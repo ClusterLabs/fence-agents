@@ -8,7 +8,7 @@
 import sys
 import atexit
 import logging
-sys.path.append("/usr/share/fence")
+sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail_usage
 from fencing_snmp import FencingSnmp
