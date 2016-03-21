@@ -246,6 +246,24 @@ def define_new_opts():
 		"default" : "",
 		"order": 1,
 	}
+	all_opt["region-name"] = {
+		"getopt" : "",
+		"longopt" : "region-name",
+		"help" : "--region-name=[region]         Region Name",
+		"required" : "0",
+		"shortdesc" : "Region Name",
+		"default" : "",
+		"order": 1,
+	}
+	all_opt["insecure"] = {
+		"getopt" : "",
+		"longopt" : "insecure",
+		"help" : "--insecure                     Explicitly allow agent to perform \"insecure\" TLS (https) requests",
+		"required" : "0",
+		"shortdesc" : "Allow Insecure TLS Requests",
+		"default" : "False",
+		"order": 2,
+	}
 	all_opt["domain"] = {
 		"getopt" : "d:",
 		"longopt" : "domain",
@@ -290,7 +308,7 @@ def main():
 
 	device_opt = ["login", "passwd", "tenant-name", "auth-url", "fabric_fencing", "on_target",
 		"no_login", "no_password", "port", "domain", "no-shared-storage", "endpoint-type",
-		"record-only", "instance-filtering"]
+		"record-only", "instance-filtering", "insecure", "region-name"]
 	define_new_opts()
 	all_opt["shell_timeout"]["default"] = "180"
 
@@ -335,6 +353,8 @@ def main():
 		options["--password"],
 		options["--tenant-name"],
 		options["--auth-url"],
+		insecure=options["--insecure"],
+		region_name=options["--region-name"],
 		endpoint_type=options["--endpoint-type"])
 
 	if options["--action"] in ["off", "reboot"]:
