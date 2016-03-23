@@ -324,7 +324,12 @@ def main():
 	run_delay(options)
 
 	try:
-		from novaclient import client as nova_client
+		from distutils.version import LooseVersion
+	except ImportError:
+		fail_usage("distutils not found or not accessible")
+
+	try:
+		import novaclient
 	except ImportError:
 		fail_usage("nova not found or not accessible")
 
@@ -347,8 +352,12 @@ def main():
 		elif options["--action"] in ["monitor", "status"]:
 			sys.exit(0)
 
-	# The first argument is the Nova client version
-	nova = nova_client.Client('2.11',
+	if LooseVersion(novaclient.__version__) <= LooseVersion('2.26.0') :
+		api_version = '2'
+	else:
+		api_version = '2.11'
+
+	nova = novaclient.client.Client(api_version,
 		options["--username"],
 		options["--password"],
 		options["--tenant-name"],
