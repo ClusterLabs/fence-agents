@@ -1,5 +1,6 @@
 language: python
 sudo: required
+dist: trusty
 
 python:
   - "2.7"
@@ -11,7 +12,9 @@ addons:
     - xsltproc
     - time
     - libpam0g-dev
+    - libxml2-utils
     - libcimcclient0-dev
+    - swig
 
 before_install:
   - pip install suds
@@ -23,10 +26,14 @@ before_script:
   - wget https://github.com/Openwsman/openwsman/archive/v2.6.2.tar.gz -O /tmp/openwsman-2.6.2.tar.gz
   - tar zxvf /tmp/openwsman-2.6.2.tar.gz
   - cd openwsman-2.6.2
+  - perl -p -i -e "s/(\\$\{CURL_LIBRARIES\})/\1 ssl crypto/g" src/lib/CMakeLists.txt
   - mkdir build && cd build
-  - cmake ..
+  - cmake .. -DPYTHON_EXECUTABLE:FILEPATH=~/virtualenv/python2.7.10/bin/python -DLIB=/lib/x86_64-linux-gnu -DCMAKE_LIBRARY_ARCHITECTURE=x86_64-linux-gnu -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_VERBOSE_MAKEFILE=TRUE
   - make
   - sudo make install
+  - cd ../..
+  - sudo rm -rf ~/virtualenv/python2.7.10/lib/python2.7/site-packages/{_,}pywsman*
+  - pip install pywsman
 
 script:
   - ./autogen.sh
