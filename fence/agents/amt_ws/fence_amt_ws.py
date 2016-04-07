@@ -24,12 +24,8 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import run_delay, fail_usage, fail, EC_STATUS
 
+import pywsman
 from xml.etree import ElementTree
-
-try:
-    import pywsman
-except ImportError:
-    fail_usage("pywsman not found or not accessible")
 
 
 #BEGIN_VERSION_GENERATION
