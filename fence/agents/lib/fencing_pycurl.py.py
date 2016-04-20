@@ -1,6 +1,3 @@
-__author__ = 'Ondrej Mular <omular@redhat.com>'
-__all__ = ["FencingPyCurl"]
-
 import pycurl
 import sys
 import atexit
@@ -10,6 +7,8 @@ import time
 import logging
 import pprint
 
+__all__ = ["FencingPyCurl"]
+
 ## do not add code here.
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION = ""
@@ -17,7 +16,8 @@ REDHAT_COPYRIGHT = ""
 BUILD_DATE = ""
 #END_VERSION_GENERATION
 
-class FencingPyCurl():
+
+class FencingPyCurl:
 	active = False
 	input_file = None
 	output_file = None
@@ -29,7 +29,10 @@ class FencingPyCurl():
 	pycurl_obj = None
 
 	def __init__(self):
-		if not FencingPyCurl.active and (FencingPyCurl.input_file or FencingPyCurl.output_file):
+		if (
+			not FencingPyCurl.active and
+			(FencingPyCurl.input_file or FencingPyCurl.output_file)
+		):
 			FencingPyCurl.active = True
 			logging.debug("FencingPyCurl is active now")
 		if FencingPyCurl.active:
@@ -48,7 +51,11 @@ class FencingPyCurl():
 						with open(FencingPyCurl.input_file, "r") as f:
 							FencingPyCurl.actions = json.load(f)
 					except Exception as e:
-						logging.debug("Reading input file (%s) failed: %s" % (FencingPyCurl.input_file, e.message))
+						logging.debug(
+							"Reading input file '{file}' failed: {msg}".format(
+								file=FencingPyCurl.input_file, msg=e.message
+							)
+						)
 
 				if FencingPyCurl.output_file:
 					logging.debug("output file detected")
@@ -68,14 +75,17 @@ class FencingPyCurl():
 		return self.pycurl_obj.setopt(opt, value)
 
 	def perform(self):
+		req_ind = FencingPyCurl.request_index
+		actions = FencingPyCurl.actions
 		if FencingPyCurl.active:
 			if FencingPyCurl.input_file:
 				perform_start = time.time()
-				if self.options["request"] == FencingPyCurl.actions[FencingPyCurl.request_index]["request"]:
-					self.options["response"] = FencingPyCurl.actions[FencingPyCurl.request_index]["response"]
+				if self.options["request"] == actions[req_ind]["request"]:
+					self.options["response"] = actions[req_ind]["response"]
 					if self.write_function:
 						self.write_function(self.options["response"]["output"])
-					diff = FencingPyCurl.actions[FencingPyCurl.request_index]["time"]["perform_duration"] - (time.time() - perform_start)
+					duration = actions[req_ind]["time"]["perform_duration"]
+					diff = duration - (time.time() - perform_start)
 					if diff > 0:
 						logging.debug("sleeping for: %s" % str(diff))
 						time.sleep(diff)
@@ -84,15 +94,17 @@ class FencingPyCurl():
 					print "Request:"
 					pprint.pprint(self.options["request"])
 					print "Expected:"
-					pprint.pprint(FencingPyCurl.actions[FencingPyCurl.request_index]["request"])
+					pprint.pprint(actions[req_ind]["request"])
 					raise Exception("Invalid request")
 			else:
+				response = self.options["response"]
 				start_time = time.time()
 				self.pycurl_obj.perform()
-				self.options["time"]["perform_duration"] = FencingPyCurl.last_request_time - start_time
-				self.options["response"]["output"] = self.output_buffer.getvalue()
+				duration = FencingPyCurl.last_request_time - start_time
+				self.options["time"]["perform_duration"] = duration
+				response["output"] = self.output_buffer.getvalue()
 				if self.write_function:
-					self.write_function(self.options["response"]["output"])
+					self.write_function(response["output"])
 				if FencingPyCurl.output_file:
 					FencingPyCurl.actions.append(self.options)
 			FencingPyCurl.request_index += 1
@@ -124,20 +136,32 @@ class FencingPyCurl():
 	@staticmethod
 	def save_log_to_file():
 		if FencingPyCurl.output_file and FencingPyCurl.actions:
-			logging.debug("Writing log to file: %s" % FencingPyCurl.output_file)
+			logging.debug(
+				"Writing log to file: {0}".format(FencingPyCurl.output_file)
+			)
 			try:
 				with open(FencingPyCurl.output_file, "w") as f:
-					json.dump(FencingPyCurl.actions, f, sort_keys=True, indent=4, separators=(',', ': '))
+					json.dump(
+						FencingPyCurl.actions,
+						f,
+						sort_keys=True,
+						indent=4,
+						separators=(',', ': ')
+					)
 			except Exception as e:
-				logging.debug("Writing log to file (%s) failed: %s" % (FencingPyCurl.output_file, e.message))
+				logging.debug(
+					"Writing log to file '{file}' failed: {msg}".format(
+						file=FencingPyCurl.output_file, msg=e.message
+					)
+				)
 
 
 def get_and_remove_arg(arg, has_value=True):
-	logging.debug("Getting arg: %s (has_value: %s)" % (arg, str(has_value)))
+	logging.debug("Getting arg: '{0}'".format(arg))
 	if not has_value:
 		if arg in sys.argv:
 			sys.argv.remove(arg)
-			logging.debug("%s: True" % arg)
+			logging.debug(arg + ": True")
 			return True
 	if arg in sys.argv:
 		index = sys.argv.index(arg)
@@ -145,9 +169,10 @@ def get_and_remove_arg(arg, has_value=True):
 		if len(sys.argv) > index:
 			value = sys.argv[index]
 			sys.argv.remove(value)
-			logging.debug("%s: %s" % (arg, value))
+			logging.debug("{arg}: {val}".format(arg=arg, val=value))
 			return value
 	return None
+
 
 FencingPyCurl.input_file = get_and_remove_arg("--fencing_pycurl-log-in")
 FencingPyCurl.output_file = get_and_remove_arg("--fencing_pycurl-log-out")

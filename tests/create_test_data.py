@@ -1,16 +1,17 @@
 #!/usr/bin/python -tt
 
-__author__ = 'Ondrej Mular <omular@redhat.com>'
-
-from configobj import ConfigObj
-from time import sleep
 import sys
-import subprocess
-import shlex
 import logging
 import os
 import re
+from configobj import ConfigObj
+
 import fence_tests_lib as ftl
+
+
+class RecordException(Exception):
+	pass
+
 
 VERBOSE = not set(["-v", "--verbose"]).isdisjoint(sys.argv)
 
@@ -48,68 +49,71 @@ avail_opt = {
 		"longopt": "force",
 		"description": "force rewrite existing log file",
 		"default": False
+	},
+	"port": {
+		"getopt": "p:",
+		"longopt": "port",
+		"description":
+			"Local port for communication between agent and mitmproxy",
+		"default": "4242"
 	}
 }
 
 
 class RecordTestData(object):
-
-	def __init__(self, device_cfg, action_cfg, force=False):
+	def __init__(
+			self, device_cfg, action_cfg, local_port, force=False
+	):
+		self.local_port = local_port
 		self.device_cfg = device_cfg
 		self.action_cfg = action_cfg
-		self.device_config = ConfigObj(device_cfg, unrepr=True)
-		self.action_config = ConfigObj(action_cfg, unrepr=True)
-		logs_path = os.path.join(ftl.MITM_LOGS_PATH, self.device_config["agent"][6:])
-		if "subdir" in self.device_config:
-			logs_path = os.path.join(logs_path, self.device_config["subdir"])
-		self.log = os.path.join(logs_path, "%s.log" % ftl.get_basename(action_cfg))
+		self.device_cfg_obj = ConfigObj(device_cfg, unrepr=True)
+		self.action_cfg_obj = ConfigObj(action_cfg, unrepr=True)
+		logs_path = os.path.join(
+			ftl.MITM_LOGS_PATH, self.device_cfg_obj["agent"][6:]
+		)
+		if "subdir" in self.device_cfg_obj:
+			logs_path = os.path.join(logs_path, self.device_cfg_obj["subdir"])
+		self.log = os.path.join(
+			logs_path, "{name}.log".format(name=ftl.get_basename(action_cfg))
+		)
+		logging.debug("Log file: {log}".format(log=self.log))
+
 		if os.path.isfile(self.log) and not force:
-			raise Exception("Log file already exists. Use --force option to overwrite it.")
-		elif os.path.isfile(self.log):
-			os.remove(self.log)
+			if force:
+				os.remove(self.log)
+			else:
+				raise RecordException(
+					"Log file already exists. Use --force to overwrite it."
+				)
+
 		self.mitm_process = None
 		self.params = ""
 		self.env = {}
-		self.type = self.device_config["agent_type"].lower()
+		self.type = self.device_cfg_obj["agent_type"].lower()
 
+	def set_up_mitm(self):
+		self.mitm_process = ftl.start_mitm_server(
+			*ftl.get_mitm_record_cmd(
+				self.device_cfg_obj, self.log, self.local_port
+			)
+		)
 
-	def setUp_MITM(self):
-		cmd, env = ftl.get_MITM_record_cmd(self.device_cfg, self.log)
-		if cmd:
-			logging.debug("Executing: %s", cmd)
-			try:
-				# Try to start replay server
-				process = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
-			except OSError as e:
-				logging.error("Unable to start record server: %s" % e.message)
-				raise
-			sleep(1)  # wait for replay server
-			if process.poll() is not None:  # check if replay server is running correctly
-				raise Exception("Replay server is not running correctly.")
-			self.mitm_process = process
+		if "ipaddr" in self.device_cfg_obj["options"]:
+			self.device_cfg_obj["options"]["ipaddr"][0] = "localhost"
+		if "ipport" in self.device_cfg_obj["options"]:
+			self.device_cfg_obj["options"]["ipport"][0] = self.local_port
 
-	def tearDown_MITM(self):
-		if self.mitm_process:
-			process = self.mitm_process
-			# if server is still alive after test, kill it
-			if process.poll() is None:
-				try:
-					# race condition, process can exit between checking and killing process
-					process.kill()
-				except Exception:
-					pass
-			pipe_stdout, pipe_stderr = process.communicate()
-			process.stdout.close()
-			process.stderr.close()
-			logging.debug("Record server STDOUT:\n%s\nRecord server STDERR:\n%s", str(pipe_stdout), str(pipe_stderr))
+	def tear_down_mitm(self):
+		ftl.stop_mitm_server(self.mitm_process)
 
-	def setUp_pycurl(self):
-		self.params = "--fencing_pycurl-log-out %s" % self.log
+	def set_up_pycurl(self):
+		self.params = "--fencing_pycurl-log-out {log}".format(log=self.log)
 
-	def tearDown_pycurl(self):
+	def tear_down_pycurl(self):
 		pass
 
-	def setUp_binmitm(self):
+	def set_up_binmitm(self):
 		cf = os.path.abspath(ftl.BINMITM_COUNTERFILE)
 		if os.path.exists(cf):
 			os.remove(cf)
@@ -117,71 +121,88 @@ class RecordTestData(object):
 			del os.environ["BINMITM_INPUT"]
 		if "BINMITM_DEBUG" in os.environ:
 			del os.environ["BINMITM_DEBUG"]
-		self.env = {}
-		self.env["BINMITM_COUNTER_FILE"] = ftl.BINMITM_COUNTERFILE
-		self.env["BINMITM_OUTPUT"] = self.log
+		self.env = {
+			"BINMITM_COUNTER_FILE": ftl.BINMITM_COUNTERFILE,
+			"BINMITM_OUTPUT": self.log
+		}
 
-	def tearDown_binmitm(self):
+	def tear_down_binmitm(self):
 		cf = os.path.abspath(ftl.BINMITM_COUNTERFILE)
 		if os.path.exists(cf):
 			os.remove(cf)
 
-	def setUp(self):
-		type = self.type
-		if type == "mitmproxy":
-			self.setUp_MITM()
-		elif type =="pycurl":
-			self.setUp_pycurl()
-		elif type == "binmitm":
-			self.setUp_binmitm()
+	def set_up(self):
+		if self.type == "mitmproxy":
+			self.set_up_mitm()
+		elif self.type == "pycurl":
+			self.set_up_pycurl()
+		elif self.type == "binmitm":
+			self.set_up_binmitm()
 
-	def tearDown(self):
-		type = self.type
-		if type == "mitmproxy":
-			self.tearDown_MITM()
-		elif type =="pycurl":
-			self.tearDown_pycurl()
-		elif type == "binmitm":
-			self.tearDown_binmitm()
+	def tear_down(self):
+		if self.type == "mitmproxy":
+			self.tear_down_mitm()
+		elif self.type == "pycurl":
+			self.tear_down_pycurl()
+		elif self.type == "binmitm":
+			self.tear_down_binmitm()
 
 	def record(self):
-		self.setUp()
+		self.set_up()
 
 		success = True
-		actions = self.action_config
+		actions = self.action_cfg_obj
 
 		for action in actions["actions"]:
 			if not success:
 				break
-			cmd, stdin, env = ftl._prepare_command(self.device_config, self.params)
+			cmd, stdin, env = ftl.prepare_command(
+				self.device_cfg_obj, self.params
+			)
+
 			env.update(self.env)
-			cmd += " -o %s"% (action["command"])
+			cmd += " -o {action}".format(action=(action["command"]))
 
 			status, stdout, stderr = ftl.run_agent(cmd, stdin, env)
 
-			logging.debug("AGENT EXITCODE: %s" % str(status))
-			logging.debug("AGENT STDOUT: %s" % stdout)
-			logging.debug("AGENT STDERRT: %s" % stderr)
+			logging.debug("AGENT EXITCODE: {0}".format(str(status)))
+			logging.debug("AGENT STDOUT: {0}".format(stdout))
+			logging.debug("AGENT STDERR: {0}".format(stderr))
 
-			success = success and bool(re.search(action["return_code"], str(status), re.IGNORECASE))
+			success = success and bool(
+				re.search(action["return_code"], str(status), re.IGNORECASE)
+			)
 			if not success:
-				logging.error("EXITCODE: %s (expected: %s)" % (str(status), re.search(action["return_code"])))
+				logging.error(
+					"EXITCODE: {actual} (expected: {expected})".format(
+						actual=str(status),
+						expected=action["return_code"]
+					)
+				)
 
-		self.tearDown()
+		self.tear_down()
 		return success
 
 
 def get_device_cfg_path(device):
-	device_cfg = os.path.join(ftl.DEVICES_PATH, "%s.cfg" % device)
+	device_cfg = os.path.join(
+		ftl.DEVICES_PATH, "{name}.cfg".format(name=device)
+	)
 	if not os.path.isfile(device_cfg):
-		raise Exception("Device config '%s' not found." % device_cfg)
+		raise RecordException(
+			"Device config '{cfg}' not found.".format(cfg=device_cfg)
+		)
 	return device_cfg
 
 
 def get_action_cfg_path(action):
-	action_cfg = os.path.join(ftl.ACTIONS_PATH, "%s.cfg" % action)
+	action_cfg = os.path.join(
+		ftl.ACTIONS_PATH, "{name}.cfg".format(name=action)
+	)
 	if not os.path.isfile(action_cfg):
-		raise Exception("Action config '%s' not found." % action_cfg)
+		raise RecordException(
+			"Action config '{cfg}' not found.".format(cfg=action_cfg)
+		)
 	return action_cfg
 
 
@@ -194,7 +215,11 @@ def main():
 	opt = ftl.get_options(avail_opt)
 
 	if "--help" in opt:
-		ftl.show_help(avail_opt, "This program can create testing data for MITM tests of fence-agents.")
+		ftl.show_help(
+			avail_opt,
+			"This program can create testing data for MITM tests of "
+			"fence-agents."
+		)
 		sys.exit(0)
 
 	if opt["--device"] is None:
@@ -212,12 +237,15 @@ def main():
 	if opt["--test-config"]:
 		config = ConfigObj(device_cfg, unrepr=True)
 
-		cmd, stdin, env = ftl._prepare_command(config)
+		cmd, stdin, env = ftl.prepare_command(config)
 		cmd += " -o status"
 		status, stdout, stderr = ftl.run_agent(cmd, stdin, env)
 
 		if status != 0 and status != 2:
-			logging.error("Cannot obtain status:\nRETURNCODE: %s\nSTDOUT:\n%s\nSTDERR:\n%s\n" % (str(status), stdout, stderr))
+			logging.error("Cannot obtain status)")
+			logging.error("Agent RETURNCODE: {0}".format(str(status)))
+			logging.error("Agent STDOUT: {0}".format(stdout))
+			logging.error("Agent STDERR: {0}".format(stdout))
 			sys.exit(1)
 		print stdout,
 
@@ -226,9 +254,14 @@ def main():
 	action_cfg = get_action_cfg_path(opt["--action"])
 
 	try:
-		status = RecordTestData(device_cfg, action_cfg, opt["--force"]).record()
-	except Exception as e:
-		logging.error(e.message)
+		status = RecordTestData(
+			device_cfg,
+			action_cfg,
+			opt["--port"],
+			opt["--force"]
+		).record()
+	except (ftl.LibException, RecordException) as e:
+		logging.error(str(e))
 		logging.error("Obtaining testing data failed.")
 		sys.exit(1)
 
@@ -236,6 +269,7 @@ def main():
 		logging.error("Obtaining testing data failed.")
 		sys.exit(1)
 	print "Obtaining log file was successful."
+
 
 if __name__ == "__main__":
 	main()
