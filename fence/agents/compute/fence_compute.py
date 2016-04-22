@@ -210,6 +210,86 @@ def set_power_status(_, options):
 
 	return
 
+
+def fix_domain(options):
+	domains = {}
+	last_domain = None
+
+	if nova:
+		# Find it in nova
+
+		hypervisors = nova.hypervisors.list()
+		for hypervisor in hypervisors:
+			shorthost = hypervisor.hypervisor_hostname.split('.')[0]
+
+			if shorthost == hypervisor.hypervisor_hostname:
+				# Nova is not using FQDN 
+				calculated = ""
+			else:
+				# Compute nodes are named as FQDN, strip off the hostname
+				calculated = hypervisor.hypervisor_hostname.replace(shorthost+".", "")
+
+			domains[calculated] = shorthost
+
+			if calculated == last_domain:
+				# Avoid complaining for each compute node with the same name
+				# One hopes they don't appear interleaved as A.com B.com A.com B.com
+				logging.debug("Calculated the same domain from: %s" % hypervisor.hypervisor_hostname)
+
+			elif options.has_key("--domain") and options["--domain"] == calculated:
+				# Supplied domain name is valid 
+				return
+
+			elif options.has_key("--domain"):
+				# Warn in case nova isn't available at some point
+				logging.warning("Supplied domain '%s' does not match the one calculated from: %s"
+					      % (options["--domain"], hypervisor.hypervisor_hostname))
+
+			last_domain = calculated
+
+	if len(domains) == 0 and not options.has_key("--domain"):
+		logging.error("Could not calculate the domain names used by compute nodes in nova")
+
+	elif len(domains) == 1 and not options.has_key("--domain"):
+		options["--domain"] = last_domain
+
+	elif len(domains) == 1:
+		logging.error("Overriding supplied domain '%s' does not match the one calculated from: %s"
+			      % (options["--domain"], hypervisor.hypervisor_hostname))
+		options["--domain"] = last_domain
+
+	elif len(domains) > 1:
+		logging.error("The supplied domain '%s' did not match any used inside nova: %s"
+			      % (options["--domain"], repr(domains)))
+		sys.exit(1)
+
+def fix_plug_name(options):
+	if options["--action"] == "list":
+		return
+
+	if not options.has_key("--plug"):
+		return
+
+	fix_domain(options)
+	short_plug = options["--plug"].split('.')[0]
+	logging.debug("Checking target '%s' against calculated domain '%s'"% (options["--plug"], calculated))
+
+	if not options.has_key("--domain"):
+		# Nothing supplied and nova not available... what to do... nothing
+		return
+
+	elif options["--domain"] == "":
+		# Ensure any domain is stripped off since nova isn't using FQDN
+		options["--plug"] = short_plug
+
+	elif options["--plug"].find(options["--domain"]):
+		# Plug already contains the domain, don't re-add 
+		return
+
+	else:
+		# Add the domain to the plug
+		options["--plug"] = short_plug + "." + options["--domain"]
+
 def get_plugs_list(_, options):
 	result = {}
 
@@ -217,12 +297,9 @@ def get_plugs_list(_, options):
 		hypervisors = nova.hypervisors.list()
 		for hypervisor in hypervisors:
 			longhost = hypervisor.hypervisor_hostname
-			if options["--domain"] != "":
-				shorthost = longhost.replace("." + options["--domain"], "")
-				result[longhost] = ("", None)
-				result[shorthost] = ("", None)
-			else:
-				result[longhost] = ("", None)
+			shorthost = longhost.split('.')[0]
+			result[longhost] = ("", None)
+			result[shorthost] = ("", None)
 	return result
 
 
@@ -260,7 +337,6 @@ def define_new_opts():
 		"help" : "-d, --domain=[string]          DNS domain in which hosts live, useful when the cluster uses short names and nova uses FQDN",
 		"required" : "0",
 		"shortdesc" : "DNS domain in which hosts live",
-		"default" : "",
 		"order": 5,
 	}
 	all_opt["record-only"] = {
@@ -318,9 +394,7 @@ def main():
 	except ImportError:
 		fail_usage("nova not found or not accessible")
 
-	# Potentially we should make this a pacemaker feature
-	if options["--action"] != "list" and options["--domain"] != "" and options.has_key("--plug"):
-		options["--plug"] = options["--plug"] + "." + options["--domain"]
+	fix_plug_name(options)
 
 	if options["--record-only"] in [ "2", "Disabled", "disabled" ]:
 		sys.exit(0)
