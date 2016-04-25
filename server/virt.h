@@ -73,6 +73,7 @@ typedef void ckpt_handle;
 int ckpt_read(void *hp, const char *secid, void *buf, size_t maxlen);
 int ckpt_finish(void *hp);
 int ckpt_write(void *hp, const char *secid, void *buf, size_t maxlen);
+int ckpt_erase(void *hp, const char *secid);
 void *ckpt_init(const char *ckpt_name, int maxlen, int maxsec, int maxseclen,
 		int timeout);
 

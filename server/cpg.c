@@ -46,6 +46,7 @@ struct wire_msg {
 };
 
 static uint32_t seqnum = 0, my_node_id = NODE_ID_NONE;
+static uint32_t high_id_from_callback = NODE_ID_NONE;
 static struct msg_queue_node *pending= NULL;
 static cpg_handle_t cpg_handle;
 static struct cpg_name gname;
@@ -55,11 +56,12 @@ static pthread_cond_t cpg_cond = PTHREAD_COND_INITIALIZER;
 static pthread_t cpg_thread = 0;
 static request_callback_fn req_callback_fn;
 
-
+/* <UVT> function cpg_membership_get is (probably) buggy and returns correct
+count only before cpg_mcast_joined, subsequent calls set count to 0 </UVT> */
+#if 0 
 int
 cpg_get_ids(uint32_t *my_id, uint32_t *high_id)
 {
-#if 0
 	/* This is segfaulting for some reason */
 	struct cpg_address cpg_nodes[CPG_MEMBERS_MAX];
 	uint32_t high = my_node_id;
@@ -89,12 +91,25 @@ cpg_get_ids(uint32_t *my_id, uint32_t *high_id)
 	*high_id = high;
 
 	return 0;
-#endif
-	return -ENOSYS;
 }
+#endif
 
+int
+cpg_get_ids(uint32_t *my_id, uint32_t *high_id)
+{
+	if (!my_id && !high_id)
+		return 0;
 
+	if (my_id)
+		*my_id = my_node_id;
 
+	if (!high_id)
+		return 0;
+
+	*high_id = high_id_from_callback;
+
+	return 0;
+}
 
 void
 #ifdef HAVE_OPENAIS_CPG_H
@@ -171,6 +186,7 @@ out_unlock:
 	pthread_mutex_unlock(&cpg_mutex);
 }
 
+
 void
 #ifdef HAVE_OPENAIS_CPG_H
 cpg_config_change(cpg_handle_t h,
@@ -186,7 +202,17 @@ cpg_config_change(cpg_handle_t h,
 		  const struct cpg_address *join, size_t joinlen)
 #endif
 {
-	/* Don't care */
+	int x;
+	int high = my_node_id;
+
+	for (x = 0; x < memberlen; x++) {
+		if (members[x].nodeid > high) {
+			high = members[x].nodeid;
+		}
+	}
+
+	high_id_from_callback = high;
+
 	return;
 }
 
