@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 import sys
 import atexit

@@ -25,27 +25,27 @@ class TestPrepareCommand(unittest.TestCase):
 	def test_is_action_ignored(self):
 		(command1, _) = fence_testing._prepare_command(self.DEVICE_CORRECT, "getopt")
 		(command2, _) = fence_testing._prepare_command(self.DEVICE_CORRECT_WITH_ACTION, "getopt")
-		self.assertEquals(command1, command2)
+		self.assertEqual(command1, command2)
 
 	def test_is_stdin_empty(self):
 		(_, stdin) = fence_testing._prepare_command(self.DEVICE_CORRECT, "getopt")
-		self.assertEquals(None, stdin)
+		self.assertEqual(None, stdin)
 		(_, stdin) = fence_testing._prepare_command(self.DEVICE_CORRECT, "longopt")
-		self.assertEquals(None, stdin)
+		self.assertEqual(None, stdin)
 
 	def test_prepared_command_getopt(self):
 		## Test also fallback to longopt if short is not present
 		(command, _) = fence_testing._prepare_command(self.DEVICE_CORRECT, "getopt")
-		self.assertEquals("/bin/true -l foo -p bar -a fence.example.com --plug 1", command)
+		self.assertEqual("/bin/true -l foo -p bar -a fence.example.com --plug 1", command)
 
 	def test_prepared_command_longopt(self):
 		(command, _) = fence_testing._prepare_command(self.DEVICE_CORRECT, "longopt")
-		self.assertEquals("/bin/true --username foo --password bar --ip fence.example.com --plug 1", command)
+		self.assertEqual("/bin/true --username foo --password bar --ip fence.example.com --plug 1", command)
 
 	def test_prepared_command_stdin(self):
 		(command, stdin) = fence_testing._prepare_command(self.DEVICE_CORRECT, "stdin")
-		self.assertEquals("/bin/true", command)
-		self.assertEquals("login=foo\npasswd=bar\nipaddr=fence.example.com\nport=1\n", stdin)
+		self.assertEqual("/bin/true", command)
+		self.assertEqual("login=foo\npasswd=bar\nipaddr=fence.example.com\nport=1\n", stdin)
 
 class TestTestAction(unittest.TestCase):
 	def test_valid_actions(self):

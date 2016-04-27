@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 import sys, re, os
 import atexit
@@ -35,7 +35,7 @@ def create_command(options, action):
 	cmd = options["--ipmitool-path"]
 
 	# --lanplus / -L
-	if options.has_key("--lanplus") and options["--lanplus"] in ["", "1"]:
+	if "--lanplus" in options and options["--lanplus"] in ["", "1"]:
 		cmd += " -I lanplus"
 	else:
 		cmd += " -I lan"
@@ -43,15 +43,15 @@ def create_command(options, action):
 	cmd += " -H " + options["--ip"]
 
 	# --username / -l
-	if options.has_key("--username") and len(options["--username"]) != 0:
+	if "--username" in options and len(options["--username"]) != 0:
 		cmd += " -U " + quote(options["--username"])
 
 	# --auth / -A
-	if options.has_key("--auth"):
+	if "--auth" in options:
 		cmd += " -A " + options["--auth"]
 
 	# --password / -p
-	if options.has_key("--password"):
+	if "--password" in options:
 		cmd += " -P " + quote(options["--password"])
 	else:
 		cmd += " -P ''"
@@ -61,17 +61,17 @@ def create_command(options, action):
 		cmd += " -C " + options["--cipher"]
 
 	# --port / -n
-	if options.has_key("--ipport"):
+	if "--ipport" in options:
 		cmd += " -p " + options["--ipport"]
 
-	if options.has_key("--privlvl"):
+	if "--privlvl" in options:
 		cmd += " -L " + options["--privlvl"]
 
 	# --action / -o
 	cmd += " chassis power " + action
 
 	# --use-sudo / -d
-	if options.has_key("--use-sudo"):
+	if "--use-sudo" in options:
 		cmd = options["--sudo-path"] + " " + cmd
 
 	return cmd

@@ -1,7 +1,7 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 import sys, re
-import pycurl, StringIO
+import pycurl, io
 import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
@@ -77,7 +77,7 @@ def get_list(conn, options):
 
 def send_command(opt, command, method="GET"):
 	## setup correct URL
-	if opt.has_key("--ssl") or opt.has_key("--ssl-secure") or opt.has_key("--ssl-insecure"):
+	if "--ssl" in opt or "--ssl-secure" in opt or "--ssl-insecure" in opt:
 		url = "https:"
 	else:
 		url = "http:"
@@ -86,24 +86,24 @@ def send_command(opt, command, method="GET"):
 
 	## send command through pycurl
 	conn = pycurl.Curl()
-	web_buffer = StringIO.StringIO()
+	web_buffer = io.StringIO()
 	conn.setopt(pycurl.URL, url)
 	conn.setopt(pycurl.HTTPHEADER, ["Content-type: application/xml", "Accept: application/xml", "Prefer: persistent-auth", "Filter: true"])
 
-	if opt.has_key("cookie"):
+	if "cookie" in opt:
 		conn.setopt(pycurl.COOKIE, opt["cookie"])
 	else:
 		conn.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_BASIC)
 		conn.setopt(pycurl.USERPWD, opt["--username"] + ":" + opt["--password"])
-		if opt.has_key("--use-cookies"):
+		if "--use-cookies" in opt:
 			conn.setopt(pycurl.COOKIEFILE, "")
 
 	conn.setopt(pycurl.TIMEOUT, int(opt["--shell-timeout"]))
-	if opt.has_key("--ssl") or opt.has_key("--ssl-secure"):
+	if "--ssl" in opt or "--ssl-secure" in opt:
 		conn.setopt(pycurl.SSL_VERIFYPEER, 1)
 		conn.setopt(pycurl.SSL_VERIFYHOST, 2)
 
-	if opt.has_key("--ssl-insecure"):
+	if "--ssl-insecure" in opt:
 		conn.setopt(pycurl.SSL_VERIFYPEER, 0)
 		conn.setopt(pycurl.SSL_VERIFYHOST, 0)
 
@@ -113,7 +113,7 @@ def send_command(opt, command, method="GET"):
 	conn.setopt(pycurl.WRITEFUNCTION, web_buffer.write)
 	conn.perform()
 
-	if not opt.has_key("cookie") and opt.has_key("--use-cookies"):
+	if "cookie" not in opt and "--use-cookies" in opt:
 		cookie = ""
 		for c in conn.getinfo(pycurl.INFO_COOKIELIST):
 			tokens = c.split("\t",7)

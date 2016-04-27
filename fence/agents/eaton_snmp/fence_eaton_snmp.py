@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 # The Following agent has been tested on:
 # - Eaton ePDU Managed - SNMP v1
@@ -77,7 +77,7 @@ def eaton_set_device(conn):
 	# First resolve type of Eaton
 	eaton_type = conn.walk(OID_SYS_OBJECT_ID)
 
-	if not ((len(eaton_type) == 1) and (agents_dir.has_key(eaton_type[0][1]))):
+	if not ((len(eaton_type) == 1) and (eaton_type[0][1] in agents_dir)):
 		eaton_type = [[None, None]]
 
 	device = agents_dir[eaton_type[0][1]]
@@ -215,7 +215,7 @@ def main():
 	# Plug indexing start from zero on ePDU Managed, so we substract '1' from
 	# the user's given plug number.
 	# For Switched ePDU, we will add this back again later.
-	if options.has_key("--plug") and options["--plug"].isdigit():
+	if "--plug" in options and options["--plug"].isdigit():
 		options["--plug"] = str(int(options["--plug"]) - 1)
 
 	docs = {}

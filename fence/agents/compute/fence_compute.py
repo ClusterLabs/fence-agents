@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 import sys
 import time
@@ -45,7 +45,7 @@ def get_power_status(_, options):
 					else:
 						logging.debug("Unknown status detected from nova: " + service.state)
 					break
-		except ConnectionError as (err):
+		except ConnectionError as err:
 			logging.warning("Nova connection failed: " + str(err))
 	return status
 
@@ -329,7 +329,7 @@ def main():
 		fail_usage("nova not found or not accessible")
 
 	# Potentially we should make this a pacemaker feature
-	if options["--action"] != "list" and options["--domain"] != "" and options.has_key("--plug"):
+	if options["--action"] != "list" and options["--domain"] != "" and "--plug" in options:
 		options["--plug"] = options["--plug"] + "." + options["--domain"]
 
 	if options["--record-only"] in [ "2", "Disabled", "disabled" ]:

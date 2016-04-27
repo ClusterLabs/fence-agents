@@ -67,12 +67,12 @@ class Test_set_default_values(unittest.TestCase):
 	def test_status_io(self):
 		options = self._prepare_options([])
 
-		self.assertEquals(options["--action"], "reboot")
+		self.assertEqual(options["--action"], "reboot")
 		self.assertIsNone(options.get("--not-exist", None))
 
 	def test_status_fabric(self):
 		options = self._prepare_options(["fabric_fencing"])
-		self.assertEquals(options["--action"], "off")
+		self.assertEqual(options["--action"], "off")
 
 	def test_ipport_nothing(self):
 		# should fail because connection method (telnet/ssh/...) is not set at all
@@ -80,40 +80,40 @@ class Test_set_default_values(unittest.TestCase):
 
 	def test_ipport_set(self):
 		options = self._prepare_options(["ipaddr", "telnet"], {"--ipport" : "999"})
-		self.assertEquals(options["--ipport"], "999")
+		self.assertEqual(options["--ipport"], "999")
 
 	def test_ipport_telnet(self):
 		options = self._prepare_options(["ipaddr", "telnet"])
-		self.assertEquals(options["--ipport"], "23")
+		self.assertEqual(options["--ipport"], "23")
 
 	def test_ipport_ssh(self):
 		options = self._prepare_options(["ipaddr", "secure"], {"--ssh" : "1"})
-		self.assertEquals(options["--ipport"], "22")
+		self.assertEqual(options["--ipport"], "22")
 
 	def test_ipport_sshtelnet_use_telnet(self):
 		options = self._prepare_options(["ipaddr", "secure", "telnet"])
-		self.assertEquals(options["--ipport"], "23")
+		self.assertEqual(options["--ipport"], "23")
 
 	def test_ipport_sshtelnet_use_ssh(self):
 		options = self._prepare_options(["ipaddr", "secure", "telnet"], {"--ssh" : "1"})
-		self.assertEquals(options["--ipport"], "22")
+		self.assertEqual(options["--ipport"], "22")
 
 	def test_ipport_ssl(self):
 		options = self._prepare_options(["ipaddr", "ssl"], {"--ssl-secure" : "1"})
-		self.assertEquals(options["--ipport"], "443")
+		self.assertEqual(options["--ipport"], "443")
 
 	def test_ipport_ssl_insecure_as_default(self):
 		fencing.all_opt["ssl_insecure"]["default"] = "1"
 		options = self._prepare_options(["ipaddr", "ssl"])
-		self.assertEquals(options["--ipport"], "443")
+		self.assertEqual(options["--ipport"], "443")
 
 	def test_ipport_snmp(self):
 		options = self._prepare_options(["ipaddr", "community"])
-		self.assertEquals(options["--ipport"], "161")
+		self.assertEqual(options["--ipport"], "161")
 
 	def test_ipport_web(self):
 		options = self._prepare_options(["ipaddr", "web", "ssl"])
-		self.assertEquals(options["--ipport"], "80")
+		self.assertEqual(options["--ipport"], "80")
 
 	def test_path_telnet(self):
 		options = self._prepare_options(["ipaddr", "telnet"])

@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 #
 # Fence agent for Intel AMT (WS) based on code from the openstack/ironic project:
@@ -128,7 +128,7 @@ def set_power_status(_, options):
     elif options["--action"] == "reboot":
         target_state = POWER_CYCLE
     if options["--action"] in ["on", "off", "reboot"] \
-       and options.has_key("--boot-option"):
+       and "--boot-option" in options:
         set_boot_order(_, client, options)
 
     doc = _generate_power_action_input(target_state)

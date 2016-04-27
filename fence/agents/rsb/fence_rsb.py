@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 import sys, re
 import atexit
@@ -47,7 +47,7 @@ def main():
 
 	opt = process_input(device_opt)
 
-	if not opt.has_key("--ssh") and not opt.has_key("--ipport"):
+	if "--ssh" not in opt and "--ipport" not in opt:
 		# set default value like it should be set as usually
 		all_opt["ipport"]["default"] = "3172"
 		opt["--ipport"] = all_opt["ipport"]["default"]

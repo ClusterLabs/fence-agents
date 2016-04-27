@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 #####
 ##
@@ -149,7 +149,7 @@ def get_plug_group_status(conn, options):
 
 	if ["list", "monitor"].count(options["--action"]) == 1:
 		results = {}
-		for group, status in outlets.items():
+		for group, status in list(outlets.items()):
 			results[group] = (group, status[0])
 
 		return results
@@ -163,8 +163,8 @@ def get_power_status(conn, options):
 		if ret == "PROBLEM":
 			ret = get_plug_group_status(conn, options)
 	else:
-		ret = dict(get_plug_status(conn, options).items() + \
-			get_plug_group_status(conn, options).items())
+		ret = dict(list(get_plug_status(conn, options).items()) + \
+			list(get_plug_group_status(conn, options).items()))
 
 	return ret
 
@@ -202,7 +202,7 @@ is running because the connection will block any necessary fencing actions."
 	##
 	## @note: if it possible that this device does not need either login, password or both of them
 	#####
-	if not options.has_key("--ssh"):
+	if "--ssh" not in options:
 		try:
 			if options["--action"] in ["off", "reboot"]:
 				time.sleep(int(options["--delay"]))
@@ -218,14 +218,14 @@ is running because the connection will block any necessary fencing actions."
 
 			result = conn.log_expect([re_login, "Password: ", re_prompt], int(options["--shell-timeout"]))
 			if result == 0:
-				if options.has_key("--username"):
+				if "--username" in options:
 					conn.send_eol(options["--username"])
 					result = conn.log_expect([re_login, "Password: ", re_prompt], int(options["--shell-timeout"]))
 				else:
 					fail_usage("Failed: You have to set login name")
 
 			if result == 1:
-				if options.has_key("--password"):
+				if "--password" in options:
 					conn.send_eol(options["--password"])
 					conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 				else:

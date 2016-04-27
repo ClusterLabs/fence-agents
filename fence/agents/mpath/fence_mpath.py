@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 import sys
 import stat
@@ -83,7 +83,7 @@ def set_status(conn, options):
 def run_cmd(options, cmd):
 	ret = {}
 
-	if options.has_key("--use-sudo"):
+	if "--use-sudo" in options:
 		prefix = options["--sudo-path"] + " "
 	else:
 		prefix = ""

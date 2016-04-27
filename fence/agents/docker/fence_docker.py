@@ -1,8 +1,8 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 import atexit
 import sys
-import StringIO
+import io
 import logging
 import pycurl
 import json
@@ -51,7 +51,7 @@ def get_list(conn, options):
 def send_cmd(options, cmd, post = False):
 	url = "http%s://%s:%s/v%s/%s" % ("s" if "--ssl" in options else "", options["--ip"], options["--ipport"], options["--api-version"], cmd)
 	conn = pycurl.Curl()
-	output_buffer = StringIO.StringIO()
+	output_buffer = io.StringIO()
 	if logging.getLogger().getEffectiveLevel() < logging.WARNING:
 		conn.setopt(pycurl.VERBOSE, True)
 	conn.setopt(pycurl.HTTPGET, 1)
@@ -136,7 +136,7 @@ TLS authentication.  Required if --ssl option is used.",
 		"help" : "--api-version                  "
 			"Version of Docker Remote API (default: 1.11)",
 		"required" : "0",
-		"order" : "2",
+		"order" : 2,
 		"default" : "1.11",
 	}
 

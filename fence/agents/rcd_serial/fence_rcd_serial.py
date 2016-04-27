@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 # Copyright 2015 Infoxchange, Danielle Madeley, Sam McLeod-Jones
 

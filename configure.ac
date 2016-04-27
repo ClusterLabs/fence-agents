@@ -153,6 +153,12 @@ LOGDIR=${localstatedir}/log/cluster
 CLUSTERVARRUN=${localstatedir}/run/cluster
 CLUSTERDATA=${datadir}/cluster
 
+AM_PATH_PYTHON
+if test -z "$PYTHON"; then
+    echo "*** Essential program python not found" 1>&2
+    exit 1
+fi
+
 AC_PYTHON_MODULE(suds, 1)
 AC_PYTHON_MODULE(pexpect, 1)
 AC_PYTHON_MODULE(pycurl, 1)

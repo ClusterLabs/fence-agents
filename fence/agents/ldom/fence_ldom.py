@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 ##
 ## The Following Agent Has Been Tested On - LDOM 1.0.3
@@ -7,7 +7,7 @@
 ##
 #####
 
-import sys, re, pexpect, exceptions
+import sys, re, pexpect
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
