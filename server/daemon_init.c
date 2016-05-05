@@ -29,14 +29,14 @@
 /*
  * This should ultimately go in a header file.
  */
-void daemon_init(const char *prog, int nofork);
+void daemon_init(const char *prog, const char *pid_file, int nofork);
 void daemon_cleanup(void);
-int check_process_running(const char *prog, pid_t * pid);
+int check_process_running(const char *cmd, const char *pid_file, pid_t * pid);
 
 /*
  * Local prototypes.
  */
-static void update_pidfile(const char *prog);
+static void update_pidfile(const char *filename);
 static int setup_sigmask(void);
 static char pid_filename[PATH_MAX];
 
@@ -99,12 +99,10 @@ check_pid_valid(pid_t pid, const char *prog)
 
 
 int
-check_process_running(const char *prog, pid_t * pid)
+check_process_running(const char *cmd, const char *filename, pid_t * pid)
 {
 	pid_t oldpid;
 	FILE *fp;
-	char filename[PATH_MAX];
-	char *cmd;
 	int ret;
 	struct stat st;
 
@@ -114,11 +112,6 @@ check_process_running(const char *prog, pid_t * pid)
 	 * Now see if there is a pidfile associated with this cmd in /var/run
 	 */
 	fp = NULL;
-	memset(filename, 0, PATH_MAX);
-
-	cmd = basename((char *)prog);
-	snprintf(filename, sizeof (filename), "/var/run/%s.pid", cmd);
-
 	ret = stat(filename, &st);
 	if ((ret < 0) || (!st.st_size))
 		return 0;
@@ -146,15 +139,11 @@ check_process_running(const char *prog, pid_t * pid)
 
 
 static void
-update_pidfile(const char *prog)
+update_pidfile(const char *filename)
 {
 	FILE *fp = NULL;
-	char *cmd;
 
-	memset(pid_filename, 0, PATH_MAX);
-
-	cmd = basename((char *)prog);
-	snprintf(pid_filename, sizeof (pid_filename), "/var/run/%s.pid", cmd);
+	strncpy(pid_filename, filename, PATH_MAX);
 
 	fp = fopen(pid_filename, "w");
 	if (fp == NULL) {
@@ -197,28 +186,16 @@ setup_sigmask(void)
 
 
 void
-daemon_init(const char *prog, int nofork)
+daemon_init(const char *prog, const char *pid_file, int nofork)
 {
-	uid_t uid;
 	pid_t pid;
 
-	uid = getuid();
-	if (uid) {
-		syslog(LOG_ERR,
-			"daemon_init: Sorry, only root wants to run this.\n");
-		exit(1);
-	}
-
-/* Prevents multiple instances of the daemon from running.
-    needs to be fixed by the devs.
-*/
-/*	if (check_process_running(prog, &pid) && (pid != getpid())) {
+	if (check_process_running(prog, pid_file, &pid) && (pid != getpid())) {
 		syslog(LOG_ERR,
 			"daemon_init: Process \"%s\" already running.\n",
 			prog);
 		exit(1);
 	}
-*/
 
 	if (setup_sigmask() < 0) {
 		syslog(LOG_ERR, "daemon_init: Unable to set signal mask.\n");
@@ -230,8 +207,7 @@ daemon_init(const char *prog, int nofork)
 		exit(1);
 	}
 
-/*	update_pidfile(prog); */
-
+	update_pidfile(pid_file);
 }
 
 

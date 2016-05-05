@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <sys/types.h>
+#include <sys/param.h>
 
 /* Local includes */
 #include <stdint.h>
@@ -16,7 +17,7 @@
 
 /* configure.c */
 int do_configure(config_object_t *config, const char *filename);
-int daemon_init(const char *prog, int nofork);
+int daemon_init(const char *prog, const char *pid_file, int nofork);
 int daemon_cleanup(void);
 
 
@@ -29,6 +30,8 @@ usage(void)
 	printf("  -d <level>       Set debugging level to <level>.\n");
 	printf("  -c               Configuration mode.\n");
 	printf("  -l               List plugins.\n");
+	printf("  -w               Wait for initialization.\n");
+	printf("  -p <file>        Use <file> to record the active process id.\n");
 }
 
 
@@ -47,6 +50,7 @@ main(int argc, char **argv)
 	char listener_name[80];
 	char backend_name[80];
 	const char *config_file = DEFAULT_CONFIG_FILE;
+	char *pid_file = NULL;
 	config_object_t *config = NULL;
 	map_object_t *map = NULL;
 	const listener_plugin_t *lp;
@@ -64,7 +68,7 @@ main(int argc, char **argv)
 		return -1;
 	}
 
-	while ((opt = getopt(argc, argv, "Ff:d:cwlh")) != EOF) {
+	while ((opt = getopt(argc, argv, "Ff:d:cwlhp:")) != EOF) {
 		switch(opt) {
 		case 'F':
 			printf("Background mode disabled\n");
@@ -73,6 +77,10 @@ main(int argc, char **argv)
 		case 'f':
 			printf("Using %s\n", optarg);
 			config_file = optarg;
+			break;
+		case 'p':
+			printf("Using %s\n", optarg);
+			pid_file = optarg;
 			break;
 		case 'd':
 			debug_set = atoi(optarg);
@@ -190,7 +198,13 @@ main(int argc, char **argv)
 		return 1;
 	}
 
-	daemon_init(basename(argv[0]), foreground);
+        if(pid_file == NULL) {
+            pid_file = malloc(PATH_MAX);
+            memset(pid_file, 0, PATH_MAX);
+            snprintf(pid_file, PATH_MAX, "/var/run/%s.pid", basename(argv[0]));
+        }
+        
+	daemon_init(basename(argv[0]), pid_file, foreground);
 	signal(SIGINT, exit_handler);
 	signal(SIGTERM, exit_handler);
 	signal(SIGQUIT, exit_handler);
