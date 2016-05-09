@@ -55,7 +55,7 @@
 	</parameter>
 	<parameter name="domain" unique="0" required="0">
 		<getopt mixed="-d, --domain=[string]" />
-		<content type="string" default=""  />
+		<content type="string"  />
 		<shortdesc lang="en">DNS domain in which hosts live</shortdesc>
 	</parameter>
 	<parameter name="instance-filtering" unique="0" required="0">
