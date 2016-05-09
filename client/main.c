@@ -119,7 +119,10 @@ main(int argc, char **argv)
 		return 0;
 	}
 
-	if (args.delay > 0)
+	if (args.delay > 0 &&
+	    args.op != FENCE_STATUS &&
+	    args.op != FENCE_DEVSTATUS &&
+	    args.op != FENCE_HOSTLIST)
 		sleep(args.delay);
 
 	switch(args.mode) {
