@@ -417,7 +417,7 @@ tcp_config(config_object_t *config, tcp_options *args)
 		return -1;
 	}
 
-	args->port = DEFAULT_TCP_PORT;
+	args->port = DEFAULT_MCAST_PORT;
 	if (sc_get(config, "listeners/tcp/@port",
 		   value, sizeof(value)-1) == 0) {
 		dbg_printf(1, "Got %s for port\n", value);
