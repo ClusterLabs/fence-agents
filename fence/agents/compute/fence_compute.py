@@ -228,21 +228,21 @@ def fix_domain(options):
 				# One hopes they don't appear interleaved as A.com B.com A.com B.com
 				logging.debug("Calculated the same domain from: %s" % hypervisor.hypervisor_hostname)
 
-			elif options.has_key("--domain") and options["--domain"] == calculated:
+			elif "--domain" in options and options["--domain"] == calculated:
 				# Supplied domain name is valid 
 				return
 
-			elif options.has_key("--domain"):
+			elif "--domain" in options:
 				# Warn in case nova isn't available at some point
 				logging.warning("Supplied domain '%s' does not match the one calculated from: %s"
 					      % (options["--domain"], hypervisor.hypervisor_hostname))
 
 			last_domain = calculated
 
-	if len(domains) == 0 and not options.has_key("--domain"):
+	if len(domains) == 0 and "--domain" not in options:
 		logging.error("Could not calculate the domain names used by compute nodes in nova")
 
-	elif len(domains) == 1 and not options.has_key("--domain"):
+	elif len(domains) == 1 and "--domain" not in options:
 		options["--domain"] = last_domain
 
 	elif len(domains) == 1:
@@ -259,14 +259,14 @@ def fix_plug_name(options):
 	if options["--action"] == "list":
 		return
 
-	if not options.has_key("--plug"):
+	if "--plug" not in options:
 		return
 
 	fix_domain(options)
 	short_plug = options["--plug"].split('.')[0]
 	logging.debug("Checking target '%s' against calculated domain '%s'"% (options["--plug"], calculated))
 
-	if not options.has_key("--domain"):
+	if "--domain" not in options:
 		# Nothing supplied and nova not available... what to do... nothing
 		return
 
