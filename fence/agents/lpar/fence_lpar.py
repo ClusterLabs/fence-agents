@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 #####
 ##
@@ -141,7 +141,7 @@ def main():
 	docs["vendorurl"] = "http://www.ibm.com"
 	show_docs(options, docs)
 
-	if not options.has_key("--managed"):
+	if "--managed" not in options:
 		fail_usage("Failed: You have to enter name of managed system")
 
 	if options["--action"] == "validate-all":

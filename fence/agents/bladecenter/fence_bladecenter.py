@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 #####
 ##
@@ -31,7 +31,7 @@ def get_power_status(conn, options):
 	i = conn.log_expect([node_cmd, "system>"], int(options["--shell-timeout"]))
 	if i == 1:
 		## Given blade number does not exist
-		if options.has_key("--missing-as-off"):
+		if "--missing-as-off" in options:
 			return "off"
 		else:
 			fail(EC_STATUS)
@@ -50,7 +50,7 @@ def set_power_status(conn, options):
 	i = conn.log_expect([node_cmd, "system>"], int(options["--shell-timeout"]))
 	if i == 1:
 		## Given blade number does not exist
-		if options.has_key("--missing-as-off"):
+		if "--missing-as-off" in options:
 			return
 		else:
 			fail(EC_GENERIC_ERROR)

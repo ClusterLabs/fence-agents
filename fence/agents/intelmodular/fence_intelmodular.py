@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 # Tested with an Intel MFSYS25 using firmware package 2.6 Should work with an
 # MFSYS35 as well.

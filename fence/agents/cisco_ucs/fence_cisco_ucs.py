@@ -1,7 +1,7 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 import sys, re
-import pycurl, StringIO
+import pycurl, io
 import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
@@ -17,7 +17,9 @@ BUILD_DATE="March, 2008"
 RE_COOKIE = re.compile("<aaaLogin .* outCookie=\"(.*?)\"", re.IGNORECASE)
 RE_STATUS = re.compile("<lsPower .*? state=\"(.*?)\"", re.IGNORECASE)
 RE_GET_DN = re.compile(" dn=\"(.*?)\"", re.IGNORECASE)
+RE_GET_PNDN = re.compile(" pndn=\"(.*?)\"", re.IGNORECASE)
 RE_GET_DESC = re.compile(" descr=\"(.*?)\"", re.IGNORECASE)
+RE_GET_PRESENCE = re.compile(" presence=\"(.*?)\"", re.IGNORECASE)
 
 options_global = None
 
@@ -26,18 +28,34 @@ def get_power_status(conn, options):
 
 	res = send_command(options, "<configResolveDn cookie=\"" + options["cookie"] +
 			"\" inHierarchical=\"false\" dn=\"org-root" + options["--suborg"] + "/ls-" +
-			options["--plug"] + "/power\"/>", int(options["--shell-timeout"]))
+			options["--plug"] + "\"/>", int(options["--shell-timeout"]))
 
-	result = RE_STATUS.search(res)
+	result = RE_GET_PNDN.search(res)
+	if result == None:
+		pndn = ""
+	else:
+		pndn = result.group(1)
+
+	if pndn.strip() == "":
+		if "--missing-as-off" in options:
+			return "off"
+		else:
+			fail(EC_STATUS)
+
+	res = send_command(options, "<configResolveDn cookie=\"" + options["cookie"] +
+			"\" inHierarchical=\"false\" dn=\"" + pndn +
+			"\"/>", int(options["--shell-timeout"]))
+
+	result = RE_GET_PRESENCE.search(res)
 	if result == None:
 		fail(EC_STATUS)
 	else:
 		status = result.group(1)
 
-	if status == "up":
-		return "on"
-	else:
+	if status in ["missing", "mismatch"]:
 		return "off"
+	else:
+		return "on"
 
 def set_power_status(conn, options):
 	del conn
@@ -86,17 +104,17 @@ def send_command(opt, command, timeout):
 
 	## send command through pycurl
 	conn = pycurl.Curl()
-	web_buffer = StringIO.StringIO()
+	web_buffer = io.StringIO()
 	conn.setopt(pycurl.URL, url)
 	conn.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
 	conn.setopt(pycurl.POSTFIELDS, command)
 	conn.setopt(pycurl.WRITEFUNCTION, web_buffer.write)
 	conn.setopt(pycurl.TIMEOUT, timeout)
-	if opt.has_key("--ssl") or opt.has_key("--ssl-secure"):
+	if "--ssl" in opt or "--ssl-secure" in opt:
 		conn.setopt(pycurl.SSL_VERIFYPEER, 1)
 		conn.setopt(pycurl.SSL_VERIFYHOST, 2)
 
-	if opt.has_key("--ssl-insecure"):
+	if "--ssl-insecure" in opt:
 		conn.setopt(pycurl.SSL_VERIFYPEER, 0)
 		conn.setopt(pycurl.SSL_VERIFYHOST, 0)
 	conn.perform()
@@ -127,7 +145,7 @@ def logout():
 
 def main():
 	global options_global
-	device_opt = ["ipaddr", "login", "passwd", "ssl", "notls", "port", "web", "suborg"]
+	device_opt = ["ipaddr", "login", "passwd", "ssl", "notls", "port", "web", "suborg", "missing_as_off"]
 
 	atexit.register(atexit_handler)
 	atexit.register(logout)

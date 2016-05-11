@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 # The Following agent has been tested on:
 #   IBM iPDU model 46M4002
@@ -8,7 +8,7 @@
 import sys
 import atexit
 import logging
-sys.path.append("/usr/share/fence")
+sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail_usage
 from fencing_snmp import FencingSnmp
@@ -55,7 +55,7 @@ def ipdu_set_device(conn, options):
 	# First resolve type of PDU device
 	pdu_type = conn.walk(OID_SYS_OBJECT_ID)
 
-	if not ((len(pdu_type) == 1) and (agents_dir.has_key(pdu_type[0][1]))):
+	if not ((len(pdu_type) == 1) and (pdu_type[0][1] in agents_dir)):
 		pdu_type = [[None, None]]
 
 	device = agents_dir[pdu_type[0][1]]

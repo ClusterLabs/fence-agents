@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 # This agent uses Proxmox VE API
 # Thanks to Frank Brendel (author of original perl fence_pve)
@@ -7,12 +7,14 @@
 import sys
 import json
 import pycurl
-import StringIO
-import urllib
+import io
 import atexit
 import logging
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import fail, EC_LOGIN_DENIED, atexit_handler, all_opt, check_input, process_input, show_docs, fence_action, run_delay
+
+if sys.version_info.major > 2: import urllib.parse as urllib
+else: import urllib
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION=""
@@ -94,7 +96,7 @@ def get_ticket(options):
 def send_cmd(options, cmd, post=None):
 	url = options["url"] + cmd
 	conn = pycurl.Curl()
-	output_buffer = StringIO.StringIO()
+	output_buffer = io.StringIO()
 	if logging.getLogger().getEffectiveLevel() < logging.WARNING:
 		conn.setopt(pycurl.VERBOSE, True)
 	conn.setopt(pycurl.HTTPGET, 1)
@@ -103,10 +105,13 @@ def send_cmd(options, cmd, post=None):
 		conn.setopt(pycurl.COOKIE, options["auth"]["ticket"])
 		conn.setopt(pycurl.HTTPHEADER, [options["auth"]["CSRF_token"]])
 	if post is not None:
-		conn.setopt(pycurl.POSTFIELDS, urllib.urlencode(post))
+    	if "skiplock" in post:
+        	conn.setopt(conn.CUSTOMREQUEST, 'POST')
+    	else:
+        	conn.setopt(pycurl.POSTFIELDS, urllib.urlencode(post))
 	conn.setopt(pycurl.WRITEFUNCTION, output_buffer.write)
 	conn.setopt(pycurl.TIMEOUT, int(options["--shell-timeout"]))
-	if options.has_key("--ssl") or options.has_key("--ssl-secure"):
+	if "--ssl" in options or "--ssl-secure" in options:
 		conn.setopt(pycurl.SSL_VERIFYPEER, 1)
 		conn.setopt(pycurl.SSL_VERIFYHOST, 2)
 	else:

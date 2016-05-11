@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 import sys, re
 import atexit
@@ -46,7 +46,6 @@ def main():
 
 	all_opt["cmd_prompt"]["default"] = ["MP>", "hpiLO->"]
 	all_opt["power_wait"]["default"] = 5
-	all_opt["method"]["default"] = "onoff"
 
 	options = check_input(device_opt, process_input(device_opt))
 

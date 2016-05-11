@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 #####
 ##
@@ -113,7 +113,7 @@ the iLO card through an XML stream."
 
 	try:
 		version = re.compile("<RIBCL VERSION=\"(.*?)\"", re.IGNORECASE).search(conn.before).group(1)
-		if not options.has_key("--ribcl-version"):
+		if "--ribcl-version" not in options:
 			options["--ribcl-version"] = float(version)
 
 		if options["--ribcl-version"] >= 2:

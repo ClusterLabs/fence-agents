@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 # For example of use please see fence_cisco_mds
 
@@ -39,11 +39,11 @@ class FencingSnmp:
 			res = True
 
 			for item in e:
-				if item[0] == '!' and self.options.has_key("--" + item[1:]):
+				if item[0] == '!' and "--" + item[1:] in self.options:
 					res = False
 					break
 
-				if item[0] != '!' and not self.options.has_key("--" + item[0:]):
+				if item[0] != '!' and "--" + item[0:] not in self.options:
 					res = False
 					break
 
@@ -59,28 +59,28 @@ class FencingSnmp:
 		mapping = (('snmp-version', 'v'), ('community', 'c'))
 
 		for item in mapping:
-			if self.options.has_key("--" + item[0]):
+			if "--" + item[0] in self.options:
 				cmd += " -%s '%s'"% (item[1], self.quote_for_run(self.options["--" + item[0]]))
 
 		# Some options make sense only for v3 (and for v1/2c can cause "problems")
-		if (self.options.has_key("--snmp-version")) and (self.options["--snmp-version"] == "3"):
+		if ("--snmp-version" in self.options) and (self.options["--snmp-version"] == "3"):
 			# Mapping from our options to snmpcmd options for v3
 			mapping_v3 = (('snmp-auth-prot', 'a'), ('snmp-sec-level', 'l'), ('snmp-priv-prot', 'x'), \
 				('snmp-priv-passwd', 'X'), ('password', 'A'), ('username', 'u'))
 			for item in mapping_v3:
-				if self.options.has_key("--"+item[0]):
+				if "--"+item[0] in self.options:
 					cmd += " -%s '%s'"% (item[1], self.quote_for_run(self.options["--" + item[0]]))
 
 		force_ipvx = ""
 
-		if self.options.has_key("--inet6-only"):
+		if "--inet6-only" in self.options:
 			force_ipvx = "udp6:"
 
-		if self.options.has_key("--inet4-only"):
+		if "--inet4-only" in self.options:
 			force_ipvx = "udp:"
 
 		cmd += " '%s%s%s'"% (force_ipvx, self.quote_for_run(self.options["--ip"]),
-				self.options.has_key("--ipport") and self.quote_for_run(":" + str(self.options["--ipport"])) or "")
+				"--ipport" in self.options and self.quote_for_run(":" + str(self.options["--ipport"])) or "")
 		return cmd
 
 	def run_command(self, command, additional_timemout=0):

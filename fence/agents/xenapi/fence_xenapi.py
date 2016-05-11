@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 #
 #############################################################################
 # Copyright 2011 Matthew Clark
@@ -47,7 +47,7 @@ BUILD_DATE=""
 EC_BAD_SESSION = 1
 # Find the status of the port given in the -U flag of options.
 def get_power_fn(session, options):
-	if options.has_key("--verbose"):
+	if "--verbose" in options:
 		verbose = True
 	else:
 		verbose = False
@@ -62,7 +62,7 @@ def get_power_fn(session, options):
 		if not record["is_a_template"] and not record["is_control_domain"]:
 			status = record["power_state"]
 			if verbose:
-				print "UUID:", record["uuid"], "NAME:", record["name_label"], "POWER STATUS:", record["power_state"]
+				print("UUID:", record["uuid"], "NAME:", record["name_label"], "POWER STATUS:", record["power_state"])
 			# Note that the VM can be in the following states (from the XenAPI document)
 			# Halted: VM is offline and not using any resources.
 			# Paused: All resources have been allocated but the VM itself is paused and its vCPUs are not running
@@ -72,8 +72,8 @@ def get_power_fn(session, options):
 			# is checked before a fencing action. Only when the machine is Halted is it not consuming resources which
 			# may include whatever you are trying to protect with this fencing action.
 			return status == "Halted" and "off" or "on"
-	except Exception, exn:
-		print str(exn)
+	except Exception as exn:
+		print(str(exn))
 
 	return "Error"
 
@@ -96,13 +96,13 @@ def set_power_fn(session, options):
 			elif options["--action"] == "reboot":
 				# Force reboot the VM
 				session.xenapi.VM.hard_reboot(vm)
-	except Exception, exn:
-		print str(exn)
+	except Exception as exn:
+		print(str(exn))
 
 # Function to populate an array of virtual machines and their status
 def get_outlet_list(session, options):
 	result = {}
-	if options.has_key("--verbose"):
+	if "--verbose" in options:
 		verbose = True
 	else:
 		verbose = False
@@ -121,9 +121,9 @@ def get_outlet_list(session, options):
 				status = record["power_state"]
 				result[uuid] = (name, status)
 				if verbose:
-					print "UUID:", record["uuid"], "NAME:", name, "POWER STATUS:", record["power_state"]
-	except Exception, exn:
-		print str(exn)
+					print("UUID:", record["uuid"], "NAME:", name, "POWER STATUS:", record["power_state"])
+	except Exception as exn:
+		print(str(exn))
 
 	return result
 
@@ -138,8 +138,8 @@ def connect_and_login(options):
 		session = XenAPI.Session(url)
 		# Login using the supplied credentials.
 		session.xenapi.login_with_password(username, password)
-	except Exception, exn:
-		print str(exn)
+	except Exception as exn:
+		print(str(exn))
 		# http://sources.redhat.com/cluster/wiki/FenceAgentAPI says that for no connectivity
 		# the exit value should be 1. It doesn't say anything about failed logins, so
 		# until I hear otherwise it is best to keep this exit the same to make sure that
@@ -152,13 +152,13 @@ def connect_and_login(options):
 # this is tried first as this is the only properly unique identifier.
 # Exceptions are not handled in this function, code that calls this must be ready to handle them.
 def return_vm_reference(session, options):
-	if options.has_key("--verbose"):
+	if "--verbose" in options:
 		verbose = True
 	else:
 		verbose = False
 
 	# Case where the UUID has been specified
-	if options.has_key("--uuid"):
+	if "--uuid" in options:
 		uuid = options["--uuid"].lower()
 		# When using the -n parameter for name, we get an error message (in verbose
 		# mode) that tells us that we didn't find a VM. To immitate that here we
@@ -167,11 +167,11 @@ def return_vm_reference(session, options):
 			return session.xenapi.VM.get_by_uuid(uuid)
 		except Exception:
 			if verbose:
-				print "No VM's found with a UUID of \"%s\"" % uuid
+				print("No VM's found with a UUID of \"%s\"" % uuid)
 			raise
 
 	# Case where the vm_name/port has been specified
-	if options.has_key("--plug"):
+	if "--plug" in options:
 		vm_name = options["--plug"]
 		vm_arr = session.xenapi.VM.get_by_name_label(vm_name)
 		# Need to make sure that we only have one result as the vm_name may
@@ -181,14 +181,14 @@ def return_vm_reference(session, options):
 		else:
 			if len(vm_arr) == 0:
 				if verbose:
-					print "No VM's found with a name of \"%s\"" % vm_name
+					print("No VM's found with a name of \"%s\"" % vm_name)
 				# NAME_INVALID used as the XenAPI throws a UUID_INVALID if it can't find
 				# a VM with the specified UUID. This should make the output look fairly
 				# consistent.
 				raise Exception("NAME_INVALID")
 			else:
 				if verbose:
-					print "Multiple VM's have the name \"%s\", use UUID instead" % vm_name
+					print("Multiple VM's have the name \"%s\", use UUID instead" % vm_name)
 				raise Exception("MULTIPLE_VMS_FOUND")
 
 	# We should never get to this case as the input processing checks that either the UUID or

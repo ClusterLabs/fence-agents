@@ -16,8 +16,8 @@ def main():
 	available = {}
 
 	## all_opt from fencing library are imported
-	for k in all_opt.keys():
-		if all_opt[k].has_key("longopt"):
+	for k in list(all_opt.keys()):
+		if "longopt" in all_opt[k]:
 			available["--" + all_opt[k]["longopt"]] = True
 
 	## add UUID which is derived automatically from --plug if possible
@@ -47,13 +47,13 @@ def main():
 		counter += 1
 
 		for option in option_use_re.findall(line):
-			if not available.has_key(option):
-				print "ERROR on line %d in %s: option %s is not defined" % (counter, agent, option_use_re.search(line).group(1))
+			if option not in available:
+				print("ERROR on line %d in %s: option %s is not defined" % (counter, agent, option_use_re.search(line).group(1)))
 				without_errors = False
 
 		for option in option_has_re.findall(line):
-			if not available.has_key(option):
-				print "ERROR on line %d in %s: option %s is not defined" % (counter, agent, option_has_re.search(line).group(1))
+			if option not in available:
+				print("ERROR on line %d in %s: option %s is not defined" % (counter, agent, option_has_re.search(line).group(1)))
 				without_errors = False
 
 	if without_errors:

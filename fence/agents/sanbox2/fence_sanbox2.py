@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 #####
 ##
@@ -8,7 +8,7 @@
 ## +-----------------+---------------------------+
 #####
 
-import sys, re, pexpect, exceptions
+import sys, re, pexpect
 import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
@@ -146,7 +146,7 @@ because the connection will block any necessary fencing actions."
 		conn.send_eol("admin end")
 		conn.send_eol("exit\n")
 		conn.close()
-	except exceptions.OSError:
+	except OSError:
 		pass
 	except pexpect.ExceptionPexpect:
 		pass

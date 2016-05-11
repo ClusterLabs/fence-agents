@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 # Copyright 2015 Infoxchange, Danielle Madeley, Sam McLeod-Jones
 
@@ -78,6 +78,7 @@ def main():
 
 	all_opt["method"]["default"] = "cycle"
 	all_opt["power_wait"]["default"] = "2"
+	all_opt["method"]["help"] = "-m, --method=[method]          Method to fence (onoff|cycle) (Default: cycle)"
 
 	options = check_input(device_opt, process_input(device_opt))
 

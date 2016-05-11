@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 #####
 ##
@@ -88,7 +88,7 @@ def get_list_devices(conn, options):
 		## standard fence library can't handle correctly situation
 		## when some fence devices supported by fence agent
 		## works with 'list' and other should returns 'N/A'
-		print "N/A"
+		print("N/A")
 
 	return outlets
 
@@ -129,7 +129,7 @@ By default, the telnet interface is not  enabled."
 	######
 	conn = fence_login(options)
 
-	if not options.has_key("--drac-version"):
+	if "--drac-version" not in options:
 		## autodetect from text issued by fence device
 		if conn.before.find("CMC") >= 0:
 			options["--drac-version"] = "DRAC CMC"
@@ -142,7 +142,7 @@ By default, the telnet interface is not  enabled."
 			options["--drac-version"] = "DRAC 5"
 
 	if options["--drac-version"] in ["DRAC MC", "DRAC CMC"]:
-		if not options.has_key("--plug") and 0 == ["monitor", "list"].count(options["--action"]):
+		if "--plug" not in options and 0 == ["monitor", "list"].count(options["--action"]):
 			fail_usage("Failed: You have to enter module name (-n)")
 
 	result = fence_action(conn, options, set_power_status, get_power_status, get_list_devices)

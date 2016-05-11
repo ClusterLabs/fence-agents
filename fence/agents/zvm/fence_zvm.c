@@ -843,7 +843,7 @@ get_options(int argc, char **argv, zvm_driver_t *zvm)
 static int
 usage()
 {
-	fprintf(stderr,"Usage: fence_zvm [options]\n\n"
+	printf("Usage: fence_zvm [options]\n\n"
 		"\tWhere [options] =\n"
 		"\t-o --action [action] - \"off\", \"on\", \"list\", \"metadata\", "
 					 "\"monitor\", \"reboot\", \"status\"\n"
@@ -853,7 +853,7 @@ usage()
 		"\t-T --timeout [secs]  - Time to wait for fence in seconds - currently ignored\n"
 		"\t--zvmsys [node]      - z/VM Node on which SMAPI server lives\n"
 		"\t-h --help            - Display this usage information\n");
-	return(1);
+	return(0);
 }
 
 /**

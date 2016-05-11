@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 import sys, stat
 import logging
@@ -239,7 +239,7 @@ def get_power_status(conn, options):
 
     # We need to check if the specified plug / node a already a allocated slot
     # on the device.
-    if not nodelist.has_key(plug):
+    if plug not in nodelist:
         logging.error("node \"%s\" not found in node list", plug)
     else:
         status = nodelist[plug][1]
@@ -373,7 +373,7 @@ which can be used in environments where sbd can be used (shared storage)."
     show_docs(options, docs)
 
     # We need to check if --devices is given and not empty.
-    if not options.has_key("--devices"):
+    if "--devices" not in options:
         fail_usage("No SBD devices specified. \
                 At least one SBD device is required.")
 

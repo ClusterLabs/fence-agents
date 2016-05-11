@@ -4,7 +4,7 @@ TARGET			= fence_zvmip
 
 SRC			= $(TARGET).py
 
-EXTRA_DIST		= $(SRC)
+EXTRA_DIST		= $(SRC) fence_zvm_man_page
 
 sbin_SCRIPTS		= $(TARGET)
 
@@ -12,10 +12,12 @@ sbin_PROGRAMS           = fence_zvm
 fence_zvm_SOURCES	= fence_zvm.c
 fence_zvm_CFLAGS	= -D_GNU_SOURCE
 
+noinst_HEADERS		= fence_zvm.h
+
 man_MANS		= $(TARGET).8 fence_zvm.8
 
 fence_zvm.8: fence_zvm_man_page
-	cp fence_zvm_man_page fence_zvm.8
+	cp $(top_srcdir)/fence/agents/zvm/fence_zvm_man_page fence_zvm.8
 
 FENCE_TEST_ARGS         = -l test -p test -a test -n 1
 

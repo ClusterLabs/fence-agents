@@ -1,27 +1,51 @@
 <?xml version="1.0" ?>
-<resource-agent name="fence_compute" shortdesc="Fence agent for the automatic resurrection of OpenStack compute instances" >
-<longdesc>Used to tell Nova that compute nodes are down and to reschedule flagged instances</longdesc>
-<vendor-url></vendor-url>
+<resource-agent name="fence_amt_ws" shortdesc="Fence agent for AMT (WS)" >
+<longdesc>fence_amt_ws is an I/O Fencing agent which can be used with Intel AMT (WS). This agent requires the pywsman Python library which is included in OpenWSMAN. (http://openwsman.github.io/).</longdesc>
+<vendor-url>http://www.intel.com/</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
 		<getopt mixed="-o, --action=[action]" />
-		<content type="string" default="off"  />
+		<content type="string" default="reboot"  />
 		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
-	<parameter name="auth-url" unique="0" required="0">
-		<getopt mixed="-k, --auth-url=[tenant]" />
-		<content type="string" default=""  />
-		<shortdesc lang="en">Keystone Admin Auth URL</shortdesc>
+	<parameter name="boot_option" unique="0" required="0">
+		<getopt mixed="-b, --boot-option=[option]" />
+		<content type="select"  >
+			<option value="pxe" />
+			<option value="hd" />
+			<option value="hdsafe" />
+			<option value="cd" />
+			<option value="diag" />
+		</content>
+		<shortdesc lang="en">Change the default boot behavior of the machine.</shortdesc>
 	</parameter>
-	<parameter name="endpoint-type" unique="0" required="0">
-		<getopt mixed="-e, --endpoint-type=[endpoint]" />
-		<content type="string" default="internalURL"  />
-		<shortdesc lang="en">Nova Endpoint type</shortdesc>
+	<parameter name="inet4_only" unique="0" required="0">
+		<getopt mixed="-4, --inet4-only" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Forces agent to use IPv4 addresses only</shortdesc>
 	</parameter>
-	<parameter name="login" unique="0" required="0">
-		<getopt mixed="-l, --username=[name]" />
+	<parameter name="inet6_only" unique="0" required="0">
+		<getopt mixed="-6, --inet6-only" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Forces agent to use IPv6 addresses only</shortdesc>
+	</parameter>
+	<parameter name="ipaddr" unique="0" required="0">
+		<getopt mixed="-a, --ip=[ip]" />
 		<content type="string"  />
-		<shortdesc lang="en">Login name</shortdesc>
+		<shortdesc lang="en">IP address or hostname of fencing device</shortdesc>
+	</parameter>
+	<parameter name="ipport" unique="0" required="0">
+		<getopt mixed="-u, --ipport=[port]" />
+		<content type="string" default="16992"  />
+		<shortdesc lang="en">TCP/UDP port to use for connection with device</shortdesc>
+	</parameter>
+	<parameter name="method" unique="0" required="0">
+		<getopt mixed="-m, --method=[method]" />
+		<content type="select" default="onoff"  >
+			<option value="onoff" />
+			<option value="cycle" />
+		</content>
+		<shortdesc lang="en">Method to fence</shortdesc>
 	</parameter>
 	<parameter name="passwd" unique="0" required="0">
 		<getopt mixed="-p, --password=[password]" />
@@ -33,45 +57,10 @@
 		<content type="string"  />
 		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
 	</parameter>
-	<parameter name="port" unique="0" required="1">
-		<getopt mixed="-n, --plug=[id]" />
+	<parameter name="port" unique="0" required="0">
+		<getopt mixed="-n, --plug=[ip]" />
 		<content type="string"  />
-		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
-	</parameter>
-	<parameter name="region-name" unique="0" required="0">
-		<getopt mixed="--region-name=[region]" />
-		<content type="boolean" default=""  />
-		<shortdesc lang="en">Region Name</shortdesc>
-	</parameter>
-	<parameter name="tenant-name" unique="0" required="0">
-		<getopt mixed="-t, --tenant-name=[tenant]" />
-		<content type="string" default=""  />
-		<shortdesc lang="en">Keystone Admin Tenant</shortdesc>
-	</parameter>
-	<parameter name="insecure" unique="0" required="0">
-		<getopt mixed="--insecure" />
-		<content type="boolean" default="False"  />
-		<shortdesc lang="en">Allow Insecure TLS Requests</shortdesc>
-	</parameter>
-	<parameter name="domain" unique="0" required="0">
-		<getopt mixed="-d, --domain=[string]" />
-		<content type="string"  />
-		<shortdesc lang="en">DNS domain in which hosts live</shortdesc>
-	</parameter>
-	<parameter name="instance-filtering" unique="0" required="0">
-		<getopt mixed="--instance-filtering" />
-		<content type="boolean" default="True"  />
-		<shortdesc lang="en">Allow instances to be evacuated</shortdesc>
-	</parameter>
-	<parameter name="no-shared-storage" unique="0" required="0">
-		<getopt mixed="--no-shared-storage" />
-		<content type="boolean" default="False"  />
-		<shortdesc lang="en">Disable functionality for dealing with shared storage</shortdesc>
-	</parameter>
-	<parameter name="record-only" unique="0" required="0">
-		<getopt mixed="--record-only" />
-		<content type="string" default="False"  />
-		<shortdesc lang="en">Only record the target as needing evacuation</shortdesc>
+		<shortdesc lang="en">IP address or hostname of fencing device (together with --port-as-ip)</shortdesc>
 	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
@@ -93,11 +82,6 @@
 		<content type="boolean"  />
 		<shortdesc lang="en">Display help and exit</shortdesc>
 	</parameter>
-	<parameter name="separator" unique="0" required="0">
-		<getopt mixed="-C, --separator=[char]" />
-		<content type="string" default=","  />
-		<shortdesc lang="en">Separator for CSV created by 'list' operation</shortdesc>
-	</parameter>
 	<parameter name="delay" unique="0" required="0">
 		<getopt mixed="--delay=[seconds]" />
 		<content type="string" default="0"  />
@@ -107,6 +91,11 @@
 		<getopt mixed="--login-timeout=[seconds]" />
 		<content type="string" default="5"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
+	</parameter>
+	<parameter name="port_as_ip" unique="0" required="0">
+		<getopt mixed="--port-as-ip" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Make "port/plug" to be an alias to IP address</shortdesc>
 	</parameter>
 	<parameter name="power_timeout" unique="0" required="0">
 		<getopt mixed="--power-timeout=[seconds]" />
@@ -120,7 +109,7 @@
 	</parameter>
 	<parameter name="shell_timeout" unique="0" required="0">
 		<getopt mixed="--shell-timeout=[seconds]" />
-		<content type="string" default="180"  />
+		<content type="string" default="3"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
 	</parameter>
 	<parameter name="retry_on" unique="0" required="0">
@@ -130,11 +119,10 @@
 	</parameter>
 </parameters>
 <actions>
-	<action name="on" on_target="1" automatic="1"/>
+	<action name="on" automatic="0"/>
 	<action name="off" />
+	<action name="reboot" />
 	<action name="status" />
-	<action name="list" />
-	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
 	<action name="validate-all" />

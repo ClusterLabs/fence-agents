@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 #####
 ##
@@ -8,7 +8,7 @@
 #####
 
 import sys, re
-import pexpect, exceptions
+import pexpect
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
@@ -61,7 +61,7 @@ def get_power_status(conn, options):
 				status = res.group(1)
 
 	if status == "unknown":
-		if options.has_key("--missing-as-off"):
+		if "--missing-as-off" in options:
 			return "off"
 		else:
 			fail(EC_STATUS)
