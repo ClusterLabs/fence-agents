@@ -4,6 +4,7 @@ $(TARGET): $(SRC)
 		$(VERSION) \
 		$(abs_srcdir) $@ | \
 	sed \
+		-e 's#@''PYTHON@#${PYTHON}#g' \
 		-e 's#@''FENCEAGENTSLIBDIR@#${FENCEAGENTSLIBDIR}#g' \
 		-e 's#@''LOGDIR@#${LOGDIR}#g' \
 		-e 's#@''SBINDIR@#${sbindir}#g' \

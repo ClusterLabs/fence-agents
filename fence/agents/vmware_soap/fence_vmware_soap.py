@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 import sys
 import shutil, tempfile, suds
@@ -40,8 +40,8 @@ class RequestsTransport(HttpAuthenticated):
 def soap_login(options):
 	run_delay(options)
 
-	if options.has_key("--ssl") or options.has_key("--ssl-secure") or options.has_key("--ssl-insecure"):
-		if options.has_key("--ssl-insecure"):
+	if "--ssl" in options or "--ssl-secure" in options or "--ssl-insecure" in options:
+		if "--ssl-insecure" in options:
 			verify = False
 		else:
 			verify = True
@@ -67,7 +67,7 @@ def soap_login(options):
 		mo_SessionManager._type = 'SessionManager'
 
 		conn.service.Login(mo_SessionManager, options["--username"], options["--password"])
-	except requests.exceptions.SSLError, ex:
+	except requests.exceptions.SSLError as ex:
 		fail_usage("Server side certificate verification failed")
 	except Exception:
 		fail(EC_LOGIN_DENIED)
@@ -83,7 +83,7 @@ def process_results(results, machines, uuid, mappingToUUID):
 			info[i.name] = i.val
 		# Prevent error KeyError: 'config.uuid' when reaching systems which P2V failed,
 		# since these systems don't have a valid UUID
-		if info.has_key("config.uuid"):
+		if "config.uuid" in info:
 			machines[info["name"]] = (info["config.uuid"], info["summary.runtime.powerState"])
 			uuid[info["config.uuid"]] = info["summary.runtime.powerState"]
 			mappingToUUID[m.obj.value] = info["config.uuid"]
@@ -143,13 +143,13 @@ def get_power_status(conn, options):
 		uuid.update(more_uuid)
 		mappingToUUID.update(more_mappingToUUID)
 		# Do not run unnecessary SOAP requests
-		if options.has_key("--uuid") and options["--uuid"] in uuid:
+		if "--uuid" in options and options["--uuid"] in uuid:
 			break
 
 	if ["list", "monitor"].count(options["--action"]) == 1:
 		return machines
 	else:
-		if not options.has_key("--uuid"):
+		if "--uuid" not in options:
 			if options["--plug"].startswith('/'):
 				## Transform InventoryPath to UUID
 				mo_SearchIndex = Property(options["ServiceContent"].searchIndex.value)
@@ -194,7 +194,7 @@ def set_power_status(conn, options):
 			conn.service.PowerOnVM_Task(mo_machine)
 		else:
 			conn.service.PowerOffVM_Task(mo_machine)
-	except suds.WebFault, ex:
+	except suds.WebFault as ex:
 		if (str(ex).find("Permission to perform this operation was denied")) >= 0:
 			fail(EC_INVALID_PRIVILEGES)
 		else:

@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 # The Following agent has been tested on:
 # - Cisco MDS UROS 9134 FC (1 Slot) Chassis ("1/2/4 10 Gbps FC/Supervisor-2") Motorola, e500v2
@@ -64,7 +64,7 @@ def get_outlets_status(conn, options):
 			port_num = x[0].split('.')[-1]
 
 			port_name = x[1].strip('"')
-			port_alias = (res_aliases.has_key(port_num) and res_aliases[port_num].strip('"') or "")
+			port_alias = (port_num in res_aliases and res_aliases[port_num].strip('"') or "")
 			port_status = ""
 			result[port_name] = (port_alias, port_status)
 

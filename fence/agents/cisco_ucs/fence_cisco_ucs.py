@@ -1,7 +1,7 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 import sys, re
-import pycurl, StringIO
+import pycurl, io
 import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
@@ -104,17 +104,17 @@ def send_command(opt, command, timeout):
 
 	## send command through pycurl
 	conn = pycurl.Curl()
-	web_buffer = StringIO.StringIO()
+	web_buffer = io.StringIO()
 	conn.setopt(pycurl.URL, url)
 	conn.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
 	conn.setopt(pycurl.POSTFIELDS, command)
 	conn.setopt(pycurl.WRITEFUNCTION, web_buffer.write)
 	conn.setopt(pycurl.TIMEOUT, timeout)
-	if opt.has_key("--ssl") or opt.has_key("--ssl-secure"):
+	if "--ssl" in opt or "--ssl-secure" in opt:
 		conn.setopt(pycurl.SSL_VERIFYPEER, 1)
 		conn.setopt(pycurl.SSL_VERIFYHOST, 2)
 
-	if opt.has_key("--ssl-insecure"):
+	if "--ssl-insecure" in opt:
 		conn.setopt(pycurl.SSL_VERIFYPEER, 0)
 		conn.setopt(pycurl.SSL_VERIFYHOST, 0)
 	conn.perform()

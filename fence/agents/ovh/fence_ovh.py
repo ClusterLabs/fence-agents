@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 # Copyright 2013 Adrian Gibanel Lopez (bTactic)
 # Adrian Gibanel improved this script at 2013 to add verification of success and to output metadata
 
@@ -98,7 +98,7 @@ Poweroff is simulated with a reboot into rescue-pro mode."
 	if options["--action"] == "list-status":
 		fail_usage("Action 'list-status' is not supported in this fence agent")
 
-	if not options.has_key("--email"):
+	if "--email" not in options:
 		fail_usage("You have to enter e-mail address which is notified by fence agent")
 
 	if options["--action"] == "validate-all":

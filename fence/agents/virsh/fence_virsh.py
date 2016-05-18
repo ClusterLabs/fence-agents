@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 # The Following Agent Has Been Tested On:
 #
@@ -19,10 +19,10 @@ BUILD_DATE=""
 #END_VERSION_GENERATION
 
 def get_name_or_uuid(options):
-	return options["--uuid"] if options.has_key("--uuid") else options["--plug"]
+	return options["--uuid"] if "--uuid" in options else options["--plug"]
 
 def get_outlets_status(conn, options):
-	if options.has_key("--use-sudo"):
+	if "--use-sudo" in options:
 		prefix = options["--sudo-path"] + " "
 	else:
 		prefix = ""
@@ -47,14 +47,14 @@ def get_outlets_status(conn, options):
 	return result
 
 def get_power_status(conn, options):
-	prefix = options["--sudo-path"] + " " if options.has_key("--use-sudo") else ""
+	prefix = options["--sudo-path"] + " " if "--use-sudo" in options else ""
 	conn.sendline(prefix + "virsh domstate %s" % (get_name_or_uuid(options)))
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 	for line in conn.before.splitlines():
 		if line.strip() in ["running", "blocked", "idle", "no state", "paused"]:
 			return "on"
-		if "error: failed to get domain" in line.strip() and options.has_key("--missing-as-off"):
+		if "error: failed to get domain" in line.strip() and "--missing-as-off" in options:
 			return "off"
 		if "error:" in line.strip():
 			fail_usage("Failed: You have to enter existing name/UUID of virtual machine!")
@@ -62,7 +62,7 @@ def get_power_status(conn, options):
 	return "off"
 
 def set_power_status(conn, options):
-	prefix = options["--sudo-path"] + " " if options.has_key("--use-sudo") else ""
+	prefix = options["--sudo-path"] + " " if "--use-sudo" in options else ""
 	conn.sendline(prefix + "virsh %s " %
 			(options["--action"] == "on" and "start" or "destroy") + get_name_or_uuid(options))
 

@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 #
 # The Following agent has been tested on:
@@ -129,7 +129,7 @@ def vmware_prepare_command(options, add_login_params, additional_params):
 			if len(host_name_array) > 1:
 				res += "-P '%s' "% (quote_for_run(host_name_array[1]))
 
-	if options.has_key("--vmware-datacenter") and vmware_internal_type == VMWARE_TYPE_ESX:
+	if "--vmware-datacenter" in options and vmware_internal_type == VMWARE_TYPE_ESX:
 		res += "--datacenter '%s' "% (quote_for_run(options["--vmware-datacenter"]))
 
 	if additional_params != "":
@@ -271,15 +271,15 @@ def vmware_check_vmware_type(options):
 
 	if options["--vmware_type"] == "esx":
 		vmware_internal_type = VMWARE_TYPE_ESX
-		if not options.has_key("--exec"):
+		if "--exec" not in options:
 			options["--exec"] = VMHELPER_COMMAND
 	elif options["--vmware_type"] == "server2":
 		vmware_internal_type = VMWARE_TYPE_SERVER2
-		if not options.has_key("--exec"):
+		if "--exec" not in options:
 			options["--exec"] = VMRUN_COMMAND
 	elif options["--vmware_type"] == "server1":
 		vmware_internal_type = VMWARE_TYPE_SERVER1
-		if not options.has_key("--exec"):
+		if "--exec" not in options:
 			options["--exec"] = VMRUN_COMMAND
 	else:
 		fail_usage("vmware_type can be esx,server2 or server1!")

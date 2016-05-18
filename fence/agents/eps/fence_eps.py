@@ -1,15 +1,20 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 # The Following Agent Has Been Tested On:
 # ePowerSwitch 8M+ version 1.0.0.4
 
 import sys, re
-import httplib, base64, string, socket
+import base64, string, socket
 import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, fail_usage, EC_LOGIN_DENIED, EC_TIMED_OUT, run_delay
+
+if sys.version_info.major > 2:
+	import http.client as httplib
+else:
+	import httplib
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="ePowerSwitch 8M+ (eps)"
@@ -33,8 +38,8 @@ def eps_run_command(options, params):
 		logging.debug("GET %s\n", request_str)
 		conn.putrequest('GET', request_str)
 
-		if options.has_key("--username"):
-			if not options.has_key("--password"):
+		if "--username" in options:
+			if "--password" not in options:
 				options["--password"] = "" # Default is empty password
 
 			# String for Authorization header

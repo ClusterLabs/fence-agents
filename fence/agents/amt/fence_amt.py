@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 import sys, re, os
 import atexit
@@ -71,11 +71,11 @@ def create_command(options, action):
 	elif action == "cycle":
 		cmd = "echo \"y\"|" + cmd
 		cmd += " powercycle"
-	if action in ["on", "off", "cycle"] and options.has_key("--boot-option"):
+	if action in ["on", "off", "cycle"] and "--boot-option" in options:
 		cmd += options["--boot-option"]
 
 	# --use-sudo / -d
-	if options.has_key("--use-sudo"):
+	if "--use-sudo" in options:
 		cmd = options["--sudo-path"] + " " + cmd
 
 	return cmd

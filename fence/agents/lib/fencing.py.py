@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 import sys, getopt, time, os, uuid, pycurl, stat
 import pexpect, re, syslog
@@ -6,7 +6,6 @@ import logging
 import subprocess
 import threading
 import shlex
-import exceptions
 import socket
 import textwrap
 import __main__
@@ -139,11 +138,11 @@ all_opt = {
 	"telnet" : {
 		"getopt" : "",
 		"help" : "",
-		"order" : ""},
+		"order" : 1},
 	"diag" : {
 		"getopt" : "",
 		"help" : "",
-		"order" : ""},
+		"order" : 1},
 	"passwd" : {
 		"getopt" : "p:",
 		"longopt" : "password",
@@ -489,7 +488,7 @@ def _add_dependency_options(options):
 	## Add also options which are available for every fence agent
 	added_opt = []
 	for opt in options + ["default"]:
-		if DEPENDENCY_OPT.has_key(opt):
+		if opt in DEPENDENCY_OPT:
 			added_opt.extend([y for y in DEPENDENCY_OPT[opt] if options.count(y) == 0])
 
 	if not "port" in (options + added_opt) and \
@@ -525,37 +524,36 @@ def fail(error_code):
 	sys.exit(EC_GENERIC_ERROR)
 
 def usage(avail_opt):
-	print "Usage:"
-	print "\t" + os.path.basename(sys.argv[0]) + " [options]"
-	print "Options:"
+	print("Usage:")
+	print("\t" + os.path.basename(sys.argv[0]) + " [options]")
+	print("Options:")
 
 	sorted_list = [(key, all_opt[key]) for key in avail_opt]
-	sorted_list.sort(lambda x, y: cmp(x[1]["order"], y[1]["order"]))
+	sorted_list.sort(key=lambda x: x[1]["order"])
 
 	for key, value in sorted_list:
 		if len(value["help"]) != 0:
-			print "   " + _join_wrap([value["help"]], first_indent=3)
+			print("   " + _join_wrap([value["help"]], first_indent=3))
 
 def metadata(avail_opt, docs):
 	# avail_opt has to be unique, if there are duplicities then they should be removed
 	sorted_list = [(key, all_opt[key]) for key in list(set(avail_opt))]
-	sorted_list.sort(lambda x, y: cmp(x[0], y[0]))
-	sorted_list.sort(lambda x, y: cmp(x[1]["order"], y[1]["order"]))
+	sorted_list.sort(key=lambda x: (x[1]["order"], x[0]))
 
-	print "<?xml version=\"1.0\" ?>"
-	print "<resource-agent name=\"" + os.path.basename(sys.argv[0]) + \
-			"\" shortdesc=\"" + docs["shortdesc"] + "\" >"
+	print("<?xml version=\"1.0\" ?>")
+	print("<resource-agent name=\"" + os.path.basename(sys.argv[0]) + \
+			"\" shortdesc=\"" + docs["shortdesc"] + "\" >")
 	for (symlink, desc) in docs.get("symlink", []):
-		print "<symlink name=\"" + symlink + "\" shortdesc=\"" + desc + "\"/>"
-	print "<longdesc>" + docs["longdesc"] + "</longdesc>"
-	print "<vendor-url>" + docs["vendorurl"] + "</vendor-url>"
-	print "<parameters>"
+		print("<symlink name=\"" + symlink + "\" shortdesc=\"" + desc + "\"/>")
+	print("<longdesc>" + docs["longdesc"] + "</longdesc>")
+	print("<vendor-url>" + docs["vendorurl"] + "</vendor-url>")
+	print("<parameters>")
 	for option, _ in sorted_list:
-		if all_opt[option].has_key("help") and len(all_opt[option]["help"]) > 0:
-			print "\t<parameter name=\"" + option + "\" unique=\"0\" required=\"" + all_opt[option]["required"] + "\">"
+		if "help" in all_opt[option] and len(all_opt[option]["help"]) > 0:
+			print("\t<parameter name=\"" + option + "\" unique=\"0\" required=\"" + all_opt[option]["required"] + "\">")
 
 			default = ""
-			if all_opt[option].has_key("default"):
+			if "default" in all_opt[option]:
 				default = "default=\"" + _encode_html_entities(str(all_opt[option]["default"])) + "\" "
 
 			mixed = all_opt[option]["help"]
@@ -570,32 +568,32 @@ def metadata(avail_opt, docs):
 			else:
 				shortdesc = all_opt[option]["shortdesc"]
 
-			print "\t\t<getopt mixed=\"" + mixed + "\" />"
-			if all_opt[option].has_key("choices"):
-				print "\t\t<content type=\"select\" "+default+" >"
+			print("\t\t<getopt mixed=\"" + mixed + "\" />")
+			if "choices" in all_opt[option]:
+				print("\t\t<content type=\"select\" "+default+" >")
 				for choice in all_opt[option]["choices"]:
-					print "\t\t\t<option value=\"%s\" />" % (choice)
-				print "\t\t</content>"
+					print("\t\t\t<option value=\"%s\" />" % (choice))
+				print("\t\t</content>")
 			elif all_opt[option]["getopt"].count(":") > 0:
-				print "\t\t<content type=\"string\" "+default+" />"
+				print("\t\t<content type=\"string\" "+default+" />")
 			else:
-				print "\t\t<content type=\"boolean\" "+default+" />"
-			print "\t\t<shortdesc lang=\"en\">" + shortdesc + "</shortdesc>"
-			print "\t</parameter>"
-	print "</parameters>"
-	print "<actions>"
+				print("\t\t<content type=\"boolean\" "+default+" />")
+			print("\t\t<shortdesc lang=\"en\">" + shortdesc + "</shortdesc>")
+			print("\t</parameter>")
+	print("</parameters>")
+	print("<actions>")
 
 	(available_actions, _) = _get_available_actions(avail_opt)
 
 	if "on" in available_actions:
 		available_actions.remove("on")
 		on_target = ' on_target="1"' if avail_opt.count("on_target") else ''
-		print "\t<action name=\"on\"%s automatic=\"%d\"/>" % (on_target, avail_opt.count("fabric_fencing"))
+		print("\t<action name=\"on\"%s automatic=\"%d\"/>" % (on_target, avail_opt.count("fabric_fencing")))
 
 	for action in available_actions:
-		print "\t<action name=\"%s\" />" % (action)
-	print "</actions>"
-	print "</resource-agent>"
+		print("\t<action name=\"%s\" />" % (action))
+	print("</actions>")
+	print("</resource-agent>")
 
 def process_input(avail_opt):
 	avail_opt.extend(_add_dependency_options(avail_opt))
@@ -638,10 +636,10 @@ def check_input(device_opt, opt, other_conditions = False):
 	if options["--action"] == "meta-data":
 		options["--action"] = "metadata"
 
-	if options["--action"] == "metadata" or any(options.has_key(k) for k in ("--help", "--version")):
+	if options["--action"] == "metadata" or any(k in options for k in ("--help", "--version")):
 		return options
 
-	if options.has_key("--verbose"):
+	if "--verbose" in options:
 		logging.getLogger().setLevel(logging.DEBUG)
 
 	## add logging to syslog
@@ -671,7 +669,7 @@ def check_input(device_opt, opt, other_conditions = False):
 	else:
 		_validate_input(options, True)
 
-	if options.has_key("--debug-file"):
+	if "--debug-file" in options:
 		try:
 			debug_file = logging.FileHandler(options["--debug-file"])
 			debug_file.setLevel(logging.DEBUG)
@@ -680,10 +678,10 @@ def check_input(device_opt, opt, other_conditions = False):
 			logging.error("Unable to create file %s", options["--debug-file"])
 			fail_usage("Failed: Unable to create file " + options["--debug-file"])
 
-	if options.has_key("--snmp-priv-passwd-script"):
+	if "--snmp-priv-passwd-script" in options:
 		options["--snmp-priv-passwd"] = os.popen(options["--snmp-priv-passwd-script"]).read().rstrip()
 
-	if options.has_key("--password-script"):
+	if "--password-script" in options:
 		options["--password"] = os.popen(options["--password-script"]).read().rstrip()
 
 	return options
@@ -693,7 +691,7 @@ def check_input(device_opt, opt, other_conditions = False):
 ######
 def get_multi_power_fn(connection, options, get_power_fn):
 	status = "off"
-	plugs = options["--plugs"] if options.has_key("--plugs") else [""]
+	plugs = options["--plugs"] if "--plugs" in options else [""]
 
 	for plug in plugs:
 		try:
@@ -711,7 +709,7 @@ def get_multi_power_fn(connection, options, get_power_fn):
 	return status
 
 def set_multi_power_fn(connection, options, set_power_fn, get_power_fn, retry_attempts=1):
-	plugs = options["--plugs"] if options.has_key("--plugs") else [""]
+	plugs = options["--plugs"] if "--plugs" in options else [""]
 
 	for _ in range(retry_attempts):
 		for plug in plugs:
@@ -726,7 +724,7 @@ def set_multi_power_fn(connection, options, set_power_fn, get_power_fn, retry_at
 			set_power_fn(connection, options)
 			time.sleep(int(options["--power-wait"]))
 
-		for _ in xrange(int(options["--power-timeout"])):
+		for _ in range(int(options["--power-timeout"])):
 			if get_multi_power_fn(connection, options, get_power_fn) != options["--action"]:
 				time.sleep(1)
 			else:
@@ -741,7 +739,7 @@ def show_docs(options, docs=None):
 		docs["shortdesc"] = "Fence agent"
 		docs["longdesc"] = ""
 
-	if options.has_key("--help"):
+	if "--help" in options:
 		usage(device_opt)
 		sys.exit(0)
 
@@ -751,16 +749,16 @@ def show_docs(options, docs=None):
 		metadata(device_opt, docs)
 		sys.exit(0)
 
-	if options.has_key("--version"):
-		print __main__.RELEASE_VERSION, __main__.BUILD_DATE
-		print __main__.REDHAT_COPYRIGHT
+	if "--version" in options:
+		print(__main__.RELEASE_VERSION, __main__.BUILD_DATE)
+		print(__main__.REDHAT_COPYRIGHT)
 		sys.exit(0)
 
 def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_list=None, reboot_cycle_fn=None):
 	result = 0
 
 	try:
-		if options.has_key("--plug"):
+		if "--plug" in options:
 			options["--plugs"] = options["--plug"].split(",")
 
 		## Process options that manipulate fencing device
@@ -770,12 +768,12 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 			0 == options["device_opt"].count("port_as_ip")):
 
 			if 0 == options["device_opt"].count("port"):
-				print "N/A"
+				print("N/A")
 			elif get_outlet_list == None:
 				## @todo: exception?
 				## This is just temporal solution, we will remove default value
 				## None as soon as all existing agent will support this operation
-				print "NOTICE: List option is not working on this device yet"
+				print("NOTICE: List option is not working on this device yet")
 			else:
 				options["--original-action"] = options["--action"]
 				options["--action"] = "list"
@@ -784,16 +782,16 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 				del options["--original-action"]
 
 				## keys can be numbers (port numbers) or strings (names of VM, UUID)
-				for outlet_id in outlets.keys():
+				for outlet_id in list(outlets.keys()):
 					(alias, status) = outlets[outlet_id]
 					if status is None or (not status.upper() in ["ON", "OFF"]):
 						status = "UNKNOWN"
 						status = status.upper()
 
 					if options["--action"] == "list":
-						print outlet_id + options["--separator"] + alias
+						print(outlet_id + options["--separator"] + alias)
 					elif options["--action"] == "list-status":
-						print outlet_id + options["--separator"] + alias + options["--separator"] + status
+						print(outlet_id + options["--separator"] + alias + options["--separator"] + status)
 
 			return
 
@@ -809,17 +807,17 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 
 		if options["--action"] == status:
 			if not (status == "on" and "force_on" in options["device_opt"]):
-				print "Success: Already %s" % (status.upper())
+				print("Success: Already %s" % (status.upper()))
 				return 0
 
 		if options["--action"] == "on":
 			if set_multi_power_fn(connection, options, set_power_fn, get_power_fn, 1 + int(options["--retry-on"])):
-				print "Success: Powered ON"
+				print("Success: Powered ON")
 			else:
 				fail(EC_WAITING_ON)
 		elif options["--action"] == "off":
 			if set_multi_power_fn(connection, options, set_power_fn, get_power_fn):
-				print "Success: Powered OFF"
+				print("Success: Powered OFF")
 			else:
 				fail(EC_WAITING_OFF)
 		elif options["--action"] == "reboot":
@@ -843,7 +841,7 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 
 				try:
 					power_on = set_multi_power_fn(connection, options, set_power_fn, get_power_fn, int(options["--retry-on"]))
-				except Exception, ex:
+				except Exception as ex:
 					# an error occured during power ON phase in reboot
 					# fence action was completed succesfully even in that case
 					logging.warning("%s", str(ex))
@@ -852,9 +850,9 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 				# this should not fail as node was fenced succesfully
 				logging.error('Timed out waiting to power ON\n')
 
-			print "Success: Rebooted"
+			print("Success: Rebooted")
 		elif options["--action"] == "status":
-			print "Status: " + status.upper()
+			print("Status: " + status.upper())
 			if status.upper() == "OFF":
 				result = 2
 		elif options["--action"] == "monitor":
@@ -863,10 +861,10 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 		fail(EC_CONNECTION_LOST)
 	except pexpect.TIMEOUT:
 		fail(EC_TIMED_OUT)
-	except pycurl.error, ex:
+	except pycurl.error as ex:
 		logging.error("%s\n", str(ex))
 		fail(EC_TIMED_OUT)
-	except socket.timeout, ex:
+	except socket.timeout as ex:
 		logging.error("%s\n", str(ex))
 		fail(EC_TIMED_OUT)
 
@@ -875,25 +873,25 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 def fence_login(options, re_login_string=r"(login\s*: )|((?!Last )Login Name:  )|(username: )|(User Name :)"):
 	run_delay(options)
 
-	if not options.has_key("eol"):
+	if "eol" not in options:
 		options["eol"] = "\r\n"
 
-	if options.has_key("--command-prompt") and type(options["--command-prompt"]) is not list:
+	if "--command-prompt" in options and type(options["--command-prompt"]) is not list:
 		options["--command-prompt"] = [options["--command-prompt"]]
 
 	try:
-		if options.has_key("--ssl"):
+		if "--ssl" in options:
 			conn = _open_ssl_connection(options)
-		elif options.has_key("--ssh") and not options.has_key("--identity-file"):
+		elif "--ssh" in options and "--identity-file" not in options:
 			conn = _login_ssh_with_password(options, re_login_string)
-		elif options.has_key("--ssh") and options.has_key("--identity-file"):
+		elif "--ssh" in options and "--identity-file" in options:
 			conn = _login_ssh_with_identity_file(options)
 		else:
 			conn = _login_telnet(options, re_login_string)
-	except pexpect.EOF, exception:
+	except pexpect.EOF as exception:
 		logging.debug("%s", str(exception))
 		fail(EC_LOGIN_DENIED)
-	except pexpect.TIMEOUT, exception:
+	except pexpect.TIMEOUT as exception:
 		logging.debug("%s", str(exception))
 		fail(EC_LOGIN_DENIED)
 	return conn
@@ -953,7 +951,7 @@ def fence_logout(conn, logout_string, sleep=0):
 		conn.send_eol(logout_string)
 		time.sleep(sleep)
 		conn.close()
-	except exceptions.OSError:
+	except OSError:
 		pass
 	except pexpect.ExceptionPexpect:
 		pass
@@ -989,29 +987,29 @@ def _open_ssl_connection(options):
 	gnutls_opts = ""
 	ssl_opts = ""
 
-	if options.has_key("--notls"):
+	if "--notls" in options:
 		gnutls_opts = "--priority \"NORMAL:-VERS-TLS1.2:-VERS-TLS1.1:-VERS-TLS1.0:+VERS-SSL3.0\""
-	elif options.has_key("--tls1.0"):
+	elif "--tls1.0" in options:
 		gnutls_opts = "--priority \"NORMAL:-VERS-TLS1.2:-VERS-TLS1.1:+VERS-TLS1.0:%LATEST_RECORD_VERSION\""
 
 	# --ssl is same as the --ssl-secure; it means we want to verify certificate in these cases
-	if options.has_key("--ssl-insecure"):
+	if "--ssl-insecure" in options:
 		ssl_opts = "--insecure"
 
 	command = '%s %s %s --crlf -p %s %s' % \
 		(options["--gnutlscli-path"], gnutls_opts, ssl_opts, options["--ipport"], options["--ip"])
 	try:
 		conn = fspawn(options, command)
-	except pexpect.ExceptionPexpect, ex:
+	except pexpect.ExceptionPexpect as ex:
 		logging.error("%s\n", str(ex))
 		sys.exit(EC_GENERIC_ERROR)
 
 	return conn
 
 def _login_ssh_with_identity_file(options):
-	if options.has_key("--inet6-only"):
+	if "--inet6-only" in options:
 		force_ipvx = "-6 "
-	elif options.has_key("--inet4-only"):
+	elif "--inet4-only" in options:
 		force_ipvx = "-4 "
 	else:
 		force_ipvx = ""
@@ -1019,7 +1017,7 @@ def _login_ssh_with_identity_file(options):
 	command = '%s %s %s@%s -i %s -p %s' % \
 		(options["--ssh-path"], force_ipvx, options["--username"], options["--ip"], \
 		options["--identity-file"], options["--ipport"])
-	if options.has_key("--ssh-options"):
+	if "--ssh-options" in options:
 		command += ' ' + options["--ssh-options"]
 
 	conn = fspawn(options, command)
@@ -1033,7 +1031,7 @@ def _login_ssh_with_identity_file(options):
 			["Enter passphrase for key '" + options["--identity-file"]+"':"] + \
 			options["--command-prompt"], int(options["--login-timeout"]))
 	if result == 0:
-		if options.has_key("--password"):
+		if "--password" in options:
 			conn.sendline(options["--password"])
 			conn.log_expect(options["--command-prompt"], int(options["--login-timeout"]))
 		else:
@@ -1086,21 +1084,21 @@ def _login_ssh_with_password(options, re_login_string):
 	re_login = re.compile(re_login_string, re.IGNORECASE)
 	re_pass = re.compile("(password)|(pass phrase)", re.IGNORECASE)
 
-	if options.has_key("--inet6-only"):
+	if "--inet6-only" in options:
 		force_ipvx = "-6 "
-	elif options.has_key("--inet4-only"):
+	elif "--inet4-only" in options:
 		force_ipvx = "-4 "
 	else:
 		force_ipvx = ""
 
 	command = '%s %s %s@%s -p %s -o PubkeyAuthentication=no' % \
 			(options["--ssh-path"], force_ipvx, options["--username"], options["--ip"], options["--ipport"])
-	if options.has_key("--ssh-options"):
+	if "--ssh-options" in options:
 		command += ' ' + options["--ssh-options"]
 
 	conn = fspawn(options, command)
 
-	if options.has_key("telnet_over_ssh"):
+	if "telnet_over_ssh" in options:
 		# This is for stupid ssh servers (like ALOM) which behave more like telnet
 		# (ignore name and display login prompt)
 		result = conn.log_expect( \
@@ -1151,7 +1149,7 @@ def _update_metadata(options):
 		default_value = None
 		default_string = None
 
-		if all_opt["ipport"].has_key("default"):
+		if "default" in all_opt["ipport"]:
 			default_value = all_opt["ipport"]["default"]
 		elif device_opt.count("web") and device_opt.count("ssl"):
 			default_value = "80"
@@ -1195,9 +1193,9 @@ def _set_default_values(options):
 				all_opt["ipport"]["default"] = options["--ipport"]
 
 	for opt in options["device_opt"]:
-		if all_opt[opt].has_key("default") and not opt == "ipport":
+		if "default" in all_opt[opt] and not opt == "ipport":
 			getopt_long = "--" + all_opt[opt]["longopt"]
-			if not options.has_key(getopt_long):
+			if getopt_long not in options:
 				options[getopt_long] = all_opt[opt]["default"]
 
 	return options
@@ -1207,42 +1205,42 @@ def _validate_input(options, stop = True):
 	device_opt = options["device_opt"]
 	valid_input = True
 
-	if not options.has_key("--username") and \
+	if "--username" not in options and \
 			device_opt.count("login") and (device_opt.count("no_login") == 0):
 		valid_input = False
 		fail_usage("Failed: You have to set login name", stop)
 
-	if device_opt.count("ipaddr") and not options.has_key("--ip") and not options.has_key("--managed"):
+	if device_opt.count("ipaddr") and "--ip" not in options and "--managed" not in options:
 		valid_input = False
 		fail_usage("Failed: You have to enter fence address", stop)
 
 	if device_opt.count("no_password") == 0:
 		if 0 == device_opt.count("identity_file"):
-			if not (options.has_key("--password") or options.has_key("--password-script")):
+			if not ("--password" in options or "--password-script" in options):
 				valid_input = False
 				fail_usage("Failed: You have to enter password or password script", stop)
 		else:
-			if not (options.has_key("--password") or \
-					options.has_key("--password-script") or options.has_key("--identity-file")):
+			if not ("--password" in options or \
+					"--password-script" in options or "--identity-file" in options):
 				valid_input = False
 				fail_usage("Failed: You have to enter password, password script or identity file", stop)
 
-	if not options.has_key("--ssh") and options.has_key("--identity-file"):
+	if "--ssh" not in options and "--identity-file" in options:
 		valid_input = False
 		fail_usage("Failed: You have to use identity file together with ssh connection (-x)", stop)
 
-	if options.has_key("--identity-file") and not os.path.isfile(options["--identity-file"]):
+	if "--identity-file" in options and not os.path.isfile(options["--identity-file"]):
 		valid_input = False
 		fail_usage("Failed: Identity file " + options["--identity-file"] + " does not exist", stop)
 
 	if (0 == ["list", "list-status", "monitor"].count(options["--action"])) and \
-		not options.has_key("--plug") and device_opt.count("port") and \
+		"--plug" not in options and device_opt.count("port") and \
 		device_opt.count("no_port") == 0 and not device_opt.count("port_as_ip"):
 		valid_input = False
 		fail_usage("Failed: You have to enter plug number or machine identification", stop)
 
-	if options.has_key("--plug") and len(options["--plug"].split(",")) > 1 and \
-			options.has_key("--method") and options["--method"] == "cycle":
+	if "--plug" in options and len(options["--plug"].split(",")) > 1 and \
+			"--method" in options and options["--method"] == "cycle":
 		valid_input = False
 		fail_usage("Failed: Cannot use --method cycle for more than 1 plug", stop)
 
@@ -1261,13 +1259,13 @@ def _prepare_getopt_args(options):
 	getopt_string = ""
 	longopt_list = []
 	for k in options:
-		if all_opt.has_key(k) and all_opt[k]["getopt"] != ":":
+		if k in all_opt and all_opt[k]["getopt"] != ":":
 			# getopt == ":" means that opt is without short getopt, but has value
 			getopt_string += all_opt[k]["getopt"]
-		elif not all_opt.has_key(k):
+		elif k not in all_opt:
 			fail_usage("Parse error: unknown option '"+k+"'")
 
-		if all_opt.has_key(k) and all_opt[k].has_key("longopt"):
+		if k in all_opt and "longopt" in all_opt[k]:
 			if all_opt[k]["getopt"].endswith(":"):
 				longopt_list.append(all_opt[k]["longopt"] + "=")
 			else:
@@ -1309,7 +1307,7 @@ def _parse_input_cmdline(avail_opt):
 		(entered_opt, left_arg) = getopt.gnu_getopt(sys.argv[1:], getopt_string, longopt_list)
 		if len(left_arg) > 0:
 			logging.warning("Unused arguments on command line: %s" % (str(left_arg)))
-	except getopt.GetoptError, error:
+	except getopt.GetoptError as error:
 		fail_usage("Parse error: " + error.msg)
 
 	for opt in avail_opt:
@@ -1317,8 +1315,8 @@ def _parse_input_cmdline(avail_opt):
 
 	# Short and long getopt names are changed to consistent "--" + long name (e.g. --username)
 	long_opts = {}
-	for arg_name in dict(entered_opt).keys():
-		all_key = [key for (key, value) in filtered_opts.items() \
+	for arg_name in list(dict(entered_opt).keys()):
+		all_key = [key for (key, value) in list(filtered_opts.items()) \
 			if "--" + value.get("longopt", "") == arg_name or "-" + value.get("getopt", "").rstrip(":") == arg_name][0]
 		long_opts["--" + filtered_opts[all_key]["longopt"]] = dict(entered_opt)[arg_name]
 
@@ -1353,10 +1351,10 @@ def _get_opts_with_invalid_choices(options):
 	device_opt = options["device_opt"]
 
 	for opt in device_opt:
-		if all_opt[opt].has_key("choices"):
+		if "choices" in all_opt[opt]:
 			longopt = "--" + all_opt[opt]["longopt"]
 			possible_values_upper = [y.upper() for y in all_opt[opt]["choices"]]
-			if options.has_key(longopt):
+			if longopt in options:
 				options[longopt] = options[longopt].upper()
 				if not options["--" + all_opt[opt]["longopt"]] in possible_values_upper:
 					options_failed.append(opt)

@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 #####
 ##
@@ -40,10 +40,10 @@ def get_power_status(conn, options):
 	if None != re.compile('.* MasterSwitch plus.*', re.IGNORECASE | re.S).match(conn.before):
 		switch = 1
 		if None != re.compile('.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before):
-			if not options.has_key("--switch"):
+			if "--switch" not in options:
 				fail_usage("Failed: You have to enter physical switch number")
 		else:
-			if not options.has_key("--switch"):
+			if "--switch" not in options:
 				options["--switch"] = "1"
 
 	if None == re.compile('.*Outlet Management.*', re.IGNORECASE | re.S).match(conn.before):
@@ -81,7 +81,7 @@ def get_power_status(conn, options):
 		conn.send_eol("")
 		if exp_result != 0:
 			break
-	conn.send(chr(03))
+	conn.send(chr(0o3))
 	conn.log_expect("- Logout", int(options["--shell-timeout"]))
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
@@ -116,10 +116,10 @@ def set_power_status(conn, options):
 			'off': "3"
 		}[options["--action"]]
 		if None != re.compile('.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before):
-			if not options.has_key("--switch"):
+			if "--switch" not in options:
 				fail_usage("Failed: You have to enter physical switch number")
 		else:
-			if not options.has_key("--switch"):
+			if "--switch" not in options:
 				options["--switch"] = 1
 
 	if None == re.compile('.*Outlet Management.*', re.IGNORECASE | re.S).match(conn.before):
@@ -173,7 +173,7 @@ def set_power_status(conn, options):
 	conn.log_expect("Press <ENTER> to continue...", int(options["--power-timeout"]))
 	conn.send_eol("")
 	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
-	conn.send(chr(03))
+	conn.send(chr(0o3))
 	conn.log_expect("- Logout", int(options["--shell-timeout"]))
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
@@ -232,7 +232,7 @@ will block any necessary fencing actions."
 	show_docs(options, docs)
 
 	## Support for --plug [switch]:[plug] notation that was used before
-	if (options.has_key("--plug") == 1) and (-1 != options["--plug"].find(":")):
+	if (("--plug" in options) == 1) and (-1 != options["--plug"].find(":")):
 		(switch, plug) = options["--plug"].split(":", 1)
 		options["--switch"] = switch
 		options["--plug"] = plug

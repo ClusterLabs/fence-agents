@@ -26,11 +26,11 @@ def _prepare_command(agent_file, method):
 
 	config = ConfigObj(agent_file, unrepr = True)
 
-	assert (config.has_key("agent")), "Fence agent has to be defined"
+	assert ("agent" in config), "Fence agent has to be defined"
 	final_command = config["agent"]
 	stdin_values = None
 
-	for opt in config["options"].keys():
+	for opt in list(config["options"].keys()):
 		assert isinstance(config["options"][opt], list), "Option %s have to have at least value and longopt"% (opt)
 		assert len(config["options"][opt]) >= 2, "Option %s have to have at least value and longopt"% (opt)
 		value = config["options"][opt][0]
@@ -75,8 +75,8 @@ def test_action(agent, action_file, method, verbose = False):
 	(command, stdin_options) = _prepare_command(agent, method)
 
 	for action in config["actions"]:
-		assert action.has_key("command"), "Action %s need to have defined 'command'"% (action_file)
-		assert action.has_key("return_code"), "Command %s (in %s) need to have 'return_code' defined"% (action_file, action["command"])
+		assert "command" in action, "Action %s need to have defined 'command'"% (action_file)
+		assert "return_code" in action, "Command %s (in %s) need to have 'return_code' defined"% (action_file, action["command"])
 	
 		sleep_wait = None
 		current_command = None
@@ -113,14 +113,14 @@ def test_action(agent, action_file, method, verbose = False):
 		if verbose == False:
 			result = os.system(current_command + " &> /dev/null")
 		else:
-			print current_command
+			print(current_command)
 			result = os.system(current_command)
 		exitcode = (result >> 8) & 0xFF
 
 		is_valid_result_code = re.search(action["return_code"], str(exitcode), re.IGNORECASE)
 
 		if is_valid_result_code == None:
-			print "TEST FAILED: %s failed on %s when using (%s)\n"% (agent, action_file, method)
-			print "TEST INFO: %s returns %s\n"% (action["command"], str(exitcode))
+			print(("TEST FAILED: %s failed on %s when using (%s)\n"% (agent, action_file, method)))
+			print(("TEST INFO: %s returns %s\n"% (action["command"], str(exitcode))))
 			return
-	print "TEST PASSED: %s worked on %s (%s)\n"% (agent, action_file, method)
+	print(("TEST PASSED: %s worked on %s (%s)\n"% (agent, action_file, method)))

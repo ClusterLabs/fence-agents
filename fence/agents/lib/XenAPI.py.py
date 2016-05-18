@@ -44,11 +44,17 @@
 # OF THIS SOFTWARE.
 # --------------------------------------------------------------------
 
+import sys
 import gettext
-import xmlrpclib
-import httplib
 import socket
 import logging
+
+if sys.version_info.major > 2:
+	import xmlrpc.client as xmlrpclib
+	import http.client as httplib
+else:
+	import xmlrpclib
+	import httplib
 
 translation = gettext.translation('xen-xm', fallback=True)
 
@@ -63,16 +69,16 @@ class Failure(Exception):
 				details[3] = str(int(details[3]) - 1)
 
 			self.details = details
-		except Exception, exn:
+		except Exception as exn:
 			self.details = ['INTERNAL_ERROR', 'Client-side: ' + str(exn)]
 
 	def __str__(self):
 		try:
 			return translation.ugettext(self.details[0]) % self._details_map()
-		except TypeError, exn:
+		except TypeError as exn:
 			return "Message database broken: %s.\nXen-API failure: %s" % \
 				   (exn, str(self.details))
-		except Exception, exn:
+		except Exception as exn:
 			logging.error("%s\n", str(exn))
 			return "Xen-API failure: %s" % str(self.details)
 
@@ -91,12 +97,9 @@ class UDSHTTPConnection(httplib.HTTPConnection):
 		self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 		self.sock.connect(path)
 
-class UDSHTTP(httplib.HTTP):
-	_connection_class = UDSHTTPConnection
-
 class UDSTransport(xmlrpclib.Transport):
 	def make_connection(self, host):
-		return UDSHTTP(host)
+		return httplib.HTTPConnection(host)
 
 class Session(xmlrpclib.ServerProxy):
 	"""A server proxy and session manager for communicating with Xend using

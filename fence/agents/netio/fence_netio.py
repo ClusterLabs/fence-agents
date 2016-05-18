@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 
 import sys, re, pexpect
 import atexit
@@ -47,8 +47,8 @@ def get_outlet_list(conn, options):
 			# the name is enclosed in "", drop those with [1:-1]
 			name = conn.after.split()[1][1:-1]
 			result[plug] = (name, "unknown")
-	except Exception, exn:
-		print str(exn)
+	except Exception as exn:
+		print(str(exn))
 
 	return result
 
