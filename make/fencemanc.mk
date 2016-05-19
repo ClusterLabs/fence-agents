@@ -1,9 +1,10 @@
 %.8: $(TARGET) $(top_srcdir)/fence/agents/lib/fence2man.xsl
 	set -e && \
-		./$^ -o metadata > .$@.tmp && \
-	xmllint --noout --relaxng $(top_srcdir)/fence/agents/lib/metadata.rng .$@.tmp && \
-	xsltproc $(top_srcdir)/fence/agents/lib/fence2man.xsl .$@.tmp > $@
-	xsltproc $(top_srcdir)/fence/agents/lib/fence2wiki.xsl .$@.tmp | grep -v '<?xml' > $(@:%.8=%.wiki)
+		./$(@:%.8=%) -o metadata > $(@D)/.$(@F).tmp && \
+	xmllint --noout --relaxng $(top_srcdir)/fence/agents/lib/metadata.rng $(@D)/.$(@F).tmp && \
+	xsltproc $(top_srcdir)/fence/agents/lib/fence2man.xsl $(@D)/.$(@F).tmp > $@
+	xsltproc $(top_srcdir)/fence/agents/lib/fence2wiki.xsl $(@D)/.$(@F).tmp | grep -v '<?xml' > $(@D)/$(@F:%.8=%.wiki)
 
 clean-man:
-	rm -f *.8 .*.8.tmp *.wiki
+	$(eval CLEAN_TARGET=$(shell find -name "*.8" | grep -Pv "kdump/fence_kdump_send.8|manual/fence_ack_manual.8"))
+	rm -f $(CLEAN_TARGET) */.*.8.tmp */*.wiki

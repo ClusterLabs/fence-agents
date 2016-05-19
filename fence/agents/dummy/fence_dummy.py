@@ -78,7 +78,7 @@ def get_outlets_fail(conn, options):
 	return result
 
 def main():
-	device_opt = ["no_password", "status_file", "random_sleep_range", "type", "port"]
+	device_opt = ["no_password", "status_file", "random_sleep_range", "type", "no_port"]
 
 	atexit.register(atexit_handler)
 
@@ -110,12 +110,6 @@ def main():
 		"default" : "file",
 		"order": 1
 		}
-
-	pinput = process_input(device_opt)
-	if ("--type" in pinput and pinput["--type"] == "file") or (("--type" in pinput) == False):
-		# hack to have fence agents that require ports 'fail' and one that do not 'file'
-		device_opt.remove("port")
-		device_opt.remove("separator")
 
 	options = check_input(device_opt, process_input(device_opt))
 

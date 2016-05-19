@@ -6,7 +6,7 @@ AC_INIT([fence-agents],
 	m4_esyscmd([make/git-version-gen .tarball-version]),
 	[linux-cluster@redhat.com])
 
-AM_INIT_AUTOMAKE([-Wno-portability dist-bzip2 dist-xz])
+AM_INIT_AUTOMAKE([-Wno-portability dist-bzip2 dist-xz subdir-objects])
 
 LT_PREREQ([2.2.6])
 LT_INIT
@@ -139,7 +139,7 @@ if test "x$AGENTS_LIST" != xall; then
 fi
 
 if test "x$AGENTS_LIST" = xall; then
-	AGENTS_LIST=`find $srcdir/fence/agents -mindepth 2 -maxdepth 2 -name Makefile.am -printf '%h ' | sed -e 's#'$srcdir'/fence/agents/##g' -e 's#lib ##g' -e 's#nss_wrapper ##g'`
+	AGENTS_LIST=`find $srcdir/fence/agents -mindepth 2 -maxdepth 2 -name '*.py' -printf '%P ' | sed -e 's#lib/[A-Za-z_.]* ##g' -e 's#nss_wrapper/[A-Za-z_.]* ##g' -e 's#autodetect/[A-Za-z_.]* ##g'`
 fi
 
 XENAPILIB=0
@@ -274,58 +274,7 @@ LDFLAGS="$ENV_LDFLAGS"
 AC_CONFIG_FILES([Makefile
 		 fence/Makefile
 		 fence/agents/Makefile
-		 fence/agents/alom/Makefile
-		 fence/agents/apc/Makefile
-		 fence/agents/apc_snmp/Makefile
-		 fence/agents/amt/Makefile
-		 fence/agents/amt_ws/Makefile
-		 fence/agents/bladecenter/Makefile
-		 fence/agents/brocade/Makefile
-		 fence/agents/cisco_mds/Makefile
-		 fence/agents/cisco_ucs/Makefile
-		 fence/agents/compute/Makefile
-		 fence/agents/docker/Makefile
-		 fence/agents/drac/Makefile
-		 fence/agents/drac5/Makefile
-		 fence/agents/dummy/Makefile
-		 fence/agents/eaton_snmp/Makefile
-		 fence/agents/emerson/Makefile
-		 fence/agents/eps/Makefile
-		 fence/agents/hpblade/Makefile
-		 fence/agents/ibmblade/Makefile
-		 fence/agents/ipdu/Makefile
-		 fence/agents/ifmib/Makefile
-		 fence/agents/ilo/Makefile
-		 fence/agents/ilo_moonshot/Makefile
-		 fence/agents/ilo_mp/Makefile
-		 fence/agents/ilo_ssh/Makefile
-		 fence/agents/intelmodular/Makefile
-		 fence/agents/ipmilan/Makefile
-		 fence/agents/kdump/Makefile
-		 fence/agents/ldom/Makefile
 		 fence/agents/lib/Makefile
-		 fence/agents/lpar/Makefile
-		 fence/agents/manual/Makefile
-		 fence/agents/mpath/Makefile
-		 fence/agents/netio/Makefile
-		 fence/agents/ovh/Makefile
-		 fence/agents/pve/Makefile
-		 fence/agents/raritan/Makefile
-		 fence/agents/rcd_serial/Makefile
-		 fence/agents/rhevm/Makefile
-		 fence/agents/rsa/Makefile
-		 fence/agents/rsb/Makefile
-		 fence/agents/sbd/Makefile
-		 fence/agents/sanbox2/Makefile
-		 fence/agents/scsi/Makefile
-		 fence/agents/vbox/Makefile
-		 fence/agents/virsh/Makefile
-		 fence/agents/vmware/Makefile
-		 fence/agents/vmware_soap/Makefile
-		 fence/agents/wti/Makefile
-		 fence/agents/xenapi/Makefile
-		 fence/agents/hds_cb/Makefile
-		 fence/agents/zvm/Makefile
 		 doc/Makefile])
 
 AC_OUTPUT
