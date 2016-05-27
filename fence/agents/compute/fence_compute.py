@@ -89,7 +89,8 @@ def _get_evacuable_flavors():
 	# Since the detailed view for all flavors doesn't provide the extra specs,
 	# we need to call each of the flavor to get them.
 	for flavor in flavors:
-		if flavor.get_keys().get(EVACUABLE_TAG).strip().lower() in TRUE_TAGS:
+		tag = flavor.get_keys().get(EVACUABLE_TAG)
+		if tag.strip().lower() in TRUE_TAGS:
 			result.append(flavor.id)
 	return result
 
@@ -98,23 +99,27 @@ def _get_evacuable_images():
 	images = nova.images.list(detailed=True)
 	for image in images:
 		if hasattr(image, 'metadata'):
-			if image.metadata.get(EVACUABLE_TAG).strip.lower() in TRUE_TAGS:
+			tag = image.metadata.get(EVACUABLE_TAG)
+			if tag and tag.strip().lower() in TRUE_TAGS:
 				result.append(image.id)
 	return result
 
 def _host_evacuate(options):
 	result = True
+	images = _get_evacuable_images()
+	flavors = _get_evacuable_flavors()
 	servers = nova.servers.list(search_opts={'host': options["--plug"], 'all_tenants': 1 })
-	if options["--instance-filtering"] == "False":
-		logging.debug("Evacuating all images and flavors")
-		evacuables = servers
-	else:
-		logging.debug("Filtering images and flavors")
-		flavors = _get_evacuable_flavors()
-		images = _get_evacuable_images()
+
+	if len(flavors) or len(images):
+		logging.debug("Filtering images and flavors: %s %s" % (repr(flavors), repr(images)))
 		# Identify all evacuable servers
+		logging.debug("Checking %s" % repr(servers))
 		evacuables = [server for server in servers
 				if _is_server_evacuable(server, flavors, images)]
+		logging.debug("Evacuating %s" % repr(evacuables))
+	else:
+		logging.debug("Evacuating all images and flavors")
+		evacuables = servers
 
 	if options["--no-shared-storage"] != "False":
 		on_shared_storage = False
