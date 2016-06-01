@@ -169,5 +169,6 @@
 	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="diag" />
 </actions>
 </resource-agent>

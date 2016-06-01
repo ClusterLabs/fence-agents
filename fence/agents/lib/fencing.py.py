@@ -135,6 +135,10 @@ all_opt = {
 		"getopt" : "",
 		"help" : "",
 		"order" : 1},
+	"diag" : {
+		"getopt" : "",
+		"help" : "",
+		"order" : ""},
 	"passwd" : {
 		"getopt" : "p:",
 		"longopt" : "password",
@@ -590,6 +594,8 @@ def metadata(avail_opt, options, docs):
 	print "\t<action name=\"list-status\" />"
 	print "\t<action name=\"monitor\" />"
 	print "\t<action name=\"metadata\" />"
+	if avail_opt.count("diag") == 1:
+		print "\t<action name=\"diag\" />"
 	print "</actions>"
 	print "</resource-agent>"
 
@@ -780,6 +786,9 @@ def check_input(device_opt, opt):
 
 	if 1 == device_opt.count("no_status"):
 		acceptable_actions.remove("status")
+
+	if 1 == device_opt.count("diag"):
+		acceptable_actions.extend(["diag"])
 
 	if 0 == acceptable_actions.count(options["--action"]):
 		fail_usage("Failed: Unrecognised action '" + options["--action"] + "'")
