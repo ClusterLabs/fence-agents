@@ -155,6 +155,9 @@ def main():
 		all_opt["lanplus"]["default"] = "1"
 
 	all_opt["ipport"]["default"] = "623"
+	all_opt["method"]["help"] = "-m, --method=[method]          Method to fence (onoff|cycle) (Default: cycle)\n" \
+				    "WARNING! This fence agent might report success before the node is powered off. " \
+				    "You should use -m/method onoff if your fence device works correctly with that option."
 
 	pi = process_input(device_opt)
 	# Accept also deprecated option but do not propagate it at all
@@ -171,7 +174,9 @@ def main():
 	docs["shortdesc"] = "Fence agent for IPMI"
 	docs["longdesc"] = "fence_ipmilan is an I/O Fencing agent\
 which can be used with machines controlled by IPMI.\
-This agent calls support software ipmitool (http://ipmitool.sf.net/)."
+This agent calls support software ipmitool (http://ipmitool.sf.net/). \
+WARNING! This fence agent might report success before the node is powered off. \
+You should use -m/method onoff if your fence device works correctly with that option."
 	docs["vendorurl"] = ""
 	docs["symlink"] = [("fence_ilo3", "Fence agent for HP iLO3"),
 		("fence_ilo4", "Fence agent for HP iLO4"),
