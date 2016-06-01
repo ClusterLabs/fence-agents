@@ -27,7 +27,7 @@ The fence_scsi agent works by having each node in the cluster register a unique 
 	<parameter name="devices" unique="0" required="0">
 		<getopt mixed="-d, --devices=[devices]" />
 		<content type="string"  />
-		<shortdesc lang="en">List of devices to use for current operation. Devices can be comma-separated list of raw device (eg. /dev/sdc) or device-mapper multipath devices (eg. /dev/dm-3). Each device must support SCSI-3 persistent reservations.</shortdesc>
+		<shortdesc lang="en">List of devices to use for current operation. Devices can be comma-separated list of raw devices (eg. /dev/sdc). Each device must support SCSI-3 persistent reservations.</shortdesc>
 	</parameter>
 	<parameter name="logfile" unique="0" required="0">
 		<getopt mixed="-a, --logfile" />
