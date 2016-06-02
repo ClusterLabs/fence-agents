@@ -27,6 +27,10 @@ def reboot_cycle(_, options):
 	output = run_command(options, create_command(options, "cycle"))
 	return bool(re.search('chassis power control: cycle', str(output).lower()))
 
+def reboot_diag(_, options):
+	output = run_command(options, create_command(options, "diag"))
+	return bool(re.search('chassis power control: diag', str(output).lower()))
+
 def create_command(options, action):
 	cmd = options["--ipmitool-path"]
 
@@ -137,11 +141,12 @@ def define_new_opts():
 def main():
 	atexit.register(atexit_handler)
 
-	device_opt = ["ipaddr", "ipport", "login", "no_login", "no_password", "passwd",
+	device_opt = ["ipaddr", "login", "no_login", "no_password", "passwd", "diag", 
 		"lanplus", "auth", "cipher", "privlvl", "sudo", "ipmitool_path", "method",
 		"obsolete_ip", "timeout"]
 	define_new_opts()
 
+	all_opt["power_wait"]["default"] = 2
 	if os.path.basename(sys.argv[0]) == "fence_ilo3":
 		all_opt["power_wait"]["default"] = "4"
 		all_opt["method"]["default"] = "cycle"
@@ -150,6 +155,9 @@ def main():
 		all_opt["lanplus"]["default"] = "1"
 
 	all_opt["ipport"]["default"] = "623"
+	all_opt["method"]["help"] = "-m, --method=[method]          Method to fence (onoff|cycle) (Default: cycle)\n" \
+				    "WARNING! This fence agent might report success before the node is powered off. " \
+				    "You should use -m/method onoff if your fence device works correctly with that option."
 
 	pi = process_input(device_opt)
 	# Accept also deprecated option but do not propagate it at all
@@ -166,7 +174,9 @@ def main():
 	docs["shortdesc"] = "Fence agent for IPMI"
 	docs["longdesc"] = "fence_ipmilan is an I/O Fencing agent\
 which can be used with machines controlled by IPMI.\
-This agent calls support software ipmitool (http://ipmitool.sf.net/)."
+This agent calls support software ipmitool (http://ipmitool.sf.net/). \
+WARNING! This fence agent might report success before the node is powered off. \
+You should use -m/method onoff if your fence device works correctly with that option."
 	docs["vendorurl"] = ""
 	docs["symlink"] = [("fence_ilo3", "Fence agent for HP iLO3"),
 		("fence_ilo4", "Fence agent for HP iLO4"),
@@ -179,7 +189,15 @@ This agent calls support software ipmitool (http://ipmitool.sf.net/)."
 	if not is_executable(options["--ipmitool-path"]):
 		fail_usage("Ipmitool not found or not accessible")
 
-	result = fence_action(None, options, set_power_status, get_power_status, None, reboot_cycle)
+	reboot_fn = reboot_cycle
+	if options["--action"] == "diag":
+		# Diag is a special action that can't be verified so we will reuse reboot functionality
+		# to minimize impact on generic library
+		options["--action"] = "reboot"
+		options["--method"] = "cycle" 
+		reboot_fn = reboot_diag
+
+	result = fence_action(None, options, set_power_status, get_power_status, None, reboot_fn)
 	sys.exit(result)
 
 if __name__ == "__main__":

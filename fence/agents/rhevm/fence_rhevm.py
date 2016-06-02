@@ -66,7 +66,8 @@ def get_list(conn, options):
 		lines = res.split("<vm ")
 		for i in range(1, len(lines)):
 			name = RE_GET_NAME.search(lines[i]).group(1)
-			outlets[name] = ("", None)
+			status = RE_STATUS.search(lines[i]).group(1)
+			outlets[name] = ("", status)
 	except AttributeError:
 		return {}
 	except IndexError:
@@ -87,7 +88,7 @@ def send_command(opt, command, method="GET"):
 	conn = pycurl.Curl()
 	web_buffer = StringIO.StringIO()
 	conn.setopt(pycurl.URL, url)
-	conn.setopt(pycurl.HTTPHEADER, ["Content-type: application/xml", "Accept: application/xml", "Prefer: persistent-auth"])
+	conn.setopt(pycurl.HTTPHEADER, ["Content-type: application/xml", "Accept: application/xml", "Prefer: persistent-auth", "Filter: true"])
 
 	if opt.has_key("cookie"):
 		conn.setopt(pycurl.COOKIE, opt["cookie"])

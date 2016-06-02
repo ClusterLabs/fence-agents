@@ -1,15 +1,11 @@
 <?xml version="1.0" ?>
-<resource-agent name="fence_ilo3" shortdesc="Fence agent for IPMI" >
-<symlink name="fence_ilo3" shortdesc="Fence agent for HP iLO3"/>
-<symlink name="fence_ilo4" shortdesc="Fence agent for HP iLO4"/>
-<symlink name="fence_imm" shortdesc="Fence agent for IBM Integrated Management Module"/>
-<symlink name="fence_idrac" shortdesc="Fence agent for Dell iDRAC"/>
-<longdesc>fence_ipmilan is an I/O Fencing agentwhich can be used with machines controlled by IPMI.This agent calls support software ipmitool (http://ipmitool.sf.net/). WARNING! This fence agent might report success before the node is powered off. You should use -m/method onoff if your fence device works correctly with that option.</longdesc>
-<vendor-url></vendor-url>
+<resource-agent name="fence_amt_ws" shortdesc="Fence agent for AMT (WS)" >
+<longdesc>fence_amt_ws is an I/O Fencing agent which can be used with Intel AMT (WS). This agent requires the pywsman Python library which is included in OpenWSMAN. (http://openwsman.github.io/).</longdesc>
+<vendor-url>http://www.intel.com/</vendor-url>
 <parameters>
 	<parameter name="ipport" unique="0" required="0">
 		<getopt mixed="-u, --ipport=[port]" />
-		<content type="string" default="623"  />
+		<content type="string" default="16992"  />
 		<shortdesc lang="en">TCP/UDP port to use for connection with device</shortdesc>
 	</parameter>
 	<parameter name="port" unique="0" required="0">
@@ -27,72 +23,44 @@
 		<content type="string"  />
 		<shortdesc lang="en">IP Address or Hostname</shortdesc>
 	</parameter>
-	<parameter name="passwd_script" unique="0" required="0">
-		<getopt mixed="-S, --password-script=[script]" />
-		<content type="string"  />
-		<shortdesc lang="en">Script to retrieve password</shortdesc>
+	<parameter name="inet4_only" unique="0" required="0">
+		<getopt mixed="-4, --inet4-only" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Forces agent to use IPv4 addresses only</shortdesc>
 	</parameter>
 	<parameter name="method" unique="0" required="0">
 		<getopt mixed="-m, --method=[method]" />
-		<content type="select" default="cycle"  >
+		<content type="select" default="onoff"  >
 			<option value="onoff" />
 			<option value="cycle" />
 		</content>
 		<shortdesc lang="en">Method to fence (onoff|cycle)</shortdesc>
 	</parameter>
-	<parameter name="inet4_only" unique="0" required="0">
-		<getopt mixed="-4, --inet4-only" />
-		<content type="boolean"  />
-		<shortdesc lang="en">Forces agent to use IPv4 addresses only</shortdesc>
+	<parameter name="passwd_script" unique="0" required="0">
+		<getopt mixed="-S, --password-script=[script]" />
+		<content type="string"  />
+		<shortdesc lang="en">Script to retrieve password</shortdesc>
 	</parameter>
 	<parameter name="passwd" unique="0" required="0">
 		<getopt mixed="-p, --password=[password]" />
 		<content type="string"  />
 		<shortdesc lang="en">Login password or passphrase</shortdesc>
 	</parameter>
-	<parameter name="lanplus" unique="0" required="0">
-		<getopt mixed="-P, --lanplus" />
-		<content type="boolean" default="1"  />
-		<shortdesc lang="en">Use Lanplus to improve security of connection</shortdesc>
-	</parameter>
-	<parameter name="auth" unique="0" required="0">
-		<getopt mixed="-A, --auth=[auth]" />
+	<parameter name="boot_option" unique="0" required="0">
+		<getopt mixed="-b, --boot-option=[option]" />
 		<content type="select"  >
-			<option value="md5" />
-			<option value="password" />
-			<option value="none" />
+			<option value="pxe" />
+			<option value="hd" />
+			<option value="hdsafe" />
+			<option value="cd" />
+			<option value="diag" />
 		</content>
-		<shortdesc lang="en">IPMI Lan Auth type.</shortdesc>
+		<shortdesc lang="en">Change the default boot behavior of the machine.</shortdesc>
 	</parameter>
 	<parameter name="action" unique="0" required="1">
 		<getopt mixed="-o, --action=[action]" />
 		<content type="string" default="reboot"  />
 		<shortdesc lang="en">Fencing Action</shortdesc>
-	</parameter>
-	<parameter name="cipher" unique="0" required="0">
-		<getopt mixed="-C, --cipher=[cipher]" />
-		<content type="string"  />
-		<shortdesc lang="en">Ciphersuite to use (same as ipmitool -C parameter)</shortdesc>
-	</parameter>
-	<parameter name="privlvl" unique="0" required="0">
-		<getopt mixed="-L, --privlvl=[level]" />
-		<content type="select" default="administrator"  >
-			<option value="callback" />
-			<option value="user" />
-			<option value="operator" />
-			<option value="administrator" />
-		</content>
-		<shortdesc lang="en">Privilege level on IPMI device</shortdesc>
-	</parameter>
-	<parameter name="timeout" unique="0" required="0">
-		<getopt mixed="-t [seconds]                   Timeout (sec) for IPMI operation" />
-		<content type="string"  />
-		<shortdesc lang="en">Timeout (sec) for IPMI operation</shortdesc>
-	</parameter>
-	<parameter name="login" unique="0" required="0">
-		<getopt mixed="-l, --username=[name]" />
-		<content type="string"  />
-		<shortdesc lang="en">Login Name</shortdesc>
 	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
@@ -116,7 +84,7 @@
 	</parameter>
 	<parameter name="power_wait" unique="0" required="0">
 		<getopt mixed="--power-wait=[seconds]" />
-		<content type="string" default="4"  />
+		<content type="string" default="0"  />
 		<shortdesc lang="en">Wait X seconds after issuing ON/OFF</shortdesc>
 	</parameter>
 	<parameter name="login_timeout" unique="0" required="0">
@@ -124,20 +92,15 @@
 		<content type="string" default="5"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
 	</parameter>
-	<parameter name="delay" unique="0" required="0">
-		<getopt mixed="--delay=[seconds]" />
-		<content type="string" default="0"  />
-		<shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
-	</parameter>
 	<parameter name="power_timeout" unique="0" required="0">
 		<getopt mixed="--power-timeout=[seconds]" />
 		<content type="string" default="20"  />
 		<shortdesc lang="en">Test X seconds for status change after ON/OFF</shortdesc>
 	</parameter>
-	<parameter name="ipmitool_path" unique="0" required="0">
-		<getopt mixed="--ipmitool-path=[path]" />
-		<content type="string" default="/usr/bin/ipmitool"  />
-		<shortdesc lang="en">Path to ipmitool binary</shortdesc>
+	<parameter name="delay" unique="0" required="0">
+		<getopt mixed="--delay=[seconds]" />
+		<content type="string" default="0"  />
+		<shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
 	</parameter>
 	<parameter name="shell_timeout" unique="0" required="0">
 		<getopt mixed="--shell-timeout=[seconds]" />
@@ -154,11 +117,6 @@
 		<content type="string" default="1"  />
 		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
 	</parameter>
-	<parameter name="sudo" unique="0" required="0">
-		<getopt mixed="--use-sudo" />
-		<content type="boolean"  />
-		<shortdesc lang="en">Use sudo (without password) when calling 3rd party sotfware.</shortdesc>
-	</parameter>
 </parameters>
 <actions>
 	<action name="on" automatic="0"/>
@@ -169,6 +127,5 @@
 	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
-	<action name="diag" />
 </actions>
 </resource-agent>

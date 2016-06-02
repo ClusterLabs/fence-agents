@@ -264,7 +264,8 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/alom/Makefile
 		 fence/agents/apc/Makefile
 		 fence/agents/apc_snmp/Makefile
-		 fence/agents/amt/Makefile 
+		 fence/agents/amt/Makefile
+		 fence/agents/amt_ws/Makefile
 		 fence/agents/bladecenter/Makefile
 		 fence/agents/brocade/Makefile
 		 fence/agents/cisco_mds/Makefile

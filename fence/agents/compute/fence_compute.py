@@ -80,6 +80,7 @@ def _is_server_evacuable(server, evac_flavors, evac_images):
 		return True
 	if server.image.get('id') in evac_images:
 		return True
+	logging.debug("Instance %s is not evacuable" % server.image.get('id'))
 	return False
 
 def _get_evacuable_flavors():
@@ -103,10 +104,12 @@ def _get_evacuable_images():
 
 def _host_evacuate(options):
 	result = True
-	servers = nova.servers.list(search_opts={'host': options["--plug"]})
+	servers = nova.servers.list(search_opts={'host': options["--plug"], 'all_tenants': 1 })
 	if options["--instance-filtering"] == "False":
+		logging.debug("Evacuating all images and flavors")
 		evacuables = servers
 	else:
+		logging.debug("Filtering images and flavors")
 		flavors = _get_evacuable_flavors()
 		images = _get_evacuable_images()
 		# Identify all evacuable servers
@@ -119,6 +122,7 @@ def _host_evacuate(options):
 		on_shared_storage = True
 
 	for server in evacuables:
+		logging.debug("Processing %s" % server)
 		if hasattr(server, 'id'):
 			response = _server_evacuate(server.id, on_shared_storage)
 			if response["accepted"]:
