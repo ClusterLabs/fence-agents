@@ -110,7 +110,10 @@ def _host_evacuate(options):
 	flavors = _get_evacuable_flavors()
 	servers = nova.servers.list(search_opts={'host': options["--plug"], 'all_tenants': 1 })
 
-	if len(flavors) or len(images):
+	if options["--instance-filtering"] == "False":
+		logging.debug("Not evacuating anything")
+		evacuables = []
+        elif len(flavors) or len(images):
 		logging.debug("Filtering images and flavors: %s %s" % (repr(flavors), repr(images)))
 		# Identify all evacuable servers
 		logging.debug("Checking %s" % repr(servers))
@@ -272,10 +275,10 @@ def define_new_opts():
 	all_opt["instance-filtering"] = {
 		"getopt" : "",
 		"longopt" : "instance-filtering",
-		"help" : "--instance-filtering           Only evacuate instances create from images and flavors with evacuable=true",
+		"help" : "--instance-filtering           Allow instances created from images and flavors with evacuable=true to be evacuated (or all if no images/flavors have been tagged)",
 		"required" : "0",
-		"shortdesc" : "Only evacuate flagged instances",
-		"default" : "False",
+		"shortdesc" : "Allow instances to be evacuated",
+		"default" : "True",
 		"order": 5,
 	}
 	all_opt["no-shared-storage"] = {
