@@ -105,10 +105,10 @@ def send_cmd(options, cmd, post=None):
 		conn.setopt(pycurl.COOKIE, options["auth"]["ticket"])
 		conn.setopt(pycurl.HTTPHEADER, [options["auth"]["CSRF_token"]])
 	if post is not None:
-    	if "skiplock" in post:
-        	conn.setopt(conn.CUSTOMREQUEST, 'POST')
-    	else:
-        	conn.setopt(pycurl.POSTFIELDS, urllib.urlencode(post))
+		if "skiplock" in post:
+			conn.setopt(conn.CUSTOMREQUEST, 'POST')
+		else:
+			conn.setopt(pycurl.POSTFIELDS, urllib.urlencode(post))
 	conn.setopt(pycurl.WRITEFUNCTION, output_buffer.write)
 	conn.setopt(pycurl.TIMEOUT, int(options["--shell-timeout"]))
 	if "--ssl" in options or "--ssl-secure" in options:
