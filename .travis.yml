@@ -38,6 +38,6 @@ before_script:
 script:
   - ./autogen.sh
   - ./configure
-  - make
-  - make check
+  - make -j4
+  - make -j4 check
   - PYTHONPATH=fence/agents/lib python fence/agents/lib/tests/test_fencing.py

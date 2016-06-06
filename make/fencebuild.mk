@@ -29,11 +29,20 @@ $(TARGET): $(SRC)
 		-e 's#@''NOVA_PATH@#${NOVA_PATH}#g' \
 	> $@
 
-	if [ 0 -eq `echo "$(SRC)" | grep fence_ &> /dev/null; echo $$?` ]; then \
-		PYTHONPATH=$(abs_srcdir)/../lib:$(abs_builddir)/../lib $(top_srcdir)/fence/agents/lib/check_used_options.py $@; \
+	if [ 0 -eq `echo "$(@)" | grep fence_ &> /dev/null; echo $$?` ]; then \
+		PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib $(top_srcdir)/fence/agents/lib/check_used_options.py $@; \
 	else true ; fi
 
+	for x in `PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib $(PYTHON) $(@) -o metadata | grep symlink | sed -e "s/.*\(fence.*\)\" .*/\1/g"`; do \
+		cp $(@) $(@D)/$$x; \
+		$(MAKE) $(@D)/$$x.8; \
+	done
+
 clean: clean-man
-	rm -f $(TARGET) $(SYMTARGET) *.pyc *.wiki
+	rm -f $(CLEAN_TARGET:%.8=%) $(CLEAN_TARGET_ADDITIONAL) $(scsidata_SCRIPTS) kdump/fence_kdump_send */*.pyc */*.wiki
+
+	if [ "$(abs_builddir)" = "$(abs_top_builddir)/fence/agents/lib" ]; then \
+		rm -f $(TARGET); \
+	fi
 
 clean-local: clean

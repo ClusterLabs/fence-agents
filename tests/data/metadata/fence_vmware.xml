@@ -1,18 +1,30 @@
 <?xml version="1.0" ?>
-<resource-agent name="fence_tripplite_snmp" shortdesc="Fence agent for APC, Tripplite PDU over SNMP" >
-<symlink name="fence_tripplite_snmp" shortdesc="Fence agent for Tripplife over SNMP"/>
-<longdesc>fence_apc_snmp is an I/O Fencing agent which can be used with the APC network power switch or Tripplite PDU devices.It logs into a device via SNMP and reboots a specified outlet. It supports SNMP v1, v2c, v3 with all combinations of  authenticity/privacy settings.</longdesc>
-<vendor-url>http://www.apc.com</vendor-url>
+<resource-agent name="fence_vmware" shortdesc="Fence agent for VMWare" >
+<longdesc>fence_vmware is an I/O Fencing agent which can be used with the VMware ESX, VMware ESXi or VMware Server to fence virtual machines.
+.P
+Before you can use this agent, it must be installed VI Perl Toolkit or vmrun command on every node you want to make fencing.
+.P
+VI Perl Toolkit is preferred for VMware ESX/ESXi and Virtual Center. Vmrun command is only solution for VMware Server 1/2 (this command will works against ESX/ESXi 3.5 up2 and VC up2 too, but not cluster aware!) and is available as part of VMware VIX API SDK package. VI Perl and VIX API SDK are both available from VMware web pages (not int RHEL repository!). 
+.P
+You can specify type of VMware you are connecting to with \fB-d\fP switch (or \fIvmware_type\fR for stdin). Possible values are esx, server2 and server1.Default value is esx, which will use VI Perl. With server1 and server2, vmrun command is used.
+.P
+After you have successfully installed VI Perl Toolkit or VIX API, you should be able to run fence_vmware_helper (part of this agent) or vmrun command. This agent supports only vmrun from version 2.0.0 (VIX API 1.6.0).</longdesc>
+<vendor-url>http://www.vmware.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
 		<getopt mixed="-o, --action=[action]" />
 		<content type="string" default="reboot"  />
 		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
-	<parameter name="community" unique="0" required="0">
-		<getopt mixed="-c, --community=[community]" />
-		<content type="string" default="private"  />
-		<shortdesc lang="en">Set the community string</shortdesc>
+	<parameter name="exec" unique="0" required="0">
+		<getopt mixed="-e, --exec=[command]" />
+		<content type="string"  />
+		<shortdesc lang="en">Command to execute</shortdesc>
+	</parameter>
+	<parameter name="identity_file" unique="0" required="0">
+		<getopt mixed="-k, --identity-file=[filename]" />
+		<content type="string"  />
+		<shortdesc lang="en">Identity file (private key) for SSH</shortdesc>
 	</parameter>
 	<parameter name="inet4_only" unique="0" required="0">
 		<getopt mixed="-4, --inet4-only" />
@@ -24,17 +36,17 @@
 		<content type="boolean"  />
 		<shortdesc lang="en">Forces agent to use IPv6 addresses only</shortdesc>
 	</parameter>
-	<parameter name="ipaddr" unique="0" required="1">
+	<parameter name="ipaddr" unique="0" required="0">
 		<getopt mixed="-a, --ip=[ip]" />
 		<content type="string"  />
 		<shortdesc lang="en">IP address or hostname of fencing device</shortdesc>
 	</parameter>
 	<parameter name="ipport" unique="0" required="0">
 		<getopt mixed="-u, --ipport=[port]" />
-		<content type="string" default="161"  />
+		<content type="string" default="22"  />
 		<shortdesc lang="en">TCP/UDP port to use for connection with device</shortdesc>
 	</parameter>
-	<parameter name="login" unique="0" required="0">
+	<parameter name="login" unique="0" required="1">
 		<getopt mixed="-l, --username=[name]" />
 		<content type="string"  />
 		<shortdesc lang="en">Login name</shortdesc>
@@ -49,54 +61,30 @@
 		<content type="string"  />
 		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
 	</parameter>
-	<parameter name="port" unique="0" required="1">
-		<getopt mixed="-n, --plug=[id]" />
+	<parameter name="port" unique="0" required="0">
+		<getopt mixed="-n, --plug=[ip]" />
 		<content type="string"  />
-		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
+		<shortdesc lang="en">IP address or hostname of fencing device (together with --port-as-ip)</shortdesc>
 	</parameter>
-	<parameter name="snmp_auth_prot" unique="0" required="0">
-		<getopt mixed="-b, --snmp-auth-prot=[prot]" />
-		<content type="select"  >
-			<option value="MD5" />
-			<option value="SHA" />
-		</content>
-		<shortdesc lang="en">Set authentication protocol</shortdesc>
+	<parameter name="secure" unique="0" required="0">
+		<getopt mixed="-x, --ssh" />
+		<content type="boolean" default="1"  />
+		<shortdesc lang="en">Use SSH connection</shortdesc>
 	</parameter>
-	<parameter name="snmp_priv_passwd" unique="0" required="0">
-		<getopt mixed="-P, --snmp-priv-passwd=[pass]" />
+	<parameter name="ssh_options" unique="0" required="0">
+		<getopt mixed="--ssh-options=[options]" />
 		<content type="string"  />
-		<shortdesc lang="en">Set privacy protocol password</shortdesc>
+		<shortdesc lang="en">SSH options to use</shortdesc>
 	</parameter>
-	<parameter name="snmp_priv_passwd_script" unique="0" required="0">
-		<getopt mixed="-R, --snmp-priv-passwd-script" />
+	<parameter name="vmware_type" unique="0" required="0">
+		<getopt mixed="-d, --vmware_type=[type]" />
+		<content type="string" default="esx"  />
+		<shortdesc lang="en">Type of VMware to connect</shortdesc>
+	</parameter>
+	<parameter name="vmware_datacenter" unique="0" required="0">
+		<getopt mixed="-s, --vmware-datacenter=[dc]" />
 		<content type="string"  />
-		<shortdesc lang="en">Script to run to retrieve privacy password</shortdesc>
-	</parameter>
-	<parameter name="snmp_priv_prot" unique="0" required="0">
-		<getopt mixed="-B, --snmp-priv-prot=[prot]" />
-		<content type="select"  >
-			<option value="DES" />
-			<option value="AES" />
-		</content>
-		<shortdesc lang="en">Set privacy protocol</shortdesc>
-	</parameter>
-	<parameter name="snmp_sec_level" unique="0" required="0">
-		<getopt mixed="-E, --snmp-sec-level=[level]" />
-		<content type="select"  >
-			<option value="noAuthNoPriv" />
-			<option value="authNoPriv" />
-			<option value="authPriv" />
-		</content>
-		<shortdesc lang="en">Set security level</shortdesc>
-	</parameter>
-	<parameter name="snmp_version" unique="0" required="0">
-		<getopt mixed="-d, --snmp-version=[version]" />
-		<content type="select" default="1"  >
-			<option value="1" />
-			<option value="2c" />
-			<option value="3" />
-		</content>
-		<shortdesc lang="en">Specifies SNMP version to use</shortdesc>
+		<shortdesc lang="en">VMWare datacenter filter</shortdesc>
 	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
@@ -118,11 +106,6 @@
 		<content type="boolean"  />
 		<shortdesc lang="en">Display help and exit</shortdesc>
 	</parameter>
-	<parameter name="separator" unique="0" required="0">
-		<getopt mixed="-C, --separator=[char]" />
-		<content type="string" default=","  />
-		<shortdesc lang="en">Separator for CSV created by 'list' operation</shortdesc>
-	</parameter>
 	<parameter name="delay" unique="0" required="0">
 		<getopt mixed="--delay=[seconds]" />
 		<content type="string" default="0"  />
@@ -132,6 +115,11 @@
 		<getopt mixed="--login-timeout=[seconds]" />
 		<content type="string" default="5"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
+	</parameter>
+	<parameter name="port_as_ip" unique="0" required="0">
+		<getopt mixed="--port-as-ip" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Make "port/plug" to be an alias to IP address</shortdesc>
 	</parameter>
 	<parameter name="power_timeout" unique="0" required="0">
 		<getopt mixed="--power-timeout=[seconds]" />
@@ -153,20 +141,10 @@
 		<content type="string" default="1"  />
 		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
 	</parameter>
-	<parameter name="snmpget_path" unique="0" required="0">
-		<getopt mixed="--snmpget-path=[path]" />
-		<content type="string" default="/usr/bin/snmpget"  />
-		<shortdesc lang="en">Path to snmpget binary</shortdesc>
-	</parameter>
-	<parameter name="snmpset_path" unique="0" required="0">
-		<getopt mixed="--snmpset-path=[path]" />
-		<content type="string" default="/usr/bin/snmpset"  />
-		<shortdesc lang="en">Path to snmpset binary</shortdesc>
-	</parameter>
-	<parameter name="snmpwalk_path" unique="0" required="0">
-		<getopt mixed="--snmpwalk-path=[path]" />
-		<content type="string" default="/usr/bin/snmpwalk"  />
-		<shortdesc lang="en">Path to snmpwalk binary</shortdesc>
+	<parameter name="ssh_path" unique="0" required="0">
+		<getopt mixed="--ssh-path=[path]" />
+		<content type="string" default="/usr/bin/ssh"  />
+		<shortdesc lang="en">Path to ssh binary</shortdesc>
 	</parameter>
 </parameters>
 <actions>
@@ -174,8 +152,6 @@
 	<action name="off" />
 	<action name="reboot" />
 	<action name="status" />
-	<action name="list" />
-	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
 	<action name="validate-all" />

@@ -213,6 +213,7 @@ which can be used with the APC network power switch or Tripplite PDU devices.\
 It logs into a device via SNMP and reboots a specified outlet. It supports \
 SNMP v1, v2c, v3 with all combinations of  authenticity/privacy settings."
 	docs["vendorurl"] = "http://www.apc.com"
+	docs["symlink"] = [("fence_tripplite_snmp", "Fence agent for Tripplife over SNMP")]
 	show_docs(options, docs)
 
 	# Operate the fencing device
