@@ -90,7 +90,7 @@ def _get_evacuable_flavors():
 	# we need to call each of the flavor to get them.
 	for flavor in flavors:
 		tag = flavor.get_keys().get(EVACUABLE_TAG)
-		if tag.strip().lower() in TRUE_TAGS:
+		if tag and tag.strip().lower() in TRUE_TAGS:
 			result.append(flavor.id)
 	return result
 
