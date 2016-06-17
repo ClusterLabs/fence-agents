@@ -14,7 +14,7 @@
 ##        cipher (des/blowfish) have to be defined
 #####
 
-import sys, re
+import sys, re, time
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
@@ -25,6 +25,10 @@ RELEASE_VERSION="New APC Agent - test release on steroids"
 REDHAT_COPYRIGHT=""
 BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
+
+# Fix for connection timed out issue in:
+# https://bugzilla.redhat.com/show_bug.cgi?id=1342584
+TIMEDOUT_DELAY = 0.5
 
 def get_power_status(conn, options):
 	exp_result = 0
@@ -78,6 +82,7 @@ def get_power_status(conn, options):
 			res = show_re.search(line)
 			if res != None:
 				outlets[res.group(2)] = (res.group(3), res.group(4))
+		time.sleep(TIMEDOUT_DELAY)
 		conn.send_eol("")
 		if exp_result != 0:
 			break
@@ -151,6 +156,7 @@ def set_power_status(conn, options):
 
 	while 0 == conn.log_expect(
 			["Press <ENTER>"] + options["--command-prompt"], int(options["--shell-timeout"])):
+		time.sleep(TIMEDOUT_DELAY)
 		conn.send_eol("")
 
 	conn.send_eol(options["--plug"]+"")
@@ -171,6 +177,7 @@ def set_power_status(conn, options):
 	conn.log_expect("Enter 'YES' to continue or <ENTER> to cancel :", int(options["--shell-timeout"]))
 	conn.send_eol("YES")
 	conn.log_expect("Press <ENTER> to continue...", int(options["--power-timeout"]))
+	time.sleep(TIMEDOUT_DELAY)
 	conn.send_eol("")
 	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 	conn.send(chr(0o3))
