@@ -113,7 +113,7 @@ def _host_evacuate(options):
 	if options["--instance-filtering"] == "False":
 		logging.debug("Not evacuating anything")
 		evacuables = []
-        elif len(flavors) or len(images):
+	elif len(flavors) or len(images):
 		logging.debug("Filtering images and flavors: %s %s" % (repr(flavors), repr(images)))
 		# Identify all evacuable servers
 		logging.debug("Checking %s" % repr(servers))
