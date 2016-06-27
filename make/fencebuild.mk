@@ -1,4 +1,5 @@
 $(TARGET): $(SRC)
+	mkdir -p `dirname $@`
 	bash $(top_srcdir)/scripts/fenceparse \
 		$(top_srcdir)/make/copyright.cf REDHAT_COPYRIGHT \
 		$(VERSION) \
