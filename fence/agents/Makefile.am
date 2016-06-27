@@ -6,7 +6,7 @@ SRC				= $(TARGET:=.py)
 
 CLEAN_TARGET_ADDITIONAL		= kdump/fence_kdump_send
 
-EXTRA_DIST			= $(SRC)
+EXTRA_DIST			= $(SRC) manual/fence_ack_manual.in manual/fence_ack_manual.8
 
 sbin_SCRIPTS			= $(TARGET) manual/fence_ack_manual
 
@@ -44,6 +44,7 @@ session_url=http://test\n\
 email=test@test.te
 
 manual/fence_ack_manual: manual/fence_ack_manual.in
+	mkdir $(@D)
 	cat $^ | sed \
 		-e 's#@clustervarrun@#${CLUSTERVARRUN}#g' \
 	> $@
