@@ -252,20 +252,18 @@ def fix_domain(options):
 
 	elif len(domains) == 1 and "--domain" not in options:
 		options["--domain"] = last_domain
-		return options["--domain"]
 
 	elif len(domains) == 1 and options["--domain"] != last_domain:
 		logging.error("Overriding supplied domain '%s' as it does not match the one calculated from: %s"
 			      % (options["--domain"], service.host))
 		options["--domain"] = last_domain
-		return options["--domain"]
 
 	elif len(domains) > 1:
 		logging.error("The supplied domain '%s' did not match any used inside nova: %s"
 			      % (options["--domain"], repr(domains)))
 		sys.exit(1)
 
-	return None
+	return last_domain
 
 def fix_plug_name(options):
 	if options["--action"] == "list":
@@ -275,14 +273,15 @@ def fix_plug_name(options):
 		return
 
 	calculated = fix_domain(options)
-	short_plug = options["--plug"].split('.')[0]
-	logging.debug("Checking target '%s' against calculated domain '%s'"% (options["--plug"], calculated))
 
-	if "--domain" not in options:
+	if calculated is None or "--domain" not in options:
 		# Nothing supplied and nova not available... what to do... nothing
 		return
 
-	elif options["--domain"] == "":
+	short_plug = options["--plug"].split('.')[0]
+	logging.debug("Checking target '%s' against calculated domain '%s'"% (options["--plug"], calculated))
+
+	if options["--domain"] == "":
 		# Ensure any domain is stripped off since nova isn't using FQDN
 		options["--plug"] = short_plug
 
