@@ -44,7 +44,7 @@ session_url=http://test\n\
 email=test@test.te
 
 manual/fence_ack_manual: manual/fence_ack_manual.in
-	mkdir $(@D)
+	mkdir -p $(@D)
 	cat $^ | sed \
 		-e 's#@clustervarrun@#${CLUSTERVARRUN}#g' \
 	> $@
