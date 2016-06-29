@@ -229,23 +229,19 @@ def fix_domain(options):
 				# Compute nodes are named as FQDN, strip off the hostname
 				calculated = service.host.replace(shorthost+".", "")
 
-			domains[calculated] = shorthost
-
 			if calculated == last_domain:
 				# Avoid complaining for each compute node with the same name
 				# One hopes they don't appear interleaved as A.com B.com A.com B.com
 				logging.debug("Calculated the same domain from: %s" % service.host)
+				continue
 
-			elif "--domain" in options and options["--domain"] == calculated:
-				# Supplied domain name is valid 
-				return
+			domains[calculated] = service.host
+			last_domain = calculated
 
-			elif "--domain" in options:
+			if "--domain" in options and options["--domain"] != calculated:
 				# Warn in case nova isn't available at some point
 				logging.warning("Supplied domain '%s' does not match the one calculated from: %s"
 					      % (options["--domain"], service.host))
-
-			last_domain = calculated
 
 	if len(domains) == 0 and "--domain" not in options:
 		logging.error("Could not calculate the domain names used by compute nodes in nova")
@@ -255,7 +251,7 @@ def fix_domain(options):
 
 	elif len(domains) == 1 and options["--domain"] != last_domain:
 		logging.error("Overriding supplied domain '%s' as it does not match the one calculated from: %s"
-			      % (options["--domain"], service.host))
+			      % (options["--domain"], domains[last_domain]))
 		options["--domain"] = last_domain
 
 	elif len(domains) > 1:
