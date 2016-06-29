@@ -4,7 +4,7 @@ TARGET				= $(AGENTS_LIST:%.py=%)
 
 SRC				= $(TARGET:=.py)
 
-CLEAN_TARGET_ADDITIONAL		= kdump/fence_kdump_send
+CLEAN_TARGET_ADDITIONAL		= kdump/fence_kdump_send manual/fence_ack_manual
 
 EXTRA_DIST			= $(SRC) manual/fence_ack_manual.in manual/fence_ack_manual.8
 

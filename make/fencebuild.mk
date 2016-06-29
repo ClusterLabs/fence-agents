@@ -40,7 +40,7 @@ $(TARGET): $(SRC)
 	done
 
 clean: clean-man
-	rm -f $(CLEAN_TARGET:%.8=%) $(CLEAN_TARGET_ADDITIONAL) $(scsidata_SCRIPTS) kdump/fence_kdump_send manual/fence_ack_manual */*.pyc */*.wiki
+	rm -f $(CLEAN_TARGET:%.8=%) $(CLEAN_TARGET_ADDITIONAL) $(scsidata_SCRIPTS) */*.pyc */*.wiki
 
 	if [ "$(abs_builddir)" = "$(abs_top_builddir)/fence/agents/lib" ]; then \
 		rm -f $(TARGET); \
