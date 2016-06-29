@@ -254,8 +254,8 @@ def fix_domain(options):
 		options["--domain"] = last_domain
 		return options["--domain"]
 
-	elif len(domains) == 1:
-		logging.error("Overriding supplied domain '%s' does not match the one calculated from: %s"
+	elif len(domains) == 1 and options["--domain"] != last_domain:
+		logging.error("Overriding supplied domain '%s' as it does not match the one calculated from: %s"
 			      % (options["--domain"], service.host))
 		options["--domain"] = last_domain
 		return options["--domain"]
