@@ -1,4 +1,4 @@
-$(TARGET): $(SRC)
+define gen_agent_from_py
 	mkdir -p `dirname $@`
 	bash $(top_srcdir)/scripts/fenceparse \
 		$(top_srcdir)/make/copyright.cf REDHAT_COPYRIGHT \
@@ -30,14 +30,22 @@ $(TARGET): $(SRC)
 		-e 's#@''NOVA_PATH@#${NOVA_PATH}#g' \
 	> $@
 
-	if [ 0 -eq `echo "$(@)" | grep fence_ &> /dev/null; echo $$?` ]; then \
-		PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib $(top_srcdir)/fence/agents/lib/check_used_options.py $@; \
-	else true ; fi
+	case $@ in *fence_*) \
+		PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib $(top_srcdir)/fence/agents/lib/check_used_options.py $@;; \
+	esac
 
 	for x in `PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib $(PYTHON) $(@) -o metadata | grep symlink | sed -e "s/.*\(fence.*\)\" .*/\1/g"`; do \
-		cp $(@) $(@D)/$$x; \
+		cp -f $(@) $(@D)/$$x; \
 		$(MAKE) $(@D)/$$x.8; \
 	done
+endef
+
+# dependency, one on one
+$(foreach t,$(TARGET),$(eval $(t) : $(t:=.py)))
+
+# rule
+$(TARGET):
+	$(call gen_agent_from_py)
 
 clean: clean-man
 	rm -f $(CLEAN_TARGET:%.8=%) $(CLEAN_TARGET_ADDITIONAL) $(scsidata_SCRIPTS) */*.pyc */*.wiki
