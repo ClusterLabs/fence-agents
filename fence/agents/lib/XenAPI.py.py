@@ -49,7 +49,7 @@ import gettext
 import socket
 import logging
 
-if sys.version_info.major > 2:
+if sys.version_info[0] > 2:
 	import xmlrpc.client as xmlrpclib
 	import http.client as httplib
 else:
