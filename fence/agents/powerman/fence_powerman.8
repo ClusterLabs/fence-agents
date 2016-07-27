@@ -1,0 +1,221 @@
+
+.TH FENCE_AGENT 8 2009-10-20 "fence_powerman (Fence Agent)"
+.SH NAME
+fence_powerman - Fence Agent for Powerman
+.SH DESCRIPTION
+.P
+This is a Pacemaker Fence Agent for the Powerman management utility that was designed for LLNL systems.
+.P
+fence_powerman accepts options on the command line as well
+as from stdin. Fenced sends parameters through stdin when it execs the
+agent. fence_powerman can be run by itself with command
+line options.  This is useful for testing and for turning outlets on or off
+from scripts.
+
+Vendor URL: https://github.com/chaos/powerman
+.SH PARAMETERS
+
+	
+.TP
+.B -o, --action=[action]
+. 
+Fencing action (Default Value: reboot)
+	
+.TP
+.B -4, --inet4-only
+. 
+Forces agent to use IPv4 addresses only
+	
+.TP
+.B -6, --inet6-only
+. 
+Forces agent to use IPv6 addresses only
+	
+.TP
+.B -a, --ip=[ip]
+. 
+IP address or hostname of fencing device
+	
+.TP
+.B -u, --ipport=[port]
+. 
+TCP/UDP port to use for connection with device (Default Value: 10101)
+	
+.TP
+.B -n, --plug=[ip]
+. 
+IP address or hostname of fencing device (together with --port-as-ip)
+	
+.TP
+.B -v, --verbose
+. 
+Verbose mode
+	
+.TP
+.B -D, --debug-file=[debugfile]
+. 
+Write debug information to given file
+	
+.TP
+.B -V, --version
+. 
+Display version information and exit
+	
+.TP
+.B -h, --help
+. 
+Display help and exit
+	
+.TP
+.B --delay=[seconds]
+. 
+Wait X seconds before fencing is started (Default Value: 3)
+	
+.TP
+.B --login-timeout=[seconds]
+. 
+Wait X seconds for cmd prompt after login (Default Value: 5)
+	
+.TP
+.B --port-as-ip
+. 
+Make "port/plug" to be an alias to IP address
+	
+.TP
+.B --power-timeout=[seconds]
+. 
+Test X seconds for status change after ON/OFF (Default Value: 20)
+	
+.TP
+.B --power-wait=[seconds]
+. 
+Wait X seconds after issuing ON/OFF (Default Value: 3)
+	
+.TP
+.B --shell-timeout=[seconds]
+. 
+Wait X seconds for cmd prompt after issuing command (Default Value: 3)
+	
+.TP
+.B --retry-on=[attempts]
+. 
+Count of attempts to retry power on (Default Value: 1)
+
+.SH ACTIONS
+
+	
+.TP
+\fBon \fP
+Power on machine.
+	
+.TP
+\fBoff \fP
+Power off machine.
+	
+.TP
+\fBreboot \fP
+Reboot machine.
+	
+.TP
+\fBstatus \fP
+This returns the status of the plug/virtual machine.
+	
+.TP
+\fBmonitor \fP
+Check the health of fence device
+	
+.TP
+\fBmetadata \fP
+Display the XML metadata describing this resource.
+	
+.TP
+\fBvalidate-all \fP
+Validate if all required parameters are entered.
+
+.SH STDIN PARAMETERS
+
+	
+.TP
+.B action
+. 
+Fencing action (Default Value: reboot)
+	
+.TP
+.B inet4_only
+. 
+Forces agent to use IPv4 addresses only
+	
+.TP
+.B inet6_only
+. 
+Forces agent to use IPv6 addresses only
+	
+.TP
+.B ipaddr
+. 
+IP address or hostname of fencing device
+	
+.TP
+.B ipport
+. 
+TCP/UDP port to use for connection with device (Default Value: 10101)
+	
+.TP
+.B port
+. 
+IP address or hostname of fencing device (together with --port-as-ip)
+	
+.TP
+.B verbose
+. 
+Verbose mode
+	
+.TP
+.B debug
+. 
+Write debug information to given file
+	
+.TP
+.B version
+. 
+Display version information and exit
+	
+.TP
+.B help
+. 
+Display help and exit
+	
+.TP
+.B delay
+. 
+Wait X seconds before fencing is started (Default Value: 3)
+	
+.TP
+.B login_timeout
+. 
+Wait X seconds for cmd prompt after login (Default Value: 5)
+	
+.TP
+.B port_as_ip
+. 
+Make "port/plug" to be an alias to IP address
+	
+.TP
+.B power_timeout
+. 
+Test X seconds for status change after ON/OFF (Default Value: 20)
+	
+.TP
+.B power_wait
+. 
+Wait X seconds after issuing ON/OFF (Default Value: 3)
+	
+.TP
+.B shell_timeout
+. 
+Wait X seconds for cmd prompt after issuing command (Default Value: 3)
+	
+.TP
+.B retry_on
+. 
+Count of attempts to retry power on (Default Value: 1)
