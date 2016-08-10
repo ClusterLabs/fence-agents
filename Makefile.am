@@ -42,5 +42,8 @@ gen-ChangeLog:
 		mv $(distdir)/cl-t $(distdir)/ChangeLog;		\
 	fi
 
+# this will get rid of "libtoolized" m4 files
 maintainer-clean-local:
-	rm -rf m4
+	rm -rf $(filter-out \
+	         $(top_srcdir)/m4/ac_python_module.m4,$(wildcard \
+		                                        $(top_srcdir)/m4/*.m4))

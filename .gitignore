@@ -20,7 +20,11 @@ libtoolize
 ltmain.sh
 libtool
 make/stamp-h1
-m4
+
+# ignore "libtoolized" m4 files, but keep our (enumerated) ones
+/m4/*
+!/m4/ac_python_module.m4
+
 make/clusterautoconfig.h*
 missing
 *.pc
