@@ -116,7 +116,6 @@
 	</parameter>
 	<parameter name="ipmitool_path" unique="0" required="0">
 		<getopt mixed="--ipmitool-path=[path]" />
-		<content type="string" default="/usr/bin/ipmitool"  />
 		<shortdesc lang="en">Path to ipmitool binary</shortdesc>
 	</parameter>
 	<parameter name="login_timeout" unique="0" required="0">
@@ -156,7 +155,6 @@
 	</parameter>
 	<parameter name="sudo_path" unique="0" required="0">
 		<getopt mixed="--sudo-path=[path]" />
-		<content type="string" default="/usr/bin/sudo"  />
 		<shortdesc lang="en">Path to sudo binary</shortdesc>
 	</parameter>
 </parameters>

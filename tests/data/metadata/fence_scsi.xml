@@ -86,22 +86,18 @@ The fence_scsi agent works by having each node in the cluster register a unique 
 	</parameter>
 	<parameter name="corosync-cmap_path" unique="0" required="0">
 		<getopt mixed="--corosync-cmap-path=[path]" />
-		<content type="string" default="/usr/sbin/corosync-cmapctl"  />
 		<shortdesc lang="en">Path to corosync-cmapctl binary</shortdesc>
 	</parameter>
 	<parameter name="sg_persist_path" unique="0" required="0">
 		<getopt mixed="--sg_persist-path=[path]" />
-		<content type="string" default="/usr/bin/sg_persist"  />
 		<shortdesc lang="en">Path to sg_persist binary</shortdesc>
 	</parameter>
 	<parameter name="sg_turs_path" unique="0" required="0">
 		<getopt mixed="--sg_turs-path=[path]" />
-		<content type="string" default="/usr/bin/sg_turs"  />
 		<shortdesc lang="en">Path to sg_turs binary</shortdesc>
 	</parameter>
 	<parameter name="vgs_path" unique="0" required="0">
 		<getopt mixed="--vgs-path=[path]" />
-		<content type="string" default="/usr/sbin/vgs"  />
 		<shortdesc lang="en">Path to vgs binary</shortdesc>
 	</parameter>
 </parameters>

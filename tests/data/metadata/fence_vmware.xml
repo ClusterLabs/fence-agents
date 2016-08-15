@@ -143,7 +143,6 @@ After you have successfully installed VI Perl Toolkit or VIX API, you should be 
 	</parameter>
 	<parameter name="ssh_path" unique="0" required="0">
 		<getopt mixed="--ssh-path=[path]" />
-		<content type="string" default="/usr/bin/ssh"  />
 		<shortdesc lang="en">Path to ssh binary</shortdesc>
 	</parameter>
 </parameters>

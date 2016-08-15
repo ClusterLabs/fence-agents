@@ -125,12 +125,10 @@
 	</parameter>
 	<parameter name="ssh_path" unique="0" required="0">
 		<getopt mixed="--ssh-path=[path]" />
-		<content type="string" default="/usr/bin/ssh"  />
 		<shortdesc lang="en">Path to ssh binary</shortdesc>
 	</parameter>
 	<parameter name="telnet_path" unique="0" required="0">
 		<getopt mixed="--telnet-path=[path]" />
-		<content type="string" default="/usr/bin/telnet"  />
 		<shortdesc lang="en">Path to telnet binary</shortdesc>
 	</parameter>
 </parameters>
