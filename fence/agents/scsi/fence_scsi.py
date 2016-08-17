@@ -438,7 +438,7 @@ persistent reservations to control access to shared storage devices. These \
 devices must support SCSI-3 persistent reservations (SPC-3 or greater) as \
 well as the \"preempt-and-abort\" subcommand.\nThe fence_scsi agent works by \
 having each node in the cluster register a unique key with the SCSI \
-devive(s). Once registered, a single node will become the reservation holder \
+device(s). Once registered, a single node will become the reservation holder \
 by creating a \"write exclusive, registrants only\" reservation on the \
 device(s). The result is that only registered nodes may write to the \
 device(s). When a node failure occurs, the fence_scsi agent will remove the \
