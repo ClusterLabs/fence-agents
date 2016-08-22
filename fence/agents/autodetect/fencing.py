@@ -643,7 +643,7 @@ def check_input(device_opt, opt, other_conditions = False):
 	## add logging to syslog
 	logging.getLogger().addHandler(SyslogLibHandler())
 	## add logging to stderr
-	logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stderr))
+	logging.getLogger().addHandler(logging.StreamHandler(sys.stderr))
 
 	(acceptable_actions, _) = _get_available_actions(device_opt)
 
