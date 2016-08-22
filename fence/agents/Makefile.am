@@ -10,6 +10,21 @@ EXTRA_DIST			= $(SRC) manual/fence_ack_manual.in manual/fence_ack_manual.8
 
 sbin_SCRIPTS			= $(TARGET) manual/fence_ack_manual
 
+apc_snmp_SYMTARGET		= fence_tripplite_snmp
+ilo_SYMTARGET			= fence_ilo2
+ilo_ssh_SYMTARGET		= fence_ilo3_ssh fence_ilo4_ssh
+ipmilan_SYMTARGET		= fence_ilo3 fence_ilo4 fence_imm fence_idrac
+
+define sym_rule
+$$(eval l := $(addprefix $(td)/,$($(td)_SYMTARGET)))
+$$(eval s := $(td)/fence_$(td))
+$$(eval sbin_SCRIPTS += $$(l))
+$$(l) : $$(s)
+	echo cp -avf $$< $$@
+endef
+
+$(foreach td,$(patsubst %/,%,$(dir $(TARGET))),$(if $($(td)_SYMTARGET),$(eval $(call sym_rule))))
+
 EXTRA_SCRIPTS			=
 
 man_MANS			= $(sbin_SCRIPTS:=.8)
@@ -25,7 +40,7 @@ kdump_fence_kdump_CFLAGS	= -D_GNU_SOURCE -Ikdump
 kdump_fence_kdump_send_SOURCES	= kdump/fence_kdump_send.c
 kdump_fence_kdump_send_CFLAGS	= -D_GNU_SOURCE -Ikdump
 
-dist_man_MANS			= kdump/fence_kdump.8 kdump/fence_kdump_send.8
+dist_man_MANS			= kdump/fence_kdump.8 kdump/fence_kdump_send.8 zvm/fence_zvm.8
 
 scsidatadir			= $(CLUSTERDATA)
 scsidata_SCRIPTS		= scsi/fence_scsi_check scsi/fence_scsi_check_hardreboot

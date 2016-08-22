@@ -4,7 +4,7 @@ import sys
 import time
 import atexit
 import logging
-import requests.exceptions
+#import requests.exceptions
 
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
@@ -33,6 +33,7 @@ def get_power_status(_, options):
 		return override_status
 
 	if nova:
+		import requests.exceptions
 		try:
 			services = nova.services.list(host=options["--plug"])
 			for service in services:

@@ -11,7 +11,7 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, fail_usage, EC_LOGIN_DENIED, EC_TIMED_OUT, run_delay
 
-if sys.version_info.major > 2:
+if sys.version_info[0] > 2:
 	import http.client as httplib
 else:
 	import httplib
