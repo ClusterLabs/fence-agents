@@ -32,7 +32,7 @@ def get_power_status(conn, options):
 					re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
 		except AttributeError:
 			fail(EC_STATUS_HMC)
-	elif options["--hmc-version"] == "4":
+	elif options["--hmc-version"] in ["4", "IVM"]:
 		conn.send("lssyscfg -r lpar -m "+ options["--managed"] +
 				" --filter 'lpar_names=" + options["--plug"] + "'\n")
 		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
@@ -56,7 +56,7 @@ def set_power_status(conn, options):
 		conn.send("chsysstate -o " + options["--action"] + " -r lpar -m " + options["--managed"]
 			+ " -n " + options["--plug"] + "\n")
 		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
-	elif options["--hmc-version"] == "4":
+	elif options["--hmc-version"] in ["4", "IVM"]:
 		if options["--action"] == "on":
 			conn.send("chsysstate -o on -r lpar -m " + options["--managed"] +
 				" -n " + options["--plug"] +
@@ -100,6 +100,22 @@ def get_lpar_list(conn, options):
 		for outlet_line in lines:
 			(port, status) = outlet_line.split(":")
 			outlets[port] = ("", status)
+	elif options["--hmc-version"] == "IVM":
+		conn.send("lssyscfg -r lpar -m " + options["--managed"] +
+			" -F name,state\n")
+		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
+
+		## We have to remove first line (command) and last line (part of new prompt)
+		####
+		res = re.search("^.+?\n(.*)\n.*$", conn.before, re.S)
+
+		if res == None:
+			fail_usage("Unable to parse output of list command")
+
+		lines = res.group(1).split("\n")
+		for outlet_line in lines:
+			(port, status) = outlet_line.split(",")
+			outlets[port] = ("", status)
 
 	return outlets
 
@@ -114,11 +130,11 @@ def define_new_opts():
 	all_opt["hmc_version"] = {
 		"getopt" : "H:",
 		"longopt" : "hmc-version",
-		"help" : "-H, --hmc-version=[version]    Force HMC version to use: (3|4) (default: 4)",
+		"help" : "-H, --hmc-version=[version]    Force HMC version to use: (3|4|ivm) (default: 4)",
 		"required" : "0",
 		"shortdesc" : "Force HMC version to use",
 		"default" : "4",
-		"choices" : ["3", "4"],
+		"choices" : ["3", "4", "ivm"],
 		"order" : 1}
 
 def main():
