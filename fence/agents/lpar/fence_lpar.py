@@ -98,7 +98,10 @@ def get_lpar_list(conn, options):
 
 		lines = res.group(1).split("\n")
 		for outlet_line in lines:
-			(port, status) = outlet_line.split(":")
+			try:
+				(port, status) = outlet_line.split(":")
+			except ValueError:
+				fail_usage('Output does not match expected HMC version, try different one');
 			outlets[port] = ("", status)
 	elif options["--hmc-version"] == "IVM":
 		conn.send("lssyscfg -r lpar -m " + options["--managed"] +
@@ -114,7 +117,10 @@ def get_lpar_list(conn, options):
 
 		lines = res.group(1).split("\n")
 		for outlet_line in lines:
-			(port, status) = outlet_line.split(",")
+			try:
+				(port, status) = outlet_line.split(",")
+			except ValueError:
+				fail_usage('Output does not match expected HMC version, try different one');
 			outlets[port] = ("", status)
 
 	return outlets
