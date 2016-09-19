@@ -25,7 +25,7 @@
 	</parameter>
 	<parameter name="ipport" unique="0" required="0">
 		<getopt mixed="-u, --ipport=[port]" />
-		<content type="string" default="80"  />
+		<content type="integer" default="80"  />
 		<shortdesc lang="en">TCP/UDP port to use for connection with device</shortdesc>
 	</parameter>
 	<parameter name="login" unique="0" required="1">
@@ -100,12 +100,12 @@
 	</parameter>
 	<parameter name="delay" unique="0" required="0">
 		<getopt mixed="--delay=[seconds]" />
-		<content type="string" default="0"  />
+		<content type="second" default="0"  />
 		<shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
 	</parameter>
 	<parameter name="login_timeout" unique="0" required="0">
 		<getopt mixed="--login-timeout=[seconds]" />
-		<content type="string" default="5"  />
+		<content type="second" default="5"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
 	</parameter>
 	<parameter name="missing_as_off" unique="0" required="0">
@@ -115,22 +115,22 @@
 	</parameter>
 	<parameter name="power_timeout" unique="0" required="0">
 		<getopt mixed="--power-timeout=[seconds]" />
-		<content type="string" default="20"  />
+		<content type="second" default="20"  />
 		<shortdesc lang="en">Test X seconds for status change after ON/OFF</shortdesc>
 	</parameter>
 	<parameter name="power_wait" unique="0" required="0">
 		<getopt mixed="--power-wait=[seconds]" />
-		<content type="string" default="0"  />
+		<content type="second" default="0"  />
 		<shortdesc lang="en">Wait X seconds after issuing ON/OFF</shortdesc>
 	</parameter>
 	<parameter name="shell_timeout" unique="0" required="0">
 		<getopt mixed="--shell-timeout=[seconds]" />
-		<content type="string" default="3"  />
+		<content type="second" default="3"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
 	</parameter>
 	<parameter name="retry_on" unique="0" required="0">
 		<getopt mixed="--retry-on=[attempts]" />
-		<content type="string" default="1"  />
+		<content type="integer" default="1"  />
 		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
 	</parameter>
 	<parameter name="gnutlscli_path" unique="0" required="0">
