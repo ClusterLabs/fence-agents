@@ -122,7 +122,7 @@ Where XXXXXXX is the name of the virtual machine used in the authuser field of t
 	</parameter>
 	<parameter name="shell_timeout" unique="0" required="0">
 		<getopt mixed="--shell-timeout=[seconds]" />
-		<content type="second" default="5.0"  />
+		<content type="second" default="5"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
 	</parameter>
 	<parameter name="retry_on" unique="0" required="0">
