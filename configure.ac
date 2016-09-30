@@ -131,11 +131,22 @@ if test "x$AGENTS_LIST" = x; then
 fi
 
 if test "x$AGENTS_LIST" != xall; then
+	TMP=""
 	for j in $AGENTS_LIST; do
 		if ! test -d fence/agents/$j; then
 			AC_ERROR([Agent $j does not exists])
 		fi
+
+		if test "$j" = "lib" -o "$j" = "nss_wrapper" -o "$j" = "autodetect"; then
+			continue
+		fi
+
+		AGENT=`find $srcdir/fence/agents/$j -name '*.py' -printf '%P'`
+		if test -n "$AGENT"; then
+			TMP="$TMP $j/$AGENT"
+		fi
 	done
+	AGENTS_LIST="$TMP"
 fi
 
 if test "x$AGENTS_LIST" = xall; then
