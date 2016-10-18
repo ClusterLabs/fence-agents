@@ -37,14 +37,13 @@ def get_power_status(_, options):
 			services = nova.services.list(host=options["--plug"], binary="nova-compute")
 			for service in services:
 				logging.debug("Status of %s is %s" % (service.binary, service.state))
-				if service.binary == "nova-compute":
-					if service.state == "up":
-						status = "on"
-					elif service.state == "down":
-						status = "off"
-					else:
-						logging.debug("Unknown status detected from nova: " + service.state)
-					break
+				if service.state == "up":
+					status = "on"
+				elif service.state == "down":
+					status = "off"
+				else:
+					logging.debug("Unknown status detected from nova: " + service.state)
+				break
 		except requests.exception.ConnectionError as err:
 			logging.warning("Nova connection failed: " + str(err))
 	return status
