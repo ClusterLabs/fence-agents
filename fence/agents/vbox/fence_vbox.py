@@ -31,7 +31,7 @@ _domain_re = re.compile(r'^\"(.*)\" \{(.*)\}$')
 def _invoke(conn, options, *cmd):
     prefix = options["--sudo-path"] + " " if "--use-sudo" in options else ""
     conn.sendline(prefix + "VBoxManage " + " ".join(cmd))
-    conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
+    conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
 
 
 def get_outlets_status(conn, options):
