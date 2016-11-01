@@ -243,7 +243,7 @@ assign_op(fence_virt_args_t *args, struct arg_info *arg, char *value)
 		args->op = FENCE_STATUS;
 	} else if (!strcasecmp(value, "monitor")) {
 		args->op = FENCE_DEVSTATUS;
-	} else if (!strcasecmp(value, "list")) {
+	} else if (!strcasecmp(value, "list") || !strcasecmp(value, "list-status")) {
 		args->op = FENCE_HOSTLIST;
 	} else if (!strcasecmp(value, "metadata")) {
 		args->op = FENCE_METADATA;
