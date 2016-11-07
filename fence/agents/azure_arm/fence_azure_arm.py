@@ -100,7 +100,7 @@ def main():
 
     docs = {}
     docs["shortdesc"] = "Fence agent for Azure Resource Manager"
-    docs["longdesc"] = ""
+    docs["longdesc"] = "Used to deallocate virtual machines and to report power state of virtual machines running in Azure"
     docs["vendorurl"] = "http://www.microsoft.com"
     show_docs(options, docs)
 
