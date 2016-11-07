@@ -49,7 +49,7 @@ class PowerMan:
 			self.server_and_port
 		]
 
-	def _run(self, cmd):
+	def _run(self, cmd, only_first_line):
 		# Args:
 		#   cmd: (list) commands and arguments to pass to the program_name
 
@@ -59,16 +59,21 @@ class PowerMan:
 			popen = subprocess.Popen(run_this, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
 			out = popen.communicate()
 		except OSError as e:
-			logging.debug("_run command error: %s\n", e)
+			logging.error("_run command error: %s\n", e)
 			sys.exit(1)
-
-		result = out[0].decode().strip()
-		return (result, popen.returncode)
+		if only_first_line == True:
+			result_line = out[0].decode().strip()
+			return (result_line, popen.returncode)
+		else:
+			result_list = []
+			for line in out:
+				result_list.append(line)
+			return (result_list, popen.returncode)
 
 	def is_running(self):
 		"""simple query to see if powerman server is responding. Returns boolean"""
 		cmd = ["-q"] # just check if we get a response from the server
-		result, ret_code = self._run(cmd)
+		result, ret_code = self._run(cmd, True)
 		if ret_code != 0:
 			return False
 		return True
@@ -77,39 +82,93 @@ class PowerMan:
 		logging.debug("PowerMan on: %s\n", host)
 		cmd = ["--on", host]
 		try:
-			result, ret_code = self._run(cmd)
+			result, ret_code = self._run(cmd, True)
 		except OSError as e:
-			logging.debug("PowerMan Error: The command '--on' failed: %s\n", e)
+			logging.error("PowerMan Error: The command '--on' failed: %s\n", e)
 			return -1
 		except ValueError as e:
-			logging.debug("PowerMan Error: Popen: invalid arguments: %s\n", e)
+			logging.error("PowerMan Error: Popen: invalid arguments: %s\n", e)
 			return -1
-		logging.debug("result: %s ret_code: %s\n", result, ret_code)
-		return ret_code
+		logging.debug("pm.on result: %s ret_code: %s\n", result, ret_code)
+
+		## For some devices, the "on" or "off" command can fail silently,
+		## but for query powerman keeps trying until it gets a valid answer;
+		## so we must check after trying to power on/off a device.
+		## Powerman seems to report the old state if asked too quickly, wait a second.
+
+		time.sleep(1)
+		queryret = self.query(host)
+
+		if (ret_code == 0 and queryret == "off") or (ret_code < 0 and queryret == "on"):
+			logging.warning("command '%s' returned (%s) but query reported (%s) afterwards\n", cmd, result, queryret)
+
+		if queryret == "on":
+			return 0
+		else:
+			return -1
 
 	def off(self, host):
 		logging.debug("PowerMan off: %s\n", host)
 		cmd = ["--off", host]
 		try:
-			result, ret_code = self._run(cmd)
+			result, ret_code = self._run(cmd, True)
 		except OSError as e:
-			logging.debug("PowerMan Error: The command '%s' failed: %s\n", cmd, e)
+			logging.error("PowerMan Error: The command '%s' failed: %s\n", cmd, e)
 			return -1
 		except ValueError as e:
-			logging.debug("PowerMan Error: Popen: invalid arguments: %s\n", e)
+			logging.error("PowerMan Error: Popen: invalid arguments: %s\n", e)
 			return -1
-		logging.debug("%s\n", result)
-		return ret_code
+		logging.debug("pm.off result: %s ret_code: %s\n", result, ret_code)
+
+		## For some devices, the "on" or "off" command can fail silently,
+		## but for query powerman keeps trying until it gets a valid answer;
+		## so we must check after trying to power on/off a device.
+		## Powerman seems to report the old state if asked too quickly, wait a second.
+
+		time.sleep(1)
+		queryret = self.query(host)
+
+		if (ret_code == 0 and queryret == "on") or (ret_code < 0 and queryret == "off"):
+			logging.warning("command '%s' returned (%s) but query reported (%s) afterwards\n", cmd, result, queryret)
+
+		if queryret == "off":
+			return 0
+		else:
+			return -1
+
+	def list(self):
+		## Error checking here is faulty.  Try passing
+		## invalid args, e.g. --query --exprange to see failure
+		cmd = ["-q","--exprange"]
+		try:
+			result, ret_code = self._run(cmd, False)
+		except OSError as e:
+			logging.error("PowerMan Error: The command '%s' failed: %s\n", cmd, e)
+			return -1
+		except ValueError as e:
+			logging.error("PowerMan Error: Popen: invalid arguments: %s\n", e)
+			return -1
+		if ret_code < 0:
+			# there was an error with the command
+			return ret_code
+		else:
+			state = {}
+			for line in result[0].split('\n'):
+				if len(line) > 2:
+					fields = line.split(':')
+					if len(fields) == 2:
+						state[fields[0]] = (fields[0],fields[1])
+			return state
 
 	def query(self, host):
 		cmd = ["--query", host]
 		try:
-			result, ret_code = self._run(cmd)
+			result, ret_code = self._run(cmd, True)
 		except OSError as e:
-			logging.debug("PowerMan Error: The command '%s' failed: %s\n", cmd, e)
+			logging.error("PowerMan Error: The command '%s' failed: %s\n", cmd, e)
 			return -1
 		except ValueError as e:
-			logging.debug("PowerMan Error: Popen: invalid arguments: %s\n", e)
+			logging.error("PowerMan Error: Popen: invalid arguments: %s\n", e)
 			return -1
 		if ret_code < 0:
 			# there was an error with the command
@@ -141,7 +200,7 @@ def get_power_status(conn, options):
 		status = pm.query(options['--plug'])
 		if isinstance(int, type(status)):
 			# query only returns ints on error
-			logging.debug("get_power_status: query returned %s\n", str(status))
+			logging.error("get_power_status: query returned %s\n", str(status))
 			fail(EC_STATUS)
 		return status
 
@@ -164,21 +223,22 @@ def reboot(conn, options):
 	pm = PowerMan(options['--ip'], options['--ipport'])
 	res = pm.off(options['--plug'])
 	if res < 0:
-		logging.debug("reboot: power off failed!\n")
+		logging.error("reboot: power off failed.\n")
 		return False
 	time.sleep(2)
 	res = pm.on(options['--plug'])
 	if res < 0:
-		logging.debug("reboot: power on failed!\n")
+		logging.error("reboot: power on failed.\n")
 		return False
 	return True
 
 
 def get_list(conn, options):
-	# TODO: make this function return a dictionary of hosts and their statuses
-	# by iterating over options['--plugs'] (I think???) and querying powerman
 	logging.debug("get_list function:\noptions: %s", str(options))
-	outlets = {'elssd8': 'on', 'elssd9': 'on'}
+	pm = PowerMan(options['--ip'], options['--ipport'])
+
+	outlets = pm.list()
+	logging.debug("get_list outlets.keys: %s", str(outlets.keys()))
 	return outlets
 
 
@@ -194,6 +254,8 @@ def main():
 		'no_login',
 	]
 
+	raw_args=sys.argv
+
 	atexit.register(atexit_handler)
 
 	define_new_opts()
@@ -206,7 +268,7 @@ def main():
 	all_opt['power_wait']['default'] = '3'
 
 	options = check_input(device_opt, process_input(device_opt))
-	logging.debug("fence_powerman.main: options: %s", str(options))
+	logging.debug("fence_powerman.main: RAW ARGS: %s\n options: %s", str(raw_args), str(options))
 	docs = {}
 	docs["shortdesc"] = "Fence Agent for Powerman"
 	docs["longdesc"] = "This is a Pacemaker Fence Agent for the \
@@ -227,7 +289,7 @@ Powerman management utility that was designed for LLNL systems."
 				options,
 				set_power_status,
 				get_power_status,
-				None,
+				get_list,
 				reboot
 			)
 
