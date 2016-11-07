@@ -63,14 +63,7 @@ def set_power_status(conn, options):
 
     sys.exit(1)
 
-# Main agent method
-def main():
-    global compute_client
-
-    device_opt = ["resourceGroup", "login", "passwd", "tenantId", "subscriptionId","port"]
-
-    atexit.register(atexit_handler)
-
+def define_new_opts():
     all_opt["resourceGroup"] = {
         "getopt" : "rg:",
         "longopt" : "resourceGroup",
@@ -96,6 +89,15 @@ def main():
         "order" : 4
     }
 
+# Main agent method
+def main():
+    global compute_client
+
+    device_opt = ["resourceGroup", "login", "passwd", "tenantId", "subscriptionId","port"]
+
+    atexit.register(atexit_handler)
+
+    define_new_opts()
     options = check_input(device_opt, process_input(device_opt))
 
     docs = {}
