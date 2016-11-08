@@ -45,7 +45,7 @@ def get_power_status(_, options):
 					else:
 						logging.debug("Unknown status detected from nova: " + service.state)
 					break
-		except ConnectionError as err:
+		except requests.exception.ConnectionError as err:
 			logging.warning("Nova connection failed: " + str(err))
 	return status
 
