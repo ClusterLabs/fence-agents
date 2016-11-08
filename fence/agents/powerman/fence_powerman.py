@@ -8,7 +8,7 @@ import re
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import run_delay
+from fencing import is_executable, fail_usage
 import logging
 
 
@@ -27,25 +27,23 @@ class PowerMan:
 	The make-up of such a call looks something like:
 		$ pm -h elssd1:10101 <option> <node>
 	where option is something like --off, --on, --cycle and where node is 
-	elssd8, or whatever values are setup in powerman.conf (***this is key, 
-	because otherwise this code will not work!)
+	elssd8, or whatever values are setup in powerman.conf.  Note that powerman
+	itself must be configured for this fence agent to work.
 	"""
-	program_name = "powerman"
 
-	def __init__(self, server_name, port="10101"):
+	def __init__(self, powerman_path, server_name, port):
 		"""
 		Args:
 			server_name: (string) host or ip of powerman server
 			port: (str) port number that the powerman server is listening on
 		"""
+		self.powerman_path = powerman_path
 		self.server_name = server_name
 		self.port = port
 		self.server_and_port = server_name + ":" + str(port)
-		# this is a list of the command and its options. For example:
-		# ['powerman', '--server-host', 'elssd1:10101']
 		self.base_cmd = [
-			self.program_name, 
-			"--server-host", 
+			self.powerman_path,
+			"--server-host",
 			self.server_and_port
 		]
 
@@ -53,7 +51,6 @@ class PowerMan:
 		# Args:
 		#   cmd: (list) commands and arguments to pass to the program_name
 
-		# add the 2 command lists together to get whole command to run
 		run_this = self.base_cmd + cmd 
 		try:
 			popen = subprocess.Popen(run_this, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -188,14 +185,14 @@ class PowerMan:
 
 def get_power_status(conn, options):
 	logging.debug("get_power_status function:\noptions: %s\n", str(options))
-	pm = PowerMan(options['--ip'], options['--ipport'])
+	pm = PowerMan(options['--powerman-path'], options['--ip'], options['--ipport'])
 	# if Pacemaker is checking the status of the Powerman server...
 	if options['--action'] == 'monitor':
 		if pm.is_running():
 			logging.debug("Powerman is running\n")
 			return "on"
 		logging.debug("Powerman is NOT running\n")
-		return "off"
+		return "error"
 	else:
 		status = pm.query(options['--plug'])
 		if isinstance(int, type(status)):
@@ -207,7 +204,7 @@ def get_power_status(conn, options):
 
 def set_power_status(conn, options):
 	logging.debug("set_power_status function:\noptions: %s", str(options))
-	pm = PowerMan(options['--ip'], options['--ipport'])
+	pm = PowerMan(options['--powerman_path'], options['--ip'], options['--ipport'])
 
 	action = options["--action"]
 	if action == "on":
@@ -218,24 +215,9 @@ def set_power_status(conn, options):
 	return
 
 
-def reboot(conn, options):
-	logging.debug("reboot function:\noptions: %s", str(options))
-	pm = PowerMan(options['--ip'], options['--ipport'])
-	res = pm.off(options['--plug'])
-	if res < 0:
-		logging.error("reboot: power off failed.\n")
-		return False
-	time.sleep(2)
-	res = pm.on(options['--plug'])
-	if res < 0:
-		logging.error("reboot: power on failed.\n")
-		return False
-	return True
-
-
 def get_list(conn, options):
 	logging.debug("get_list function:\noptions: %s", str(options))
-	pm = PowerMan(options['--ip'], options['--ipport'])
+	pm = PowerMan(options['--powerman_path'], options['--ip'], options['--ipport'])
 
 	outlets = pm.list()
 	logging.debug("get_list outlets.keys: %s", str(outlets.keys()))
@@ -243,8 +225,15 @@ def get_list(conn, options):
 
 
 def define_new_opts():
-	"""add elements to all_opt dict if you need to define new options"""
-	pass
+	all_opt["powerman_path"] = {
+		"getopt" : ":",
+		"longopt" : "powerman-path",
+		"help" : "--powerman-path=[path]         Path to powerman binary",
+		"required" : "0",
+		"shortdesc" : "Path to powerman binary",
+		"default" : "/usr/bin/powerman",
+		"order": 200
+	}
 
 
 def main():
@@ -252,9 +241,8 @@ def main():
 		'ipaddr',
 		'no_password',
 		'no_login',
+		'powerman_path',
 	]
-
-	raw_args=sys.argv
 
 	atexit.register(atexit_handler)
 
@@ -268,7 +256,6 @@ def main():
 	all_opt['power_wait']['default'] = '3'
 
 	options = check_input(device_opt, process_input(device_opt))
-	logging.debug("fence_powerman.main: RAW ARGS: %s\n options: %s", str(raw_args), str(options))
 	docs = {}
 	docs["shortdesc"] = "Fence Agent for Powerman"
 	docs["longdesc"] = "This is a Pacemaker Fence Agent for the \
@@ -276,11 +263,11 @@ Powerman management utility that was designed for LLNL systems."
 	docs["vendorurl"] = "https://github.com/chaos/powerman"
 	show_docs(options, docs)
 
-	## Do the delay of the fence device 
-	run_delay(options)
+	if not is_executable(options["--powerman-path"]):
+		fail_usage("Powerman not found or not executable at path " + options["--powerman-path"])
 
-	if options["--action"] in ["off", "reboot"]:
-		# add extra delay if rebooting
+	if options["--action"] in ["off"]:
+		# add extra delay if powering off
 		time.sleep(int(options["--delay"]))
 
 	# call the fencing.fence_action function, passing in my various fence functions
@@ -290,9 +277,8 @@ Powerman management utility that was designed for LLNL systems."
 				set_power_status,
 				get_power_status,
 				get_list,
-				reboot
+				None
 			)
-
 	sys.exit(result)
 
 
