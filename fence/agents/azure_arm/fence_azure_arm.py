@@ -13,9 +13,7 @@ BUILD_DATE="(built Thu Nov 3 15:43:03 STD 2016)"
 REDHAT_COPYRIGHT="Copyright (C) Red Hat, Inc. 2004-2010 All rights reserved."
 #END_VERSION_GENERATION
 
-compute_client = None
-
-def get_nodes_list(conn, options):
+def get_nodes_list(compute_client, options):
     result = {}
     if compute_client:
         rgName = options["--resourceGroup"]
@@ -25,7 +23,7 @@ def get_nodes_list(conn, options):
 
     return result
 
-def get_power_status(conn, options):
+def get_power_status(compute_client, options):
     logging.info("getting power status for VM " + options["--plug"])
 
     if compute_client:
@@ -45,7 +43,7 @@ def get_power_status(conn, options):
 
     return "off"
 
-def set_power_status(conn, options):
+def set_power_status(compute_client, options):
     logging.info("setting power status for VM " + options["--plug"] + " to " + options["--action"])
 
     if compute_client:
@@ -55,13 +53,10 @@ def set_power_status(conn, options):
         if (options["--action"]=="off"):
             logging.info("Deallocating " + vmName + "in resource group " + rgName)
             compute_client.virtual_machines.deallocate(rgName, vmName)
-        elif (options["--action"]=="reboot"):
-            logging.info("Restarting " + vmName + "in resource group " + rgName)
-            compute_client.virtual_machines.restart(rgName, vmName)
+        elif (options["--action"]=="on"):
+            logging.info("Starting " + vmName + "in resource group " + rgName)
+            compute_client.virtual_machines.start(rgName, vmName)
 
-        sys.exit(0)
-
-    sys.exit(1)
 
 def define_new_opts():
     all_opt["resourceGroup"] = {
@@ -91,7 +86,7 @@ def define_new_opts():
 
 # Main agent method
 def main():
-    global compute_client
+    compute_client = None
 
     device_opt = ["resourceGroup", "login", "passwd", "tenantId", "subscriptionId","port"]
 
@@ -129,7 +124,7 @@ def main():
         fail_usage("Azure Resource Manager Pyhton SDK not found or not accessible")
 
     # Operate the fencing device
-    result = fence_action(None, options, set_power_status, get_power_status, get_nodes_list)
+    result = fence_action(compute_client, options, set_power_status, get_power_status, get_nodes_list)
     sys.exit(result)
 
 if __name__ == "__main__":
