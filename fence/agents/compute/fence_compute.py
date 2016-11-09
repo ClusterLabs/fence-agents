@@ -113,7 +113,7 @@ def _host_evacuate(options):
 	if options["--instance-filtering"] == "False":
 		logging.debug("Not evacuating anything")
 		evacuables = []
-        elif len(flavors) or len(images):
+	elif len(flavors) or len(images):
 		logging.debug("Filtering images and flavors: %s %s" % (repr(flavors), repr(images)))
 		# Identify all evacuable servers
 		logging.debug("Checking %s" % repr(servers))
@@ -302,6 +302,28 @@ def get_plugs_list(_, options):
 			result[shorthost] = ("", None)
 	return result
 
+def get_max_api_version(options):
+
+	max_version = None
+
+	nova = nova_client.Client('2',
+		options["--username"],
+		options["--password"],
+		options["--tenant-name"],
+		options["--auth-url"],
+		insecure=options["--insecure"],
+		region_name=options["--region-name"],
+		endpoint_type=options["--endpoint-type"])
+
+	versions = nova.versions.list()
+	for version in versions:
+		if version.status == "CURRENT":
+			max_version = version.version
+
+	if max_version:
+	return max_version
+	else:
+	return "2"
 
 def define_new_opts():
 	all_opt["endpoint-type"] = {
@@ -429,8 +451,7 @@ def main():
 		elif options["--action"] in ["monitor", "status"]:
 			sys.exit(0)
 
-	# The first argument is the Nova client version
-	nova = nova_client.Client('2',
+	nova = nova_client.Client(get_max_api_version(options),
 		options["--username"],
 		options["--password"],
 		options["--tenant-name"],
