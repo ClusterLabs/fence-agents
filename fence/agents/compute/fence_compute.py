@@ -426,6 +426,9 @@ def main():
 	docs["vendorurl"] = ""
 
 	show_docs(options, docs)
+	
+	if options["--record-only"] in [ "2", "Disabled", "disabled" ]:
+		sys.exit(0)
 
 	run_delay(options)
 
@@ -434,12 +437,17 @@ def main():
 	except ImportError:
 		fail_usage("nova not found or not accessible")
 
+	nova = nova_client.Client(get_max_api_version(options),
+		options["--username"],
+		options["--password"],
+		options["--tenant-name"],
+		options["--auth-url"],
+		insecure=options["--insecure"],
+		region_name=options["--region-name"],
+		endpoint_type=options["--endpoint-type"])
+
 	fix_plug_name(options)
-
-	if options["--record-only"] in [ "2", "Disabled", "disabled" ]:
-		sys.exit(0)
-
-	elif options["--record-only"] in [ "1", "True", "true", "Yes", "yes"]:
+	if options["--record-only"] in [ "1", "True", "true", "Yes", "yes"]:
 		if options["--action"] == "on":
 			set_attrd_status(options["--plug"], "no", options)
 			sys.exit(0)
@@ -450,15 +458,6 @@ def main():
 
 		elif options["--action"] in ["monitor", "status"]:
 			sys.exit(0)
-
-	nova = nova_client.Client(get_max_api_version(options),
-		options["--username"],
-		options["--password"],
-		options["--tenant-name"],
-		options["--auth-url"],
-		insecure=options["--insecure"],
-		region_name=options["--region-name"],
-		endpoint_type=options["--endpoint-type"])
 
 	if options["--action"] in ["off", "reboot"]:
 		# Pretend we're 'on' so that the fencing library will always call set_power_status(off)
