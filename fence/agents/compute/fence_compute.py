@@ -160,7 +160,7 @@ def set_power_status(_, options):
 		return
 
 	if options["--action"] == "on":
-		if get_power_status(_, options) == "on":
+		if get_power_status(_, options) != "on":
 			# Forcing the service back up in case it was disabled
 			nova.services.enable(options["--plug"], 'nova-compute')
 			try:
