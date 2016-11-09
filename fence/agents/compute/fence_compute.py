@@ -282,7 +282,7 @@ def fix_plug_name(options):
 		# Ensure any domain is stripped off since nova isn't using FQDN
 		options["--plug"] = short_plug
 
-	elif options["--plug"].find(options["--domain"]):
+	elif options["--domain"] in options["--plug"]:
 		# Plug already contains the domain, don't re-add 
 		return
 
