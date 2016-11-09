@@ -8,7 +8,7 @@ import re
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import is_executable, fail_usage
+from fencing import is_executable, fail_usage, run_delay
 import logging
 
 
@@ -75,6 +75,15 @@ class PowerMan:
 			return False
 		return True
 
+	## Some devices respond to on or off actions as if the action was successful,
+	## when it was not.
+	##
+	## This is not unique to powerman, and so fence_action ignores the return code
+	## from the set_power_fn and queries the device to confirm the power status of
+	## the machine.
+	##
+	## For this reason we do not do a query ourself, retry, etc. in on() or off().
+
 	def on(self, host):
 		logging.debug("PowerMan on: %s\n", host)
 		cmd = ["--on", host]
@@ -88,21 +97,7 @@ class PowerMan:
 			return -1
 		logging.debug("pm.on result: %s ret_code: %s\n", result, ret_code)
 
-		## For some devices, the "on" or "off" command can fail silently,
-		## but for query powerman keeps trying until it gets a valid answer;
-		## so we must check after trying to power on/off a device.
-		## Powerman seems to report the old state if asked too quickly, wait a second.
-
-		time.sleep(1)
-		queryret = self.query(host)
-
-		if (ret_code == 0 and queryret == "off") or (ret_code < 0 and queryret == "on"):
-			logging.warning("command '%s' returned (%s) but query reported (%s) afterwards\n", cmd, result, queryret)
-
-		if queryret == "on":
-			return 0
-		else:
-			return -1
+		return ret_code
 
 	def off(self, host):
 		logging.debug("PowerMan off: %s\n", host)
@@ -117,21 +112,7 @@ class PowerMan:
 			return -1
 		logging.debug("pm.off result: %s ret_code: %s\n", result, ret_code)
 
-		## For some devices, the "on" or "off" command can fail silently,
-		## but for query powerman keeps trying until it gets a valid answer;
-		## so we must check after trying to power on/off a device.
-		## Powerman seems to report the old state if asked too quickly, wait a second.
-
-		time.sleep(1)
-		queryret = self.query(host)
-
-		if (ret_code == 0 and queryret == "on") or (ret_code < 0 and queryret == "off"):
-			logging.warning("command '%s' returned (%s) but query reported (%s) afterwards\n", cmd, result, queryret)
-
-		if queryret == "off":
-			return 0
-		else:
-			return -1
+		return ret_code
 
 	def list(self):
 		## Error checking here is faulty.  Try passing
@@ -231,7 +212,7 @@ def define_new_opts():
 		"help" : "--powerman-path=[path]         Path to powerman binary",
 		"required" : "0",
 		"shortdesc" : "Path to powerman binary",
-		"default" : "/usr/bin/powerman",
+		"default" : "@POWERMAN_PATH@",
 		"order": 200
 	}
 
@@ -263,12 +244,10 @@ Powerman management utility that was designed for LLNL systems."
 	docs["vendorurl"] = "https://github.com/chaos/powerman"
 	show_docs(options, docs)
 
+	run_delay(options)
+
 	if not is_executable(options["--powerman-path"]):
 		fail_usage("Powerman not found or not executable at path " + options["--powerman-path"])
-
-	if options["--action"] in ["off"]:
-		# add extra delay if powering off
-		time.sleep(int(options["--delay"]))
 
 	# call the fencing.fence_action function, passing in my various fence functions
 	result = fence_action(
