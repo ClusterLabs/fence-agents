@@ -28,6 +28,7 @@ define gen_agent_from_py
 		-e 's#@''SNMPSET_PATH@#${SNMPSET_PATH}#g' \
 		-e 's#@''SNMPGET_PATH@#${SNMPGET_PATH}#g' \
 		-e 's#@''NOVA_PATH@#${NOVA_PATH}#g' \
+		-e 's#@''POWERMAN_PATH@#${POWERMAN_PATH}#g' \
 	> $@
 
 	if [ 0 -eq `echo "$(@)" | grep fence_ &> /dev/null; echo $$?` ]; then \

@@ -183,6 +183,7 @@ AC_PATH_PROG([SNMPWALK_PATH], [snmpwalk], [/usr/bin/snmpwalk])
 AC_PATH_PROG([SNMPSET_PATH], [snmpset], [/usr/bin/snmpset])
 AC_PATH_PROG([SNMPGET_PATH], [snmpget], [/usr/bin/snmpget])
 AC_PATH_PROG([NOVA_PATH], [nova], [/usr/bin/nova])
+AC_PATH_PROG([POWERMAN_PATH], [powerman], [/usr/bin/powerman])
 
 ## do subst
 
@@ -214,6 +215,7 @@ AC_SUBST([COROSYNC_CMAPCTL_PATH])
 AC_SUBST([SG_PERSIST_PATH])
 AC_SUBST([SG_TURS_PATH])
 AC_SUBST([VGS_PATH])
+AC_SUBST([POWERMAN_PATH])
 
 ## *FLAGS handling
 
