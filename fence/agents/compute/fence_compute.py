@@ -22,6 +22,7 @@ nova = None
 EVACUABLE_TAG = "evacuable"
 TRUE_TAGS = ['true']
 
+
 def get_power_status(_, options):
 	global override_status
 
@@ -302,28 +303,36 @@ def get_plugs_list(_, options):
 			result[shorthost] = ("", None)
 	return result
 
-def get_max_api_version(options):
+def create_nova_connection(options):
+	global nova
 
-	max_version = None
+	try:
+		from novaclient import client
+		from novaclient.exceptions import NotAcceptable
+	except ImportError:
+		fail_usage("Nova not found or not accessible")
 
-	nova = nova_client.Client('2',
-		options["--username"],
-		options["--password"],
-		options["--tenant-name"],
-		options["--auth-url"],
-		insecure=options["--insecure"],
-		region_name=options["--region-name"],
-		endpoint_type=options["--endpoint-type"])
-
-	versions = nova.versions.list()
+	versions = [ "2.11", "2" ]
 	for version in versions:
-		if version.status == "CURRENT":
-			max_version = version.version
+		nova = client.Client(version,
+				     options["--username"],
+				     options["--password"],
+				     options["--tenant-name"],
+				     options["--auth-url"],
+				     insecure=options["--insecure"],
+				     region_name=options["--region-name"],
+				     endpoint_type=options["--endpoint-type"])
+		try:
+			nova.hypervisors.list()
+			return
 
-	if max_version:
-	return max_version
-	else:
-	return "2"
+		except NotAcceptable as e:
+			logging.warning(e)
+
+		except Exception as e:
+			logging.warning("Nova connection failed. %s: %s" % (e.__class__.__name__, e))
+			
+	fail_usage("Couldn't obtain a supported connection to nova, tried: %s" % repr(versions))
 
 def define_new_opts():
 	all_opt["endpoint-type"] = {
@@ -347,7 +356,7 @@ def define_new_opts():
 	all_opt["auth-url"] = {
 		"getopt" : "k:",
 		"longopt" : "auth-url",
-		"help" : "-k, --auth-url=[tenant]        Keystone Admin Auth URL",
+		"help" : "-k, --auth-url=[url]           Keystone Admin Auth URL",
 		"required" : "0",
 		"shortdesc" : "Keystone Admin Auth URL",
 		"default" : "",
@@ -409,7 +418,6 @@ def define_new_opts():
 
 def main():
 	global override_status
-	global nova
 	atexit.register(atexit_handler)
 
 	device_opt = ["login", "passwd", "tenant-name", "auth-url", "fabric_fencing", "on_target",
@@ -432,19 +440,7 @@ def main():
 
 	run_delay(options)
 
-	try:
-		from novaclient import client as nova_client
-	except ImportError:
-		fail_usage("nova not found or not accessible")
-
-	nova = nova_client.Client(get_max_api_version(options),
-		options["--username"],
-		options["--password"],
-		options["--tenant-name"],
-		options["--auth-url"],
-		insecure=options["--insecure"],
-		region_name=options["--region-name"],
-		endpoint_type=options["--endpoint-type"])
+	create_nova_connection(options)
 
 	fix_plug_name(options)
 	if options["--record-only"] in [ "1", "True", "true", "Yes", "yes"]:
