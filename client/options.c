@@ -336,7 +336,7 @@ assign_delay(fence_virt_args_t *args, struct arg_info *arg, char *value)
 		return;
 
 	args->delay = atoi(value);
-	if (args->delay <= 0) {
+	if (args->delay < 0) {
 		printf("Invalid delay: '%s'\n", value);
 		args->flags |= F_ERR;
 	}
