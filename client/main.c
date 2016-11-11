@@ -39,6 +39,7 @@
 #include <errno.h>
 #include <pthread.h>
 #include <libgen.h>
+#include <syslog.h>
 
 /* Local includes */
 #include "xvm.h"
@@ -91,6 +92,8 @@ main(int argc, char **argv)
 		exit(0);
 	}
 
+	openlog(basename(argv[0]), LOG_NDELAY | LOG_PID, LOG_DAEMON);
+
 	args_finalize(&args);
 	dset(args.debug);
 	
@@ -102,6 +105,7 @@ main(int argc, char **argv)
 			     args.op != FENCE_HOSTLIST &&
 			     args.op != FENCE_METADATA)) {
 		printf("No domain specified!\n");
+		syslog(LOG_NOTICE, "No domain specified");
 		args.flags |= F_ERR;
 	}
 
@@ -136,28 +140,51 @@ main(int argc, char **argv)
 		ret = tcp_fence_virt(&args);
 		break;
 	default:
-		return 1;
+		ret = 1;
+		goto out;
 	}
 
 	switch(ret) {
 	case RESP_OFF:
 		if (args.op == FENCE_STATUS)
 			printf("Status: OFF\n");
+		else if (args.domain)
+			syslog(LOG_NOTICE, "Domain \"%s\" is OFF", args.domain);
 		break;
 	case 0:
 		if (args.op == FENCE_STATUS)
 			printf("Status: ON\n");
+		else if (args.domain)
+			syslog(LOG_NOTICE, "Domain \"%s\" is ON", args.domain);
 		break;
 	case RESP_FAIL:
+		if (args.domain) {
+			syslog(LOG_NOTICE, "Fence operation failed for domain \"%s\"",
+				args.domain);
+		} else
+			syslog(LOG_NOTICE, "Fence operation failed");
 		printf("Operation failed\n");
 		break;
 	case RESP_PERM:
+		if (args.domain) {
+			syslog(LOG_NOTICE,
+				"Permission denied for Fence operation for domain \"%s\"",
+				args.domain);
+		} else
+			syslog(LOG_NOTICE, "Permission denied for fence operation");
 		printf("Permission denied\n");
 		break;
 	default:
+		if (args.domain) {
+			syslog(LOG_NOTICE, "Unknown response (%d) for domain \"%s\"",
+				ret, args.domain);
+		} else
+			syslog(LOG_NOTICE, "Unknown response (%d)", ret);
 		printf("Unknown response (%d)\n", ret);
 		break;
 	}
 
+out:
+	closelog();
 	return ret;
 }
