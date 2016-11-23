@@ -42,6 +42,8 @@ def soap_login(options):
 
 	if "--ssl" in options or "--ssl-secure" in options or "--ssl-insecure" in options:
 		if "--ssl-insecure" in options:
+			from requests.packages.urllib3.exceptions import InsecureRequestWarning
+			requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 			verify = False
 		else:
 			verify = True
