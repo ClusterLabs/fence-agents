@@ -9,7 +9,7 @@
 		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
 	<parameter name="auth-url" unique="0" required="0">
-		<getopt mixed="-k, --auth-url=[tenant]" />
+		<getopt mixed="-k, --auth-url=[url]" />
 		<content type="string" default=""  />
 		<shortdesc lang="en">Keystone Admin Auth URL</shortdesc>
 	</parameter>
