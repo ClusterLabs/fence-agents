@@ -70,6 +70,11 @@ Name of virtual machine (-n / port) has to be used in inventory path format (e.g
 		<content type="boolean"  />
 		<shortdesc lang="en">Use SSL connection with verifying certificate</shortdesc>
 	</parameter>
+	<parameter name="quiet" unique="0" required="0">
+		<getopt mixed="-q, --quiet" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Disable logging to stderr. Does not affect --verbose or --debug logging to syslog.</shortdesc>
+	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
 		<content type="boolean"  />

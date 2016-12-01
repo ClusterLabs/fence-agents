@@ -435,13 +435,20 @@ all_opt = {
 	"on_target": {
 		"getopt" : "",
 		"help" : "",
-		"order" : 1}
+		"order" : 1},
+	"quiet": {
+		"getopt" : "q",
+		"longopt": "quiet",
+		"help" : "-q, --quiet                    Disable logging to stderr. Does not affect --verbose or --debug logging to syslog.",
+		"required" : "0",
+		"order" : 50}
 }
 
 # options which are added automatically if 'key' is encountered ("default" is always added)
 DEPENDENCY_OPT = {
 		"default" : ["help", "debug", "verbose", "version", "action", "agent", \
-			"power_timeout", "shell_timeout", "login_timeout", "power_wait", "retry_on", "delay"],
+			"power_timeout", "shell_timeout", "login_timeout", "power_wait", "retry_on", \
+                        "delay", "quiet"],
 		"passwd" : ["passwd_script"],
 		"sudo" : ["sudo_path"],
 		"secure" : ["identity_file", "ssh_options", "ssh_path"],
@@ -642,8 +649,9 @@ def check_input(device_opt, opt, other_conditions = False):
 
 	## add logging to syslog
 	logging.getLogger().addHandler(SyslogLibHandler())
-	## add logging to stderr
-	logging.getLogger().addHandler(logging.StreamHandler(sys.stderr))
+	if not options.has_key("--quiet"):
+		## add logging to stderr
+		logging.getLogger().addHandler(logging.StreamHandler(sys.stderr))
 
 	(acceptable_actions, _) = _get_available_actions(device_opt)
 
