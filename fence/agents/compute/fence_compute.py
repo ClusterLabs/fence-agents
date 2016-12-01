@@ -22,7 +22,6 @@ nova = None
 EVACUABLE_TAG = "evacuable"
 TRUE_TAGS = ['true']
 
-
 def get_power_status(_, options):
 	global override_status
 
@@ -273,7 +272,7 @@ def fix_plug_name(options):
 
 	fix_domain(options)
 	short_plug = options["--plug"].split('.')[0]
-	logging.debug("Checking target '%s' against calculated domain '%s'"% (options["--plug"], calculated))
+	logging.debug("Checking target '%s' against calculated domain '%s'"% (options["--plug"], options["--domain"]))
 
 	if "--domain" not in options:
 		# Nothing supplied and nova not available... what to do... nothing
@@ -321,7 +320,8 @@ def create_nova_connection(options):
 				     options["--auth-url"],
 				     insecure=options["--insecure"],
 				     region_name=options["--region-name"],
-				     endpoint_type=options["--endpoint-type"])
+				     endpoint_type=options["--endpoint-type"],
+				     http_log_debug=options.has_key("--verbose"))
 		try:
 			nova.hypervisors.list()
 			return
