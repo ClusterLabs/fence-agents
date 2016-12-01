@@ -219,8 +219,8 @@ def main():
 persistent reservations to control access multipath devices. Underlying \
 devices must support SCSI-3 persistent reservations (SPC-3 or greater) as \
 well as the \"preempt-and-abort\" subcommand.\nThe fence_mpath agent works by \
-having an unique key for each pair of node and device that has to be set also \
-in /etc/multipath.conf. Once registered, a single node will become the reservation holder \
+having a unique key for each node that has to be set in /etc/multipath.conf. \
+Once registered, a single node will become the reservation holder \
 by creating a \"write exclusive, registrants only\" reservation on the \
 device(s). The result is that only registered nodes may write to the \
 device(s). When a node failure occurs, the fence_mpath agent will remove the \

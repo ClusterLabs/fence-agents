@@ -4,9 +4,9 @@ TARGET				= $(AGENTS_LIST:%.py=%)
 
 SRC				= $(TARGET:=.py)
 
-CLEAN_TARGET_ADDITIONAL		= kdump/fence_kdump_send
+CLEAN_TARGET_ADDITIONAL		= kdump/fence_kdump_send manual/fence_ack_manual */*.o
 
-EXTRA_DIST			= $(SRC)
+EXTRA_DIST			= $(SRC) manual/fence_ack_manual.in manual/fence_ack_manual.8 zvm/fence_zvm_man_page
 
 sbin_SCRIPTS			= $(TARGET) manual/fence_ack_manual
 
@@ -17,7 +17,7 @@ man_MANS			= $(sbin_SCRIPTS:=.8)
 sbin_PROGRAMS			= kdump/fence_kdump zvm/fence_zvm
 libexec_PROGRAMS		= kdump/fence_kdump_send
 
-noinst_HEADERS			= kdump/list.h kdump/message.h kdump/options.h kdump/version.h
+noinst_HEADERS			= kdump/list.h kdump/message.h kdump/options.h kdump/version.h zvm/fence_zvm.h
 
 kdump_fence_kdump_SOURCES	= kdump/fence_kdump.c
 kdump_fence_kdump_CFLAGS	= -D_GNU_SOURCE -Ikdump
@@ -25,13 +25,13 @@ kdump_fence_kdump_CFLAGS	= -D_GNU_SOURCE -Ikdump
 kdump_fence_kdump_send_SOURCES	= kdump/fence_kdump_send.c
 kdump_fence_kdump_send_CFLAGS	= -D_GNU_SOURCE -Ikdump
 
-dist_man_MANS			= kdump/fence_kdump.8 kdump/fence_kdump_send.8
+dist_man_MANS			= kdump/fence_kdump.8 kdump/fence_kdump_send.8 zvm/fence_zvm.8
 
 scsidatadir			= $(CLUSTERDATA)
 scsidata_SCRIPTS		= scsi/fence_scsi_check scsi/fence_scsi_check_hardreboot
 
 zvm_fence_zvm_SOURCES		= zvm/fence_zvm.c
-zvm_fence_zvm_CFLAGS		= -D_GNU_SOURCE
+zvm_fence_zvm_CFLAGS		= -D_GNU_SOURCE -Izvm
 
 FENCE_TEST_ARGS			= \
 login=test\n\
@@ -44,6 +44,7 @@ session_url=http://test\n\
 email=test@test.te
 
 manual/fence_ack_manual: manual/fence_ack_manual.in
+	mkdir -p $(@D)
 	cat $^ | sed \
 		-e 's#@clustervarrun@#${CLUSTERVARRUN}#g' \
 	> $@

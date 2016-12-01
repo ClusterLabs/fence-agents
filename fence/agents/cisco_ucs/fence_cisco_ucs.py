@@ -19,6 +19,7 @@ RE_STATUS = re.compile("<lsPower .*? state=\"(.*?)\"", re.IGNORECASE)
 RE_GET_DN = re.compile(" dn=\"(.*?)\"", re.IGNORECASE)
 RE_GET_PNDN = re.compile(" pndn=\"(.*?)\"", re.IGNORECASE)
 RE_GET_DESC = re.compile(" descr=\"(.*?)\"", re.IGNORECASE)
+RE_GET_OPERPOWER = re.compile(" operPower=\"(.*?)\"", re.IGNORECASE)
 RE_GET_PRESENCE = re.compile(" presence=\"(.*?)\"", re.IGNORECASE)
 
 options_global = None
@@ -50,12 +51,21 @@ def get_power_status(conn, options):
 	if result == None:
 		fail(EC_STATUS)
 	else:
-		status = result.group(1)
+		presence_status = result.group(1)
 
-	if status in ["missing", "mismatch"]:
+	if presence_status in ["missing", "mismatch"]:
 		return "off"
 	else:
-		return "on"
+		result = RE_GET_OPERPOWER.search(res)
+		if result == None:
+			fail(EC_STATUS)
+		else:
+			power_status = result.group(1)
+
+		if power_status == "on":
+			return "on"
+		else:
+			return "off"
 
 def set_power_status(conn, options):
 	del conn

@@ -1,41 +1,14 @@
 <?xml version="1.0" ?>
-<resource-agent name="fence_eps" shortdesc="Fence agent for ePowerSwitch" >
-<longdesc>fence_eps  is an I/O Fencing agent which can be used with the ePowerSwitch 8M+ power switch to fence connected machines. Fence agent works ONLY on 8M+ device, because this is only one, which has support for hidden page feature. 
-.TP
-Agent basically works by connecting to hidden page and pass appropriate arguments to GET request. This means, that hidden page feature must be enabled and properly configured.</longdesc>
-<vendor-url>http://www.epowerswitch.com</vendor-url>
+<resource-agent name="fence_azure_arm" shortdesc="Fence agent for Azure Resource Manager" >
+<longdesc>Used to deallocate virtual machines and to report power state of virtual machines running in Azure</longdesc>
+<vendor-url>http://www.microsoft.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
 		<getopt mixed="-o, --action=[action]" />
 		<content type="string" default="reboot"  />
 		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
-	<parameter name="hidden_page" unique="0" required="0">
-		<getopt mixed="-c, --page=[page]" />
-		<content type="string" default="hidden.htm"  />
-		<shortdesc lang="en">Name of hidden page</shortdesc>
-	</parameter>
-	<parameter name="inet4_only" unique="0" required="0">
-		<getopt mixed="-4, --inet4-only" />
-		<content type="boolean"  />
-		<shortdesc lang="en">Forces agent to use IPv4 addresses only</shortdesc>
-	</parameter>
-	<parameter name="inet6_only" unique="0" required="0">
-		<getopt mixed="-6, --inet6-only" />
-		<content type="boolean"  />
-		<shortdesc lang="en">Forces agent to use IPv6 addresses only</shortdesc>
-	</parameter>
-	<parameter name="ipaddr" unique="0" required="1">
-		<getopt mixed="-a, --ip=[ip]" />
-		<content type="string"  />
-		<shortdesc lang="en">IP address or hostname of fencing device</shortdesc>
-	</parameter>
-	<parameter name="ipport" unique="0" required="0">
-		<getopt mixed="-u, --ipport=[port]" />
-		<content type="integer" default="80"  />
-		<shortdesc lang="en">TCP/UDP port to use for connection with device</shortdesc>
-	</parameter>
-	<parameter name="login" unique="0" required="0">
+	<parameter name="login" unique="0" required="1">
 		<getopt mixed="-l, --username=[name]" />
 		<content type="string"  />
 		<shortdesc lang="en">Login name</shortdesc>
@@ -54,6 +27,21 @@ Agent basically works by connecting to hidden page and pass appropriate argument
 		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />
 		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
+	</parameter>
+	<parameter name="resourceGroup" unique="0" required="1">
+		<getopt mixed="-rg, --resourceGroup=[name]" />
+		<content type="string"  />
+		<shortdesc lang="en">Name of resource group.</shortdesc>
+	</parameter>
+	<parameter name="tenantId" unique="0" required="1">
+		<getopt mixed="-tid, --tenantId=[name]" />
+		<content type="string"  />
+		<shortdesc lang="en">Id of Azure Active Directory tenant.</shortdesc>
+	</parameter>
+	<parameter name="subscriptionId" unique="0" required="1">
+		<getopt mixed="-sid, --subscriptionId=[name]" />
+		<content type="string"  />
+		<shortdesc lang="en">Id of the Azure subscription.</shortdesc>
 	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />

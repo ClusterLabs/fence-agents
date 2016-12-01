@@ -1,7 +1,7 @@
-%.8: $(TARGET) $(top_srcdir)/fence/agents/lib/fence2man.xsl
+%.8: % $(top_srcdir)/fence/agents/lib/fence2man.xsl
 	set -e && \
-	PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/../lib \
-		$(PYTHON) $(@:%.8=%) -o metadata > $(@D)/.$(@F).tmp && \
+	PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/../lib:$(abs_builddir)/lib \
+		$(PYTHON) $* -o metadata > $(@D)/.$(@F).tmp && \
 	xmllint --noout --relaxng $(abs_srcdir)/lib/metadata.rng $(@D)/.$(@F).tmp && \
 	xsltproc $(top_srcdir)/fence/agents/lib/fence2man.xsl $(@D)/.$(@F).tmp > $@
 	xsltproc $(top_srcdir)/fence/agents/lib/fence2wiki.xsl $(@D)/.$(@F).tmp | grep -v '<?xml' > $(@D)/$(@F:%.8=%.wiki)

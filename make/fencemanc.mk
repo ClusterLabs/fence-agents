@@ -1,6 +1,6 @@
-%.8: $(TARGET) $(top_srcdir)/fence/agents/lib/fence2man.xsl
+%.8: % $(top_srcdir)/fence/agents/lib/fence2man.xsl
 	set -e && \
-		./$(@:%.8=%) -o metadata > $(@D)/.$(@F).tmp && \
+		$* -o metadata > $(@D)/.$(@F).tmp && \
 	xmllint --noout --relaxng $(top_srcdir)/fence/agents/lib/metadata.rng $(@D)/.$(@F).tmp && \
 	xsltproc $(top_srcdir)/fence/agents/lib/fence2man.xsl $(@D)/.$(@F).tmp > $@
 	xsltproc $(top_srcdir)/fence/agents/lib/fence2wiki.xsl $(@D)/.$(@F).tmp | grep -v '<?xml' > $(@D)/$(@F:%.8=%.wiki)

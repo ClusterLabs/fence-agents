@@ -45,7 +45,7 @@ def get_power_status(_, options):
 					else:
 						logging.debug("Unknown status detected from nova: " + service.state)
 					break
-		except ConnectionError as err:
+		except requests.exception.ConnectionError as err:
 			logging.warning("Nova connection failed: " + str(err))
 	return status
 
@@ -252,16 +252,20 @@ def fix_domain(options):
 
 	elif len(domains) == 1 and "--domain" not in options:
 		options["--domain"] = last_domain
+		return options["--domain"]
 
 	elif len(domains) == 1:
 		logging.error("Overriding supplied domain '%s' does not match the one calculated from: %s"
 			      % (options["--domain"], hypervisor.hypervisor_hostname))
 		options["--domain"] = last_domain
+		return options["--domain"]
 
 	elif len(domains) > 1:
 		logging.error("The supplied domain '%s' did not match any used inside nova: %s"
 			      % (options["--domain"], repr(domains)))
 		sys.exit(1)
+
+	return None
 
 def fix_plug_name(options):
 	if options["--action"] == "list":
@@ -270,7 +274,7 @@ def fix_plug_name(options):
 	if "--plug" not in options:
 		return
 
-	fix_domain(options)
+	calculated = fix_domain(options)
 	short_plug = options["--plug"].split('.')[0]
 	logging.debug("Checking target '%s' against calculated domain '%s'"% (options["--plug"], options["--domain"]))
 

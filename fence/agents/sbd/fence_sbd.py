@@ -177,7 +177,7 @@ def set_power_status(conn, options):
     options -- options dictionary
 
     Return Value:
-    return_code -- return code (integer)
+    return_code -- action result (bool)
     """
 
     target_status = options["--action"]
@@ -200,7 +200,7 @@ def set_power_status(conn, options):
         logging.error("DETAIL: output on stdout was \"%s\"", out)
         logging.error("DETAIL: output on stderr was \"%s\"", err)
 
-    return return_code
+    return not bool(return_code)
 
 def reboot_cycle(conn, options):
     """" trigger reboot by sbd messages
@@ -210,7 +210,7 @@ def reboot_cycle(conn, options):
     options -- options dictionary
 
     Return Value:
-    return_code -- return code (integer)
+    return_code -- action result (bool)
     """
 
     plug = options["--plug"]
@@ -219,7 +219,7 @@ def reboot_cycle(conn, options):
     err = ""
 
     (return_code, out, err) = send_sbd_message(conn, options, plug, "reset")
-    return return_code
+    return not bool(return_code)
 
 def get_power_status(conn, options):
     """Returns the status of a specific node.

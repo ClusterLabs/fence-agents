@@ -1,5 +1,5 @@
 DATADIR:=$(abs_top_srcdir)/tests/data/metadata
-AWK_VAL='BEGIN {store=-1} /name=\"store_path\"/ {store=2} {if (store!=0) {print}; store--}'
+AWK_VAL='BEGIN {store=-1} /name=\".*_path\"/ {store=2} {if (store!=0) {print}; store--}'
 
 TEST_TARGET=$(filter-out $(TEST_TARGET_SKIP),$(TARGET))
 

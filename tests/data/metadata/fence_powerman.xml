@@ -1,19 +1,12 @@
 <?xml version="1.0" ?>
-<resource-agent name="fence_eps" shortdesc="Fence agent for ePowerSwitch" >
-<longdesc>fence_eps  is an I/O Fencing agent which can be used with the ePowerSwitch 8M+ power switch to fence connected machines. Fence agent works ONLY on 8M+ device, because this is only one, which has support for hidden page feature. 
-.TP
-Agent basically works by connecting to hidden page and pass appropriate arguments to GET request. This means, that hidden page feature must be enabled and properly configured.</longdesc>
-<vendor-url>http://www.epowerswitch.com</vendor-url>
+<resource-agent name="fence_powerman" shortdesc="Fence Agent for Powerman" >
+<longdesc>This is a Pacemaker Fence Agent for the Powerman management utility that was designed for LLNL systems.</longdesc>
+<vendor-url>https://github.com/chaos/powerman</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
 		<getopt mixed="-o, --action=[action]" />
 		<content type="string" default="reboot"  />
 		<shortdesc lang="en">Fencing action</shortdesc>
-	</parameter>
-	<parameter name="hidden_page" unique="0" required="0">
-		<getopt mixed="-c, --page=[page]" />
-		<content type="string" default="hidden.htm"  />
-		<shortdesc lang="en">Name of hidden page</shortdesc>
 	</parameter>
 	<parameter name="inet4_only" unique="0" required="0">
 		<getopt mixed="-4, --inet4-only" />
@@ -25,35 +18,20 @@ Agent basically works by connecting to hidden page and pass appropriate argument
 		<content type="boolean"  />
 		<shortdesc lang="en">Forces agent to use IPv6 addresses only</shortdesc>
 	</parameter>
-	<parameter name="ipaddr" unique="0" required="1">
+	<parameter name="ipaddr" unique="0" required="0">
 		<getopt mixed="-a, --ip=[ip]" />
 		<content type="string"  />
 		<shortdesc lang="en">IP address or hostname of fencing device</shortdesc>
 	</parameter>
 	<parameter name="ipport" unique="0" required="0">
 		<getopt mixed="-u, --ipport=[port]" />
-		<content type="integer" default="80"  />
+		<content type="integer" default="10101"  />
 		<shortdesc lang="en">TCP/UDP port to use for connection with device</shortdesc>
 	</parameter>
-	<parameter name="login" unique="0" required="0">
-		<getopt mixed="-l, --username=[name]" />
+	<parameter name="port" unique="0" required="0">
+		<getopt mixed="-n, --plug=[ip]" />
 		<content type="string"  />
-		<shortdesc lang="en">Login name</shortdesc>
-	</parameter>
-	<parameter name="passwd" unique="0" required="0">
-		<getopt mixed="-p, --password=[password]" />
-		<content type="string"  />
-		<shortdesc lang="en">Login password or passphrase</shortdesc>
-	</parameter>
-	<parameter name="passwd_script" unique="0" required="0">
-		<getopt mixed="-S, --password-script=[script]" />
-		<content type="string"  />
-		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
-	</parameter>
-	<parameter name="port" unique="0" required="1">
-		<getopt mixed="-n, --plug=[id]" />
-		<content type="string"  />
-		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
+		<shortdesc lang="en">IP address or hostname of fencing device (together with --port-as-ip)</shortdesc>
 	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
@@ -75,20 +53,20 @@ Agent basically works by connecting to hidden page and pass appropriate argument
 		<content type="boolean"  />
 		<shortdesc lang="en">Display help and exit</shortdesc>
 	</parameter>
-	<parameter name="separator" unique="0" required="0">
-		<getopt mixed="-C, --separator=[char]" />
-		<content type="string" default=","  />
-		<shortdesc lang="en">Separator for CSV created by 'list' operation</shortdesc>
-	</parameter>
 	<parameter name="delay" unique="0" required="0">
 		<getopt mixed="--delay=[seconds]" />
-		<content type="second" default="0"  />
+		<content type="second" default="3"  />
 		<shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
 	</parameter>
 	<parameter name="login_timeout" unique="0" required="0">
 		<getopt mixed="--login-timeout=[seconds]" />
 		<content type="second" default="5"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
+	</parameter>
+	<parameter name="port_as_ip" unique="0" required="0">
+		<getopt mixed="--port-as-ip" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Make "port/plug" to be an alias to IP address</shortdesc>
 	</parameter>
 	<parameter name="power_timeout" unique="0" required="0">
 		<getopt mixed="--power-timeout=[seconds]" />
@@ -97,8 +75,12 @@ Agent basically works by connecting to hidden page and pass appropriate argument
 	</parameter>
 	<parameter name="power_wait" unique="0" required="0">
 		<getopt mixed="--power-wait=[seconds]" />
-		<content type="second" default="0"  />
+		<content type="second" default="3"  />
 		<shortdesc lang="en">Wait X seconds after issuing ON/OFF</shortdesc>
+	</parameter>
+	<parameter name="powerman_path" unique="0" required="0">
+		<getopt mixed="--powerman-path=[path]" />
+		<shortdesc lang="en">Path to powerman binary</shortdesc>
 	</parameter>
 	<parameter name="shell_timeout" unique="0" required="0">
 		<getopt mixed="--shell-timeout=[seconds]" />
@@ -116,8 +98,6 @@ Agent basically works by connecting to hidden page and pass appropriate argument
 	<action name="off" />
 	<action name="reboot" />
 	<action name="status" />
-	<action name="list" />
-	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
 	<action name="validate-all" />
