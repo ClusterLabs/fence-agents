@@ -60,25 +60,25 @@ def set_power_status(compute_client, options):
 
 def define_new_opts():
     all_opt["resourceGroup"] = {
-        "getopt" : "rg:",
+        "getopt" : ":",
         "longopt" : "resourceGroup",
-        "help" : "-rg, --resourceGroup=[name]       Name of the resource group",
+        "help" : "--resourceGroup=[name]       Name of the resource group",
         "shortdesc" : "Name of resource group.",
         "required" : "1",
         "order" : 2
     }
     all_opt["tenantId"] = {
-        "getopt" : "tid:",
+        "getopt" : ":",
         "longopt" : "tenantId",
-        "help" : "-tid, --tenantId=[name]       Id of the Azure Active Directory tenant",
+        "help" : "--tenantId=[name]       Id of the Azure Active Directory tenant",
         "shortdesc" : "Id of Azure Active Directory tenant.",
         "required" : "1",
         "order" : 3
     }
     all_opt["subscriptionId"] = {
-        "getopt" : "sid:",
+        "getopt" : ":",
         "longopt" : "subscriptionId",
-        "help" : "-sid, --subscriptionId=[name]       Id of the Azure subscription",
+        "help" : "--subscriptionId=[name]       Id of the Azure subscription",
         "shortdesc" : "Id of the Azure subscription.",
         "required" : "1",
         "order" : 4
