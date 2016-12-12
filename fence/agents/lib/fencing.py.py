@@ -911,17 +911,13 @@ def is_executable(path):
 			return True
 	return False
 
-def run_command(options, command, timeout=None, env=None):
+def run_command(options, command, timeout=None, env=None, log_command=None):
 	if timeout is None and "--power-timeout" in options:
 		timeout = options["--power-timeout"]
 	if timeout is not None:
 		timeout = float(timeout)
 
-	# For IPMI password occurs on command line, it should not be part of debug info
-	log_command = command
-	if "ipmitool" in log_command:
-		log_command = re.sub("-P (.+?) -p", "-P [set] -p", log_command)
-	logging.info("Executing: %s\n", log_command)
+	logging.info("Executing: %s\n", log_command or command)
 
 	try:
 		process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)

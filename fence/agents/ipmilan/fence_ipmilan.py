@@ -14,67 +14,80 @@ BUILD_DATE=""
 #END_VERSION_GENERATION
 
 def get_power_status(_, options):
-	output = run_command(options, create_command(options, "status"))
+	output = _run_command(options, "status")
 	match = re.search('[Cc]hassis [Pp]ower is [\\s]*([a-zA-Z]{2,3})', str(output))
 	status = match.group(1) if match else None
 	return status
 
 def set_power_status(_, options):
-	run_command(options, create_command(options, options["--action"]))
+	_run_command(options, options["--action"])
 	return
 
 def reboot_cycle(_, options):
-	output = run_command(options, create_command(options, "cycle"))
+	output = _run_command(options, "cycle")
 	return bool(re.search('chassis power control: cycle', str(output).lower()))
 
 def reboot_diag(_, options):
-	output = run_command(options, create_command(options, "diag"))
+	output = _run_command(options, "diag")
 	return bool(re.search('chassis power control: diag', str(output).lower()))
 
+def _run_command(options, action):
+	cmd, log_cmd = create_command(options, action)
+	return run_command(options, cmd, log_command=log_cmd)
+
 def create_command(options, action):
-	cmd = options["--ipmitool-path"]
+	class Cmd:
+		cmd = ""
+		log = ""
 
-	# --lanplus / -L
-	if "--lanplus" in options and options["--lanplus"] in ["", "1"]:
-		cmd += " -I lanplus"
-	else:
-		cmd += " -I lan"
-	# --ip / -a
-	cmd += " -H " + options["--ip"]
-
-	# --username / -l
-	if "--username" in options and len(options["--username"]) != 0:
-		cmd += " -U " + quote(options["--username"])
-
-	# --auth / -A
-	if "--auth" in options:
-		cmd += " -A " + options["--auth"]
-
-	# --password / -p
-	if "--password" in options:
-		cmd += " -P " + quote(options["--password"])
-	else:
-		cmd += " -P ''"
-
-	# --cipher / -C
-	if "--cipher" in options:
-		cmd += " -C " + options["--cipher"]
-
-	# --port / -n
-	if "--ipport" in options:
-		cmd += " -p " + options["--ipport"]
-
-	if "--privlvl" in options:
-		cmd += " -L " + options["--privlvl"]
-
-	# --action / -o
-	cmd += " chassis power " + action
+		@classmethod
+		def append(cls, cmd, log=None):
+			cls.cmd += cmd
+			cls.log += (cmd if log is None else log)
 
 	# --use-sudo / -d
 	if "--use-sudo" in options:
-		cmd = options["--sudo-path"] + " " + cmd
+		Cmd.append(options["--sudo-path"] + " ")
 
-	return cmd
+	Cmd.append(options["--ipmitool-path"])
+
+	# --lanplus / -L
+	if "--lanplus" in options and options["--lanplus"] in ["", "1"]:
+		Cmd.append(" -I lanplus")
+	else:
+		Cmd.append(" -I lan")
+	# --ip / -a
+	Cmd.append(" -H " + options["--ip"])
+
+	# --username / -l
+	if "--username" in options and len(options["--username"]) != 0:
+		Cmd.append(" -U " + quote(options["--username"]))
+
+	# --auth / -A
+	if "--auth" in options:
+		Cmd.append(" -A " + options["--auth"])
+
+	# --password / -p
+	if "--password" in options:
+		Cmd.append(" -P " + quote(options["--password"]), " -P [set]")
+	else:
+		Cmd.append(" -P ''", " -P [set]")
+
+	# --cipher / -C
+	if "--cipher" in options:
+		Cmd.append(" -C " + options["--cipher"])
+
+	# --port / -n
+	if "--ipport" in options:
+		Cmd.append(" -p " + options["--ipport"])
+
+	if "--privlvl" in options:
+		Cmd.append(" -L " + options["--privlvl"])
+
+	# --action / -o
+	Cmd.append(" chassis power " + action)
+
+	return (Cmd.cmd, Cmd.log)
 
 def define_new_opts():
 	all_opt["lanplus"] = {
