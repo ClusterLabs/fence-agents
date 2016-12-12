@@ -89,7 +89,8 @@ def _get_evacuable_flavors():
 	# Since the detailed view for all flavors doesn't provide the extra specs,
 	# we need to call each of the flavor to get them.
 	for flavor in flavors:
-		if flavor.get_keys().get(EVACUABLE_TAG).strip().lower() in TRUE_TAGS:
+		tag = flavor.get_keys().get(EVACUABLE_TAG)
+		if tag and tag.strip().lower() in TRUE_TAGS:
 			result.append(flavor.id)
 	return result
 
@@ -98,23 +99,30 @@ def _get_evacuable_images():
 	images = nova.images.list(detailed=True)
 	for image in images:
 		if hasattr(image, 'metadata'):
-			if image.metadata.get(EVACUABLE_TAG).strip.lower() in TRUE_TAGS:
+			tag = image.metadata.get(EVACUABLE_TAG)
+			if tag and tag.strip().lower() in TRUE_TAGS:
 				result.append(image.id)
 	return result
 
 def _host_evacuate(options):
 	result = True
+	images = _get_evacuable_images()
+	flavors = _get_evacuable_flavors()
 	servers = nova.servers.list(search_opts={'host': options["--plug"], 'all_tenants': 1 })
+
 	if options["--instance-filtering"] == "False":
-		logging.debug("Evacuating all images and flavors")
-		evacuables = servers
-	else:
-		logging.debug("Filtering images and flavors")
-		flavors = _get_evacuable_flavors()
-		images = _get_evacuable_images()
+		logging.debug("Not evacuating anything")
+		evacuables = []
+        elif len(flavors) or len(images):
+		logging.debug("Filtering images and flavors: %s %s" % (repr(flavors), repr(images)))
 		# Identify all evacuable servers
+		logging.debug("Checking %s" % repr(servers))
 		evacuables = [server for server in servers
 				if _is_server_evacuable(server, flavors, images)]
+		logging.debug("Evacuating %s" % repr(evacuables))
+	else:
+		logging.debug("Evacuating all images and flavors")
+		evacuables = servers
 
 	if options["--no-shared-storage"] != "False":
 		on_shared_storage = False
@@ -202,6 +210,90 @@ def set_power_status(_, options):
 
 	return
 
+
+def fix_domain(options):
+	domains = {}
+	last_domain = None
+
+	if nova:
+		# Find it in nova
+
+		hypervisors = nova.hypervisors.list()
+		for hypervisor in hypervisors:
+			shorthost = hypervisor.hypervisor_hostname.split('.')[0]
+
+			if shorthost == hypervisor.hypervisor_hostname:
+				# Nova is not using FQDN 
+				calculated = ""
+			else:
+				# Compute nodes are named as FQDN, strip off the hostname
+				calculated = hypervisor.hypervisor_hostname.replace(shorthost+".", "")
+
+			domains[calculated] = shorthost
+
+			if calculated == last_domain:
+				# Avoid complaining for each compute node with the same name
+				# One hopes they don't appear interleaved as A.com B.com A.com B.com
+				logging.debug("Calculated the same domain from: %s" % hypervisor.hypervisor_hostname)
+
+			elif options.has_key("--domain") and options["--domain"] == calculated:
+				# Supplied domain name is valid 
+				return
+
+			elif options.has_key("--domain"):
+				# Warn in case nova isn't available at some point
+				logging.warning("Supplied domain '%s' does not match the one calculated from: %s"
+					      % (options["--domain"], hypervisor.hypervisor_hostname))
+
+			last_domain = calculated
+
+	if len(domains) == 0 and not options.has_key("--domain"):
+		logging.error("Could not calculate the domain names used by compute nodes in nova")
+
+	elif len(domains) == 1 and not options.has_key("--domain"):
+		options["--domain"] = last_domain
+		return options["--domain"]
+
+	elif len(domains) == 1:
+		logging.error("Overriding supplied domain '%s' does not match the one calculated from: %s"
+			      % (options["--domain"], hypervisor.hypervisor_hostname))
+		options["--domain"] = last_domain
+		return options["--domain"]
+
+	elif len(domains) > 1:
+		logging.error("The supplied domain '%s' did not match any used inside nova: %s"
+			      % (options["--domain"], repr(domains)))
+		sys.exit(1)
+
+	return None
+
+def fix_plug_name(options):
+	if options["--action"] == "list":
+		return
+
+	if not options.has_key("--plug"):
+		return
+
+	calculated = fix_domain(options)
+	short_plug = options["--plug"].split('.')[0]
+	logging.debug("Checking target '%s' against calculated domain '%s'"% (options["--plug"], calculated))
+
+	if not options.has_key("--domain"):
+		# Nothing supplied and nova not available... what to do... nothing
+		return
+
+	elif options["--domain"] == "":
+		# Ensure any domain is stripped off since nova isn't using FQDN
+		options["--plug"] = short_plug
+
+	elif options["--plug"].find(options["--domain"]):
+		# Plug already contains the domain, don't re-add 
+		return
+
+	else:
+		# Add the domain to the plug
+		options["--plug"] = short_plug + "." + options["--domain"]
+
 def get_plugs_list(_, options):
 	result = {}
 
@@ -209,12 +301,9 @@ def get_plugs_list(_, options):
 		hypervisors = nova.hypervisors.list()
 		for hypervisor in hypervisors:
 			longhost = hypervisor.hypervisor_hostname
-			if options["--domain"] != "":
-				shorthost = longhost.replace("." + options["--domain"], "")
-				result[longhost] = ("", None)
-				result[shorthost] = ("", None)
-			else:
-				result[longhost] = ("", None)
+			shorthost = longhost.split('.')[0]
+			result[longhost] = ("", None)
+			result[shorthost] = ("", None)
 	return result
 
 
@@ -252,7 +341,6 @@ def define_new_opts():
 		"help" : "-d, --domain=[string]          DNS domain in which hosts live, useful when the cluster uses short names and nova uses FQDN",
 		"required" : "0",
 		"shortdesc" : "DNS domain in which hosts live",
-		"default" : "",
 		"order": 5,
 	}
 	all_opt["record-only"] = {
@@ -267,10 +355,10 @@ def define_new_opts():
 	all_opt["instance-filtering"] = {
 		"getopt" : "",
 		"longopt" : "instance-filtering",
-		"help" : "--instance-filtering           Only evacuate instances create from images and flavors with evacuable=true",
+		"help" : "--instance-filtering           Allow instances created from images and flavors with evacuable=true to be evacuated (or all if no images/flavors have been tagged)",
 		"required" : "0",
-		"shortdesc" : "Only evacuate flagged instances",
-		"default" : "False",
+		"shortdesc" : "Allow instances to be evacuated",
+		"default" : "True",
 		"order": 5,
 	}
 	all_opt["no-shared-storage"] = {
@@ -310,9 +398,7 @@ def main():
 	except ImportError:
 		fail_usage("nova not found or not accessible")
 
-	# Potentially we should make this a pacemaker feature
-	if options["--action"] != "list" and options["--domain"] != "" and options.has_key("--plug"):
-		options["--plug"] = options["--plug"] + "." + options["--domain"]
+	fix_plug_name(options)
 
 	if options["--record-only"] in [ "2", "Disabled", "disabled" ]:
 		sys.exit(0)
