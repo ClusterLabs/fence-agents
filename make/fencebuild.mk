@@ -11,6 +11,7 @@ define gen_agent_from_py
 		-e 's#@''SBINDIR@#${sbindir}#g' \
 		-e 's#@''LIBEXECDIR@#${libexecdir}#g' \
 		-e 's#@''IPMITOOL_PATH@#${IPMITOOL_PATH}#g' \
+		-e 's#@''OPENSTACK_PATH@#${OPENSTACK_PATH}#g' \
 		-e 's#@''AMTTOOL_PATH@#${AMTTOOL_PATH}#g' \
 		-e 's#@''GNUTLSCLI_PATH@#${GNUTLSCLI_PATH}#g' \
 		-e 's#@''COROSYNC_CMAPCTL_PATH@#${COROSYNC_CMAPCTL_PATH}#g' \

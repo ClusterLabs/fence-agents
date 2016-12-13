@@ -167,6 +167,7 @@ AC_PYTHON_MODULE(pywsman, 1)
 
 ## path to 3rd-party binaries
 AC_PATH_PROG([IPMITOOL_PATH], [ipmitool], [/usr/bin/ipmitool])
+AC_PATH_PROG([OPENSTACK_PATH], [openstack], [/usr/bin/openstack])
 AC_PATH_PROG([AMTTOOL_PATH], [amttool], [/usr/bin/amttool])
 AC_PATH_PROG([GNUTLSCLI_PATH], [gnutlscli], [/usr/bin/gnutls-cli])
 AC_PATH_PROG([COROSYNC_CMAPCTL_PATH], [corosync-cmapctl], [/usr/sbin/corosync-cmapctl])
@@ -210,6 +211,7 @@ AC_SUBST([AGENTS_LIST])
 AM_CONDITIONAL(BUILD_XENAPILIB, test $XENAPILIB -eq 1)
 
 AC_SUBST([IPMITOOL_PATH])
+AC_SUBST([OPENSTACK_PATH])
 AC_SUBST([AMTTOOL_PATH])
 AC_SUBST([COROSYNC_CMAPCTL_PATH])
 AC_SUBST([SG_PERSIST_PATH])
