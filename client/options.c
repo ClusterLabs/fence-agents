@@ -800,6 +800,7 @@ args_metadata(char *progname, const char *optstr)
 	printf("\t<action name=\"status\" />\n");	
 	printf("\t<action name=\"monitor\" />\n");	
 	printf("\t<action name=\"list\" />\n");	
+	printf("\t<action name=\"list-status\" />\n");	
 	printf("</actions>\n");
 	printf("</resource-agent>\n");
 }

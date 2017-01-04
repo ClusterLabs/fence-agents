@@ -37,7 +37,7 @@ Virtual machine (domain UUID or name) to fence
 .TP
 .B -o
 . 
-Fencing action (null, off, on, reboot, status, monitor, list, or metadata) (Default Value: reboot).  See the FENCING ACTIONS section.
+Fencing action (null, off, on, reboot, status, monitor, list, list-status, or metadata) (Default Value: reboot).  See the FENCING ACTIONS section.
 
 .TP
 .B -t
@@ -250,7 +250,7 @@ Check whether a virtual machine is running or not.
 Check the health of fence_virtd's backend plugin.
 
 .TP
-\fBlist \fP
+\fBlist\fP and \fBlist-status\fP
 List virtual machines which may be fenced by fence_virtd (not supported
 on all backends).
 
