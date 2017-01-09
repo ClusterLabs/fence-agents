@@ -185,7 +185,7 @@ def get_power_status(conn, options):
 
 def set_power_status(conn, options):
 	logging.debug("set_power_status function:\noptions: %s", str(options))
-	pm = PowerMan(options['--powerman_path'], options['--ip'], options['--ipport'])
+	pm = PowerMan(options['--powerman-path'], options['--ip'], options['--ipport'])
 
 	action = options["--action"]
 	if action == "on":
@@ -198,7 +198,7 @@ def set_power_status(conn, options):
 
 def get_list(conn, options):
 	logging.debug("get_list function:\noptions: %s", str(options))
-	pm = PowerMan(options['--powerman_path'], options['--ip'], options['--ipport'])
+	pm = PowerMan(options['--powerman-path'], options['--ip'], options['--ipport'])
 
 	outlets = pm.list()
 	logging.debug("get_list outlets.keys: %s", str(outlets.keys()))
