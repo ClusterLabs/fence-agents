@@ -9,6 +9,7 @@ import json
 
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import fail_usage, all_opt, fence_action, atexit_handler, check_input, process_input, show_docs, run_delay
+import fencing_pycurl
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION = ""
@@ -50,7 +51,7 @@ def get_list(conn, options):
 
 def send_cmd(options, cmd, post = False):
 	url = "http%s://%s:%s/v%s/%s" % ("s" if "--ssl" in options else "", options["--ip"], options["--ipport"], options["--api-version"], cmd)
-	conn = pycurl.Curl()
+	conn = fencing_pycurl.FencingPyCurl()
 	output_buffer = io.StringIO()
 	if logging.getLogger().getEffectiveLevel() < logging.WARNING:
 		conn.setopt(pycurl.VERBOSE, True)

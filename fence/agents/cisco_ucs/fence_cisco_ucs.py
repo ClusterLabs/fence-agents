@@ -7,6 +7,7 @@ import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, EC_STATUS, EC_LOGIN_DENIED, run_delay
+import fencing_pycurl
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New Cisco UCS Agent - test release on steroids"
@@ -113,7 +114,7 @@ def send_command(opt, command, timeout):
 	url += "//" + opt["--ip"] + ":" + str(opt["--ipport"]) + "/nuova"
 
 	## send command through pycurl
-	conn = pycurl.Curl()
+	conn = fencing_pycurl.FencingPyCurl()
 	web_buffer = io.StringIO()
 	conn.setopt(pycurl.URL, url)
 	conn.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
