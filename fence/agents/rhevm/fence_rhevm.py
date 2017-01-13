@@ -86,7 +86,7 @@ def send_command(opt, command, method="GET"):
 
 	## send command through pycurl
 	conn = pycurl.Curl()
-	web_buffer = io.StringIO()
+	web_buffer = io.BytesIO()
 	conn.setopt(pycurl.URL, url)
 	conn.setopt(pycurl.HTTPHEADER, ["Content-type: application/xml", "Accept: application/xml", "Prefer: persistent-auth", "Filter: true"])
 
@@ -121,7 +121,7 @@ def send_command(opt, command, method="GET"):
 
 		opt["cookie"] = cookie
 
-	result = web_buffer.getvalue()
+	result = web_buffer.getvalue().decode()
 
 	logging.debug("%s\n", command)
 	logging.debug("%s\n", result)
