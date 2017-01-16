@@ -114,7 +114,7 @@ def send_command(opt, command, timeout):
 
 	## send command through pycurl
 	conn = pycurl.Curl()
-	web_buffer = io.StringIO()
+	web_buffer = io.BytesIO()
 	conn.setopt(pycurl.URL, url)
 	conn.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
 	conn.setopt(pycurl.POSTFIELDS, command)
@@ -128,7 +128,7 @@ def send_command(opt, command, timeout):
 		conn.setopt(pycurl.SSL_VERIFYPEER, 0)
 		conn.setopt(pycurl.SSL_VERIFYHOST, 0)
 	conn.perform()
-	result = web_buffer.getvalue()
+	result = web_buffer.getvalue().decode()
 
 	logging.debug("%s\n", command)
 	logging.debug("%s\n", result)

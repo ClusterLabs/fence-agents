@@ -96,7 +96,7 @@ def get_ticket(options):
 def send_cmd(options, cmd, post=None):
 	url = options["url"] + cmd
 	conn = pycurl.Curl()
-	output_buffer = io.StringIO()
+	output_buffer = io.BytesIO()
 	if logging.getLogger().getEffectiveLevel() < logging.WARNING:
 		conn.setopt(pycurl.VERBOSE, True)
 	conn.setopt(pycurl.HTTPGET, 1)
@@ -122,7 +122,7 @@ def send_cmd(options, cmd, post=None):
 
 	try:
 		conn.perform()
-		result = output_buffer.getvalue()
+		result = output_buffer.getvalue().decode()
 
 		logging.debug("RESULT [" + str(conn.getinfo(pycurl.RESPONSE_CODE)) + \
 			"]: " + result)
