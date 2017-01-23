@@ -61,8 +61,8 @@ def set_power_status(conn, options):
 	del conn
 
 	action = {
-		'on' : "up",
-		'off' : "down"
+		'on' : "admin-up",
+		'off' : "admin-down"
 	}[options["--action"]]
 
 	send_command(options, "<configConfMos cookie=\"" + options["cookie"] + "\" inHierarchical=\"no\">" +
