@@ -551,10 +551,9 @@ def usage(avail_opt):
 
 def metadata(avail_opt, docs):
 	# avail_opt has to be unique, if there are duplicities then they should be removed
-	sorted_list = [(key, all_opt[key]) for key in list(set(avail_opt)) if "longopt" in all_opt[key]]
-	# Find keys that are going to replace inconsistent names
-	mapping = dict([(opt["longopt"].replace("-", "_"), key) for (key, opt) in sorted_list if (key != opt["longopt"].replace("-", "_"))])
-	new_options = [(key, all_opt[mapping[key]]) for key in mapping]
+	sorted_list = [(key, all_opt[key], key) for key in list(set(avail_opt))]
+	sorted_list = [(key, all_opt[key], key2) for (key, opt, key2) in sorted_list if "longopt" in opt]
+	new_options = [(opt["longopt"].replace("-", "_"), opt, key) for (key, opt, key2) in sorted_list if ("longopt" in opt) and (key != opt["longopt"].replace("-", "_"))]
 	sorted_list.extend(new_options)
 
 	sorted_list.sort(key=lambda x: (x[1]["order"], x[0]))
@@ -567,41 +566,44 @@ def metadata(avail_opt, docs):
 	print("<longdesc>" + docs["longdesc"] + "</longdesc>")
 	print("<vendor-url>" + docs["vendorurl"] + "</vendor-url>")
 	print("<parameters>")
-	for (key, opt) in sorted_list:
+	for (new_key, opt, old_key) in sorted_list:
 		info = ""
-		if key in all_opt:
-			if key != all_opt[key].get('longopt', key).replace("-", "_"):
+		if new_key in all_opt:
+			option = old_key
+			if old_key != all_opt[old_key].get('longopt', old_key).replace("-", "_"):
 				info = "deprecated=\"1\""
-		else:
-			info = "obsoletes=\"%s\"" % (mapping.get(key))
 
-		if "help" in opt and len(opt["help"]) > 0:
-			print("\t<parameter name=\"" + key + "\" unique=\"0\" required=\"" + opt["required"] + "\" " + info + ">")
+		else:
+			option = old_key
+			info = "obsoletes=\"%s\"" % (old_key)
+
+		if "help" in all_opt[option] and len(all_opt[option]["help"]) > 0:
+			print("\t<parameter name=\"" + new_key + "\" unique=\"0\" required=\"" + all_opt[option]["required"] + "\" " + info + ">")
 
 			default = ""
-			if "default" in opt:
-				default = "default=\"" + _encode_html_entities(str(opt["default"])) + "\" "
+			if "default" in all_opt[option]:
+				default = "default=\"" + _encode_html_entities(str(all_opt[option]["default"])) + "\" "
 
-			mixed = opt["help"]
+			mixed = all_opt[option]["help"]
 			## split it between option and help text
 			res = re.compile(r"^(.*?--\S+)\s+", re.IGNORECASE | re.S).search(mixed)
 			if None != res:
 				mixed = res.group(1)
 			mixed = _encode_html_entities(mixed)
 
-			if not "shortdesc" in opt:
-				shortdesc = re.sub("\s\s+", " ", opt["help"][31:])
+			if not "shortdesc" in all_opt[option]:
+				shortdesc = re.sub("\s\s+", " ", all_opt[option]["help"][31:])
 			else:
-				shortdesc = opt["shortdesc"]
+				shortdesc = all_opt[option]["shortdesc"]
 
 			print("\t\t<getopt mixed=\"" + mixed + "\" />")
-			if "choices" in opt:
+			if "choices" in all_opt[option]:
 				print("\t\t<content type=\"select\" "+default+" >")
-				for choice in opt["choices"]:
+				for choice in all_opt[option]["choices"]:
 					print("\t\t\t<option value=\"%s\" />" % (choice))
 				print("\t\t</content>")
-			elif opt["getopt"].count(":") > 0:
-				t = opt.get("type", "string")
+			elif all_opt[option]["getopt"].count(":") > 0:
+				t = all_opt[option].get("type", "string")
 				print("\t\t<content type=\"%s\" " % (t) +default+" />")
 			else:
 				print("\t\t<content type=\"boolean\" "+default+" />")
