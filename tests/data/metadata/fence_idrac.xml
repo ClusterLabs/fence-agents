@@ -89,6 +89,11 @@
 		</content>
 		<shortdesc lang="en">Privilege level on IPMI device</shortdesc>
 	</parameter>
+	<parameter name="target" unique="0" required="0">
+		<getopt mixed="--target=[targetaddress]" />
+		<content type="string"  />
+		<shortdesc lang="en">Bridge IPMI requests to the remote target address</shortdesc>
+	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
 		<content type="boolean"  />
