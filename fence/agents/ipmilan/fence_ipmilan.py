@@ -51,13 +51,20 @@ def create_command(options, action):
 
 	Cmd.append(options["--ipmitool-path"])
 
-	# --lanplus / -L
-	if "--lanplus" in options and options["--lanplus"] in ["", "1"]:
-		Cmd.append(" -I lanplus")
+	if "--ip" in options:
+		# --lanplus / -L
+		if "--lanplus" in options and options["--lanplus"] in ["", "1"]:
+			Cmd.append(" -I lanplus")
+		else:
+			Cmd.append(" -I lan")
+		# --ip / -a
+		Cmd.append(" -H " + options["--ip"])
+
+		# --port / -n
+		if "--ipport" in options:
+			Cmd.append(" -p " + options["--ipport"])
 	else:
-		Cmd.append(" -I lan")
-	# --ip / -a
-	Cmd.append(" -H " + options["--ip"])
+		Cmd.append(" -t " + options["--target"])
 
 	# --username / -l
 	if "--username" in options and len(options["--username"]) != 0:
@@ -76,10 +83,6 @@ def create_command(options, action):
 	# --cipher / -C
 	if "--cipher" in options:
 		Cmd.append(" -C " + options["--cipher"])
-
-	# --port / -n
-	if "--ipport" in options:
-		Cmd.append(" -p " + options["--ipport"])
 
 	if "--privlvl" in options:
 		Cmd.append(" -L " + options["--privlvl"])
@@ -136,12 +139,21 @@ def define_new_opts():
 		"default" : "@IPMITOOL_PATH@",
 		"order": 200
 	}
+	all_opt["target"] = {
+		"getopt" : ":",
+		"longopt" : "target",
+		"help" : "--target=[targetaddress]       Bridge IPMI requests to the remote target address",
+		"required" : "0",
+		"shortdesc" : "Bridge IPMI requests to the remote target address",
+		"order": 1
+	}
 
 def main():
 	atexit.register(atexit_handler)
 
-	device_opt = ["ipaddr", "login", "no_login", "no_password", "passwd", "diag",
-		"lanplus", "auth", "cipher", "privlvl", "sudo", "ipmitool_path", "method"]
+	device_opt = ["ipaddr", "login", "no_login", "no_password", "passwd",
+		"diag", "lanplus", "auth", "cipher", "privlvl", "sudo",
+		"ipmitool_path", "method", "target"]
 	define_new_opts()
 
 	all_opt["power_wait"]["default"] = 2

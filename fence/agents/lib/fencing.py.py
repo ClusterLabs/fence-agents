@@ -1222,7 +1222,7 @@ def _validate_input(options, stop = True):
 		valid_input = False
 		fail_usage("Failed: You have to set login name", stop)
 
-	if device_opt.count("ipaddr") and "--ip" not in options and "--managed" not in options:
+	if device_opt.count("ipaddr") and "--ip" not in options and "--managed" not in options and "--target" not in options:
 		valid_input = False
 		fail_usage("Failed: You have to enter fence address", stop)
 
