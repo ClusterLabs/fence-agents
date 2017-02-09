@@ -29,6 +29,8 @@
 						<choice>
 							<value>boolean</value>
 							<value>string</value>
+							<value>second</value>
+							<value>integer</value>
 						</choice>
 					</attribute>
 					<group>

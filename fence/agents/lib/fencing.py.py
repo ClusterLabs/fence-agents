@@ -69,6 +69,7 @@ all_opt = {
 	"delay" : {
 		"getopt" : "f:",
 		"longopt" : "delay",
+		"type" : "second",
 		"help" : "--delay=[seconds]              Wait X seconds before fencing is started",
 		"required" : "0",
 		"shortdesc" : "Wait X seconds before fencing is started",
@@ -108,6 +109,7 @@ all_opt = {
 	"ipport" : {
 		"getopt" : "u:",
 		"longopt" : "ipport",
+		"type" : "integer",
 		"help" : "-u, --ipport=[port]            TCP/UDP port to use",
 		"required" : "0",
 		"shortdesc" : "TCP/UDP port to use for connection with device",
@@ -340,6 +342,7 @@ all_opt = {
 	"login_timeout" : {
 		"getopt" : "y:",
 		"longopt" : "login-timeout",
+		"type" : "second",
 		"help" : "--login-timeout=[seconds]      Wait X seconds for cmd prompt after login",
 		"default" : "5",
 		"required" : "0",
@@ -348,6 +351,7 @@ all_opt = {
 	"shell_timeout" : {
 		"getopt" : "Y:",
 		"longopt" : "shell-timeout",
+		"type" : "second",
 		"help" : "--shell-timeout=[seconds]      Wait X seconds for cmd prompt after issuing command",
 		"default" : "3",
 		"required" : "0",
@@ -356,6 +360,7 @@ all_opt = {
 	"power_timeout" : {
 		"getopt" : "g:",
 		"longopt" : "power-timeout",
+		"type" : "second",
 		"help" : "--power-timeout=[seconds]      Test X seconds for status change after ON/OFF",
 		"default" : "20",
 		"required" : "0",
@@ -364,6 +369,7 @@ all_opt = {
 	"power_wait" : {
 		"getopt" : "G:",
 		"longopt" : "power-wait",
+		"type" : "second",
 		"help" : "--power-wait=[seconds]         Wait X seconds after issuing ON/OFF",
 		"default" : "0",
 		"required" : "0",
@@ -379,6 +385,7 @@ all_opt = {
 	"retry_on" : {
 		"getopt" : "F:",
 		"longopt" : "retry-on",
+		"type" : "integer",
 		"help" : "--retry-on=[attempts]          Count of attempts to retry power on",
 		"default" : "1",
 		"required" : "0",
@@ -567,7 +574,8 @@ def metadata(avail_opt, options, docs):
 					print "\t\t\t<option value=\"%s\" />" % (choice)
 				print "\t\t</content>"
 			elif all_opt[option]["getopt"].count(":") > 0:
-				print "\t\t<content type=\"string\" "+default+" />"
+				t = all_opt[option].get("type", "string")
+				print("\t\t<content type=\"%s\" " % (t) +default+" />")
 			else:
 				print "\t\t<content type=\"boolean\" "+default+" />"
 
@@ -859,6 +867,14 @@ def check_input(device_opt, opt):
 							"for %s from the valid values: %s" % \
 							("--" + all_opt[opt]["longopt"], str(all_opt[opt]["choices"])))
 
+	for failed_opt in _get_opts_with_invalid_types(options):
+		valid_input = False
+		if all_opt[failed_opt]["type"] == "second":
+			fail_usage("Failed: The value you have entered for %s is not a valid time in seconds" % \
+				("--" + all_opt[failed_opt]["longopt"]))
+		else:
+			fail_usage("Failed: The value you have entered for %s is not a valid %s" % \
+				("--" + all_opt[failed_opt]["longopt"], all_opt[failed_opt]["type"]))
 	return options
 
 ## Obtain a power status from possibly more than one plug
@@ -1264,3 +1280,18 @@ class SyslogLibHandler(logging.StreamHandler):
 		# syslos.syslog can not have 0x00 character inside or exception is thrown
 		syslog.syslog(syslog_level, msg.replace("\x00","\n"))
 		return
+
+def _get_opts_with_invalid_types(options):
+	options_failed = []
+	device_opt = options["device_opt"]
+
+	for opt in device_opt:
+		if "type" in all_opt[opt]:
+			longopt = "--" + all_opt[opt]["longopt"]
+			if longopt in options:
+				if all_opt[opt]["type"] in ["integer", "second"]:
+					try:
+						number = int(options["--" + all_opt[opt]["longopt"]])
+					except ValueError:
+						options_failed.append(opt)
+	return options_failed
