@@ -147,9 +147,9 @@ def define_new_opts():
 		"shortdesc" : "Reuse cookies for authentication",
 		"order" : 1}
 	all_opt["api_path"] = {
-		"getopt" : "",
+		"getopt" : ":",
 		"longopt" : "api-path",
-		"help" : "--api-path                     The path part of the API URL",
+		"help" : "--api-path=[path]              The path part of the API URL",
 		"default" : "/ovirt-engine/api",
 		"required" : "0",
 		"shortdesc" : "The path part of the API URL",

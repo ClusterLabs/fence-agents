@@ -74,7 +74,7 @@
 		<shortdesc lang="en">Reuse cookies for authentication</shortdesc>
 	</parameter>
 	<parameter name="api_path" unique="0" required="0">
-		<getopt mixed="--api-path" />
+		<getopt mixed="--api-path=[path]" />
 		<shortdesc lang="en">The path part of the API URL</shortdesc>
 	</parameter>
 	<parameter name="quiet" unique="0" required="0">
