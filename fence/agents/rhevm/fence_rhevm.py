@@ -91,7 +91,7 @@ def send_command(opt, command, method="GET"):
 	## send command through pycurl
 	conn = pycurl.Curl()
 	web_buffer = io.BytesIO()
-	conn.setopt(pycurl.URL, url)
+	conn.setopt(pycurl.URL, url.encode("ascii"))
 	conn.setopt(pycurl.HTTPHEADER, [
 		"Version: 3",
 		"Content-type: application/xml",

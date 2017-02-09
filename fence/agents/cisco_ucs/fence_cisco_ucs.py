@@ -115,7 +115,7 @@ def send_command(opt, command, timeout):
 	## send command through pycurl
 	conn = pycurl.Curl()
 	web_buffer = io.BytesIO()
-	conn.setopt(pycurl.URL, url)
+	conn.setopt(pycurl.URL, url.encode("ascii"))
 	conn.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
 	conn.setopt(pycurl.POSTFIELDS, command)
 	conn.setopt(pycurl.WRITEFUNCTION, web_buffer.write)

@@ -100,7 +100,7 @@ def send_cmd(options, cmd, post=None):
 	if logging.getLogger().getEffectiveLevel() < logging.WARNING:
 		conn.setopt(pycurl.VERBOSE, True)
 	conn.setopt(pycurl.HTTPGET, 1)
-	conn.setopt(pycurl.URL, str(url))
+	conn.setopt(pycurl.URL, url.encode("ascii"))
 	if "auth" in options and options["auth"] is not None:
 		conn.setopt(pycurl.COOKIE, options["auth"]["ticket"])
 		conn.setopt(pycurl.HTTPHEADER, [options["auth"]["CSRF_token"]])

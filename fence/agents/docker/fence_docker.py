@@ -55,7 +55,7 @@ def send_cmd(options, cmd, post = False):
 	if logging.getLogger().getEffectiveLevel() < logging.WARNING:
 		conn.setopt(pycurl.VERBOSE, True)
 	conn.setopt(pycurl.HTTPGET, 1)
-	conn.setopt(pycurl.URL, str(url))
+	conn.setopt(pycurl.URL, url.encode("ascii"))
 	if post:
 		conn.setopt(pycurl.POST, 1)
 		conn.setopt(pycurl.POSTFIELDSIZE, 0)
