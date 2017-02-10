@@ -1,6 +1,7 @@
 DATADIR:=$(abs_top_srcdir)/tests/data/metadata
 
-check: $(TARGET:%=xml-check.%) $(SYMTARGET:%=xml-check.%)
+check: $(TARGET:%=%.xml-check) $(SYMTARGET:%=%.xml-check)
+xml-upload: $(TEST_TARGET:%=%.xml-upload) $(SYMTARGET:%=%.xml-upload)
 
 xml-check.%: %
 	$(eval INPUT=$(subst xml-check.,,$@))
