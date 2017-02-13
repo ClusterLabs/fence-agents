@@ -4,6 +4,7 @@ AWK_VAL='BEGIN {store=-1} /name=\".*_path\"/ {store=2} {if (store!=0) {print}; s
 TEST_TARGET=$(filter-out $(TEST_TARGET_SKIP),$(TARGET))
 
 check: $(TEST_TARGET:%=%.xml-check) $(SYMTARGET:%=%.xml-check) $(TEST_TARGET:%=%.delay-check) $(TEST_TARGET:%=%.rng-check)
+xml-upload: $(TEST_TARGET:%=%.xml-upload) $(SYMTARGET:%=%.xml-upload)
 
 %.xml-check: %
 	$(eval INPUT=$(subst .xml-check,,$(@F)))
