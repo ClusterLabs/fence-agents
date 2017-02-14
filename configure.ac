@@ -163,7 +163,6 @@ AC_PYTHON_MODULE(suds, 1)
 AC_PYTHON_MODULE(pexpect, 1)
 AC_PYTHON_MODULE(pycurl, 1)
 AC_PYTHON_MODULE(requests, 1)
-AC_PYTHON_MODULE(pywsman, 1)
 
 ## path to 3rd-party binaries
 AC_PATH_PROG([IPMITOOL_PATH], [ipmitool], [/usr/bin/ipmitool])
