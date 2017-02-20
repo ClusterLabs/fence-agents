@@ -110,6 +110,7 @@ By default, vbox needs to log in as a user that is a member of the vboxusers gro
 		<content type="select" default="linux"  >
 			<option value="linux" />
 			<option value="macos" />
+			<option value="windows" />
 		</content>
 		<shortdesc lang="en">Operating system of the host</shortdesc>
 	</parameter>

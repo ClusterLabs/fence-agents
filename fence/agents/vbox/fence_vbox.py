@@ -86,7 +86,7 @@ def define_new_opts():
         "help" : "--host-os=[os]  Operating system of the host",
         "required" : "0",
         "shortdesc" : "Operating system of the host",
-        "choices" : ["linux", "macos"],
+        "choices" : ["linux", "macos", "windows"],
         "default" : "linux",
         "order" : 200
     }
@@ -112,6 +112,10 @@ def main():
         elif opt["--host-os"] == "macos":
             opt["--vboxmanage-path"] = "/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
             opt["logout_string"] = "exit"
+        elif opt["--host-os"] == "windows":
+            opt["--vboxmanage-path"] = "\"/Program Files/Oracle/VirtualBox/VBoxManage.exe"
+            opt["--command-prompt"] = ""
+            opt["--ssh-options"] = ""
 
     options = check_input(device_opt, opt)
     options["eol"] = "\n"
