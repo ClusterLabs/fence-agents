@@ -105,6 +105,14 @@ By default, vbox needs to log in as a user that is a member of the vboxusers gro
 		<content type="second" default="0"  />
 		<shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
 	</parameter>
+	<parameter name="host_os" unique="0" required="0">
+		<getopt mixed="--host-os=[os]" />
+		<content type="select" default="linux"  >
+			<option value="linux" />
+			<option value="macos" />
+		</content>
+		<shortdesc lang="en">Operating system of the host</shortdesc>
+	</parameter>
 	<parameter name="login_timeout" unique="0" required="0">
 		<getopt mixed="--login-timeout=[seconds]" />
 		<content type="second" default="5"  />
@@ -129,6 +137,10 @@ By default, vbox needs to log in as a user that is a member of the vboxusers gro
 		<getopt mixed="--shell-timeout=[seconds]" />
 		<content type="second" default="3"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
+	</parameter>
+	<parameter name="vboxmanage_path" unique="0" required="0">
+		<getopt mixed="--vboxmanage-path=[path]" />
+		<shortdesc lang="en">Path to VBoxManage on the host</shortdesc>
 	</parameter>
 	<parameter name="retry_on" unique="0" required="0">
 		<getopt mixed="--retry-on=[attempts]" />
