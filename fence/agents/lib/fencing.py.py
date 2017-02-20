@@ -551,7 +551,11 @@ def usage(avail_opt):
 
 def metadata(avail_opt, docs):
 	# avail_opt has to be unique, if there are duplicities then they should be removed
-	sorted_list = [(key, all_opt[key]) for key in list(set(avail_opt))]
+	sorted_list = [(key, all_opt[key], key) for key in list(set(avail_opt))]
+	sorted_list = [(key, all_opt[key], key2) for (key, opt, key2) in sorted_list if "longopt" in opt]
+	new_options = [(opt["longopt"].replace("-", "_"), opt, key) for (key, opt, key2) in sorted_list if ("longopt" in opt) and (key != opt["longopt"].replace("-", "_"))]
+	sorted_list.extend(new_options)
+
 	sorted_list.sort(key=lambda x: (x[1]["order"], x[0]))
 
 	print("<?xml version=\"1.0\" ?>")
@@ -562,9 +566,19 @@ def metadata(avail_opt, docs):
 	print("<longdesc>" + docs["longdesc"] + "</longdesc>")
 	print("<vendor-url>" + docs["vendorurl"] + "</vendor-url>")
 	print("<parameters>")
-	for option, _ in sorted_list:
+	for (new_key, opt, old_key) in sorted_list:
+		info = ""
+		if new_key in all_opt:
+			option = old_key
+			if old_key != all_opt[old_key].get('longopt', old_key).replace("-", "_"):
+				info = "deprecated=\"1\""
+
+		else:
+			option = old_key
+			info = "obsoletes=\"%s\"" % (old_key)
+
 		if "help" in all_opt[option] and len(all_opt[option]["help"]) > 0:
-			print("\t<parameter name=\"" + option + "\" unique=\"0\" required=\"" + all_opt[option]["required"] + "\">")
+			print("\t<parameter name=\"" + new_key + "\" unique=\"0\" required=\"" + all_opt[option]["required"] + "\" " + info + ">")
 
 			default = ""
 			if "default" in all_opt[option]:
@@ -1297,13 +1311,20 @@ def _prepare_getopt_args(options):
 def _parse_input_stdin(avail_opt):
 	opt = {}
 	name = ""
+
+	mapping_longopt_names = dict([(all_opt[o].get("longopt"), o) for o in avail_opt])
+
 	for line in sys.stdin.readlines():
 		line = line.strip()
 		if (line.startswith("#")) or (len(line) == 0):
 			continue
 
 		(name, value) = (line + "=").split("=", 1)
+		name = name.replace("-", "_");
 		value = value[:-1]
+
+		if name in mapping_longopt_names:
+			name = mapping_longopt_names[name]
 
 		if avail_opt.count(name) == 0 and name in ["nodename"]:
 			continue
