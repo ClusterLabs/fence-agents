@@ -956,8 +956,9 @@ def fence_action(tn, options, set_power_fn, get_power_fn, get_outlet_list=None, 
 
 		## Process options that manipulate fencing device
 		#####
-		if options["--action"] in ["list", "list-status"] or \
-			((options["--action"] == "monitor") and 1 == options["device_opt"].count("port")):
+		if (options["--action"] in ["list", "list-status"]) or \
+			((options["--action"] == "monitor") and 1 == options["device_opt"].count("port") and \
+			0 == options["device_opt"].count("port_as_ip")):
 
 			if 0 == options["device_opt"].count("port"):
 				print "N/A"
