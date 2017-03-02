@@ -3,6 +3,11 @@
 <longdesc>Used to tell Nova that compute nodes are down and to reschedule flagged instances</longdesc>
 <vendor-url></vendor-url>
 <parameters>
+	<parameter name="region-name" unique="0" required="0">
+		<getopt mixed="--region-name=[region]" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Region Name</shortdesc>
+	</parameter>
 	<parameter name="port" unique="0" required="1">
 		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />
@@ -14,7 +19,7 @@
 		<shortdesc lang="en">Script to retrieve password</shortdesc>
 	</parameter>
 	<parameter name="auth-url" unique="0" required="0">
-		<getopt mixed="-k, --auth-url=[tenant]" />
+		<getopt mixed="-k, --auth-url=[url]" />
 		<content type="string"  />
 		<shortdesc lang="en">Keystone Admin Auth URL</shortdesc>
 	</parameter>
@@ -42,6 +47,11 @@
 		<getopt mixed="-l, --username=[name]" />
 		<content type="string"  />
 		<shortdesc lang="en">Login Name</shortdesc>
+	</parameter>
+	<parameter name="insecure" unique="0" required="0">
+		<getopt mixed="--insecure" />
+		<content type="boolean" default="False"  />
+		<shortdesc lang="en">Allow Insecure TLS Requests</shortdesc>
 	</parameter>
 	<parameter name="domain" unique="0" required="0">
 		<getopt mixed="-d, --domain=[string]" />

@@ -141,7 +141,6 @@
 	</parameter>
 	<parameter name="ipmitool_path" unique="0" required="0">
 		<getopt mixed="--ipmitool-path=[path]" />
-		<content type="string" default="/usr/bin/ipmitool"  />
 		<shortdesc lang="en">Path to ipmitool binary</shortdesc>
 	</parameter>
 	<parameter name="shell_timeout" unique="0" required="0">

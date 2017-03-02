@@ -258,6 +258,7 @@ CFLAGS="$ENV_CFLAGS $OPT_CFLAGS $GDB_FLAGS \
 CPPFLAGS="-I\$(top_builddir)/make -I\$(top_srcdir)/make -I. $ENV_CPPFLAGS"
 LDFLAGS="$ENV_LDFLAGS"
 
+AM_EXTRA_RECURSIVE_TARGETS([xml-upload])
 AC_CONFIG_FILES([Makefile
 		 fence/Makefile
 		 fence/agents/Makefile

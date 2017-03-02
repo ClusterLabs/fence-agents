@@ -73,7 +73,6 @@
 	</parameter>
 	<parameter name="sbd_path" unique="0" required="0">
 		<getopt mixed="--sbd-path=[path]" />
-		<content type="string" default="/usr/sbin/sbd"  />
 		<shortdesc lang="en">Path to SBD binary</shortdesc>
 	</parameter>
 	<parameter name="login_timeout" unique="0" required="0">
