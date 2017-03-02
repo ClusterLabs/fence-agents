@@ -310,6 +310,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/xenapi/Makefile
 		 fence/agents/hds_cb/Makefile
 		 fence/agents/zvm/Makefile
+		 fence/agents/sbd/Makefile
 		 doc/Makefile])
 
 AC_OUTPUT
