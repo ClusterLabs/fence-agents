@@ -34,13 +34,20 @@ def reboot_diag(_, options):
 def create_command(options, action):
 	cmd = options["--ipmitool-path"]
 
-	# --lanplus / -L
-	if options.has_key("--lanplus") and options["--lanplus"] in ["", "1"]:
-		cmd += " -I lanplus"
+	if options.has_key("--ip"):
+		# --lanplus / -L
+		if options.has_key("--lanplus") and options["--lanplus"] in ["", "1"]:
+			cmd += " -I lanplus"
+		else:
+			cmd += " -I lan"
+		# --ip / -a
+		cmd += " -H " + options["--ip"]
+
+		# --port / -n
+		if options.has_key("--ipport"):
+			cmd += " -p " + options["--ipport"]
 	else:
-		cmd += " -I lan"
-	# --ip / -a
-	cmd += " -H " + options["--ip"]
+		cmd += " -t " + options["--target"]
 
 	# --username / -l
 	if options.has_key("--username") and len(options["--username"]) != 0:
@@ -59,10 +66,6 @@ def create_command(options, action):
 	# --cipher / -C
 	if "--cipher" in options:
 		cmd += " -C " + options["--cipher"]
-
-	# --port / -n
-	if options.has_key("--ipport"):
-		cmd += " -p " + options["--ipport"]
 
 	if options.has_key("--privlvl"):
 		cmd += " -L " + options["--privlvl"]
@@ -123,6 +126,14 @@ def define_new_opts():
 		"default" : "@IPMITOOL_PATH@",
 		"order": 200
 	}
+	all_opt["target"] = {
+		"getopt" : ":",
+		"longopt" : "target",
+		"help" : "--target=[targetaddress]       Bridge IPMI requests to the remote target address",
+		"required" : "0",
+		"shortdesc" : "Bridge IPMI requests to the remote target address",
+		"order": 1
+	}
 	all_opt["obsolete_ip"] = {
 		"getopt" : "i:",
 		"longopt" : "obsolete-ip",
@@ -141,9 +152,9 @@ def define_new_opts():
 def main():
 	atexit.register(atexit_handler)
 
-	device_opt = ["ipaddr", "login", "no_login", "no_password", "passwd", "diag", 
-		"lanplus", "auth", "cipher", "privlvl", "sudo", "ipmitool_path", "method",
-		"obsolete_ip", "timeout"]
+	device_opt = ["ipaddr", "login", "no_login", "no_password", "passwd",
+		"diag", "lanplus", "auth", "cipher", "privlvl", "sudo",
+		"ipmitool_path", "method", "target", "obsolete_ip", "timeout"]
 	define_new_opts()
 
 	all_opt["power_wait"]["default"] = 2

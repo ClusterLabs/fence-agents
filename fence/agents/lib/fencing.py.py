@@ -813,7 +813,7 @@ def check_input(device_opt, opt):
 			device_opt.count("login") and (device_opt.count("no_login") == 0):
 		fail_usage("Failed: You have to set login name")
 
-	if device_opt.count("ipaddr") and not options.has_key("--ip") and not options.has_key("--managed"):
+	if device_opt.count("ipaddr") and not options.has_key("--ip") and not options.has_key("--managed") and not options.has_key("--target"):
 		fail_usage("Failed: You have to enter fence address")
 
 	if device_opt.count("no_password") == 0:
