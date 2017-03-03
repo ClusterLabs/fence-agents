@@ -258,6 +258,7 @@ CFLAGS="$ENV_CFLAGS $OPT_CFLAGS $GDB_FLAGS \
 CPPFLAGS="-I\$(top_builddir)/make -I\$(top_srcdir)/make -I. $ENV_CPPFLAGS"
 LDFLAGS="$ENV_LDFLAGS"
 
+AM_EXTRA_RECURSIVE_TARGETS([xml-upload])
 AC_CONFIG_FILES([Makefile
 		 fence/Makefile
 		 fence/agents/Makefile
@@ -310,6 +311,7 @@ AC_CONFIG_FILES([Makefile
 		 fence/agents/xenapi/Makefile
 		 fence/agents/hds_cb/Makefile
 		 fence/agents/zvm/Makefile
+		 fence/agents/sbd/Makefile
 		 doc/Makefile])
 
 AC_OUTPUT

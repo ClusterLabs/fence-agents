@@ -109,7 +109,6 @@
 	</parameter>
 	<parameter name="amttool_path" unique="0" required="0">
 		<getopt mixed="--amttool-path=[path]" />
-		<content type="string" default="/usr/bin/amttool"  />
 		<shortdesc lang="en">Path to amttool binary</shortdesc>
 	</parameter>
 	<parameter name="port_as_ip" unique="0" required="0">

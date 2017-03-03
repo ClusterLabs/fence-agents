@@ -45,7 +45,7 @@ def get_power_status(_, options):
 					else:
 						logging.debug("Unknown status detected from nova: " + service.state)
 					break
-		except ConnectionError as (err):
+		except requests.exception.ConnectionError as err:
 			logging.warning("Nova connection failed: " + str(err))
 	return status
 
@@ -160,7 +160,7 @@ def set_power_status(_, options):
 		return
 
 	if options["--action"] == "on":
-		if get_power_status(_, options) == "on":
+		if get_power_status(_, options) != "on":
 			# Forcing the service back up in case it was disabled
 			nova.services.enable(options["--plug"], 'nova-compute')
 			try:
@@ -168,7 +168,7 @@ def set_power_status(_, options):
 				nova.services.force_down(
 					options["--plug"], "nova-compute", force_down=False)
 			except Exception as e:
-				# In theory, if foce_down=False fails, that's for the exact
+				# In theory, if force_down=False fails, that's for the exact
 				# same possible reasons that below with force_down=True
 				# eg. either an incompatible version or an old client.
 				# Since it's about forcing back to a default value, there is
@@ -202,7 +202,7 @@ def set_power_status(_, options):
 			#
 			# Some callers (such as Pacemaker) will have a timer
 			# running and kill us if necessary
-			logging.debug("Waiting for nova to update it's internal state for %s" % options["--plug"])
+			logging.debug("Waiting for nova to update its internal state for %s" % options["--plug"])
 			time.sleep(1)
 
 	if not _host_evacuate(options):
@@ -236,49 +236,45 @@ def fix_domain(options):
 				# One hopes they don't appear interleaved as A.com B.com A.com B.com
 				logging.debug("Calculated the same domain from: %s" % hypervisor.hypervisor_hostname)
 
-			elif options.has_key("--domain") and options["--domain"] == calculated:
+			elif "--domain" in options and options["--domain"] == calculated:
 				# Supplied domain name is valid 
 				return
 
-			elif options.has_key("--domain"):
+			elif "--domain" in options:
 				# Warn in case nova isn't available at some point
 				logging.warning("Supplied domain '%s' does not match the one calculated from: %s"
 					      % (options["--domain"], hypervisor.hypervisor_hostname))
 
 			last_domain = calculated
 
-	if len(domains) == 0 and not options.has_key("--domain"):
+	if len(domains) == 0 and "--domain" not in options:
 		logging.error("Could not calculate the domain names used by compute nodes in nova")
 
-	elif len(domains) == 1 and not options.has_key("--domain"):
+	elif len(domains) == 1 and "--domain" not in options:
 		options["--domain"] = last_domain
-		return options["--domain"]
 
 	elif len(domains) == 1:
 		logging.error("Overriding supplied domain '%s' does not match the one calculated from: %s"
 			      % (options["--domain"], hypervisor.hypervisor_hostname))
 		options["--domain"] = last_domain
-		return options["--domain"]
 
 	elif len(domains) > 1:
 		logging.error("The supplied domain '%s' did not match any used inside nova: %s"
 			      % (options["--domain"], repr(domains)))
 		sys.exit(1)
 
-	return None
-
 def fix_plug_name(options):
 	if options["--action"] == "list":
 		return
 
-	if not options.has_key("--plug"):
+	if "--plug" not in options:
 		return
 
-	calculated = fix_domain(options)
+	fix_domain(options)
 	short_plug = options["--plug"].split('.')[0]
-	logging.debug("Checking target '%s' against calculated domain '%s'"% (options["--plug"], calculated))
+	logging.debug("Checking target '%s' against calculated domain '%s'"% (options["--plug"], options["--domain"]))
 
-	if not options.has_key("--domain"):
+	if "--domain" not in options:
 		# Nothing supplied and nova not available... what to do... nothing
 		return
 
@@ -286,7 +282,7 @@ def fix_plug_name(options):
 		# Ensure any domain is stripped off since nova isn't using FQDN
 		options["--plug"] = short_plug
 
-	elif options["--plug"].find(options["--domain"]):
+	elif options["--domain"] in options["--plug"]:
 		# Plug already contains the domain, don't re-add 
 		return
 
@@ -306,6 +302,37 @@ def get_plugs_list(_, options):
 			result[shorthost] = ("", None)
 	return result
 
+def create_nova_connection(options):
+	global nova
+
+	try:
+		from novaclient import client
+		from novaclient.exceptions import NotAcceptable
+	except ImportError:
+		fail_usage("Nova not found or not accessible")
+
+	versions = [ "2.11", "2" ]
+	for version in versions:
+		nova = client.Client(version,
+				     options["--username"],
+				     options["--password"],
+				     options["--tenant-name"],
+				     options["--auth-url"],
+				     insecure=options["--insecure"],
+				     region_name=options["--region-name"],
+				     endpoint_type=options["--endpoint-type"],
+				     http_log_debug=options.has_key("--verbose"))
+		try:
+			nova.hypervisors.list()
+			return
+
+		except NotAcceptable as e:
+			logging.warning(e)
+
+		except Exception as e:
+			logging.warning("Nova connection failed. %s: %s" % (e.__class__.__name__, e))
+			
+	logging.warning("Couldn't obtain a supported connection to nova, tried: %s\n" % repr(versions))
 
 def define_new_opts():
 	all_opt["endpoint-type"] = {
@@ -329,11 +356,29 @@ def define_new_opts():
 	all_opt["auth-url"] = {
 		"getopt" : "k:",
 		"longopt" : "auth-url",
-		"help" : "-k, --auth-url=[tenant]        Keystone Admin Auth URL",
+		"help" : "-k, --auth-url=[url]           Keystone Admin Auth URL",
 		"required" : "0",
 		"shortdesc" : "Keystone Admin Auth URL",
 		"default" : "",
 		"order": 1,
+	}
+	all_opt["region-name"] = {
+		"getopt" : "",
+		"longopt" : "region-name",
+		"help" : "--region-name=[region]         Region Name",
+		"required" : "0",
+		"shortdesc" : "Region Name",
+		"default" : "",
+		"order": 1,
+	}
+	all_opt["insecure"] = {
+		"getopt" : "",
+		"longopt" : "insecure",
+		"help" : "--insecure                     Explicitly allow agent to perform \"insecure\" TLS (https) requests",
+		"required" : "0",
+		"shortdesc" : "Allow Insecure TLS Requests",
+		"default" : "False",
+		"order": 2,
 	}
 	all_opt["domain"] = {
 		"getopt" : "d:",
@@ -373,12 +418,11 @@ def define_new_opts():
 
 def main():
 	global override_status
-	global nova
 	atexit.register(atexit_handler)
 
 	device_opt = ["login", "passwd", "tenant-name", "auth-url", "fabric_fencing", "on_target",
 		"no_login", "no_password", "port", "domain", "no-shared-storage", "endpoint-type",
-		"record-only", "instance-filtering"]
+		"record-only", "instance-filtering", "insecure", "region-name"]
 	define_new_opts()
 	all_opt["shell_timeout"]["default"] = "180"
 
@@ -391,19 +435,15 @@ def main():
 
 	show_docs(options, docs)
 
-	run_delay(options)
-
-	try:
-		from novaclient import client as nova_client
-	except ImportError:
-		fail_usage("nova not found or not accessible")
-
-	fix_plug_name(options)
-
 	if options["--record-only"] in [ "2", "Disabled", "disabled" ]:
 		sys.exit(0)
 
-	elif options["--record-only"] in [ "1", "True", "true", "Yes", "yes"]:
+	run_delay(options)
+
+	create_nova_connection(options)
+
+	fix_plug_name(options)
+	if options["--record-only"] in [ "1", "True", "true", "Yes", "yes"]:
 		if options["--action"] == "on":
 			set_attrd_status(options["--plug"], "no", options)
 			sys.exit(0)
@@ -414,14 +454,6 @@ def main():
 
 		elif options["--action"] in ["monitor", "status"]:
 			sys.exit(0)
-
-	# The first argument is the Nova client version
-	nova = nova_client.Client('2',
-		options["--username"],
-		options["--password"],
-		options["--tenant-name"],
-		options["--auth-url"],
-		endpoint_type=options["--endpoint-type"])
 
 	if options["--action"] in ["off", "reboot"]:
 		# Pretend we're 'on' so that the fencing library will always call set_power_status(off)

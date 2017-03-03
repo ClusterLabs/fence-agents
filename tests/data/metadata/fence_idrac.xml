@@ -74,6 +74,11 @@
 		<content type="string"  />
 		<shortdesc lang="en">Ciphersuite to use (same as ipmitool -C parameter)</shortdesc>
 	</parameter>
+	<parameter name="target" unique="0" required="0">
+		<getopt mixed="--target=[targetaddress]" />
+		<content type="string"  />
+		<shortdesc lang="en">Bridge IPMI requests to the remote target address</shortdesc>
+	</parameter>
 	<parameter name="privlvl" unique="0" required="0">
 		<getopt mixed="-L, --privlvl=[level]" />
 		<content type="select" default="administrator"  >
@@ -136,7 +141,6 @@
 	</parameter>
 	<parameter name="ipmitool_path" unique="0" required="0">
 		<getopt mixed="--ipmitool-path=[path]" />
-		<content type="string" default="/usr/bin/ipmitool"  />
 		<shortdesc lang="en">Path to ipmitool binary</shortdesc>
 	</parameter>
 	<parameter name="shell_timeout" unique="0" required="0">
