@@ -237,9 +237,10 @@ listener_config_multicast(config_object_t *config)
 
 	do {
 		text_input("Multicast IP Port", val, inp, sizeof(inp));
+		char *p;
 
-		done = atoi(inp);
-		if (done <= 0 || done >= 65536) {
+		done = strtol(inp, &p, 0);
+		if (*p != '\0' || done <= 0 || done >= 65536) {
 			printf("Port value '%s' is out of range\n", val);
 			continue;
 		}
@@ -374,9 +375,10 @@ listener_config_tcp(config_object_t *config)
 
 	do {
 		text_input("TCP Listen Port", val, inp, sizeof(inp));
+		char *p;
 
-		done = atoi(inp);
-		if (done <= 0 || done != (done & 0xffff)) {
+		done = strtol(inp, &p, 0);
+		if (*p != '\0' || done <= 0 || done >= 65536) {
 			printf("Port value '%s' is out of range\n", val);
 			continue;
 		}

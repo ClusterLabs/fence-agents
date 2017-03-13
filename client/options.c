@@ -130,14 +130,18 @@ assign_channel_address(fence_virt_args_t *args, struct arg_info *arg, char *valu
 static inline void
 assign_port(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
+	char *p;
+	int ret;
+
 	if (!value)
 		return;
 
-	args->net.port = atoi(value);
-	if (args->net.port <= 0 || args->net.port >= 65536) {
+	ret = strtol(value, &p, 0);
+	if (ret <= 0 || ret >= 65536 || *p != '\0') {
 		printf("Invalid port: '%s'\n", value);
 		args->flags |= F_ERR;
-	}
+	} else
+		args->net.port = ret;
 }
 
 
@@ -154,14 +158,18 @@ assign_interface(fence_virt_args_t *args, struct arg_info *arg, char *value)
 static inline void
 assign_retrans(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
+	char *p;
+	int ret;
+
 	if (!value)
 		return;
 
-	args->retr_time = atoi(value);
-	if (args->retr_time <= 0) {
+	ret = strtol(value, &p, 0);
+	if (ret <= 0 || *p != '\0') {
 		printf("Invalid retransmit time: '%s'\n", value);
 		args->flags |= F_ERR;
-	}
+	} else
+		args->retr_time = ret;
 }
 
 static inline void
@@ -319,27 +327,35 @@ assign_uuid_lookup(fence_virt_args_t *args, struct arg_info *arg, char *value)
 static inline void
 assign_timeout(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
+	char *p;
+	int ret;
+
 	if (!value)
 		return;
 
-	args->timeout = atoi(value);
-	if (args->timeout <= 0) {
+	ret = strtol(value, &p, 0);
+	if (ret <= 0 || *p != '\0') {
 		printf("Invalid timeout: '%s'\n", value);
 		args->flags |= F_ERR;
-	}
+	} else
+		args->timeout = ret;
 }
 
 static inline void
 assign_delay(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
+	char *p;
+	int ret;
+
 	if (!value)
 		return;
 
-	args->delay = atoi(value);
-	if (args->delay < 0) {
+	ret = strtol(value, &p, 0);
+	if (ret < 0 || *p != '\0') {
 		printf("Invalid delay: '%s'\n", value);
 		args->flags |= F_ERR;
-	}
+	} else
+		args->delay = ret;
 }
 
 static inline void
