@@ -85,6 +85,10 @@ def send_command(opt, command, method="GET"):
 		api_path = opt["--api-path"]
 	else:
 		api_path = "/ovirt-engine/api"
+	if opt.has_key("--disable-http-filter"):
+		http_filter = 'false'
+	else:
+		http_filter = 'true'
 
 	url += "//" + opt["--ip"] + ":" + str(opt["--ipport"]) + api_path + "/" + command
 
@@ -97,7 +101,7 @@ def send_command(opt, command, method="GET"):
 		"Content-type: application/xml",
 		"Accept: application/xml",
 		"Prefer: persistent-auth",
-		"Filter: true",
+		"Filter: {}".format(http_filter),
 	])
 
 	if "cookie" in opt:
@@ -154,6 +158,14 @@ def define_new_opts():
 		"required" : "0",
 		"shortdesc" : "The path part of the API URL",
 		"order" : 2}
+	all_opt["disable_http_filter"] = {
+		"getopt" : "",
+		"longopt" : "disable-http-filter",
+		"help" : "--disable-http-filter          Set HTTP Filter header to false",
+		"required" : "0",
+		"shortdesc" : "Set HTTP Filter header to false",
+		"order" : 3}
+
 
 def main():
 	device_opt = [
@@ -166,6 +178,7 @@ def main():
 		"web",
 		"port",
 		"use_cookies",
+		"disable_http_filter",
 	]
 
 	atexit.register(atexit_handler)
