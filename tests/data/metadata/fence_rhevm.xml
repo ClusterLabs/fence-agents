@@ -77,6 +77,11 @@
 		<getopt mixed="--api-path=[path]" />
 		<shortdesc lang="en">The path part of the API URL</shortdesc>
 	</parameter>
+	<parameter name="disable_http_filter" unique="0" required="0">
+		<getopt mixed="--disable-http-filter" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Set HTTP Filter header to false</shortdesc>
+	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
 		<content type="boolean"  />
