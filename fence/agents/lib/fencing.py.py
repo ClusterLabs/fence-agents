@@ -680,7 +680,8 @@ def check_input(device_opt, opt, other_conditions = False):
 
 
 	if options["--action"] == "validate-all" and not other_conditions:
-		_validate_input(options, False)
+		if not _validate_input(options, False):
+			fail_usage("validate-all failed")
 		sys.exit(EC_OK)
 	else:
 		_validate_input(options, True)
