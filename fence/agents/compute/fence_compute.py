@@ -160,23 +160,23 @@ def set_power_status(_, options):
 		return
 
 	if options["--action"] == "on":
-		if get_power_status(_, options) != "on":
+		try:
+			# Forcing the host back up
+			nova.services.force_down(
+				options["--plug"], "nova-compute", force_down=False)
+		except Exception as e:
+			# In theory, if force_down=False fails, that's for the exact
+			# same possible reasons that below with force_down=True
+			# eg. either an incompatible version or an old client.
+			# Since it's about forcing back to a default value, there is
+			# no real worries to just consider it's still okay even if the
+			# command failed
+			logging.info("Exception from attempt to force "
+					  "host back up via nova API: "
+					  "%s: %s" % (e.__class__.__name__, e))
+		if get_power_status(_, options) == "on":
 			# Forcing the service back up in case it was disabled
 			nova.services.enable(options["--plug"], 'nova-compute')
-			try:
-				# Forcing the host back up
-				nova.services.force_down(
-					options["--plug"], "nova-compute", force_down=False)
-			except Exception as e:
-				# In theory, if force_down=False fails, that's for the exact
-				# same possible reasons that below with force_down=True
-				# eg. either an incompatible version or an old client.
-				# Since it's about forcing back to a default value, there is
-				# no real worries to just consider it's still okay even if the
-				# command failed
-				logging.info("Exception from attempt to force "
-					      "host back up via nova API: "
-					      "%s: %s" % (e.__class__.__name__, e))
 		else:
 			# Pretend we're 'on' so that the fencing library doesn't loop forever waiting for the node to boot
 			override_status = "on"
