@@ -34,17 +34,16 @@ def get_power_status(_, options):
 
 	if nova:
 		try:
-			services = nova.services.list(host=options["--plug"])
+			services = nova.services.list(host=options["--plug"], binary="nova-compute")
 			for service in services:
 				logging.debug("Status of %s is %s" % (service.binary, service.state))
-				if service.binary == "nova-compute":
-					if service.state == "up":
-						status = "on"
-					elif service.state == "down":
-						status = "off"
-					else:
-						logging.debug("Unknown status detected from nova: " + service.state)
-					break
+				if service.state == "up":
+					status = "on"
+				elif service.state == "down":
+					status = "off"
+				else:
+					logging.debug("Unknown status detected from nova: " + service.state)
+				break
 		except requests.exception.ConnectionError as err:
 			logging.warning("Nova connection failed: " + str(err))
 	return status
@@ -218,54 +217,48 @@ def fix_domain(options):
 	if nova:
 		# Find it in nova
 
-		hypervisors = nova.hypervisors.list()
-		for hypervisor in hypervisors:
-			shorthost = hypervisor.hypervisor_hostname.split('.')[0]
+		services = nova.services.list(binary="nova-compute")
+		for service in services:
+			shorthost = service.host.split('.')[0]
 
-			if shorthost == hypervisor.hypervisor_hostname:
+			if shorthost == service.host:
 				# Nova is not using FQDN 
 				calculated = ""
 			else:
 				# Compute nodes are named as FQDN, strip off the hostname
-				calculated = hypervisor.hypervisor_hostname.replace(shorthost+".", "")
-
-			domains[calculated] = shorthost
+				calculated = service.host.replace(shorthost+".", "")
 
 			if calculated == last_domain:
 				# Avoid complaining for each compute node with the same name
 				# One hopes they don't appear interleaved as A.com B.com A.com B.com
-				logging.debug("Calculated the same domain from: %s" % hypervisor.hypervisor_hostname)
+				logging.debug("Calculated the same domain from: %s" % service.host)
+				continue
 
-			elif "--domain" in options and options["--domain"] == calculated:
-				# Supplied domain name is valid 
-				return
+			domains[calculated] = service.host
+			last_domain = calculated
 
-			elif "--domain" in options:
+			if "--domain" in options and options["--domain"] != calculated:
 				# Warn in case nova isn't available at some point
 				logging.warning("Supplied domain '%s' does not match the one calculated from: %s"
-					      % (options["--domain"], hypervisor.hypervisor_hostname))
-
-			last_domain = calculated
+					      % (options["--domain"], service.host))
 
 	if len(domains) == 0 and "--domain" not in options:
 		logging.error("Could not calculate the domain names used by compute nodes in nova")
 
 	elif len(domains) == 1 and "--domain" not in options:
 		options["--domain"] = last_domain
-		return options["--domain"]
 
-	elif len(domains) == 1:
-		logging.error("Overriding supplied domain '%s' does not match the one calculated from: %s"
-			      % (options["--domain"], hypervisor.hypervisor_hostname))
+	elif len(domains) == 1 and options["--domain"] != last_domain:
+		logging.error("Overriding supplied domain '%s' as it does not match the one calculated from: %s"
+			      % (options["--domain"], domains[last_domain]))
 		options["--domain"] = last_domain
-		return options["--domain"]
 
 	elif len(domains) > 1:
 		logging.error("The supplied domain '%s' did not match any used inside nova: %s"
 			      % (options["--domain"], repr(domains)))
 		sys.exit(1)
 
-	return None
+	return last_domain
 
 def fix_plug_name(options):
 	if options["--action"] == "list":
@@ -275,19 +268,20 @@ def fix_plug_name(options):
 		return
 
 	calculated = fix_domain(options)
-	short_plug = options["--plug"].split('.')[0]
-	logging.debug("Checking target '%s' against calculated domain '%s'"% (options["--plug"], options["--domain"]))
 
-	if "--domain" not in options:
+	if calculated is None or "--domain" not in options:
 		# Nothing supplied and nova not available... what to do... nothing
 		return
 
-	elif options["--domain"] == "":
+	short_plug = options["--plug"].split('.')[0]
+	logging.debug("Checking target '%s' against calculated domain '%s'"% (options["--plug"], calculated))
+
+	if options["--domain"] == "":
 		# Ensure any domain is stripped off since nova isn't using FQDN
 		options["--plug"] = short_plug
 
-	elif options["--domain"] in options["--plug"]:
-		# Plug already contains the domain, don't re-add 
+	elif options["--plug"].endswith(options["--domain"]):
+		# Plug already uses the domain, don't re-add
 		return
 
 	else:
@@ -298,9 +292,9 @@ def get_plugs_list(_, options):
 	result = {}
 
 	if nova:
-		hypervisors = nova.hypervisors.list()
-		for hypervisor in hypervisors:
-			longhost = hypervisor.hypervisor_hostname
+		services = nova.services.list(binary="nova-compute")
+		for service in services:
+			longhost = service.host
 			shorthost = longhost.split('.')[0]
 			result[longhost] = ("", None)
 			result[shorthost] = ("", None)
