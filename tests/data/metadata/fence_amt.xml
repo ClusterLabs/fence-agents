@@ -29,7 +29,12 @@
 		<content type="boolean"  />
 		<shortdesc lang="en">Forces agent to use IPv6 addresses only</shortdesc>
 	</parameter>
-	<parameter name="ipaddr" unique="0" required="0">
+	<parameter name="ip" unique="0" required="0" obsoletes="ipaddr">
+		<getopt mixed="-a, --ip=[ip]" />
+		<content type="string"  />
+		<shortdesc lang="en">IP address or hostname of fencing device</shortdesc>
+	</parameter>
+	<parameter name="ipaddr" unique="0" required="0" deprecated="1">
 		<getopt mixed="-a, --ip=[ip]" />
 		<content type="string"  />
 		<shortdesc lang="en">IP address or hostname of fencing device</shortdesc>
@@ -47,17 +52,32 @@
 		</content>
 		<shortdesc lang="en">Method to fence</shortdesc>
 	</parameter>
-	<parameter name="passwd" unique="0" required="0">
+	<parameter name="passwd" unique="0" required="0" deprecated="1">
 		<getopt mixed="-p, --password=[password]" />
 		<content type="string"  />
 		<shortdesc lang="en">Login password or passphrase</shortdesc>
 	</parameter>
-	<parameter name="passwd_script" unique="0" required="0">
+	<parameter name="passwd_script" unique="0" required="0" deprecated="1">
 		<getopt mixed="-S, --password-script=[script]" />
 		<content type="string"  />
 		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
 	</parameter>
-	<parameter name="port" unique="0" required="0">
+	<parameter name="password" unique="0" required="0" obsoletes="passwd">
+		<getopt mixed="-p, --password=[password]" />
+		<content type="string"  />
+		<shortdesc lang="en">Login password or passphrase</shortdesc>
+	</parameter>
+	<parameter name="password_script" unique="0" required="0" obsoletes="passwd_script">
+		<getopt mixed="-S, --password-script=[script]" />
+		<content type="string"  />
+		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
+	</parameter>
+	<parameter name="plug" unique="0" required="0" obsoletes="port">
+		<getopt mixed="-n, --plug=[ip]" />
+		<content type="string"  />
+		<shortdesc lang="en">IP address or hostname of fencing device (together with --port-as-ip)</shortdesc>
+	</parameter>
+	<parameter name="port" unique="0" required="0" deprecated="1">
 		<getopt mixed="-n, --plug=[ip]" />
 		<content type="string"  />
 		<shortdesc lang="en">IP address or hostname of fencing device (together with --port-as-ip)</shortdesc>
@@ -72,7 +92,12 @@
 		<content type="boolean"  />
 		<shortdesc lang="en">Verbose mode</shortdesc>
 	</parameter>
-	<parameter name="debug" unique="0" required="0">
+	<parameter name="debug" unique="0" required="0" deprecated="1">
+		<getopt mixed="-D, --debug-file=[debugfile]" />
+		<content type="string"  />
+		<shortdesc lang="en">Write debug information to given file</shortdesc>
+	</parameter>
+	<parameter name="debug_file" unique="0" required="0" obsoletes="debug">
 		<getopt mixed="-D, --debug-file=[debugfile]" />
 		<content type="string"  />
 		<shortdesc lang="en">Write debug information to given file</shortdesc>
@@ -126,7 +151,12 @@
 		<content type="integer" default="1"  />
 		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
 	</parameter>
-	<parameter name="sudo" unique="0" required="0">
+	<parameter name="sudo" unique="0" required="0" deprecated="1">
+		<getopt mixed="--use-sudo" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Use sudo (without password) when calling 3rd party software</shortdesc>
+	</parameter>
+	<parameter name="use_sudo" unique="0" required="0" obsoletes="sudo">
 		<getopt mixed="--use-sudo" />
 		<content type="boolean"  />
 		<shortdesc lang="en">Use sudo (without password) when calling 3rd party software</shortdesc>
