@@ -521,7 +521,12 @@ def usage(avail_opt):
 
 def metadata(avail_opt, options, docs):
 	# avail_opt has to be unique, if there are duplicities then they should be removed
-	sorted_list = [(key, all_opt[key]) for key in list(set(avail_opt))]
+	sorted_list = [(key, all_opt[key]) for key in list(set(avail_opt)) if "longopt" in all_opt[key]]
+	# Find keys that are going to replace inconsistent names
+	mapping = dict([(opt["longopt"].replace("-", "_"), key) for (key, opt) in sorted_list if (key != opt["longopt"].replace("-", "_"))])
+	new_options = [(key, all_opt[mapping[key]]) for key in mapping]
+	sorted_list.extend(new_options)
+
 	sorted_list.sort(lambda x, y: cmp(x[1]["order"], y[1]["order"]))
 
 	print "<?xml version=\"1.0\" ?>"
@@ -534,22 +539,32 @@ def metadata(avail_opt, options, docs):
 	if docs.has_key("vendorurl"):
 		print "<vendor-url>" + docs["vendorurl"] + "</vendor-url>"
 	print "<parameters>"
-	for option, _ in sorted_list:
-		if all_opt[option].has_key("shortdesc"):
-			print "\t<parameter name=\"" + option + "\" unique=\"0\" required=\"" + all_opt[option]["required"] + "\">"
+
+	for (key, opt) in sorted_list:
+		info = ""
+		if key in all_opt:
+			if key != all_opt[key].get('longopt', key).replace("-", "_"):
+				info = "deprecated=\"1\""
+		else:
+			info = "obsoletes=\"%s\"" % (mapping.get(key))
+
+		if opt.has_key("shortdesc"):
+			if info != "":
+				info = " " + info
+			print "\t<parameter name=\"" + key + "\" unique=\"0\" required=\"" + opt["required"] + "\"" + info + ">"
 
 			default = ""
-			if all_opt[option].has_key("default"):
-				default = str(all_opt[option]["default"])
-			elif options.has_key("--" + all_opt[option]["longopt"]) and all_opt[option]["getopt"].endswith(":"):
-				if options["--" + all_opt[option]["longopt"]]:
+			if opt.has_key("default"):
+				default = str(opt["default"])
+			elif options.has_key("--" + opt["longopt"]) and opt["getopt"].endswith(":"):
+				if options["--" + opt["longopt"]]:
 					try:
-						default = options["--" + all_opt[option]["longopt"]]
+						default = options["--" + opt["longopt"]]
 					except TypeError:
 						## @todo/@note: Currently there is no clean way how to handle lists
 						## we can create a string from it but we can't set it on command line
-						default = str(options["--" + all_opt[option]["longopt"]])
-			elif options.has_key("--" + all_opt[option]["longopt"]):
+						default = str(options["--" + opt["longopt"]])
+			elif options.has_key("--" + opt["longopt"]):
 				default = "true"
 
 			if default:
@@ -560,7 +575,7 @@ def metadata(avail_opt, options, docs):
 				default = default.replace("'", "&apos;")
 				default = "default=\"" + default + "\" "
 
-			mixed = all_opt[option]["help"]
+			mixed = opt["help"]
 			## split it between option and help text
 			res = re.compile(r"^(.*?--\S+)\s+", re.IGNORECASE | re.S).search(mixed)
 			if None != res:
@@ -568,18 +583,18 @@ def metadata(avail_opt, options, docs):
 			mixed = mixed.replace("<", "&lt;").replace(">", "&gt;")
 			print "\t\t<getopt mixed=\"" + mixed + "\" />"
 
-			if all_opt[option].has_key("choices"):
+			if opt.has_key("choices"):
 				print "\t\t<content type=\"select\" "+default+" >"
-				for choice in all_opt[option]["choices"]:
+				for choice in opt["choices"]:
 					print "\t\t\t<option value=\"%s\" />" % (choice)
 				print "\t\t</content>"
-			elif all_opt[option]["getopt"].count(":") > 0:
-				t = all_opt[option].get("type", "string")
+			elif opt["getopt"].count(":") > 0:
+				t = opt.get("type", "string")
 				print("\t\t<content type=\"%s\" " % (t) +default+" />")
 			else:
 				print "\t\t<content type=\"boolean\" "+default+" />"
 
-			print "\t\t<shortdesc lang=\"en\">" + all_opt[option]["shortdesc"] + "</shortdesc>"
+			print "\t\t<shortdesc lang=\"en\">" + opt["shortdesc"] + "</shortdesc>"
 			print "\t</parameter>"
 	print "</parameters>"
 	print "<actions>"
@@ -678,13 +693,20 @@ def process_input(avail_opt):
 	else:
 		opt = {}
 		name = ""
+
+		mapping_longopt_names = dict([(all_opt[o].get("longopt"), o) for o in avail_opt])
+
 		for line in sys.stdin.readlines():
 			line = line.strip()
 			if (line.startswith("#")) or (len(line) == 0):
 				continue
 
 			(name, value) = (line + "=").split("=", 1)
+			name = name.replace("-", "_");
 			value = value[:-1]
+
+			if name in mapping_longopt_names:
+				name = mapping_longopt_names[name]
 
 			if avail_opt.count(name) == 0 and name in ["nodename"]:
 				continue

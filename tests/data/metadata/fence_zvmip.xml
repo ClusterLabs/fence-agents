@@ -22,7 +22,7 @@ Where XXXXXXX is the name of the virtual machine used in the authuser field of t
 		<content type="integer" default="44444"  />
 		<shortdesc lang="en">TCP/UDP port to use for connection with device</shortdesc>
 	</parameter>
-	<parameter name="port" unique="0" required="1">
+	<parameter name="port" unique="0" required="1" deprecated="1">
 		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />
 		<shortdesc lang="en">Physical plug number, name of virtual machine or UUID</shortdesc>
@@ -32,7 +32,7 @@ Where XXXXXXX is the name of the virtual machine used in the authuser field of t
 		<content type="boolean"  />
 		<shortdesc lang="en">Forces agent to use IPv6 addresses only</shortdesc>
 	</parameter>
-	<parameter name="ipaddr" unique="0" required="1">
+	<parameter name="ipaddr" unique="0" required="1" deprecated="1">
 		<getopt mixed="-a, --ip=[ip]" />
 		<content type="string"  />
 		<shortdesc lang="en">IP Address or Hostname</shortdesc>
@@ -50,12 +50,12 @@ Where XXXXXXX is the name of the virtual machine used in the authuser field of t
 		</content>
 		<shortdesc lang="en">Method to fence (onoff|cycle)</shortdesc>
 	</parameter>
-	<parameter name="passwd_script" unique="0" required="0">
+	<parameter name="passwd_script" unique="0" required="0" deprecated="1">
 		<getopt mixed="-S, --password-script=[script]" />
 		<content type="string"  />
 		<shortdesc lang="en">Script to retrieve password</shortdesc>
 	</parameter>
-	<parameter name="passwd" unique="0" required="0">
+	<parameter name="passwd" unique="0" required="0" deprecated="1">
 		<getopt mixed="-p, --password=[password]" />
 		<content type="string"  />
 		<shortdesc lang="en">Login password or passphrase</shortdesc>
@@ -65,17 +65,47 @@ Where XXXXXXX is the name of the virtual machine used in the authuser field of t
 		<content type="string" default="reboot"  />
 		<shortdesc lang="en">Fencing Action</shortdesc>
 	</parameter>
-	<parameter name="login" unique="0" required="1">
+	<parameter name="login" unique="0" required="1" deprecated="1">
 		<getopt mixed="-l, --username=[name]" />
 		<content type="string"  />
 		<shortdesc lang="en">Login Name</shortdesc>
+	</parameter>
+	<parameter name="plug" unique="0" required="1" obsoletes="port">
+		<getopt mixed="-n, --plug=[id]" />
+		<content type="string"  />
+		<shortdesc lang="en">Physical plug number, name of virtual machine or UUID</shortdesc>
+	</parameter>
+	<parameter name="username" unique="0" required="1" obsoletes="login">
+		<getopt mixed="-l, --username=[name]" />
+		<content type="string"  />
+		<shortdesc lang="en">Login Name</shortdesc>
+	</parameter>
+	<parameter name="ip" unique="0" required="1" obsoletes="ipaddr">
+		<getopt mixed="-a, --ip=[ip]" />
+		<content type="string"  />
+		<shortdesc lang="en">IP Address or Hostname</shortdesc>
+	</parameter>
+	<parameter name="password" unique="0" required="0" obsoletes="passwd">
+		<getopt mixed="-p, --password=[password]" />
+		<content type="string"  />
+		<shortdesc lang="en">Login password or passphrase</shortdesc>
+	</parameter>
+	<parameter name="password_script" unique="0" required="0" obsoletes="passwd_script">
+		<getopt mixed="-S, --password-script=[script]" />
+		<content type="string"  />
+		<shortdesc lang="en">Script to retrieve password</shortdesc>
 	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
 		<content type="boolean"  />
 		<shortdesc lang="en">Verbose mode</shortdesc>
 	</parameter>
-	<parameter name="debug" unique="0" required="0">
+	<parameter name="debug" unique="0" required="0" deprecated="1">
+		<getopt mixed="-D, --debug-file=[debugfile]" />
+		<content type="string"  />
+		<shortdesc lang="en">Write debug information to given file</shortdesc>
+	</parameter>
+	<parameter name="debug_file" unique="0" required="0" obsoletes="debug">
 		<getopt mixed="-D, --debug-file=[debugfile]" />
 		<content type="string"  />
 		<shortdesc lang="en">Write debug information to given file</shortdesc>

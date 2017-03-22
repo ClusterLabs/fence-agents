@@ -13,7 +13,7 @@
 		<content type="boolean"  />
 		<shortdesc lang="en">SSL connection with verifying fence device's certificate</shortdesc>
 	</parameter>
-	<parameter name="port" unique="0" required="1">
+	<parameter name="port" unique="0" required="1" deprecated="1">
 		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />
 		<shortdesc lang="en">Physical plug number, name of virtual machine or UUID</shortdesc>
@@ -23,7 +23,7 @@
 		<content type="boolean"  />
 		<shortdesc lang="en">Forces agent to use IPv6 addresses only</shortdesc>
 	</parameter>
-	<parameter name="ipaddr" unique="0" required="1">
+	<parameter name="ipaddr" unique="0" required="1" deprecated="1">
 		<getopt mixed="-a, --ip=[ip]" />
 		<content type="string"  />
 		<shortdesc lang="en">IP Address or Hostname</shortdesc>
@@ -56,6 +56,16 @@
 		<content type="string" default="reboot"  />
 		<shortdesc lang="en">Fencing Action</shortdesc>
 	</parameter>
+	<parameter name="plug" unique="0" required="1" obsoletes="port">
+		<getopt mixed="-n, --plug=[id]" />
+		<content type="string"  />
+		<shortdesc lang="en">Physical plug number, name of virtual machine or UUID</shortdesc>
+	</parameter>
+	<parameter name="ip" unique="0" required="1" obsoletes="ipaddr">
+		<getopt mixed="-a, --ip=[ip]" />
+		<content type="string"  />
+		<shortdesc lang="en">IP Address or Hostname</shortdesc>
+	</parameter>
 	<parameter name="tlskey" unique="0" required="0">
 		<getopt mixed="--tlskey" />
 		<content type="string"  />
@@ -76,7 +86,12 @@
 		<content type="boolean"  />
 		<shortdesc lang="en">Verbose mode</shortdesc>
 	</parameter>
-	<parameter name="debug" unique="0" required="0">
+	<parameter name="debug" unique="0" required="0" deprecated="1">
+		<getopt mixed="-D, --debug-file=[debugfile]" />
+		<content type="string"  />
+		<shortdesc lang="en">Write debug information to given file</shortdesc>
+	</parameter>
+	<parameter name="debug_file" unique="0" required="0" obsoletes="debug">
 		<getopt mixed="-D, --debug-file=[debugfile]" />
 		<content type="string"  />
 		<shortdesc lang="en">Write debug information to given file</shortdesc>

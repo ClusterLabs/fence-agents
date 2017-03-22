@@ -24,7 +24,12 @@ The fence_mpath agent works by having an unique key for each pair of node and de
 		<content type="boolean"  />
 		<shortdesc lang="en">Verbose mode</shortdesc>
 	</parameter>
-	<parameter name="debug" unique="0" required="0">
+	<parameter name="debug" unique="0" required="0" deprecated="1">
+		<getopt mixed="-D, --debug-file=[debugfile]" />
+		<content type="string"  />
+		<shortdesc lang="en">Write debug information to given file</shortdesc>
+	</parameter>
+	<parameter name="debug_file" unique="0" required="0" obsoletes="debug">
 		<getopt mixed="-D, --debug-file=[debugfile]" />
 		<content type="string"  />
 		<shortdesc lang="en">Write debug information to given file</shortdesc>
@@ -77,7 +82,12 @@ The fence_mpath agent works by having an unique key for each pair of node and de
 		<content type="integer" default="1"  />
 		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
 	</parameter>
-	<parameter name="sudo" unique="0" required="0">
+	<parameter name="sudo" unique="0" required="0" deprecated="1">
+		<getopt mixed="--use-sudo" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Use sudo (without password) when calling 3rd party sotfware.</shortdesc>
+	</parameter>
+	<parameter name="use_sudo" unique="0" required="0" obsoletes="sudo">
 		<getopt mixed="--use-sudo" />
 		<content type="boolean"  />
 		<shortdesc lang="en">Use sudo (without password) when calling 3rd party sotfware.</shortdesc>

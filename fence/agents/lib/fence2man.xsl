@@ -2,6 +2,7 @@
 <xsl:output method="text" indent="no"/>
 <xsl:template match="parameter">
 <xsl:param name="show" />
+<xsl:if test="not(@deprecated)">
 .TP
 <xsl:if test="$show = 'getopt'">.B <xsl:value-of select="getopt/@mixed" /></xsl:if>
 <xsl:if test="$show = 'stdin'">.B <xsl:value-of select="@name"/></xsl:if>
@@ -9,6 +10,11 @@
 <xsl:value-of select="normalize-space(shortdesc)"/>
 <xsl:if test="not(content/@default)"><xsl:if test="@required = 1"> This parameter is always required.</xsl:if></xsl:if>
 <xsl:if test="content/@default"> (Default Value: <xsl:value-of select="content/@default"/>)</xsl:if>
+<xsl:if test="$show = 'stdin'">
+<xsl:if test="@obsoletes"> Obsoletes: <xsl:value-of select="@obsoletes" /></xsl:if>
+</xsl:if>
+
+</xsl:if>
 </xsl:template>
 
 <xsl:template match="action">
