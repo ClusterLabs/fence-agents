@@ -255,6 +255,8 @@ assign_op(fence_virt_args_t *args, struct arg_info *arg, char *value)
 		args->op = FENCE_HOSTLIST;
 	} else if (!strcasecmp(value, "metadata")) {
 		args->op = FENCE_METADATA;
+	} else if (!strcasecmp(value, "validate-all")) {
+		args->op = FENCE_VALIDATEALL;
 	} else {
 		printf("Unsupported operation: %s\n", value);
 		args->flags |= F_ERR;
@@ -490,12 +492,12 @@ static struct arg_info _arg_info[] = {
 	{ '\xff', NULL, "option",
 	  /* Deprecated */
 	  0, "string", "reboot",
-	  "Fencing option (null, off, on, [reboot], status, list, monitor, metadata)",
+	  "Fencing option (null, off, on, [reboot], status, list, list-status, monitor, validate-all, metadata)",
 	  assign_op },
 
 	{ 'o', "-o <operation>", "action",
 	  0, "string", "reboot",
-	  "Fencing action (null, off, on, [reboot], status, list, monitor, metadata)",
+	  "Fencing action (null, off, on, [reboot], status, list, list-status, monitor, validate-all, metadata)",
 	  assign_op },
 
 	{ 'H', "-H <domain>", "port",
@@ -801,6 +803,7 @@ args_metadata(char *progname, const char *optstr)
 	printf("\t<action name=\"monitor\" />\n");	
 	printf("\t<action name=\"list\" />\n");	
 	printf("\t<action name=\"list-status\" />\n");	
+	printf("\t<action name=\"validate-all\" />\n");	
 	printf("</actions>\n");
 	printf("</resource-agent>\n");
 }

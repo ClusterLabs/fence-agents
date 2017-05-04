@@ -37,7 +37,7 @@ Virtual machine (domain UUID or name) to fence
 .TP
 .B -o
 . 
-Fencing action (null, off, on, reboot, status, monitor, list, list-status, or metadata) (Default Value: reboot).  See the FENCING ACTIONS section.
+Fencing action (null, off, on, reboot, status, monitor, list, list-status, validate-all, or metadata) (Default Value: reboot).  See the FENCING ACTIONS section.
 
 .TP
 .B -t
@@ -145,7 +145,7 @@ Virtual machine (domain UUID or name) to fence
 .TP
 .B action
 . 
-Fencing action (null, off, on, reboot, status, monitor, list, or metadata) (Default Value: reboot).  See the FENCING ACTIONS section.
+Fencing action (null, off, on, reboot, status, monitor, list, list-status, validate-all, or metadata) (Default Value: reboot).  See the FENCING ACTIONS section.
 	
 .TP
 .B timeout
@@ -253,6 +253,10 @@ Check the health of fence_virtd's backend plugin.
 \fBlist\fP and \fBlist-status\fP
 List virtual machines which may be fenced by fence_virtd (not supported
 on all backends).
+
+.TP
+\fBvalidate-all\fP
+Validate arguments given on either the command line or standard input. If validation fails, the fence agent will exit with code 1, otherwise it will exit with code 0.
 
 .TP
 \fBmetadata \fP

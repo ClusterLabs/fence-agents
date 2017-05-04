@@ -114,13 +114,17 @@ main(int argc, char **argv)
 	}
 
 	if (args.flags & F_ERR) {
-		args_usage(argv[0], my_options, (argc == 1));
+        if (args.op != FENCE_VALIDATEALL)
+			args_usage(argv[0], my_options, (argc == 1));
 		exit(1);
 	}
 
+	if (args.op == FENCE_VALIDATEALL)
+		exit(0);
+
 	if (args.op == FENCE_METADATA) {
 		args_metadata(argv[0], my_options);
-		return 0;
+		exit(0);
 	}
 
 	if (args.delay > 0 &&
@@ -186,5 +190,5 @@ main(int argc, char **argv)
 
 out:
 	closelog();
-	return ret;
+	exit(ret);
 }

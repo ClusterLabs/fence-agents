@@ -52,14 +52,15 @@ typedef enum {
 #define DEFAULT_AUTH AUTH_SHA256
 
 typedef enum {
-	FENCE_NULL   = 0x0,	
-	FENCE_OFF    = 0x1,		/* Turn the VM off */
-	FENCE_REBOOT = 0x2,		/* Hit the reset button */
-	FENCE_ON     = 0x3,		/* Turn the VM on */
-	FENCE_STATUS = 0x4,		/* virtual machine status (off/on) */
-	FENCE_DEVSTATUS = 0x5,		/* Status of the fencing device */
-	FENCE_HOSTLIST = 0x6,		/* List VMs controllable */
-	FENCE_METADATA = 0x7
+	FENCE_NULL        = 0x0,
+	FENCE_OFF         = 0x1,		/* Turn the VM off */
+	FENCE_REBOOT      = 0x2,		/* Hit the reset button */
+	FENCE_ON          = 0x3,		/* Turn the VM on */
+	FENCE_STATUS      = 0x4,		/* virtual machine status (off/on) */
+	FENCE_DEVSTATUS   = 0x5,		/* Status of the fencing device */
+	FENCE_HOSTLIST    = 0x6,		/* List VMs controllable */
+	FENCE_METADATA    = 0x7,        /* Print fence agent metadata */
+	FENCE_VALIDATEALL = 0x8         /* Validate command-line or stdin arguments and exit */
 } fence_cmd_t;
 
 #define DEFAULT_TTL 4
