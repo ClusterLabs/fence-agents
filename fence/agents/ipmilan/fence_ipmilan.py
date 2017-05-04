@@ -51,19 +51,21 @@ def create_command(options, action):
 
 	Cmd.append(options["--ipmitool-path"])
 
-	if "--ip" in options:
-		# --lanplus / -L
-		if "--lanplus" in options and options["--lanplus"] in ["", "1"]:
-			Cmd.append(" -I lanplus")
-		else:
-			Cmd.append(" -I lan")
-		# --ip / -a
-		Cmd.append(" -H " + options["--ip"])
-
-		# --port / -n
-		if "--ipport" in options:
-			Cmd.append(" -p " + options["--ipport"])
+	# --lanplus / -L
+	if "--lanplus" in options and options["--lanplus"] in ["", "1"]:
+		Cmd.append(" -I lanplus")
 	else:
+		Cmd.append(" -I lan")
+
+	# --ip / -a
+	Cmd.append(" -H " + options["--ip"])
+
+	# --port / -n
+	if "--ipport" in options:
+		Cmd.append(" -p " + options["--ipport"])
+
+	# --target
+	if "--target" in options:
 		Cmd.append(" -t " + options["--target"])
 
 	# --username / -l
