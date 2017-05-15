@@ -24,7 +24,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import run_delay, fail_usage, fail, EC_STATUS
 
-import pywsman
 from xml.etree import ElementTree
 
 
@@ -63,6 +62,8 @@ def xml_find(doc, namespace, item):
     return tree.find(query)
 
 def _generate_power_action_input(action):
+    import pywsman
+
     method_input = "RequestPowerStateChange_INPUT"
     address = 'http://schemas.xmlsoap.org/ws/2004/08/addressing'
     anonymous = ('http://schemas.xmlsoap.org/ws/2004/08/addressing/'
@@ -87,6 +88,8 @@ def _generate_power_action_input(action):
     return doc
 
 def get_power_status(_, options):
+    import pywsman
+
     client = pywsman.Client(options["--ip"], int(options["--ipport"]), \
                             '/wsman', 'http', 'admin', options["--password"])
     namespace = CIM_AssociatedPowerManagementService
@@ -114,6 +117,8 @@ def get_power_status(_, options):
         fail(EC_STATUS)
 
 def set_power_status(_, options):
+    import pywsman
+
     client = pywsman.Client(options["--ip"], int(options["--ipport"]), \
                             '/wsman', 'http', 'admin', options["--password"])
 
@@ -142,6 +147,8 @@ def set_power_status(_, options):
         fail(EC_STATUS)
 
 def set_boot_order(_, client, options):
+    import pywsman
+
     method_input = "ChangeBootOrder_INPUT"
     address = 'http://schemas.xmlsoap.org/ws/2004/08/addressing'
     anonymous = ('http://schemas.xmlsoap.org/ws/2004/08/addressing/'
