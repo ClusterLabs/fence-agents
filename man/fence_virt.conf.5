@@ -154,19 +154,7 @@ This selects the type of sockets to register.  Valid values are "serial"
 (default) and "vmchannel".
 
 .SS tcp
-The tcp plugin was designed to be used with vios-proxy. vios-proxy uses a virtio-serial channel to proxy TCP connections between guests and a host. In order to use the tcp plugin, vios-proxy-host must be running on all the physical cluster nodes, and vios-proxy-guest must be running on all guest cluster nodes. Prior to running vios-proxy-host or vios-proxy-guest, the virtio-serial channel and host sockets must be configured for all guest domains. Example libvirt XML:
-
-.in 8
-  <\fBcontroller\fP type='virtio-serial' index='0'>
-    <address type='pci' domain='0x0000' bus='0x00' slot='0x08' function='0x0'/>
-  </controller>
-
-  <\fBchannel\fP type='unix'>
-    <source mode='bind' path='/sandbox/fence_virt/guests/fence_socket_guest1' id='guest1'/>
-    <target type='virtio' name='org.redhat.fencevirt.node.1'/>
-    <address type='virtio-serial' controller='0' bus='0' port='1'/>
-  </channel>
-.in 0
+The tcp listener operates similarly to the multicast listener but uses TCP sockets for communication instead of using multicast packets.
 
 .TP
 .B key_file
@@ -193,7 +181,7 @@ the IP family to use (default: ipv4, but may be ipv6)
 .TP
 .B address
 .
-the IP address to listen on (default: 127.0.0.1)
+the IP address to listen on (default: 127.0.0.1 for IPv4, ::1 for IPv6)
 
 .TP
 .B port
