@@ -110,9 +110,9 @@ AC_SUBST(mod_multicast)
 
 # tcp plugin: Disabled by default
 AC_ARG_ENABLE(tcp-plugin,
-[AS_HELP_STRING([--enable-tcp-plugin],
-		[Enable tcp listener plugin])],
-[ mod_tcp=$enableval ], [ mod_tcp=no ])
+[AS_HELP_STRING([--disable-tcp-plugin],
+		[Disable TCP listener plugin])],
+[ mod_tcp=$enableval ], [ mod_tcp=yes ])
 AC_SUBST(mod_tcp)
 
 # serial/libvirt plugin: Disabled by default
