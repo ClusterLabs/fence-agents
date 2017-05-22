@@ -32,6 +32,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <assert.h>
+#include "xvm.h"
 
 typedef struct {
 	uint32_t ck_ready;
@@ -189,10 +190,10 @@ ckpt_open(ckpt_handle *h, const char *ckpt_name, int maxsize,
 
 	attrs.creationFlags = SA_CKPT_WR_ALL_REPLICAS;
 	attrs.checkpointSize = (SaSizeT)maxsize;
-	attrs.retentionDuration = SA_TIME_ONE_HOUR;
+	attrs.retentionDuration = SA_TIME_ONE_MINUTE;
 	attrs.maxSections = maxsec;
 	attrs.maxSectionSize = (SaSizeT)maxsecsize;
-	attrs.maxSectionIdSize = (SaSizeT)32;
+	attrs.maxSectionIdSize = (SaSizeT)MAX_DOMAINNAME_LENGTH;
 
 	flags = SA_CKPT_CHECKPOINT_READ |
 		SA_CKPT_CHECKPOINT_WRITE |
@@ -326,6 +327,30 @@ ckpt_read(void *hp, const char *secid, void *buf, size_t maxlen)
 	if (errno)
 		return -1;
 	return iov.readSize; /* XXX */
+}
+
+
+int
+ckpt_erase(void *hp, const char *secid)
+{
+	ckpt_handle *h = (ckpt_handle *)hp;
+	SaAisErrorT err;
+	SaCkptSectionIdT sectionId;
+	VALIDATE(h);
+	
+	sectionId.id = (uint8_t *)secid;
+	sectionId.idLen = strlen(secid);
+	
+	err = saCkptSectionDelete(h->ck_checkpoint, &sectionId);
+
+	if (err == SA_AIS_OK)
+		saCkptCheckpointSynchronize(h->ck_checkpoint,
+					    h->ck_timeout);
+
+	errno = ais_to_posix(err);
+	if (errno)
+		return -1;
+	return 0;
 }
 
 

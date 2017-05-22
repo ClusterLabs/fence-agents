@@ -78,76 +78,14 @@ static int
 virt_list_update(virConnectPtr vp, virt_list_t **vl, int my_id)
 {
 	virt_list_t *list = NULL;
-
-	list = vl_get(vp, my_id);
-	if (!list)
-		return -1;
-
 	if (*vl)
 		vl_free(*vl);
+	list = vl_get(vp, my_id);
 	*vl = list;
 
-	return 0;
-}
-
-
-static int
-get_cman_ids(cman_handle_t ch, uint32_t *my_id, uint32_t *high_id)
-{
-	int max_nodes;
-	int actual;
-	cman_node_t *nodes = NULL;
-	cman_node_t me;
-	uint32_t high = 0;
-	int ret = -1, x, _local = 0;
-
-	if (!my_id && !high_id)
-		return 0;
-
-	if (!ch) {
-		_local = 1;
-		ch = cman_init(NULL);
-	}
-	if (!ch)
+	if (!list)
 		return -1;
-
-	max_nodes = cman_get_node_count(ch);
-	if (max_nodes <= 0)
-		goto out;
-
-	if (my_id) {
-		memset(&me, 0, sizeof(me));
-		if (cman_get_node(ch, CMAN_NODEID_US, &me) < 0)
-			goto out;
-		*my_id = me.cn_nodeid;
-	}
-
-	if (!high_id) {
-		ret = 0;
-		goto out;
-	}
-
-	nodes = malloc(sizeof(cman_node_t) * max_nodes);
-	if (!nodes)
-		goto out;
-	memset(nodes, 0, sizeof(cman_node_t) * max_nodes);
-
-	if (cman_get_nodes(ch, max_nodes, &actual, nodes) < 0)
-		goto out;
-
-	for (x = 0; x < actual; x++)
-		if (nodes[x].cn_nodeid > high && nodes[x].cn_member)
-			high = nodes[x].cn_nodeid;
-
-	*high_id = high;
-
-	ret = 0;
-out:
-	if (nodes)
-		free(nodes);
-	if (ch && _local)
-		cman_finish(ch);
-	return ret;
+	return 0;
 }
 
 
@@ -256,7 +194,7 @@ wait_domain(const char *vm_name, virConnectPtr vp, int timeout)
 static int
 cluster_virt_status(const char *vm_name, uint32_t *owner)
 {
-	vm_state_t chk_state;
+	vm_state_t chk_state, temp_state;
 	virt_state_t *vs;
 	uint32_t me, high_id;
 	int ret = 0;
@@ -264,9 +202,7 @@ cluster_virt_status(const char *vm_name, uint32_t *owner)
 	dbg_printf(80, "%s %s\n", __FUNCTION__, vm_name);
 
 	/* if we can't find the high ID, we can't do anything useful */
-	/* This should be cpg_get_ids() but it's segfaulting for some
-	   reason :( */
-	if (get_cman_ids(NULL, &me, &high_id) != 0)
+	if (cpg_get_ids(&me, &high_id) != 0)
 		return 2;
 		
 	if (use_uuid) {
@@ -277,14 +213,40 @@ cluster_virt_status(const char *vm_name, uint32_t *owner)
 
 	if (!vs) {
 		ret = 2; /* not found locally */
+		temp_state.s_owner = 0;
+		temp_state.s_state = 0;
+		
+		if (get_domain_state_ckpt(checkpoint_handle,
+					  vm_name, &chk_state) < 0) {
+			if (me == high_id) {
+				dbg_printf(2, "High ID: Unknown VM\n");
+				ret = 3;
+				goto out;
+			}
+		} else if (me == chk_state.s_owner) {
+			/* <UVT> If domain has disappeared completely from libvirt (i.e., destroyed)
+			 we'd end up with the checkpoing section containing its last state and last owner.
+			 fence_virtd will freeze at the next status call, as no one will be willing to
+			 return anything but 2. So we should delete corresponding section, but only if
+			 we are high_id, because otherwise we don't know if the domain hasn't been started
+			 on some other node. If checkpoint states us as an owner of the domain, but we
+			 don't have it, we set s_state to a special value to let high_id know about 
+			 this situation. </UVT> */
+			dbg_printf(2, "I am an owner of unexisting domain, mangling field\n");
+			temp_state.s_owner = me;
+			temp_state.s_state = -1;
+			if (ckpt_write(checkpoint_handle, vm_name,
+			               &temp_state, sizeof(vm_state_t)) < 0)
+				dbg_printf(2, "error storing in %s\n", __FUNCTION__);
+		}
 
 		if (me != high_id)
 			goto out;
 
-		if (get_domain_state_ckpt(checkpoint_handle,
-					  vm_name, &chk_state)) {
-			dbg_printf(2, "High ID: Unknown VM\n");
-			ret = 3;
+		if ((chk_state.s_state == -1) || (temp_state.s_state == -1)) {
+			dbg_printf(2, "I am high id and state field is mangled, removing section\n");
+			ckpt_erase (checkpoint_handle, vm_name);
+			ret = 1;
 			goto out;
 		}
 
@@ -301,7 +263,7 @@ cluster_virt_status(const char *vm_name, uint32_t *owner)
 	}
 
 out:
-	dbg_printf(80, "%s %s\n", __FUNCTION__, vm_name);
+	dbg_printf(80, "%s %s %d\n", __FUNCTION__, vm_name, ret);
 	return ret;
 }
 
@@ -318,9 +280,10 @@ store_domains_by_name(void *hp, virt_list_t *vl)
 		if (!strcmp(DOMAIN0NAME, vl->vm_states[x].v_name))
 			continue;
 		dbg_printf(2, "Storing %s\n", vl->vm_states[x].v_name);
-		ckpt_write(hp, vl->vm_states[x].v_name, 
+		if (ckpt_write(hp, vl->vm_states[x].v_name, 
 			   &vl->vm_states[x].v_state,
-			   sizeof(vm_state_t));
+			   sizeof(vm_state_t)) < 0)
+			dbg_printf(2, "error storing in %s\n", __FUNCTION__);
 	}
 }
 
@@ -337,9 +300,10 @@ store_domains_by_uuid(void *hp, virt_list_t *vl)
 		if (!strcmp(DOMAIN0UUID, vl->vm_states[x].v_uuid))
 			continue;
 		dbg_printf(2, "Storing %s\n", vl->vm_states[x].v_uuid);
-		ckpt_write(hp, vl->vm_states[x].v_uuid, 
+		if (ckpt_write(hp, vl->vm_states[x].v_uuid, 
 			   &vl->vm_states[x].v_state,
-			   sizeof(vm_state_t));
+			   sizeof(vm_state_t)) < 0)
+			dbg_printf(2, "error storing in %s\n", __FUNCTION__);
 	}
 }
 
@@ -362,10 +326,16 @@ update_local_vms(void)
 		store_domains_by_uuid(checkpoint_handle, local_vms);
 	else
 		store_domains_by_name(checkpoint_handle, local_vms);
-	virConnectClose(vp);
+	if (vp) virConnectClose(vp);
 }
 
 
+/* <UVT>
+ Functions do_off and do_reboot should return error only if fencing 
+ was actualy unsuccessful, i.e., domain was running and is still 
+ running after fencing attempt. If domain is not running after fencing
+ (did not exist before or couldn't be started after), 0 should be returned 
+ </UVT> */
 static int
 do_off(const char *vm_name)
 {
@@ -388,7 +358,7 @@ do_off(const char *vm_name)
 
 	if (!vdp) {
 		dbg_printf(2, "Nothing to do - domain does not exist\n");
-		return 1;
+		return 0;
 	}
 
 	if (((virDomainGetInfo(vdp, &vdi) == 0) &&
@@ -451,7 +421,7 @@ do_reboot(const char *vm_name)
 	if (!vdp) {
 		dbg_printf(2, "[libvirt:REBOOT] Nothing to "
 			   "do - domain does not exist\n");
-		return 1;
+		return 0;
 	}
 
 	if (((virDomainGetInfo(vdp, &vdi) == 0) &&
@@ -531,6 +501,8 @@ out:
 
 
 
+/*<UVT> This function must send reply from at least one node, otherwise
+ requesting fence_virtd would block forever in wait_cpt_reply </UVT> */
 static void
 do_real_work(void *data, size_t len, uint32_t nodeid, uint32_t seqno)
 {
@@ -564,16 +536,28 @@ do_real_work(void *data, size_t len, uint32_t nodeid, uint32_t seqno)
 			ret = 0;
 			break;
 		}
-		if (ret != 0) {
+		if (ret == 2) {
 			return;
+		}
+		if (ret == 1) {
+			ret = 0;
+			break;
 		}
 		/* Must be running locally to perform 'off' */
 		ret = do_off(req->vm_name);
 		break;
 	case FENCE_REBOOT:
 		ret = cluster_virt_status(req->vm_name, &owner);
-		if (ret != 0) {
+		if (ret == 3) {
+			ret = 0;
+			break;
+		}
+		if (ret == 2) {
 			return;
+		}
+		if (ret == 1) {
+			ret = 0;
+			break;
 		}
 		/* Must be running locally to perform 'reboot' */
 		ret = do_reboot(req->vm_name);
