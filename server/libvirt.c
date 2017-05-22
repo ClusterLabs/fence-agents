@@ -61,7 +61,7 @@
 
 
 #define NAME "libvirt"
-#define VERSION "0.1"
+#define VERSION "0.2"
 
 #define MAGIC 0x1e19317a
 

@@ -51,7 +51,7 @@
 
 
 #define NAME "checkpoint"
-#define VERSION "0.8"
+#define VERSION "0.9"
 
 #define MAGIC 0x1e017afe
 
