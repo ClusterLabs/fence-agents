@@ -239,9 +239,8 @@ do_fence_request(int fd, const char *src, serial_req_t *req, serial_info *info)
 	swab_serial_resp_t(&resp);
 
 	dbg_printf(3, "Sending response to caller...\n");
-	if (write(fd, &resp, sizeof(resp)) < 0) {
+	if (_write_retry(fd, &resp, sizeof(resp), NULL) < 0)
 		perror("write");
-	}
 
 	/* XVM shotguns multicast packets, so we want to avoid 
 	 * acting on the same request multiple times if the first

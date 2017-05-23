@@ -239,7 +239,7 @@ do_fence_request_tcp(int fd, fence_req_t *req, tcp_info *info)
 	}
 
 	dbg_printf(3, "Sending response to caller...\n");
-	if (write(fd, &response, 1) < 0) {
+	if (_write_retry(fd, &response, 1, NULL) < 0) {
 		perror("write");
 	}
 

@@ -316,7 +316,7 @@ do_fence_request_tcp(fence_req_t *req, mcast_info *info)
 	}
 
 	dbg_printf(3, "Sending response to caller...\n");
-	if (write(fd, &response, 1) < 0) {
+	if (_write_retry(fd, &response, 1, NULL) < 0) {
 		perror("write");
 	}
 
