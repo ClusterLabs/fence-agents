@@ -28,6 +28,7 @@
 
 /* Local includes */
 #include "xvm.h"
+#include "fdops.h"
 #include "simple_auth.h"
 #include "debug.h"
 
@@ -42,7 +43,7 @@ print_hash(unsigned char *hash, size_t hashlen)
 }
 
 
-static void
+static int
 sha_sign(fence_req_t *req, void *key, size_t key_len)
 {
 	unsigned char hash[SHA512_LENGTH];
@@ -50,6 +51,7 @@ sha_sign(fence_req_t *req, void *key, size_t key_len)
 	HASH_HashType ht;
 	unsigned int rlen;
 	int devrand;
+	int ret;
 
 	switch(req->hashtype) {
 		case HASH_SHA1:
@@ -62,22 +64,29 @@ sha_sign(fence_req_t *req, void *key, size_t key_len)
 			ht = HASH_AlgSHA512;
 			break;
 		default:
-			return;
+			dbg_printf(1, "Unknown hash type: %d\n", req->hashtype);
+			return -1;
 	}
 
 	dbg_printf(4, "Opening /dev/urandom\n");
 	devrand = open("/dev/urandom", O_RDONLY);
-	if (devrand >= 0) {
-		if (read(devrand, req->random, sizeof(req->random)) < 0) {
-			perror("read /dev/urandom");
-		}
-		close(devrand);
+	if (devrand < 0) {
+		dbg_printf(1, "Error: open: /dev/urandom: %s", strerror(errno));
+		return -1;
 	}
+
+	ret = _read_retry(devrand, req->random, sizeof(req->random), NULL);
+	if (ret <= 0) {
+		dbg_printf(1, "Error: read: /dev/urandom: %s", strerror(errno));
+		close(devrand);
+		return -1;
+	}
+	close(devrand);
 
 	memset(hash, 0, sizeof(hash));
 	h = HASH_Create(ht);
 	if (!h)
-		return;
+		return -1;
 
 	HASH_Begin(h);
 	HASH_Update(h, key, key_len);
@@ -86,6 +95,7 @@ sha_sign(fence_req_t *req, void *key, size_t key_len)
 	HASH_Destroy(h);
 
 	memcpy(req->hash, hash, sizeof(req->hash));
+	return 0;
 }
 
 
@@ -160,8 +170,7 @@ sign_request(fence_req_t *req, void *key, size_t key_len)
 	case HASH_SHA1:
 	case HASH_SHA256:
 	case HASH_SHA512:
-		sha_sign(req, key, key_len);
-		return 0;
+		return sha_sign(req, key, key_len);
 	default:
 		break;
 	}
@@ -209,18 +218,25 @@ sha_challenge(int fd, fence_auth_type_t auth, void *key,
 
 	devrand = open("/dev/urandom", O_RDONLY);
 	if (devrand < 0) {
-		perror("open /dev/urandom");
+		dbg_printf(1, "Error: open /dev/urandom: %s", strerror(errno));
 		return 0;
 	}
-	if (read(devrand, challenge, sizeof(challenge)) < 0) {
-		perror("read /dev/urandom");
+
+	tv.tv_sec = timeout;
+	tv.tv_usec = 0;
+	ret = _read_retry(devrand, challenge, sizeof(challenge), &tv);
+	if (ret < 0) {
+		dbg_printf(1, "Error: read: /dev/urandom: %s", strerror(errno));
 		close(devrand);
 		return 0;
 	}
 	close(devrand);
 
-	if (write(fd, challenge, sizeof(challenge)) < 0) {
-		perror("write");
+	tv.tv_sec = timeout;
+	tv.tv_usec = 0;
+	ret = _write_retry(fd, challenge, sizeof(challenge), &tv);
+	if (ret < 0) {
+		dbg_printf(2, "Error: write: %s", strerror(errno));
 		return 0;
 	}
 
@@ -253,19 +269,22 @@ sha_challenge(int fd, fence_auth_type_t auth, void *key,
 
 	FD_ZERO(&rfds);
 	FD_SET(fd, &rfds);
+
 	tv.tv_sec = timeout;
 	tv.tv_usec = 0;
-	if (select(fd + 1, &rfds, NULL, NULL, &tv) <= 0) {
-		perror("select");
+	if (_select_retry(fd + 1, &rfds, NULL, NULL, &tv) <= 0) {
+		dbg_printf(0, "Error: select: %s\n", strerror(errno));
 		return 0;
 	}
 
-	ret = read(fd, response, sizeof(response));
+	tv.tv_sec = timeout;
+	tv.tv_usec = 0;
+	ret = _read_retry(fd, response, sizeof(response), &tv);
 	if (ret < 0) {
-		perror("read");
+		dbg_printf(0, "Error reading challenge response: %s", strerror(errno));
 		return 0;
 	} else if (ret < sizeof(response)) {
-		fprintf(stderr,
+		dbg_printf(0,
 			"read data from socket is too short(actual: %d, expected: %lu)\n",
 			ret, sizeof(response));
 		return 0;
@@ -301,15 +320,18 @@ sha_response(int fd, fence_auth_type_t auth, void *key,
 
 	FD_ZERO(&rfds);
 	FD_SET(fd, &rfds);
+
 	tv.tv_sec = timeout;
 	tv.tv_usec = 0;
-	if (select(fd + 1, &rfds, NULL, NULL, &tv) <= 0) {
-		perror("select");
+	if (_select_retry(fd + 1, &rfds, NULL, NULL, &tv) <= 0) {
+		dbg_printf(2, "Error: select: %s\n", strerror(errno));
 		return 0;
 	}
 
-	if (read(fd, challenge, sizeof(challenge)) < 0) {
-		perror("read");
+	tv.tv_sec = timeout;
+	tv.tv_usec = 0;
+	if (_read_retry(fd, challenge, sizeof(challenge), &tv) < 0) {
+		dbg_printf(2, "Error reading challenge hash: %s\n", strerror(errno));
 		return 0;
 	}
 
@@ -339,12 +361,14 @@ sha_response(int fd, fence_auth_type_t auth, void *key,
 	HASH_End(h, hash, &rlen, sizeof(hash));
 	HASH_Destroy(h);
 
-	ret = write(fd, hash, sizeof(hash));
+	tv.tv_sec = timeout;
+	tv.tv_usec = 0;
+	ret = _write_retry(fd, hash, sizeof(hash), &tv);
 	if (ret < 0) {
 		perror("write");
 		return 0;
 	} else if (ret < sizeof(hash)) {
-		fprintf(stderr,
+		dbg_printf(2,
 			"Only part of hash is written(actual: %d, expected: %lu)\n",
 			ret,
 			sizeof(hash));
