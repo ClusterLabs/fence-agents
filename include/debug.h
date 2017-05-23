@@ -19,8 +19,8 @@
 #ifndef _DBG_H
 #define _DBG_H
 
-inline void dset(int);
-inline int dget(void);
+void dset(int);
+int dget(void);
 
 #define dbg_printf(level, fmt, args...) \
 do { \
