@@ -198,18 +198,19 @@ main(int argc, char **argv)
 		return 1;
 	}
 
-        if(pid_file == NULL) {
-            pid_file = malloc(PATH_MAX);
-            memset(pid_file, 0, PATH_MAX);
-            snprintf(pid_file, PATH_MAX, "/var/run/%s.pid", basename(argv[0]));
-        }
+	if (pid_file == NULL) {
+		pid_file = malloc(PATH_MAX);
+		memset(pid_file, 0, PATH_MAX);
+		snprintf(pid_file, PATH_MAX, "/var/run/%s.pid", basename(argv[0]));
+	}
+
+	openlog(basename(argv[0]), LOG_NDELAY | LOG_PID, LOG_DAEMON);
         
 	daemon_init(basename(argv[0]), pid_file, foreground);
+
 	signal(SIGINT, exit_handler);
 	signal(SIGTERM, exit_handler);
 	signal(SIGQUIT, exit_handler);
-
-	openlog(basename(argv[0]), LOG_NDELAY | LOG_PID, LOG_DAEMON);
 
 	syslog(LOG_NOTICE, "fence_virtd starting.  Listener: %s  Backend: %s",
 		backend_name, listener_name);

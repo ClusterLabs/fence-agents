@@ -147,6 +147,8 @@ update_pidfile(const char *filename)
 
 	fp = fopen(pid_filename, "w");
 	if (fp == NULL) {
+		syslog(LOG_ERR, "daemon_init: Unable to create pidfile %s: %s\n",
+			filename, strerror(errno));
 		exit(1);
 	}
 
@@ -202,7 +204,7 @@ daemon_init(const char *prog, const char *pid_file, int nofork)
 		exit(1);
 	}
 
-	if(!nofork && daemon(0, 0)) {
+	if (!nofork && daemon(0, 0)) {
 		syslog(LOG_ERR, "daemon_init: Unable to daemonize.\n");
 		exit(1);
 	}
