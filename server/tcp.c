@@ -455,11 +455,17 @@ tcp_init(listener_context_t *c, const fence_callbacks_t *cb,
 	info->map = map;
 
 	ret = tcp_config(config, &info->args);
-	if (ret < 0) {
+	if (ret < 0)
 		perror("tcp_config");
-		return -1;
-	} else if (ret > 0) {
+	else if (ret > 0)
 		printf("%d errors found during configuration\n",ret);
+
+    if (ret != 0) {
+		if (info->args.key_file)
+			free(info->args.key_file);
+		if (info->args.addr)
+			free(info->args.addr);
+		free(info);
 		return -1;
 	}
 
@@ -483,6 +489,10 @@ tcp_init(listener_context_t *c, const fence_callbacks_t *cb,
 
 	if (listen_sock < 0) {
 		printf("Could not set up listen socket\n");
+		if (info->args.key_file)
+			free(info->args.key_file);
+		if (info->args.addr)
+			free(info->args.addr);
 		free(info);
 		return -1;
 	}
