@@ -276,7 +276,7 @@ tcp_dispatch(listener_context_t c, struct timeval *timeout)
 	FD_ZERO(&rfds);
 	FD_SET(info->listen_sock, &rfds);
 
-	n = select(info->listen_sock + 1, &rfds, NULL, NULL, timeout);
+	n = _select_retry(info->listen_sock + 1, &rfds, NULL, NULL, timeout);
 	if (n <= 0)
 		return n;
 	

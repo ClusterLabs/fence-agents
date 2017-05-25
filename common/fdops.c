@@ -41,9 +41,11 @@ _select_retry(int fdmax, fd_set * rfds, fd_set * wfds, fd_set * xfds,
 
 	while (1) {
 		rv = select(fdmax, rfds, wfds, xfds, timeout);
-		if ((rv == -1) && (errno == EINTR))
-			/* return on EBADF/EINVAL/ENOMEM; continue on EINTR */
-			continue;
+		if (rv == -1) {
+			/* return on EBADF/EINVAL/ENOMEM; continue on EINTR/EAGAIN/ENOMEM */
+			if (errno == EINTR || errno == EAGAIN || errno == ENOMEM)
+				continue;
+		}
 		return rv;
 	}
 }

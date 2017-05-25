@@ -272,10 +272,8 @@ serial_dispatch(listener_context_t c, struct timeval *timeout)
 	if (info->wake_fd > max)
 		max = info->wake_fd;
 
-	n = select(max+1, &rfds, NULL, NULL, timeout);
+	n = _select_retry(max+1, &rfds, NULL, NULL, timeout);
 	if (n < 0) {
-		if (errno == ETIMEDOUT || errno == EINTR || errno == EAGAIN)
-			return 0;
 		dbg_printf(2, "select: %s\n", strerror(errno));
 		return n;
 	}

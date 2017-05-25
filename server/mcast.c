@@ -350,16 +350,10 @@ mcast_dispatch(listener_context_t c, struct timeval *timeout)
 	FD_ZERO(&rfds);
 	FD_SET(info->mc_sock, &rfds);
 
-	n = select((info->mc_sock)+1, &rfds, NULL, NULL, timeout);
-	if (n < 0)
+	n = _select_retry((info->mc_sock)+1, &rfds, NULL, NULL, timeout);
+	if (n <= 0)
 		return n;
 	
-	/* 
-	 * If no requests, we're done 
-	 */
-	if (n == 0)
-		return 0;
-
 	slen = sizeof(sin);
 	len = recvfrom(info->mc_sock, &data, sizeof(data), 0,
 		       (struct sockaddr *)&sin, &slen);
