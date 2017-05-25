@@ -1,5 +1,5 @@
 /*
-  Copyright Red Hat, Inc. 2006
+  Copyright Red Hat, Inc. 2006-2017
 
   This program is free software; you can redistribute it and/or modify it
   under the terms of the GNU General Public License as published by the
@@ -16,11 +16,13 @@
   Free Software Foundation, Inc.,  675 Mass Ave, Cambridge, 
   MA 02139, USA.
 */
+
 #ifndef _VIRT_H
 #define _VIRT_H
-#include <libvirt/libvirt.h>
+
 #include <stdint.h>
 #include <netinet/in.h>
+#include <libvirt/libvirt.h>
 
 #include "xvm.h"
 
@@ -59,15 +61,16 @@ typedef struct _virt_list {
 	virt_state_t	vm_states[0];
 } virt_list_t;
 
-virt_list_t *vl_get(virConnectPtr vp, int my_id);
-
-int vl_cmp(virt_list_t *left, virt_list_t *right);
-
+virt_list_t *vl_get(virConnectPtr *vp, int vp_count, int my_id);
 void vl_print(virt_list_t *vl);
 void vl_free(virt_list_t *old);
-virt_state_t * vl_find_uuid(virt_list_t *vl, const char *name);
-virt_state_t * vl_find_name(virt_list_t *vl, const char *name);
+virt_state_t *vl_find_uuid(virt_list_t *vl, const char *name);
+virt_state_t *vl_find_name(virt_list_t *vl, const char *name);
 
+int vm_off(virConnectPtr *vp, int vp_count, const char *vm_name);
+int vm_on(virConnectPtr *vp, int vp_count, const char *vm_name);
+int vm_status(virConnectPtr *vp, int vp_count, const char *vm_name);
+int vm_reboot(virConnectPtr *vp, int vp_count, const char *vm_name);
 
 typedef void ckpt_handle;
 int ckpt_read(void *hp, const char *secid, void *buf, size_t maxlen);

@@ -80,7 +80,7 @@ virt_list_update(virConnectPtr vp, virt_list_t **vl, int my_id)
 	virt_list_t *list = NULL;
 	if (*vl)
 		vl_free(*vl);
-	list = vl_get(vp, my_id);
+	list = vl_get(vp, 1, my_id);
 	*vl = list;
 
 	if (!list)
