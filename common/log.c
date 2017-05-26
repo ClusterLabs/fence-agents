@@ -43,12 +43,12 @@ _log_thread(void *arg)
 	struct timespec ts;
 	struct log_entry *entry;
 
-	pthread_mutex_lock(&log_mutex);
-	
 	do {
 		gettimeofday(&tv, NULL);
 		ts.tv_sec = tv.tv_sec + 10;
 		ts.tv_nsec = tv.tv_usec;
+
+		pthread_mutex_lock(&log_mutex);
 
 		while (!(entry = _log_entries)) {
 			if (pthread_cond_timedwait(&log_cond,
