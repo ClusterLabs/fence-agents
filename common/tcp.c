@@ -70,7 +70,8 @@ ipv6_listen(const char *addr_str, uint16_t port, int backlog)
 	struct sockaddr_in6 _sin6;
 	int fd, ret;
 
-	dbg_printf(4, "%s: Setting up ipv6 listen socket\n", __FUNCTION__);
+	dbg_printf(4, "%s: Setting up ipv6 listen socket for %s:%d\n",
+		__FUNCTION__, addr_str, port);
 
 	memset(&_sin6, 0, sizeof(_sin6));
 	_sin6.sin6_family = PF_INET6;
@@ -136,7 +137,8 @@ ipv4_listen(const char *addr_str, uint16_t port, int backlog)
 	struct sockaddr_in _sin;
 	int fd, ret;
 
-	dbg_printf(4, "%s: Setting up ipv4 listen socket\n", __FUNCTION__);
+	dbg_printf(4, "%s: Setting up ipv4 listen socket for %s:%d\n",
+		__FUNCTION__, addr_str, port);
 
 	_sin.sin_family = PF_INET;
 	_sin.sin_port = htons(port);
