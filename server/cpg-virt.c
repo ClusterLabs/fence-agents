@@ -560,6 +560,13 @@ cpg_virt_init(backend_context_t *c, config_object_t *config)
 		}
 	}
 
+	if (info->vp_count < 1) {
+		dbg_printf(1, "[cpg_virt:INIT] Could not connect to any hypervisors\n");
+		cpg_stop();
+		free(info);
+		return -1;
+	}
+
 	pthread_mutex_lock(&local_vm_list_lock);
 	update_local_vms(info);
 	pthread_mutex_unlock(&local_vm_list_lock);
@@ -580,6 +587,8 @@ cpg_virt_shutdown(backend_context_t c)
 	VALIDATE(info);
 	info->magic = 0;
 
+	cpg_stop();
+
 	for (i = 0 ; i < info->vp_count ; i++) {
 		if (virConnectClose(info->vp[i]) < 0)
 			ret = -errno;
@@ -587,7 +596,6 @@ cpg_virt_shutdown(backend_context_t c)
 	free(info->vp);
 	free(info);
 
-	cpg_stop();
 
 	return ret;
 }
