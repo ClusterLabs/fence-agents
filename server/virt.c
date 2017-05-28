@@ -68,17 +68,20 @@ virt_list_t *vl_get(virConnectPtr *vp, int vp_count, int my_id)
 	for (i = 0 ; i < vp_count ; i++) {
 		int x;
 		virDomainPtr *dom_list;
+		virt_list_t *new_vl;
 
 		int ret = virConnectListAllDomains(vp[i], &dom_list, 0);
 		if (ret <= 0)
 			continue;
 
 		d_count += ret;
-		vl = realloc(vl, sizeof(uint32_t) + sizeof(virt_state_t) * d_count);
-		if (!vl) {
+		new_vl = realloc(vl, sizeof(uint32_t) + sizeof(virt_state_t) * d_count);
+		if (!new_vl) {
 			_free_dom_list(dom_list, ret);
+			free(vl);
 			return NULL;
 		}
+		vl = new_vl;
 		vl->vm_count = d_count;
 
 		/* Ok, we have the domain IDs - let's get their names and states */
@@ -121,6 +124,100 @@ virt_list_t *vl_get(virConnectPtr *vp, int vp_count, int my_id)
 	qsort(&vl->vm_states[0], vl->vm_count, sizeof(vl->vm_states[0]),
 	      _compare_virt);
 	return vl;	
+}
+
+int
+vl_add(virt_list_t **vl, virt_state_t *vm) {
+	virt_list_t *new_vl;
+	size_t oldlen;
+	size_t newlen;
+
+	if (!vl)
+		return -1;
+
+	if (!*vl) {
+		*vl = malloc(sizeof(uint32_t) + sizeof(virt_state_t));
+		if (!*vl)
+			return -1;
+		(*vl)->vm_count = 1;
+		memcpy(&(*vl)->vm_states[0], vm, sizeof(virt_state_t));
+		return 0;
+	}
+
+	oldlen = sizeof(uint32_t) + sizeof(virt_state_t) * (*vl)->vm_count;
+	newlen = oldlen + sizeof(virt_state_t);
+
+	new_vl = malloc(newlen);
+	if (!new_vl)
+		return -1;
+
+	memcpy(new_vl, *vl, oldlen);
+	memcpy(&new_vl->vm_states[(*vl)->vm_count], vm, sizeof(virt_state_t));
+	new_vl->vm_count++;
+
+	free(*vl);
+	*vl = new_vl;
+	return 0;
+}
+
+int vl_remove_by_owner(virt_list_t **vl, uint32_t owner) {
+	int i;
+	int removed = 0;
+	virt_list_t *new_vl;
+
+	if (!vl || !*vl)
+		return 0;
+
+	for (i = 0 ; i < (*vl)->vm_count ; i++) {
+		if ((*vl)->vm_states[i].v_state.s_owner == owner) {
+			dbg_printf(2, "Removing %s\n", (*vl)->vm_states[i].v_name);
+			memset(&(*vl)->vm_states[i].v_state, 0,
+				sizeof((*vl)->vm_states[i].v_state));
+			(*vl)->vm_states[i].v_name[0] = 0xff;
+			(*vl)->vm_states[i].v_uuid[0] = 0xff;
+			removed++;
+		}
+	}
+
+	if (!removed)
+		return 0;
+
+	qsort(&(*vl)->vm_states[0], (*vl)->vm_count, sizeof((*vl)->vm_states[0]),
+	      _compare_virt);
+	(*vl)->vm_count -= removed;
+
+	new_vl = realloc(*vl, sizeof(uint32_t) + (sizeof(virt_state_t) * ((*vl)->vm_count)));
+	if (new_vl)
+		*vl = new_vl;
+	return removed;
+}
+
+
+int
+vl_update(virt_list_t **vl, virt_state_t *vm) {
+	virt_state_t *v = NULL;
+
+	if (!vl)
+		return -1;
+
+	if (!*vl)
+		return vl_add(vl, vm);
+
+	if (strlen(vm->v_uuid) > 0)
+		v = vl_find_uuid(*vl, vm->v_uuid);
+
+	if (v == NULL && strlen(vm->v_name) > 0)
+		v = vl_find_name(*vl, vm->v_name);
+
+	if (v == NULL) {
+		dbg_printf(2, "Adding new entry for VM %s\n", vm->v_name);
+		vl_add(vl, vm);
+	} else {
+		dbg_printf(2, "Updating entry for VM %s\n", vm->v_name);
+		memcpy(&v->v_state, &vm->v_state, sizeof(v->v_state));
+	}
+
+	return 0;
 }
 
 

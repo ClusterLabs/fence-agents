@@ -26,22 +26,6 @@
 
 #include "xvm.h"
 
-/*
-   Owner 0 = no owner.
-
-   checkpoint "xen-vm-states" {
-     section "vm-name0" {
-       owner_nodeid;
-       vm_state;
-     }
-     section "vm-name1" {
-       owner_nodeid;
-       vm_state;
-     }
-     ...
-   }
- */
-
 typedef struct {
 	uint32_t s_owner;
 	int32_t s_state;
@@ -66,19 +50,13 @@ void vl_print(virt_list_t *vl);
 void vl_free(virt_list_t *old);
 virt_state_t *vl_find_uuid(virt_list_t *vl, const char *name);
 virt_state_t *vl_find_name(virt_list_t *vl, const char *name);
+int vl_add(virt_list_t **vl, virt_state_t *vm);
+int vl_update(virt_list_t **vl, virt_state_t *vm);
+int vl_remove_by_owner(virt_list_t **vl, uint32_t owner);
 
 int vm_off(virConnectPtr *vp, int vp_count, const char *vm_name);
 int vm_on(virConnectPtr *vp, int vp_count, const char *vm_name);
 int vm_status(virConnectPtr *vp, int vp_count, const char *vm_name);
 int vm_reboot(virConnectPtr *vp, int vp_count, const char *vm_name);
-
-typedef void ckpt_handle;
-int ckpt_read(void *hp, const char *secid, void *buf, size_t maxlen);
-int ckpt_finish(void *hp);
-int ckpt_write(void *hp, const char *secid, void *buf, size_t maxlen);
-int ckpt_erase(void *hp, const char *secid);
-void *ckpt_init(const char *ckpt_name, int maxlen, int maxsec, int maxseclen,
-		int timeout);
-
 
 #endif

@@ -236,21 +236,21 @@ Qpid service to connect to.
 If set to 1, have fence_virtd use GSSAPI for authentication when communicating
 with the Qpid broker.  Default is 0 (off).
 
-.SS checkpoint
+.SS cpg
 
-The checkpoint plugin uses CMAN, CPG, and OpenAIS checkpoints to track virtual
+The cpg plugin uses corosync CPG and libvirt to track virtual
 machines and route fencing requests to the appropriate computer.
 
 .TP
 .B uri
 .
-the URI to use when connecting to libvirt by the checkpoint plugin.
+the URI to use when connecting to libvirt by the cpg plugin.
 
 .TP
 .B name_mode
 .
-The checkpoint plugin, in order to retain compatibility with fence_xvm,
-stores virtual machines in a certain way in the OpenAIS checkpoints.  The
+The cpg plugin, in order to retain compatibility with fence_xvm,
+stores virtual machines in a certain way.  The
 default was to use 'name' when using fence_xvm and fence_xvmd, and so this
 is still the default.  However, it is strongly recommended to use 'uuid'
 instead of 'name' in all cluster environments involving more than one
@@ -286,7 +286,7 @@ a key file.
 
  fence_virtd {
   listener = "multicast";
-  backend = "checkpoint";
+  backend = "cpg";
  }
 
  # this is the listeners section

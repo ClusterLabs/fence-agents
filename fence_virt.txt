@@ -80,13 +80,13 @@ We propose at 5 plugins in this case:
  * Libvirt (local-only).  There is no intracommunication and no
    migration support is provided 
 
- * Cluster checkpoint (+ libvirt).  This the way fence_xvmd
+ * Cluster CPG (+ libvirt).  This the way fence_xvmd
    operates today.  This setup has the most requirements on the
    infrastructure, as it requires guest to host networking _and_
    host-to-host clustering in order to keep track of virtual
    machines.  The benefit is that it is self-contained and requires
-   no external management nodes.  VM states are stored in checkpoints
-   so that other hosts know the locations of other VMs and can make
+   no external management nodes.  VM states are stored so that other
+   CPG group members know the locations of other VMs and can make
    some decisions about whether a VM is dead based on whether a host
    is dead (i.e. if fencing is in use or can be performed on the
    host).
@@ -113,7 +113,7 @@ We propose at 5 plugins in this case:
 
 These plugins have no requirements on which guest to host communication
 plugin is used (you could, if you wanted, use 'direct serial' with
-'cluster checkpoint', or 'multicast' with 'RHEV-H' for example).
+'cluster cpg', or 'multicast' with 'RHEV-H' for example).
 
 These plugins must also be able to discover where appropriate.  For
 example, the Checkpoint plugin can only be used if corosync/openais

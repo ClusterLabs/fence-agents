@@ -129,36 +129,35 @@ backend_config_libvirt(config_object_t *config)
 
 
 static int
-backend_config_checkpoint(config_object_t *config)
+backend_config_cpg(config_object_t *config)
 {
 	char val[4096];
 	char inp[4096];
 	int done = 0;
 
 	printf("\n");
-	printf("The checkpoint backend module is designed for use in clusters\n"
-	       "running corosync, openais, and CMAN.  It utilizes the SAF \n"
-	       "checkpoint API to store virtual machine states and CPG to \n"
+	printf("The CPG backend module is designed for use in clusters\n"
+	       "running corosync and libvirt. It utilizes the CPG API to \n"
 	       "route fencing requests, finally utilizing libvirt to perform\n"
 	       "fencing actions.\n\n");
 
-	if (sc_get(config, "backends/checkpoint/@uri", val,
+	if (sc_get(config, "backends/cpg/@uri", val,
 		   sizeof(val))) {
 		strncpy(val, DEFAULT_HYPERVISOR_URI, sizeof(val));
 	}
 
 	text_input("Libvirt URI", val, inp, sizeof(inp));
 
-	sc_set(config, "backends/checkpoint/@uri", inp);
+	sc_set(config, "backends/cpg/@uri", inp);
 
 	printf("\n");
-	printf("The name mode is how the checkpoint plugin stores and \n"
+	printf("The name mode is how the cpg plugin stores and \n"
 	       "references virtual machines.  Since virtual machine names\n"
 	       "are not guaranteed to be unique cluster-wide, use of UUIDs\n"
 	       "is strongly recommended.  However, for compatibility with \n"
 	       "fence_xvmd, the use of 'name' mode is also supported.\n\n");
 
-	if (sc_get(config, "backends/checkpoint/@name_mode", val,
+	if (sc_get(config, "backends/cpg/@name_mode", val,
 		   sizeof(val))) {
 		strncpy(val, "uuid", sizeof(val));
 	}
@@ -179,7 +178,7 @@ backend_config_checkpoint(config_object_t *config)
 		}
 	} while (!done);
 
-	sc_set(config, "backends/checkpoint/@name_mode", inp);
+	sc_set(config, "backends/cpg/@name_mode", inp);
 
 	return 0;
 }
@@ -527,8 +526,8 @@ backend_configure(config_object_t *config)
 #if 0
 	if (!strcmp(inp, "libvirt")) {
 		backend_config_libvirt(config);
-	} else if (!strcmp(inp, "checkpoint")) {
-		backend_config_checkpoint(config);
+	} else if (!strcmp(inp, "cpg")) {
+		backend_config_cpg(config);
 	}
 #endif
 

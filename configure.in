@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(fence-virt, 0.3.3, rmccabe@redhat.com)
+AC_INIT(fence-virt, 0.4.0, rmccabe@redhat.com)
 AC_CONFIG_SRCDIR([server/main.c])
 AC_CONFIG_HEADER([include/config.h])
 
@@ -18,7 +18,6 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 
 # Checks for libraries.
-AC_CHECK_LIB([SaCkpt], [saCkptCheckpointOpen])
 AC_CHECK_LIB([cpg], [cpg_finalize])
 AC_CHECK_LIB([nss3], [NSS_NoDB_Init])
 AC_CHECK_LIB([pthread], [pthread_create])
@@ -33,7 +32,7 @@ AC_SUBST(pm_ver)
 AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS([arpa/inet.h fcntl.h malloc.h netdb.h netinet/in.h stdint.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h unistd.h openais/cpg.h corosync/cpg.h])
+AC_CHECK_HEADERS([arpa/inet.h fcntl.h malloc.h netdb.h netinet/in.h stdint.h stdlib.h string.h sys/ioctl.h sys/socket.h sys/time.h syslog.h termios.h unistd.h corosync/cpg.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -80,12 +79,12 @@ AC_ARG_ENABLE(libvirt-plugin,
 [ mod_libvirt=$enableval ], [ mod_libvirt=yes ])
 AC_SUBST(mod_libvirt)
 
-# checkpoint plugin: Disabled by default
-AC_ARG_ENABLE(checkpoint-plugin,
-[AS_HELP_STRING([--enable-checkpoint-plugin],
-		[Enable CMAN / AIS checkpoint backend plugin])],
-[ mod_checkpoint=$enableval ], [ mod_checkpoint=no ])
-AC_SUBST(mod_checkpoint)
+# cpg plugin: Disabled by default
+AC_ARG_ENABLE(cpg-plugin,
+[AS_HELP_STRING([--enable-cpg-plugin],
+		[Enable CPG/libvirt backend plugin])],
+[ mod_cpg=$enableval ], [ mod_cpg=no ])
+AC_SUBST(mod_cpg)
 
 # libvirt-qmf plugin: Disabled by default
 AC_ARG_ENABLE(libvirt-qmf-plugin,

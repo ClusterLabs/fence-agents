@@ -9,7 +9,7 @@ fence_virt and fence_xvm are an I/O Fencing agents which can be used with virtua
 
 Fence_virt and fence_xvm talk to fence_virtd, which supports multiple backend plugins, including:
  - libvirt for single-node operation
- - Cluster Checkpoints when using Linux-cluster release 3.0.0 or later
+ - Corosync CPG when using Linux-cluster release 3.0.0 or later
  - libvirt-qpid for multi-node, non-cluster operation
 
 For compatibility, fence_xvm may talk to fence_xvmd from linux-cluster

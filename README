@@ -42,15 +42,14 @@ has failed.
 In order to be able to guarantee safe fencing of a VM even if the
 last- known host is down, we must store the last-known locations of
 each virtual machine in some sort of cluster-wide way.  For this, we
-use the AIS Checkpointing API, which is provided by OpenAIS.  Every
-few seconds, fence_virtd queries the hypervisor via libvirt and
-stores any local VM states in a checkpoint.  In the event of a
-physical node failure (which consequently causes the failure of one
-or more guests), we can then read the checkpoint section corresponding
-to the guest we need to fence to find out the previous owner.  With
-that information, we can then check with CMAN to see if the last-
-known host node has been fenced.  If so, then the VM is clean as well.
-The physical cluster must, therefore, have fencing in order for
+use the corosync CPG API.  Every few seconds, fence_virtd queries the
+hypervisor via libvirt and stores any local VM states and sends those
+states over CPG to all other members.  In the event of a physical node
+failure (which consequently causes the failure of one or more guests),
+we can then read the stored VM state corresponding to the guest we need
+to fence to find out the previous owner. With that information, we can
+infer if the known host node has been fenced.  If so, then the VM is clean
+as well. The physical cluster must, therefore, have fencing in order for
 fence_virtd to work.
 
 Operation of a node hosting a VM which needs to be fenced:
@@ -68,7 +67,7 @@ Operation of high-node-ID:
 
   (a) Receive multicast packet
   (b) Authenticate multicast packet
-  (c) Read VM state from checkpoint
+  (c) Read VM state from stored CPG messages
   (d) Check liveliness of nodeID hosting VM (if alive, do nothing)
   (e) Open connection to host contained within multicast
       packet.
@@ -77,7 +76,7 @@ Operation of high-node-ID:
   (h) Authenticate server & send response.
 
 NOTE: There is always a possibility that a VM is started again
-before the fencing operation and checkpoint update for that VM
+before the fencing operation and CPG update for that VM
 occurs.  If the VM has booted and rejoined the cluster, fencing will
 not be necessary.  If it is in the process of booting, but has not
 yet joined the cluster, fencing will also not be necessary - because
