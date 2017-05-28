@@ -61,12 +61,13 @@
 
 
 #define NAME "libvirt"
-#define VERSION "0.2"
+#define VERSION "0.3"
 
 #define MAGIC 0x1e19317a
 
 struct libvirt_info {
 	int magic;
+	config_object_t *config;
 	int vp_count;
 	virConnectPtr *vp;
 };
@@ -80,127 +81,25 @@ do {\
 } while(0)
 
 
-static int
-libvirt_null(const char *vm_name, void *priv)
-{
-	dbg_printf(5, "ENTER %s %s\n", __FUNCTION__, vm_name);
-	printf("NULL operation: returning failure\n");
-	return 1;
-}
-
-
-static int
-libvirt_off(const char *vm_name, const char *src, uint32_t seqno, void *priv)
-{
-	struct libvirt_info *info = (struct libvirt_info *)priv;
-
-	dbg_printf(5, "ENTER %s %s %u\n", __FUNCTION__, vm_name, seqno);
-	VALIDATE(info);
-
-	return vm_off(info->vp, info->vp_count, vm_name);
-}
-
-
-static int
-libvirt_on(const char *vm_name, const char *src, uint32_t seqno, void *priv)
-{
-	struct libvirt_info *info = (struct libvirt_info *)priv;
-
-	dbg_printf(5, "ENTER %s %s %u\n", __FUNCTION__, vm_name, seqno);
-	VALIDATE(info);
-
-	return vm_on(info->vp, info->vp_count, vm_name);
-}
-
-
-static int
-libvirt_devstatus(void *priv)
-{
-	dbg_printf(5, "%s ---\n", __FUNCTION__);
-
-	if (priv)
-		return 0;
-	return 1;
-}
-
-
-static int
-libvirt_status(const char *vm_name, void *priv)
-{
-	struct libvirt_info *info = (struct libvirt_info *)priv;
-
-	dbg_printf(5, "ENTER %s %s\n", __FUNCTION__, vm_name);
-	VALIDATE(info);
-
-	return vm_status(info->vp, info->vp_count, vm_name);
-}
-
-
-static int
-libvirt_reboot(const char *vm_name, const char *src, uint32_t seqno, void *priv)
-{
-	struct libvirt_info *info = (struct libvirt_info *)priv;
-
-	dbg_printf(5, "ENTER %s %s %u\n", __FUNCTION__, vm_name, seqno);
-	VALIDATE(info);
-
-	return vm_reboot(info->vp, info->vp_count, vm_name);
-}
-
-
-static int
-libvirt_hostlist(hostlist_callback callback, void *arg, void *priv)
-{
-	struct libvirt_info *info = (struct libvirt_info *)priv;
-	virt_list_t *vl;
-	int x;
-
-	dbg_printf(5, "ENTER %s\n", __FUNCTION__);
-	VALIDATE(info);
-
-	vl = vl_get(info->vp, info->vp_count, 1);
-	if (!vl)
-		return 0;
-
-	for (x = 0; x < vl->vm_count; x++) {
-		callback(vl->vm_states[x].v_name,
-				 vl->vm_states[x].v_uuid,
-				 vl->vm_states[x].v_state.s_state, arg);
-
-		dbg_printf(10, "[libvirt:HOSTLIST] Sent %s %s %d\n",
-			vl->vm_states[x].v_name,
-			vl->vm_states[x].v_uuid,
-			vl->vm_states[x].v_state.s_state);
-	}
-
-	vl_free(vl);
-	return 0;
-}
-
-
-static int
-libvirt_init(backend_context_t *c, config_object_t *config)
-{
-	virConnectPtr vp;
-	char value[256];
-	struct libvirt_info *info = NULL;
+static void
+libvirt_init_libvirt_conf(struct libvirt_info *info) {
+	config_object_t *config = info->config;
 	int i = 0;
 
-	info = malloc(sizeof(*info));
-	if (!info)
-		return -1;
-
-	dbg_printf(5, "ENTER [%s:%d %s]\n", __FILE__, __LINE__, __FUNCTION__);
-	memset(info, 0, sizeof(*info));
-
-#ifdef _MODULE
-	if (sc_get(config, "fence_virtd/@debug", value, sizeof(value)) == 0)
-		dset(atoi(value));
-#endif
+	if (info->vp) {
+		dbg_printf(2, "Lost libvirtd connection. Reinitializing.\n");
+		for (i = 0 ; i < info->vp_count ; i++)
+			virConnectClose(info->vp[i]);
+		free(info->vp);
+		info->vp = NULL;
+	}
+	info->vp_count = 0;
 
 	do {
+		virConnectPtr vp;
 		virConnectPtr *vpl = NULL;
 		char conf_attr[256];
+		char value[1024];
 		char *uri;
 
 		if (i != 0) {
@@ -236,6 +135,166 @@ libvirt_init(backend_context_t *c, config_object_t *config)
 		else
 			dbg_printf(1, "[libvirt:INIT] Added URI %s\n", uri);
 	} while (1);
+}
+
+
+static int
+libvirt_bad_connections(struct libvirt_info *info) {
+	int bad = 0;
+	int i;
+
+	for (i = 0 ; i < info->vp_count ; i++) {
+		/*
+		** Send a dummy command to trigger an error if libvirtd
+		** died or restarted
+		*/
+		virConnectNumOfDomains(info->vp[i]);
+		if (!virConnectIsAlive(info->vp[i])) {
+			dbg_printf(1, "libvirt connection %d is dead\n", i);
+			bad++;
+		}
+	}
+
+	if (info->vp_count < 1 || bad)
+		libvirt_init_libvirt_conf(info);
+
+	return bad || info->vp_count < 1;
+}
+
+static void
+libvirt_validate_connections(struct libvirt_info *info) {
+	while (1) {
+		if (libvirt_bad_connections(info))
+			sleep(1);
+		else
+			break;
+	}
+}
+
+static int
+libvirt_null(const char *vm_name, void *priv)
+{
+	dbg_printf(5, "ENTER %s %s\n", __FUNCTION__, vm_name);
+	printf("NULL operation: returning failure\n");
+	return 1;
+}
+
+
+static int
+libvirt_off(const char *vm_name, const char *src, uint32_t seqno, void *priv)
+{
+	struct libvirt_info *info = (struct libvirt_info *)priv;
+
+	dbg_printf(5, "ENTER %s %s %u\n", __FUNCTION__, vm_name, seqno);
+	VALIDATE(info);
+
+	libvirt_validate_connections(info);
+	return vm_off(info->vp, info->vp_count, vm_name);
+}
+
+
+static int
+libvirt_on(const char *vm_name, const char *src, uint32_t seqno, void *priv)
+{
+	struct libvirt_info *info = (struct libvirt_info *)priv;
+
+	dbg_printf(5, "ENTER %s %s %u\n", __FUNCTION__, vm_name, seqno);
+	VALIDATE(info);
+
+	libvirt_validate_connections(info);
+	return vm_on(info->vp, info->vp_count, vm_name);
+}
+
+
+static int
+libvirt_devstatus(void *priv)
+{
+	dbg_printf(5, "%s ---\n", __FUNCTION__);
+
+	if (priv)
+		return 0;
+	return 1;
+}
+
+
+static int
+libvirt_status(const char *vm_name, void *priv)
+{
+	struct libvirt_info *info = (struct libvirt_info *)priv;
+
+	dbg_printf(5, "ENTER %s %s\n", __FUNCTION__, vm_name);
+	VALIDATE(info);
+
+	libvirt_validate_connections(info);
+	return vm_status(info->vp, info->vp_count, vm_name);
+}
+
+
+static int
+libvirt_reboot(const char *vm_name, const char *src, uint32_t seqno, void *priv)
+{
+	struct libvirt_info *info = (struct libvirt_info *)priv;
+
+	dbg_printf(5, "ENTER %s %s %u\n", __FUNCTION__, vm_name, seqno);
+	VALIDATE(info);
+
+	libvirt_validate_connections(info);
+	return vm_reboot(info->vp, info->vp_count, vm_name);
+}
+
+
+static int
+libvirt_hostlist(hostlist_callback callback, void *arg, void *priv)
+{
+	struct libvirt_info *info = (struct libvirt_info *)priv;
+	virt_list_t *vl;
+	int x;
+
+	dbg_printf(5, "ENTER %s\n", __FUNCTION__);
+	VALIDATE(info);
+
+	libvirt_validate_connections(info);
+
+	vl = vl_get(info->vp, info->vp_count, 1);
+	if (!vl)
+		return 0;
+
+	for (x = 0; x < vl->vm_count; x++) {
+		callback(vl->vm_states[x].v_name,
+				 vl->vm_states[x].v_uuid,
+				 vl->vm_states[x].v_state.s_state, arg);
+
+		dbg_printf(10, "[libvirt:HOSTLIST] Sent %s %s %d\n",
+			vl->vm_states[x].v_name,
+			vl->vm_states[x].v_uuid,
+			vl->vm_states[x].v_state.s_state);
+	}
+
+	vl_free(vl);
+	return 0;
+}
+
+
+static int
+libvirt_init(backend_context_t *c, config_object_t *config)
+{
+	char value[256];
+	struct libvirt_info *info = NULL;
+
+	dbg_printf(5, "ENTER [%s:%d %s]\n", __FILE__, __LINE__, __FUNCTION__);
+
+	info = calloc(1, sizeof(*info));
+	if (!info)
+		return -1;
+	info->magic = MAGIC;
+	info->config = config;
+
+	libvirt_init_libvirt_conf(info);
+
+#ifdef _MODULE
+	if (sc_get(config, "fence_virtd/@debug", value, sizeof(value)) == 0)
+		dset(atoi(value));
+#endif
 
 	if (info->vp_count < 1) {
 		dbg_printf(1, "[libvirt:INIT] Could not connect to any hypervisors\n");
@@ -245,9 +304,7 @@ libvirt_init(backend_context_t *c, config_object_t *config)
 		return -1;
 	}
 
-	info->magic = MAGIC;
-
-	*c = (void *)info;
+	*c = (void *) info;
 	return 0;
 }
 
