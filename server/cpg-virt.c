@@ -13,7 +13,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program; see the file COPYING.  If not, write to the
-  Free Software Foundation, Inc.,  675 Mass Ave, Cambridge, 
+  Free Software Foundation, Inc.,  675 Mass Ave, Cambridge,
   MA 02139, USA.
 */
 /*
@@ -28,12 +28,10 @@
 #include <time.h>
 #include <server_plugin.h>
 #include <string.h>
-#include <malloc.h>
 #include <syslog.h>
 #include <errno.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <libvirt/libvirt.h>
 #include <corosync/cpg.h>
 
 #include <debug.h>
@@ -304,10 +302,10 @@ do_real_work(void *data, size_t len, uint32_t nodeid, uint32_t seqno)
 	}
 
 	/*
- 	** This is a request for a non-local domain that exists on a
+	** This is a request for a non-local domain that exists on a
 	** current CPG group member, so that member will see the request
 	** and act on it. We don't need to do anything.
- 	*/
+	*/
 	dbg_printf(2, "Nothing to do for non-local domain %s seq %d owner %u\n",
 		req->vm_name, seqno, cur_owner);
 	return;
@@ -475,7 +473,7 @@ cpg_virt_init(backend_context_t *c, config_object_t *config)
 			snprintf(conf_attr, sizeof(conf_attr),
 				"backends/cpg/@uri%d", i);
 		} else
-			snprintf(conf_attr, sizeof(conf_attr), "backends/libvirt/@uri");
+			snprintf(conf_attr, sizeof(conf_attr), "backends/cpg/@uri");
 		++i;
 
 		if (sc_get(config, conf_attr, value, sizeof(value)) != 0)
