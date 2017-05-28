@@ -44,10 +44,9 @@
 
 #define MAGIC 0x38e93fc2
 
-pthread_mutex_t vm_state_lock = PTHREAD_MUTEX_INITIALIZER;
-
 struct cpg_info {
 	int magic;
+	config_object_t *config;
 	int vp_count;
 	virConnectPtr *vp;
 };
@@ -68,6 +67,8 @@ static virt_list_t *local_vm_list = NULL;
 pthread_mutex_t remote_vm_list_lock = PTHREAD_MUTEX_INITIALIZER;
 static virt_list_t *remote_vm_list = NULL;
 
+static void cpg_virt_init_libvirt(struct cpg_info *info);
+
 static int
 virt_list_update(struct cpg_info *info, virt_list_t **vl, int my_id)
 {
@@ -75,11 +76,19 @@ virt_list_update(struct cpg_info *info, virt_list_t **vl, int my_id)
 
 	if (*vl)
 		vl_free(*vl);
-	list = vl_get(info->vp, info->vp_count, my_id);
-	*vl = list;
 
+	list = vl_get(info->vp, info->vp_count, my_id);
+	if (!list && (errno == EPIPE || errno == EINVAL)) {
+		do {
+			cpg_virt_init_libvirt(info);
+		} while (info->vp_count == 0);
+		list = vl_get(info->vp, info->vp_count, my_id);
+	}
+
+	*vl = list;
 	if (!list)
 		return -1;
+
 	return 0;
 }
 
@@ -440,33 +449,25 @@ cpg_virt_hostlist(hostlist_callback callback, void *arg, void *priv)
 	return 1;
 }
 
-static int
-cpg_virt_init(backend_context_t *c, config_object_t *config)
-{
-	char value[1024];
-	struct cpg_info *info = NULL;
+static void
+cpg_virt_init_libvirt(struct cpg_info *info) {
+	config_object_t *config = info->config;
 	int i = 0;
-	int ret;
 
-	ret = cpg_start(PACKAGE_NAME,
-		do_real_work, store_cb, cpg_join_cb, cpg_leave_cb);
-	if (ret < 0)
-		return -1;
-
-	info = calloc(1, sizeof(*info));
-	if (!info)
-		return -1;
-	info->magic = MAGIC;
-
-#ifdef _MODULE
-	if (sc_get(config, "fence_virtd/@debug", value, sizeof(value))==0)
-		dset(atoi(value));
-#endif
+	if (info->vp) {
+		dbg_printf(2, "Lost libvirtd connection. Reinitializing.\n");
+		for (i = 0 ; i < info->vp_count ; i++)
+			virConnectClose(info->vp[i]);
+		free(info->vp);
+		info->vp = NULL;
+	}
+	info->vp_count = 0;
 
 	do {
 		virConnectPtr vp;
 		virConnectPtr *vpl = NULL;
 		char conf_attr[256];
+		char value[1024];
 		char *uri;
 
 		if (i != 0) {
@@ -502,6 +503,32 @@ cpg_virt_init(backend_context_t *c, config_object_t *config)
 		else
 			dbg_printf(1, "[cpg_virt:INIT] Added URI %s\n", uri);
 	} while (1);
+}
+
+static int
+cpg_virt_init(backend_context_t *c, config_object_t *config)
+{
+	char value[1024];
+	struct cpg_info *info = NULL;
+	int ret;
+
+	ret = cpg_start(PACKAGE_NAME,
+		do_real_work, store_cb, cpg_join_cb, cpg_leave_cb);
+	if (ret < 0)
+		return -1;
+
+	info = calloc(1, sizeof(*info));
+	if (!info)
+		return -1;
+	info->magic = MAGIC;
+	info->config = config;
+
+#ifdef _MODULE
+	if (sc_get(config, "fence_virtd/@debug", value, sizeof(value)) == 0)
+		dset(atoi(value));
+#endif
+
+	cpg_virt_init_libvirt(info);
 
 	/* Naming scheme is no longer a top-level config option.
 	 * However, we retain it here for configuration compatibility with
@@ -521,8 +548,8 @@ cpg_virt_init(backend_context_t *c, config_object_t *config)
 	}
 
 	if (sc_get(config, "backends/cpg/@name_mode",
-		   value, sizeof(value)-1) == 0) {
-
+		   value, sizeof(value)-1) == 0)
+	{
 		dbg_printf(1, "Got %s for name_mode\n", value);
 		if (!strcasecmp(value, "uuid")) {
 			use_uuid = 1;
@@ -537,7 +564,7 @@ cpg_virt_init(backend_context_t *c, config_object_t *config)
 	update_local_vms(info);
 	pthread_mutex_unlock(&local_vm_list_lock);
 
-	*c = (void *)info;
+	*c = (void *) info;
 	cpg_virt_handle = info;
 	return 0;
 }

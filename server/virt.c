@@ -71,8 +71,18 @@ virt_list_t *vl_get(virConnectPtr *vp, int vp_count, int my_id)
 		virt_list_t *new_vl;
 
 		int ret = virConnectListAllDomains(vp[i], &dom_list, 0);
-		if (ret <= 0)
+		if (ret == 0)
 			continue;
+
+		if (ret < 0) {
+			int saved_errno = errno;
+			dbg_printf(2, "Error: virConnectListAllDomains: %d %d\n",
+				ret, saved_errno);
+			if (vl)
+				free(vl);
+			errno = saved_errno;
+			return NULL;
+		}
 
 		d_count += ret;
 		new_vl = realloc(vl, sizeof(uint32_t) + sizeof(virt_state_t) * d_count);
