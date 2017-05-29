@@ -13,14 +13,10 @@
 
   You should have received a copy of the GNU General Public License
   along with this program; see the file COPYING.  If not, write to the
-  Free Software Foundation, Inc.,  675 Mass Ave, Cambridge, 
+  Free Software Foundation, Inc.,  675 Mass Ave, Cambridge,
   MA 02139, USA.
 */
 /*
- * @file fence_virtd.c: Implementation of server daemon for Xen virtual
- * machine fencing.  This uses SA AIS CKPT b.1.0 checkpointing API to 
- * store virtual machine states.
- *
  * Author: Lon Hohberger <lhh at redhat.com>
  */
 #include <stdio.h>
@@ -197,7 +193,6 @@ send_multicast_packets(ip_list_t *ipl, fence_virt_args_t *args,
 					       sizeof(struct sockaddr_in));
 			tgt = (struct sockaddr *)&tgt4;
 			tgt_len = sizeof(tgt4);
-			
 		} else if (args->net.family == PF_INET6) {
 			mc_sock = ipv6_send_sk(ipa->ipa_address, args->net.addr,
 					       args->net.port,
@@ -264,7 +259,7 @@ mcast_fence_virt(fence_virt_args_t *args)
 	int lfd = -1, key_len = 0, fd, ret;
 	int attempts = 0;
 	uint32_t seqno;
-	
+
 	/* Initialize NSS; required to do hashing, as silly as that
 	   sounds... */
 	if (NSS_NoDB_Init(NULL) != SECSuccess) {
@@ -374,7 +369,7 @@ mcast_fence_virt(fence_virt_args_t *args)
 			close(fd);
 			return ret;
 			break;
-		/* case AUTH_X509: 
+		/* case AUTH_X509:
 			return ssl_exchange(...); */
 		default:
 			close(fd);

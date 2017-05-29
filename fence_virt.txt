@@ -116,12 +116,10 @@ plugin is used (you could, if you wanted, use 'direct serial' with
 'cluster cpg', or 'multicast' with 'RHEV-H' for example).
 
 These plugins must also be able to discover where appropriate.  For
-example, the Checkpoint plugin can only be used if corosync/openais
-is running.  Likewise, the RHEV-M plugin may only be used in the
-cases where the host operating system is a RHEV-H.  A defined plugin
-preference order should be specified/documented so that the host
-daemon behaves in a predictable manner in absence of host-side
-configuration data (about which plugin to use).
+example, the cpg plugin can only be used if corosync/openais
+is running.  A defined plugin preference order should be specified/documented
+so that the host daemon behaves in a predictable manner in absence of
+host-side configuration data (about which plugin to use).
 
 
 [1] TCP was also explored, however, the security is much better 
