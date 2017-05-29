@@ -66,14 +66,6 @@ assign_debug(fence_virt_args_t *args, struct arg_info *arg, char *value)
 
 
 static inline void
-assign_foreground(fence_virt_args_t *args, struct arg_info *arg,
-		  char *value)
-{
-	args->flags |= F_FOREGROUND;
-}
-
-
-static inline void
 assign_family(fence_virt_args_t *args, struct arg_info *arg,
 	      char *value)
 {
@@ -374,19 +366,6 @@ assign_version(fence_virt_args_t *args, struct arg_info *arg, char *value)
 }
 
 
-static inline void
-assign_uri(fence_virt_args_t *args, struct arg_info *arg, char *value)
-{
-#if 0
-	if (args->uri)
-		free(args->uri);
-
-	/* XXX NO validation yet */
-	args->uri = strdup(value);
-#endif
-}
-
-
 static void
 print_desc_xml(const char *desc)
 {
@@ -530,11 +509,6 @@ static struct arg_info _arg_info[] = {
  	  "Help (alternate)", 
 	  assign_help },
 
-	{ 'U', "-U", "uri",
-	  0, "boolean", "qemu:///system",
-	  "URI for Hypervisor (default: auto detect)",
-	  assign_uri },
-	  
 	{ 'w', "-w <delay>", "delay",
 	  0, "string", "0",
 	  "Fencing delay (in seconds; default=0)",
