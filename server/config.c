@@ -5,6 +5,7 @@
 
 #include <stdint.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/time.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -209,24 +210,24 @@ listener_config_multicast(config_object_t *config)
 		strncpy(val, IPV4_MCAST_DEFAULT, sizeof(val));
 	}
 
+	done = 0;
 	do {
 		text_input("Multicast IP Address", val, inp, sizeof(inp));
 
 		if (inet_pton(AF_INET, inp, &sin) == 1) {
 			printf("\nUsing ipv4 as family.\n\n");
 			family = "ipv4";
+			done = 1;
 		} else if (inet_pton(AF_INET6, inp, &sin6) == 1) {
 			printf("\nUsing ipv6 as family.\n\n");
 			family = "ipv6";
-		} else {
+			done = 1;
+		} else
 			printf("'%s' is not a valid IP address!\n", inp);
-			continue;
-		}
+	} while (!done);
 
-	} while (0);
 	sc_set(config, "listeners/multicast/@family", family);
 	sc_set(config, "listeners/multicast/@address", inp);
-
 
 	/* MULTICAST IP PORT */
 	if (sc_get(config, "listeners/multicast/@port",
@@ -234,19 +235,21 @@ listener_config_multicast(config_object_t *config)
 		snprintf(val, sizeof(val), "%d", DEFAULT_MCAST_PORT);
 	}
 
+	done = 0;
 	do {
-		text_input("Multicast IP Port", val, inp, sizeof(inp));
 		char *p;
+		int ret;
 
-		done = strtol(inp, &p, 0);
-		if (*p != '\0' || done <= 0 || done >= 65536) {
+		text_input("Multicast IP Port", val, inp, sizeof(inp));
+		ret = strtol(inp, &p, 0);
+		if (*p != '\0' || ret <= 0 || ret >= 65536) {
 			printf("Port value '%s' is out of range\n", val);
 			continue;
-		}
+		} else
+			done = 1;
+	} while (!done);
 
-	} while (0);
 	sc_set(config, "listeners/multicast/@port", inp);
-
 
 	/* MULTICAST INTERFACE */
 	printf("\nSetting a preferred interface causes fence_virtd to listen only\n"
@@ -261,6 +264,7 @@ listener_config_multicast(config_object_t *config)
 		strncpy(val, "none", sizeof(val));
 	}
 
+	done = 0;
 	do { 
 		text_input("Interface", val, inp, sizeof(inp));
 
@@ -269,16 +273,18 @@ listener_config_multicast(config_object_t *config)
 		}
 
 		if (strlen(inp) > 0) {
-			done = if_nametoindex(inp);
-			if (done < 0) {
+			int ret;
+
+			ret = if_nametoindex(inp);
+			if (ret < 0) {
 				printf("Invalid interface: %s\n", inp);
 				if (yesno("Use anyway", 1) == 1)
-					break;
-				continue;
-			}
-			break;
-		}
-	} while(0);
+					done = 1;
+			} else
+				done = 1;
+		} else
+			printf("No interface given\n");
+	} while (!done);
 
 	if (!strcasecmp(inp, "none")) {
 		sc_set(config, "listeners/multicast/@interface", NULL);
@@ -298,6 +304,7 @@ listener_config_multicast(config_object_t *config)
 		strncpy(val, DEFAULT_KEY_FILE, sizeof(val));
 	}
 
+	done = 0;
 	do { 
 		text_input("Key File", val, inp, sizeof(inp));
 
@@ -309,12 +316,13 @@ listener_config_multicast(config_object_t *config)
 			if (inp[0] != '/') {
 				printf("Invalid key file: %s\n", inp);
 				if (yesno("Use anyway", 1) == 1)
-					break;
-				continue;
-			}
-			break;
-		}
-	} while(0);
+					done = 1;
+			} else
+				done = 1;
+		} else
+			printf("No key file given\n");
+	} while (!done);
+
 	if (!strcasecmp(inp, "none")) {
 		sc_set(config, "listeners/multicast/@key_file", NULL);
 	} else {
@@ -347,24 +355,26 @@ listener_config_tcp(config_object_t *config)
 		strncpy(val, IPV4_MCAST_DEFAULT, sizeof(val));
 	}
 
+	done = 0;
 	do {
 		text_input("TCP Listen IP Address", val, inp, sizeof(inp));
 
 		if (inet_pton(AF_INET, inp, &sin) == 1) {
 			printf("\nUsing ipv4 as family.\n\n");
 			family = "ipv4";
+			done = 1;
 		} else if (inet_pton(AF_INET6, inp, &sin6) == 1) {
 			printf("\nUsing ipv6 as family.\n\n");
 			family = "ipv6";
+			done = 1;
 		} else {
 			printf("'%s' is not a valid IP address!\n", inp);
 			continue;
 		}
+	} while (!done);
 
-	} while (0);
 	sc_set(config, "listeners/tcp/@family", family);
 	sc_set(config, "listeners/tcp/@address", inp);
-
 
 	/* MULTICAST IP PORT */
 	if (sc_get(config, "listeners/tcp/@port",
@@ -372,17 +382,19 @@ listener_config_tcp(config_object_t *config)
 		snprintf(val, sizeof(val), "%d", DEFAULT_MCAST_PORT);
 	}
 
+	done = 0;
 	do {
 		text_input("TCP Listen Port", val, inp, sizeof(inp));
 		char *p;
+		int ret;
 
-		done = strtol(inp, &p, 0);
-		if (*p != '\0' || done <= 0 || done >= 65536) {
+		ret = strtol(inp, &p, 0);
+		if (*p != '\0' || ret <= 0 || ret >= 65536) {
 			printf("Port value '%s' is out of range\n", val);
 			continue;
 		}
-
-	} while (0);
+		done = 1;
+	} while (!done);
 	sc_set(config, "listeners/tcp/@port", inp);
 
 	/* KEY FILE */
@@ -396,6 +408,7 @@ listener_config_tcp(config_object_t *config)
 		strncpy(val, DEFAULT_KEY_FILE, sizeof(val));
 	}
 
+	done = 0;
 	do { 
 		text_input("Key File", val, inp, sizeof(inp));
 
@@ -407,12 +420,13 @@ listener_config_tcp(config_object_t *config)
 			if (inp[0] != '/') {
 				printf("Invalid key file: %s\n", inp);
 				if (yesno("Use anyway", 1) == 1)
-					break;
-				continue;
-			}
-			break;
-		}
-	} while(0);
+					done = 1;
+			} else
+				done = 1;
+		} else
+			printf("No key file given\n");
+	} while (!done);
+
 	if (!strcasecmp(inp, "none")) {
 		sc_set(config, "listeners/tcp/@key_file", NULL);
 	} else {
@@ -427,6 +441,7 @@ listener_config_serial(config_object_t *config)
 {
 	char val[4096];
 	char inp[4096];
+	int done;
 
 	printf("\n");
 	printf("The serial plugin allows fence_virtd to communicate with\n"
@@ -474,23 +489,22 @@ listener_config_serial(config_object_t *config)
 		sc_set(config, "listeners/serial/@path", inp);
 	}
 
+	done = 0;
 	do { 
 		text_input("Mode (serial or vmchannel)", val, inp,
 			   sizeof(inp));
 
-		if (strcasecmp(inp, "serial") &&
-		    strcasecmp(inp, "vmchannel")) {
+		if (strcasecmp(inp, "serial") && strcasecmp(inp, "vmchannel")) {
 			printf("Invalid mode: %s\n", inp);
 			if (yesno("Use anyway", 1) == 1)
-				break;
-			continue;
-		}
-	} while(0);
-	sc_set(config, "listeners/serial/@mode", inp);
+				done = 1;
+		} else
+			done = 1;
+	} while (!done);
 
+	sc_set(config, "listeners/serial/@mode", inp);
 	return 0;
 }
-
 
 
 static int
@@ -498,7 +512,7 @@ backend_configure(config_object_t *config)
 {
 	char val[4096];
 	char inp[4096];
-	int done = 0;
+	int done;
 
 	printf("\n");
 	printf("Backend modules are responsible for routing requests to\n"
@@ -510,26 +524,24 @@ backend_configure(config_object_t *config)
 		strncpy(val, "libvirt", sizeof(val));
 	}
 
+	done = 0;
 	do {
 		text_input("Backend module", val, inp, sizeof(inp));
 		if (plugin_find_backend(inp) == NULL) {
 			printf("No backend module named %s found!\n", inp);
 			if (yesno("Use this value anyway", 0) == 1)
 				done = 1;
-		} else {
+		} else
 			done = 1;
-		}
 	} while (!done);
 
 	sc_set(config, "fence_virtd/@backend", inp);
 
-#if 0
 	if (!strcmp(inp, "libvirt")) {
 		backend_config_libvirt(config);
 	} else if (!strcmp(inp, "cpg")) {
 		backend_config_cpg(config);
 	}
-#endif
 
 	return 0;
 }
@@ -540,7 +552,7 @@ listener_configure(config_object_t *config)
 {
 	char val[4096];
 	char inp[4096];
-	int done = 0;
+	int done;
 
 	printf("\n");
 	printf("Listener modules are responsible for accepting requests\n"
@@ -552,15 +564,15 @@ listener_configure(config_object_t *config)
 		strncpy(val, "multicast", sizeof(val));
 	}
 
+	done = 0;
 	do {
 		text_input("Listener module", val, inp, sizeof(inp));
 		if (plugin_find_listener(inp) == NULL) {
 			printf("No listener module named %s found!\n", inp);
 			if (yesno("Use this value anyway", 0) == 1)
 				done = 1;
-		} else {
+		} else
 			done = 1;
-		}
 	} while (!done);
 
 	sc_set(config, "fence_virtd/@listener", inp);
@@ -571,8 +583,7 @@ listener_configure(config_object_t *config)
 	else if (!strcmp(inp, "serial"))
 		listener_config_serial(config);
 	else
-		printf("I don't know how to configure '%s' :(\n",
-		       inp);
+		printf("Unable to configure unknown listner module '%s'\n", inp);
 
 	return 0;
 }
@@ -585,6 +596,7 @@ do_configure(config_object_t *config, const char *config_file)
 	char message[80];
 	char tmp_filename[4096];
 	int tmp_fd = -1;
+	mode_t old_umask;
 
 	if (sc_parse(config, config_file) != 0) {
 		printf("Parsing of %s failed.\n", config_file);
@@ -611,7 +623,10 @@ do_configure(config_object_t *config, const char *config_file)
 
 	snprintf(tmp_filename, sizeof(tmp_filename),
 		 "%s.XXXXXX", config_file);
+
+	old_umask = umask(077);
 	tmp_fd = mkstemp(tmp_filename);
+	umask(old_umask);
 
 	if (tmp_fd < 0) {
 		perror("fopen");
@@ -645,5 +660,3 @@ out_fail:
 	printf("Failed to write configuration file!\n");
 	return 1;
 }
-
-
