@@ -443,8 +443,20 @@ cpg_virt_reboot(const char *vm_name, const char *src,
 static int
 cpg_virt_hostlist(hostlist_callback callback, void *arg, void *priv)
 {
+	struct cpg_info *info = (struct cpg_info *) priv;
+	int i;
+
 	VALIDATE(priv);
 	printf("[cpg-virt] HOSTLIST operation\n");
+
+	pthread_mutex_lock(&local_vm_list_lock);
+	update_local_vms(info);
+	for (i = 0 ; i < local_vm_list->vm_count ; i++) {
+		callback(local_vm_list->vm_states[i].v_name,
+				 local_vm_list->vm_states[i].v_uuid,
+				 local_vm_list->vm_states[i].v_state.s_state, arg);
+	}
+	pthread_mutex_unlock(&local_vm_list_lock);
 
 	return 1;
 }
@@ -593,9 +605,9 @@ cpg_virt_shutdown(backend_context_t c)
 		if (virConnectClose(info->vp[i]) < 0)
 			ret = -errno;
 	}
+
 	free(info->vp);
 	free(info);
-
 
 	return ret;
 }
