@@ -17,10 +17,6 @@
   MA 02139, USA.
 */
 /*
- * @file fence_virtd.c: Implementation of server daemon for Xen virtual
- * machine fencing.  This uses SA AIS CKPT b.1.0 checkpointing API to 
- * store virtual machine states.
- *
  * Author: Lon Hohberger <lhh at redhat.com>
  */
 #include <stdio.h>
