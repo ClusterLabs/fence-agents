@@ -2,7 +2,7 @@ CC=@CC@
 CXX=@CXX@
 
 CFLAGS=@CFLAGS@
-CFLAGS+=-fPIC -Wall -Wstrict-prototypes -Wshadow -D_GNU_SOURCE
+CFLAGS+=-fPIC -Wall -Wformat=2 -Wstrict-prototypes -Wshadow -D_GNU_SOURCE
 
 LEX=@LEX@
 YACC=@YACC@

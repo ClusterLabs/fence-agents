@@ -124,6 +124,7 @@ insert_entry(int sev, char *buf, int bufsz)
 }
 
 
+__attribute__((__format__ (__printf__, 2, 0)))
 void
 __wrap_syslog(int severity, const char *fmt, ...)
 {

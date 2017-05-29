@@ -358,7 +358,7 @@ cpg_start(	const char *name,
 	if (!name)
 		return -1;
 
-	ret = snprintf(gname.value, sizeof(gname.value), name);
+	ret = snprintf(gname.value, sizeof(gname.value), "%s", name);
 	if (ret <= 0)
 		return -1;
 

@@ -1,5 +1,5 @@
-#ifndef _VIRT_SERIAL_H_
-#define _VIRT_SERIAL_H
+#ifndef __VIRT_SERIAL_H
+#define __VIRT_SERIAL_H
 
 #include <sys/select.h>
 

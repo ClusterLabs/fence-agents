@@ -1,4 +1,4 @@
-#ifndef __UIID_TEST_H
+#ifndef __UUID_TEST_H
 #define __UUID_TEST_H
 
 #ifdef __cplusplus

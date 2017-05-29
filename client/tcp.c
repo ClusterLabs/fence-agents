@@ -31,11 +31,9 @@
 
 /* Local includes */
 #include "xvm.h"
-#include "ip_lookup.h"
 #include "simple_auth.h"
 #include "options.h"
 #include "tcp.h"
-#include "mcast.h"
 #include "debug.h"
 #include "fdops.h"
 
