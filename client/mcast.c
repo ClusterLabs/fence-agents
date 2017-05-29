@@ -1,5 +1,5 @@
 /*
-  Copyright Red Hat, Inc. 2006
+  Copyright Red Hat, Inc. 2006-2017
 
   This program is free software; you can redistribute it and/or modify it
   under the terms of the GNU General Public License as published by the
@@ -119,7 +119,6 @@ do_read_hostlist(int fd, int timeout)
 
 		printf("%-32s %s %s\n", hinfo.domain, hinfo.uuid,
 		       (hinfo.state == 1) ? "on" : "off");
-
 	} while (1);
 }
 
@@ -292,6 +291,7 @@ mcast_fence_virt(fence_virt_args_t *args)
 
 	attempts = args->timeout * 10 / args->retr_time;
 
+	listen_loop:
 	do {
 		switch (args->net.auth) {
 			case AUTH_NONE:
@@ -314,7 +314,7 @@ mcast_fence_virt(fence_virt_args_t *args)
 			printf("Failed to listen: %s\n", strerror(errno));
 			usleep(args->retr_time * 100000);
 			if (--attempts > 0)
-				continue;
+				goto listen_loop;
 		}
 	} while (0);
 
