@@ -26,6 +26,11 @@
 		<content type="string"  />
 		<shortdesc lang="en">Ciphersuite to use (same as ipmitool -C parameter)</shortdesc>
 	</parameter>
+	<parameter name="hexadecimal_kg" unique="0" required="0">
+		<getopt mixed="--hexadecimal-kg=[key]" />
+		<content type="string"  />
+		<shortdesc lang="en">Hexadecimal-encoded Kg key for IPMIv2 authentication</shortdesc>
+	</parameter>
 	<parameter name="inet4_only" unique="0" required="0">
 		<getopt mixed="-4, --inet4-only" />
 		<content type="boolean"  />

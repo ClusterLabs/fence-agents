@@ -89,6 +89,9 @@ def create_command(options, action):
 	if "--privlvl" in options:
 		Cmd.append(" -L " + options["--privlvl"])
 
+        if "--hexadecimal-kg" in options:
+                Cmd.append(" -y " + options["--hexadecimal-kg"])
+
 	# --action / -o
 	Cmd.append(" chassis power " + action)
 
@@ -149,13 +152,21 @@ def define_new_opts():
 		"shortdesc" : "Bridge IPMI requests to the remote target address",
 		"order": 1
 	}
+	all_opt["hexadecimal_kg"] = {
+		"getopt" : ":",
+		"longopt" : "hexadecimal-kg",
+		"help" : "--hexadecimal-kg=[key]         Hexadecimal-encoded Kg key for IPMIv2 authentication",
+		"required" : "0",
+		"shortdesc" : "Hexadecimal-encoded Kg key for IPMIv2 authentication",
+		"order": 1
+	}
 
 def main():
 	atexit.register(atexit_handler)
 
 	device_opt = ["ipaddr", "login", "no_login", "no_password", "passwd",
 		"diag", "lanplus", "auth", "cipher", "privlvl", "sudo",
-		"ipmitool_path", "method", "target"]
+		"ipmitool_path", "method", "target", "hexadecimal_kg"]
 	define_new_opts()
 
 	all_opt["power_wait"]["default"] = 2
