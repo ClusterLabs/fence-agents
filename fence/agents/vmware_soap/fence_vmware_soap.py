@@ -42,7 +42,10 @@ def soap_login(options):
 
 	if "--ssl" in options or "--ssl-secure" in options or "--ssl-insecure" in options:
 		if "--ssl-insecure" in options:
+			import ssl
 			from requests.packages.urllib3.exceptions import InsecureRequestWarning
+			if hasattr(ssl, '_create_unverified_context'):
+				ssl._create_default_https_context = ssl._create_unverified_context
 			requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 			verify = False
 		else:
