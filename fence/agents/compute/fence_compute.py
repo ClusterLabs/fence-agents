@@ -335,8 +335,8 @@ def create_nova_connection(options):
 
 		except Exception as e:
 			logging.warning("Nova connection failed. %s: %s" % (e.__class__.__name__, e))
-			
-	fail_usage("Couldn't obtain a supported connection to nova, tried: %s" % repr(versions))
+
+	logging.warning("Couldn't obtain a supported connection to nova, tried: %s\n" % repr(versions))
 
 def define_new_opts():
 	all_opt["endpoint-type"] = {
@@ -438,7 +438,7 @@ def main():
 	docs["vendorurl"] = ""
 
 	show_docs(options, docs)
-	
+
 	if options["--record-only"] in [ "2", "Disabled", "disabled" ]:
 		sys.exit(0)
 
