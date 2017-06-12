@@ -3,7 +3,7 @@
 import sys, re, pexpect
 import logging
 import atexit
-sys.path.append("/usr/share/fence")
+sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay
 
