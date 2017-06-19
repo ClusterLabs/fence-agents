@@ -52,14 +52,19 @@ $(project)-$(version).sha256:
 	# checksum anything from deliverables except for in-prep checksums file
 	sha256sum $(deliverables:$@=) | sort -k2 > $@
 
+ifeq (,$(gpgsignkey))
+sign: tarballs
+	@echo No GPG signing key defined
+else
 sign: $(project)-$(version).sha256.asc  # "$(deliverables:=.asc)" to sign all
+endif
 
 # NOTE: cannot sign multiple files at once like this
 $(project)-$(version).%.asc: $(project)-$(version).%
 ifeq (,$(release))
 	@echo Building test release $(version), no sign
 else
-	gpg --default-key $(gpgsignkey) \
+	gpg --default-key "$(gpgsignkey)" \
 		--detach-sign \
 		--armor \
 		$<
