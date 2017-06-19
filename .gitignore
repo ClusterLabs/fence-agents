@@ -25,6 +25,10 @@ make/stamp-h1
 /m4/*
 !/m4/ac_python_module.m4
 
+# make/release.mk related litter
+/.tarball-version
+/tag-*
+
 make/clusterautoconfig.h*
 missing
 *.pc
