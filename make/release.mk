@@ -94,11 +94,9 @@ publish:
 ifeq (,$(release))
 	@echo Building test release $(version), no publishing!
 else
-	git push --tags origin
-	scp $(project)-$(version).* \
-		fedorahosted.org:$(project)
-	@echo Hey you!.. yeah you looking somewhere else!
-	@echo remember to update the wiki and send the email to cluster-devel and linux-cluster
+	git push --follow-tags origin
+	@echo Hey you!  Yeah you, looking somewhere else!
+	@echo Remember to notify cluster-devel/RH and users/ClusterLabs MLs.
 endif
 
 
