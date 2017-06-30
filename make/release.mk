@@ -1,12 +1,19 @@
 # to build official release tarballs, handle tagging and publish.
 
-# signing key
-gpgsignkey=0x6CE95CA7
+gpgsignkey = 0x6CE95CA7  # signing key
 
-project=fence-agents
+project = fence-agents
 
-all: checks setup tag tarballs sha256 sign
+deliverables = $(project)-$(version).sha256 \
+               $(project)-$(version).tar.gz \
+               $(project)-$(version).tar.xz
 
+
+.PHONY: all
+all: tag tarballs sign  # first/last skipped per release/gpgsignkey respectively
+
+
+.PHONY: checks
 checks:
 ifeq (,$(version))
 	@echo ERROR: need to define version=
@@ -16,58 +23,83 @@ endif
 		echo This script needs to be executed from top level cluster git tree; \
 		exit 1; \
 	fi
+	@if [ -n "$$(git status --untracked-files=no --porcelain 2>/dev/null)" ]; then \
+		echo Stash or rollback the uncommitted changes in git first; \
+		exit 1; \
+	fi
 
+
+.PHONY: setup
 setup: checks
 	./autogen.sh
 	./configure
 	make maintainer-clean
 
+
+.PHONY: tag
 tag: setup ./tag-$(version)
 
 tag-$(version):
 ifeq (,$(release))
 	@echo Building test release $(version), no tagging
+	echo '$(version)' > .tarball-version
 else
+	# following will be captured by git-version-gen automatically
 	git tag -a -m "v$(version) release" v$(version) HEAD
 	@touch $@
 endif
 
+
+.PHONY: tarballs
 tarballs: tag
 	./autogen.sh
 	./configure
 	make distcheck
 
-sha256: tarballs $(project)-$(version).sha256
+
+.PHONY: sha256
+sha256: $(project)-$(version).sha256
+
+# NOTE: dependency backtrack may fail trying to sign missing tarballs otherwise
+#       (actually, only when signing tarballs directly, but doesn't hurt anyway)
+$(deliverables): tarballs
 
 $(project)-$(version).sha256:
-ifeq (,$(release))
-	@echo Building test release $(version), no sha256
+	# checksum anything from deliverables except for in-prep checksums file
+	sha256sum $(deliverables:$@=) | sort -k2 > $@
+
+
+.PHONY: sign
+ifeq (,$(gpgsignkey))
+sign: tarballs
+	@echo No GPG signing key defined
 else
-	sha256sum $(project)-$(version)*tar* | sort -k2 > $@
+sign: $(project)-$(version).sha256.asc  # "$(deliverables:=.asc)" to sign all
 endif
 
-sign: sha256 $(project)-$(version).sha256.asc
-
-$(project)-$(version).sha256.asc: $(project)-$(version).sha256
+# NOTE: cannot sign multiple files at once like this
+$(project)-$(version).%.asc: $(project)-$(version).%
 ifeq (,$(release))
 	@echo Building test release $(version), no sign
 else
-	gpg --default-key $(gpgsignkey) \
+	gpg --default-key "$(gpgsignkey)" \
 		--detach-sign \
 		--armor \
 		$<
 endif
 
+
+.PHONY: publish
 publish:
 ifeq (,$(release))
 	@echo Building test release $(version), no publishing!
 else
-	git push --tags origin
-	scp $(project)-$(version).* \
-		fedorahosted.org:$(project)
-	@echo Hey you!.. yeah you looking somewhere else!
-	@echo remember to update the wiki and send the email to cluster-devel and linux-cluster
+	git push --follow-tags origin
+	@echo Hey you!  Yeah you, looking somewhere else!
+	@echo Remember to notify cluster-devel/RH and users/ClusterLabs MLs.
 endif
 
+
+.PHONY: clean
 clean:
-	rm -rf $(project)* tag-*
+	rm -rf $(project)* tag-* .tarball-version
