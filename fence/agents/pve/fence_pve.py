@@ -179,6 +179,12 @@ machines acting as nodes in a virtualized cluster."
 	if options["auth"] is None:
 		fail(EC_LOGIN_DENIED)
 
+	# Workaround for unsupported API call on some Proxmox hosts
+	outlets = get_outlet_list(None, options)        # Unsupported API-Call will result in value: None
+	if outlets is None:
+		result = fence_action(None, options, set_power_status, get_power_status, None)
+		sys.exit(result)
+
 	result = fence_action(None, options, set_power_status, get_power_status, get_outlet_list)
 
 	sys.exit(result)
