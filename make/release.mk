@@ -23,6 +23,10 @@ endif
 		echo This script needs to be executed from top level cluster git tree; \
 		exit 1; \
 	fi
+	@if [ -n "$$(git status --untracked-files=no --porcelain 2>/dev/null)" ]; then \
+		echo Stash or rollback the uncommitted changes in git first; \
+		exit 1; \
+	fi
 
 
 .PHONY: setup
