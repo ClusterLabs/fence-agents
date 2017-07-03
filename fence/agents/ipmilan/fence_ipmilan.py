@@ -178,7 +178,8 @@ def main():
 		all_opt["lanplus"]["default"] = "1"
 
 	all_opt["ipport"]["default"] = "623"
-	all_opt["method"]["help"] = "-m, --method=[method]          Method to fence (onoff|cycle) (Default: cycle)\n" \
+	if all_opt["method"]["default"] == "cycle":
+		all_opt["method"]["help"] = "-m, --method=[method]          Method to fence (onoff|cycle) (Default: cycle)\n" \
 				    "WARNING! This fence agent might report success before the node is powered off. " \
 				    "You should use -m/method onoff if your fence device works correctly with that option."
 
