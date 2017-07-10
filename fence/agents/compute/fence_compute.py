@@ -4,6 +4,7 @@ import sys
 import time
 import atexit
 import logging
+import inspect
 import requests.exceptions
 
 sys.path.append("@FENCEAGENTSLIBDIR@")
@@ -310,15 +311,46 @@ def create_nova_connection(options):
 
 	versions = [ "2.11", "2" ]
 	for version in versions:
-		nova = client.Client(version,
-				     options["--username"],
-				     options["--password"],
-				     options["--tenant-name"],
-				     options["--auth-url"],
-				     insecure=options["--insecure"],
-				     region_name=options["--region-name"],
-				     endpoint_type=options["--endpoint-type"],
-				     http_log_debug=options.has_key("--verbose"))
+                clientargs = inspect.getargspec(client.Client).varargs
+
+                # Some versions of Openstack prior to Ocata only
+                # supported positional arguments for username,
+                # password and tenant.
+                #
+                # Versions since Ocata only support named arguments.
+                #
+                # So we need to use introspection to figure out how to
+                # create a Nova client.
+                #
+                # Happy days
+                #
+                if clientargs:
+                        # OSP < 11
+                        # ArgSpec(args=['version', 'username', 'password', 'project_id', 'auth_url'],
+                        #         varargs=None,
+                        #         keywords='kwargs', defaults=(None, None, None, None))
+		        nova = client.Client(version,
+				             options["--username"],
+				             options["--password"],
+				             options["--tenant-name"],
+				             options["--auth-url"],
+				             insecure=options["--insecure"],
+				             region_name=options["--region-name"],
+				             endpoint_type=options["--endpoint-type"],
+				             http_log_debug=options.has_key("--verbose"))
+                else:
+                        # OSP >= 11
+                        # ArgSpec(args=['version'], varargs='args', keywords='kwargs', defaults=None)
+		        nova = client.Client(version,
+				             username=options["--username"],
+				             password=options["--password"],
+				             tenant_name=options["--tenant-name"],
+				             auth_url=options["--auth-url"],
+				             insecure=options["--insecure"],
+				             region_name=options["--region-name"],
+				             endpoint_type=options["--endpoint-type"],
+				             http_log_debug=options.has_key("--verbose"))
+
 		try:
 			nova.hypervisors.list()
 			return
