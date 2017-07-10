@@ -51,11 +51,11 @@ def get_list(conn, options):
 def send_cmd(options, cmd, post = False):
 	url = "http%s://%s:%s/v%s/%s" % ("s" if "--ssl" in options else "", options["--ip"], options["--ipport"], options["--api-version"], cmd)
 	conn = pycurl.Curl()
-	output_buffer = io.StringIO()
+	output_buffer = io.BytesIO()
 	if logging.getLogger().getEffectiveLevel() < logging.WARNING:
 		conn.setopt(pycurl.VERBOSE, True)
 	conn.setopt(pycurl.HTTPGET, 1)
-	conn.setopt(pycurl.URL, str(url))
+	conn.setopt(pycurl.URL, url.encode("ascii"))
 	if post:
 		conn.setopt(pycurl.POST, 1)
 		conn.setopt(pycurl.POSTFIELDSIZE, 0)
@@ -77,7 +77,7 @@ specify: --tlscert, --tlskey and --tlscacert")
 
 	try:
 		conn.perform()
-		result = output_buffer.getvalue()
+		result = output_buffer.getvalue().decode()
 		return_code = conn.getinfo(pycurl.RESPONSE_CODE)
 
 		logging.debug("RESULT [" + str(return_code) + \

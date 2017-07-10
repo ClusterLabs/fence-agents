@@ -28,6 +28,11 @@
 		<content type="string" default="60" />
 		<shortdesc lang="en">Timeout in seconds</shortdesc>
 	</parameter>
+	<parameter name="quiet" unique="0" required="0">
+		<getopt mixed="-q, --quiet" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Disable logging to stderr. Does not affect --verbose or --debug logging to syslog.</shortdesc>
+	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
 		<content type="boolean" />

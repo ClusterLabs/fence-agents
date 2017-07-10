@@ -445,13 +445,20 @@ all_opt = {
 	"on_target": {
 		"getopt" : "",
 		"help" : "",
-		"order" : 1}
+		"order" : 1},
+	"quiet": {
+		"getopt" : "q",
+		"longopt": "quiet",
+		"help" : "-q, --quiet                    Disable logging to stderr. Does not affect --verbose or --debug logging to syslog.",
+		"required" : "0",
+		"order" : 50}
 }
 
 # options which are added automatically if 'key' is encountered ("default" is always added)
 DEPENDENCY_OPT = {
 		"default" : ["help", "debug", "verbose", "version", "action", "agent", \
-			"power_timeout", "shell_timeout", "login_timeout", "power_wait", "retry_on", "delay"],
+			"power_timeout", "shell_timeout", "login_timeout", "power_wait", "retry_on", \
+			"delay", "quiet"],
 		"passwd" : ["passwd_script"],
 		"sudo" : ["sudo_path"],
 		"secure" : ["identity_file", "ssh_options", "ssh_path"],
@@ -544,7 +551,12 @@ def usage(avail_opt):
 
 def metadata(avail_opt, docs):
 	# avail_opt has to be unique, if there are duplicities then they should be removed
-	sorted_list = [(key, all_opt[key]) for key in list(set(avail_opt))]
+	sorted_list = [(key, all_opt[key]) for key in list(set(avail_opt)) if "longopt" in all_opt[key]]
+	# Find keys that are going to replace inconsistent names
+	mapping = dict([(opt["longopt"].replace("-", "_"), key) for (key, opt) in sorted_list if (key != opt["longopt"].replace("-", "_"))])
+	new_options = [(key, all_opt[mapping[key]]) for key in mapping]
+	sorted_list.extend(new_options)
+
 	sorted_list.sort(key=lambda x: (x[1]["order"], x[0]))
 
 	print("<?xml version=\"1.0\" ?>")
@@ -555,34 +567,43 @@ def metadata(avail_opt, docs):
 	print("<longdesc>" + docs["longdesc"] + "</longdesc>")
 	print("<vendor-url>" + docs["vendorurl"] + "</vendor-url>")
 	print("<parameters>")
-	for option, _ in sorted_list:
-		if "help" in all_opt[option] and len(all_opt[option]["help"]) > 0:
-			print("\t<parameter name=\"" + option + "\" unique=\"0\" required=\"" + all_opt[option]["required"] + "\">")
+	for (key, opt) in sorted_list:
+		info = ""
+		if key in all_opt:
+			if key != all_opt[key].get('longopt', key).replace("-", "_"):
+				info = "deprecated=\"1\""
+		else:
+			info = "obsoletes=\"%s\"" % (mapping.get(key))
+
+		if "help" in opt and len(opt["help"]) > 0:
+			if info != "":
+				info = " " + info
+			print("\t<parameter name=\"" + key + "\" unique=\"0\" required=\"" + opt["required"] + "\"" + info + ">")
 
 			default = ""
-			if "default" in all_opt[option]:
-				default = "default=\"" + _encode_html_entities(str(all_opt[option]["default"])) + "\" "
+			if "default" in opt:
+				default = "default=\"" + _encode_html_entities(str(opt["default"])) + "\" "
 
-			mixed = all_opt[option]["help"]
+			mixed = opt["help"]
 			## split it between option and help text
 			res = re.compile(r"^(.*?--\S+)\s+", re.IGNORECASE | re.S).search(mixed)
 			if None != res:
 				mixed = res.group(1)
 			mixed = _encode_html_entities(mixed)
 
-			if not "shortdesc" in all_opt[option]:
-				shortdesc = re.sub("\s\s+", " ", all_opt[option]["help"][31:])
+			if not "shortdesc" in opt:
+				shortdesc = re.sub("\s\s+", " ", opt["help"][31:])
 			else:
-				shortdesc = all_opt[option]["shortdesc"]
+				shortdesc = opt["shortdesc"]
 
 			print("\t\t<getopt mixed=\"" + mixed + "\" />")
-			if "choices" in all_opt[option]:
+			if "choices" in opt:
 				print("\t\t<content type=\"select\" "+default+" >")
-				for choice in all_opt[option]["choices"]:
+				for choice in opt["choices"]:
 					print("\t\t\t<option value=\"%s\" />" % (choice))
 				print("\t\t</content>")
-			elif all_opt[option]["getopt"].count(":") > 0:
-				t = all_opt[option].get("type", "string")
+			elif opt["getopt"].count(":") > 0:
+				t = opt.get("type", "string")
 				print("\t\t<content type=\"%s\" " % (t) +default+" />")
 			else:
 				print("\t\t<content type=\"boolean\" "+default+" />")
@@ -652,8 +673,9 @@ def check_input(device_opt, opt, other_conditions = False):
 
 	## add logging to syslog
 	logging.getLogger().addHandler(SyslogLibHandler())
-	## add logging to stderr
-	logging.getLogger().addHandler(logging.StreamHandler(sys.stderr))
+	if "--quiet" not in options:
+		## add logging to stderr
+		logging.getLogger().addHandler(logging.StreamHandler(sys.stderr))
 
 	(acceptable_actions, _) = _get_available_actions(device_opt)
 
@@ -672,7 +694,8 @@ def check_input(device_opt, opt, other_conditions = False):
 
 
 	if options["--action"] == "validate-all" and not other_conditions:
-		_validate_input(options, False)
+		if not _validate_input(options, False):
+			fail_usage("validate-all failed")
 		sys.exit(EC_OK)
 	else:
 		_validate_input(options, True)
@@ -911,17 +934,13 @@ def is_executable(path):
 			return True
 	return False
 
-def run_command(options, command, timeout=None, env=None):
+def run_command(options, command, timeout=None, env=None, log_command=None):
 	if timeout is None and "--power-timeout" in options:
 		timeout = options["--power-timeout"]
 	if timeout is not None:
 		timeout = float(timeout)
 
-	# For IPMI password occurs on command line, it should not be part of debug info
-	log_command = command
-	if "ipmitool" in log_command:
-		log_command = re.sub("-P (.+?) -p", "-P [set] -p", log_command)
-	logging.info("Executing: %s\n", log_command)
+	logging.info("Executing: %s\n", log_command or command)
 
 	try:
 		process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
@@ -1218,7 +1237,7 @@ def _validate_input(options, stop = True):
 		valid_input = False
 		fail_usage("Failed: You have to set login name", stop)
 
-	if device_opt.count("ipaddr") and "--ip" not in options and "--managed" not in options:
+	if device_opt.count("ipaddr") and "--ip" not in options and "--managed" not in options and "--target" not in options:
 		valid_input = False
 		fail_usage("Failed: You have to enter fence address", stop)
 
@@ -1293,13 +1312,20 @@ def _prepare_getopt_args(options):
 def _parse_input_stdin(avail_opt):
 	opt = {}
 	name = ""
+
+	mapping_longopt_names = dict([(all_opt[o].get("longopt"), o) for o in avail_opt])
+
 	for line in sys.stdin.readlines():
 		line = line.strip()
 		if (line.startswith("#")) or (len(line) == 0):
 			continue
 
 		(name, value) = (line + "=").split("=", 1)
+		name = name.replace("-", "_");
 		value = value[:-1]
+
+		if name in mapping_longopt_names:
+			name = mapping_longopt_names[name]
 
 		if avail_opt.count(name) == 0 and name in ["nodename"]:
 			continue

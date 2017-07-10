@@ -96,11 +96,11 @@ def get_ticket(options):
 def send_cmd(options, cmd, post=None):
 	url = options["url"] + cmd
 	conn = pycurl.Curl()
-	output_buffer = io.StringIO()
+	output_buffer = io.BytesIO()
 	if logging.getLogger().getEffectiveLevel() < logging.WARNING:
 		conn.setopt(pycurl.VERBOSE, True)
 	conn.setopt(pycurl.HTTPGET, 1)
-	conn.setopt(pycurl.URL, str(url))
+	conn.setopt(pycurl.URL, url.encode("ascii"))
 	if "auth" in options and options["auth"] is not None:
 		conn.setopt(pycurl.COOKIE, options["auth"]["ticket"])
 		conn.setopt(pycurl.HTTPHEADER, [options["auth"]["CSRF_token"]])
@@ -122,7 +122,7 @@ def send_cmd(options, cmd, post=None):
 
 	try:
 		conn.perform()
-		result = output_buffer.getvalue()
+		result = output_buffer.getvalue().decode()
 
 		logging.debug("RESULT [" + str(conn.getinfo(pycurl.RESPONSE_CODE)) + \
 			"]: " + result)
@@ -178,6 +178,12 @@ machines acting as nodes in a virtualized cluster."
 	options["auth"] = get_ticket(options)
 	if options["auth"] is None:
 		fail(EC_LOGIN_DENIED)
+
+	# Workaround for unsupported API call on some Proxmox hosts
+	outlets = get_outlet_list(None, options)        # Unsupported API-Call will result in value: None
+	if outlets is None:
+		result = fence_action(None, options, set_power_status, get_power_status, None)
+		sys.exit(result)
 
 	result = fence_action(None, options, set_power_status, get_power_status, get_outlet_list)
 

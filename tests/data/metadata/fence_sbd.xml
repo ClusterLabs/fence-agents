@@ -21,17 +21,32 @@
 		</content>
 		<shortdesc lang="en">Method to fence</shortdesc>
 	</parameter>
-	<parameter name="port" unique="0" required="1">
+	<parameter name="plug" unique="0" required="1" obsoletes="port">
 		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />
 		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
+	</parameter>
+	<parameter name="port" unique="0" required="1" deprecated="1">
+		<getopt mixed="-n, --plug=[id]" />
+		<content type="string"  />
+		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
+	</parameter>
+	<parameter name="quiet" unique="0" required="0">
+		<getopt mixed="-q, --quiet" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Disable logging to stderr. Does not affect --verbose or --debug logging to syslog.</shortdesc>
 	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
 		<content type="boolean"  />
 		<shortdesc lang="en">Verbose mode</shortdesc>
 	</parameter>
-	<parameter name="debug" unique="0" required="0">
+	<parameter name="debug" unique="0" required="0" deprecated="1">
+		<getopt mixed="-D, --debug-file=[debugfile]" />
+		<content type="string"  />
+		<shortdesc lang="en">Write debug information to given file</shortdesc>
+	</parameter>
+	<parameter name="debug_file" unique="0" required="0" obsoletes="debug">
 		<getopt mixed="-D, --debug-file=[debugfile]" />
 		<content type="string"  />
 		<shortdesc lang="en">Write debug information to given file</shortdesc>

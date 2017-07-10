@@ -130,11 +130,34 @@ if test "x$AGENTS_LIST" = x; then
 	AC_ERROR([No agents selected])
 fi
 
+FENCE_KDUMP=0
+if echo "$AGENTS_LIST" | grep -q -E "all|kdump"; then
+	FENCE_KDUMP=1
+	AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s/kdump( |$)//")
+fi
+
+FENCE_MANUAL=0
+if echo "$AGENTS_LIST" | grep -q -E "all|manual"; then
+	FENCE_MANUAL=1
+	AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s/manual( |$)//")
+fi
+
+FENCE_SCSI=0
+if echo "$AGENTS_LIST" | grep -q -E "all|scsi"; then
+	FENCE_SCSI=1
+fi
+
+FENCE_ZVM=0
+if echo "$AGENTS_LIST" | grep -q -E "all|zvm( |$)"; then
+	FENCE_ZVM=1
+fi
+
 if test "x$AGENTS_LIST" != xall; then
 	for j in $AGENTS_LIST; do
-		if ! test -d fence/agents/$j; then
+		if ! test -f fence/agents/$j/fence_$j*.py; then
 			AC_ERROR([Agent $j does not exists])
 		fi
+		AGENTS_LIST=`echo "$AGENTS_LIST" | sed -E -e "s#$j([^_/]|$)#$j/fence_$j\1#g" -e "s#zvm/fence_zvm( |$)#zvm/fence_zvmip\1#g"`
 	done
 fi
 
@@ -167,6 +190,7 @@ AC_PYTHON_MODULE(pywsman, 1)
 
 ## path to 3rd-party binaries
 AC_PATH_PROG([IPMITOOL_PATH], [ipmitool], [/usr/bin/ipmitool])
+AC_PATH_PROG([OPENSTACK_PATH], [openstack], [/usr/bin/openstack])
 AC_PATH_PROG([AMTTOOL_PATH], [amttool], [/usr/bin/amttool])
 AC_PATH_PROG([GNUTLSCLI_PATH], [gnutlscli], [/usr/bin/gnutls-cli])
 AC_PATH_PROG([COROSYNC_CMAPCTL_PATH], [corosync-cmapctl], [/usr/sbin/corosync-cmapctl])
@@ -207,9 +231,14 @@ AC_SUBST([CLUSTERDATA])
 AC_SUBST([FENCEAGENTSLIBDIR])
 AC_SUBST([SNMPBIN])
 AC_SUBST([AGENTS_LIST])
+AM_CONDITIONAL(BUILD_FENCE_KDUMP, test $FENCE_KDUMP -eq 1)
+AM_CONDITIONAL(BUILD_FENCE_MANUAL, test $FENCE_MANUAL -eq 1)
+AM_CONDITIONAL(BUILD_FENCE_SCSI, test $FENCE_SCSI -eq 1)
+AM_CONDITIONAL(BUILD_FENCE_ZVM, test $FENCE_ZVM -eq 1)
 AM_CONDITIONAL(BUILD_XENAPILIB, test $XENAPILIB -eq 1)
 
 AC_SUBST([IPMITOOL_PATH])
+AC_SUBST([OPENSTACK_PATH])
 AC_SUBST([AMTTOOL_PATH])
 AC_SUBST([COROSYNC_CMAPCTL_PATH])
 AC_SUBST([SG_PERSIST_PATH])
@@ -274,6 +303,7 @@ CPPFLAGS="-I\$(top_builddir)/make -I\$(top_srcdir)/make -I. $ENV_CPPFLAGS"
 LDFLAGS="$ENV_LDFLAGS"
 
 
+AM_EXTRA_RECURSIVE_TARGETS([xml-upload])
 AC_CONFIG_FILES([Makefile
 		 fence/Makefile
 		 fence/agents/Makefile

@@ -81,14 +81,28 @@ def send_command(opt, command, method="GET"):
 		url = "https:"
 	else:
 		url = "http:"
+	if opt.has_key("--api-path"):
+		api_path = opt["--api-path"]
+	else:
+		api_path = "/ovirt-engine/api"
+	if opt.has_key("--disable-http-filter"):
+		http_filter = 'false'
+	else:
+		http_filter = 'true'
 
-	url += "//" + opt["--ip"] + ":" + str(opt["--ipport"]) + "/api/" + command
+	url += "//" + opt["--ip"] + ":" + str(opt["--ipport"]) + api_path + "/" + command
 
 	## send command through pycurl
 	conn = pycurl.Curl()
-	web_buffer = io.StringIO()
-	conn.setopt(pycurl.URL, url)
-	conn.setopt(pycurl.HTTPHEADER, ["Content-type: application/xml", "Accept: application/xml", "Prefer: persistent-auth", "Filter: true"])
+	web_buffer = io.BytesIO()
+	conn.setopt(pycurl.URL, url.encode("ascii"))
+	conn.setopt(pycurl.HTTPHEADER, [
+		"Version: 3",
+		"Content-type: application/xml",
+		"Accept: application/xml",
+		"Prefer: persistent-auth",
+		"Filter: {}".format(http_filter),
+	])
 
 	if "cookie" in opt:
 		conn.setopt(pycurl.COOKIE, opt["cookie"])
@@ -121,7 +135,7 @@ def send_command(opt, command, method="GET"):
 
 		opt["cookie"] = cookie
 
-	result = web_buffer.getvalue()
+	result = web_buffer.getvalue().decode()
 
 	logging.debug("%s\n", command)
 	logging.debug("%s\n", result)
@@ -136,9 +150,36 @@ def define_new_opts():
 		"required" : "0",
 		"shortdesc" : "Reuse cookies for authentication",
 		"order" : 1}
+	all_opt["api_path"] = {
+		"getopt" : ":",
+		"longopt" : "api-path",
+		"help" : "--api-path=[path]              The path part of the API URL",
+		"default" : "/ovirt-engine/api",
+		"required" : "0",
+		"shortdesc" : "The path part of the API URL",
+		"order" : 2}
+	all_opt["disable_http_filter"] = {
+		"getopt" : "",
+		"longopt" : "disable-http-filter",
+		"help" : "--disable-http-filter          Set HTTP Filter header to false",
+		"required" : "0",
+		"shortdesc" : "Set HTTP Filter header to false",
+		"order" : 3}
+
 
 def main():
-	device_opt = ["ipaddr", "login", "passwd", "ssl", "notls", "web", "port", "use_cookies" ]
+	device_opt = [
+		"ipaddr",
+		"api_path",
+		"login",
+		"passwd",
+		"ssl",
+		"notls",
+		"web",
+		"port",
+		"use_cookies",
+		"disable_http_filter",
+	]
 
 	atexit.register(atexit_handler)
 	define_new_opts()

@@ -6,32 +6,54 @@ SRC				= $(TARGET:=.py)
 
 CLEAN_TARGET_ADDITIONAL		= kdump/fence_kdump_send manual/fence_ack_manual */*.o
 
-EXTRA_DIST			= $(SRC) manual/fence_ack_manual.in manual/fence_ack_manual.8 zvm/fence_zvm_man_page
+EXTRA_DIST			= $(SRC)
 
-sbin_SCRIPTS			= $(TARGET) manual/fence_ack_manual
+sbin_PROGRAMS			=
+sbin_SCRIPTS			= $(TARGET)
+libexec_PROGRAMS		=
+
+dist_man_MANS			=
+
+noinst_HEADERS			= kdump/list.h kdump/message.h kdump/options.h kdump/version.h zvm/fence_zvm.h
 
 EXTRA_SCRIPTS			=
 
 man_MANS			= $(sbin_SCRIPTS:=.8)
 
-sbin_PROGRAMS			= kdump/fence_kdump zvm/fence_zvm
-libexec_PROGRAMS		= kdump/fence_kdump_send
+if BUILD_FENCE_KDUMP
+sbin_PROGRAMS			+= kdump/fence_kdump
+libexec_PROGRAMS		+= kdump/fence_kdump_send
 
-noinst_HEADERS			= kdump/list.h kdump/message.h kdump/options.h kdump/version.h zvm/fence_zvm.h
+dist_man_MANS			+= kdump/fence_kdump.8 kdump/fence_kdump_send.8
 
 kdump_fence_kdump_SOURCES	= kdump/fence_kdump.c
 kdump_fence_kdump_CFLAGS	= -D_GNU_SOURCE -Ikdump
 
 kdump_fence_kdump_send_SOURCES	= kdump/fence_kdump_send.c
 kdump_fence_kdump_send_CFLAGS	= -D_GNU_SOURCE -Ikdump
+endif
 
-dist_man_MANS			= kdump/fence_kdump.8 kdump/fence_kdump_send.8 zvm/fence_zvm.8
+if BUILD_FENCE_MANUAL
+EXTRA_DIST			+= manual/fence_ack_manual.in manual/fence_ack_manual.8
 
-scsidatadir			= $(CLUSTERDATA)
-scsidata_SCRIPTS		= scsi/fence_scsi_check scsi/fence_scsi_check_hardreboot
+sbin_SCRIPTS			+= manual/fence_ack_manual
+endif
+
+if BUILD_FENCE_ZVM
+EXTRA_DIST			+= zvm/fence_zvm_man_page
+
+sbin_PROGRAMS			+= zvm/fence_zvm
+
+dist_man_MANS			+= zvm/fence_zvm.8
 
 zvm_fence_zvm_SOURCES		= zvm/fence_zvm.c
 zvm_fence_zvm_CFLAGS		= -D_GNU_SOURCE -Izvm
+endif
+
+if BUILD_FENCE_SCSI
+scsidatadir			= $(CLUSTERDATA)
+scsidata_SCRIPTS		= scsi/fence_scsi_check scsi/fence_scsi_check_hardreboot
+endif
 
 FENCE_TEST_ARGS			= \
 login=test\n\

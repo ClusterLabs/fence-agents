@@ -19,7 +19,8 @@
 			<attribute name="name" />
 			<attribute name="unique"> <ref name="boolean-values" /> </attribute>
 			<attribute name="required"> <ref name="boolean-values" />  </attribute>
-
+			<optional><attribute name="deprecated"> <ref name="boolean-values" /></attribute></optional>
+			<optional><attribute name="obsoletes" /> </optional>
 			<element name="getopt">
 				<attribute name="mixed" />
 			</element>

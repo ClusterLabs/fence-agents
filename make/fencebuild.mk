@@ -11,6 +11,7 @@ define gen_agent_from_py
 		-e 's#@''SBINDIR@#${sbindir}#g' \
 		-e 's#@''LIBEXECDIR@#${libexecdir}#g' \
 		-e 's#@''IPMITOOL_PATH@#${IPMITOOL_PATH}#g' \
+		-e 's#@''OPENSTACK_PATH@#${OPENSTACK_PATH}#g' \
 		-e 's#@''AMTTOOL_PATH@#${AMTTOOL_PATH}#g' \
 		-e 's#@''GNUTLSCLI_PATH@#${GNUTLSCLI_PATH}#g' \
 		-e 's#@''COROSYNC_CMAPCTL_PATH@#${COROSYNC_CMAPCTL_PATH}#g' \
@@ -32,7 +33,7 @@ define gen_agent_from_py
 	> $@
 
 	if [ 0 -eq `echo "$(@)" | grep fence_ &> /dev/null; echo $$?` ]; then \
-		PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib $(top_srcdir)/fence/agents/lib/check_used_options.py $@; \
+		PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib $(PYTHON) $(top_srcdir)/fence/agents/lib/check_used_options.py $@; \
 	else true ; fi
 
 	for x in `PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib $(PYTHON) $(@) -o metadata | grep symlink | sed -e "s/.*\(fence.*\)\" .*/\1/g"`; do \

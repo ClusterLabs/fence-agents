@@ -3,13 +3,13 @@
 import sys, re, pexpect
 import logging
 import atexit
-sys.path.append("/usr/share/fence")
+sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay
 
 #BEGIN_VERSION_GENERATION
-RELEASE_VERSION="4.0.24.6-7e576"
-BUILD_DATE="(built Thu Nov 3 15:43:03 STD 2016)"
+RELEASE_VERSION=""
+BUILD_DATE=""
 REDHAT_COPYRIGHT="Copyright (C) Red Hat, Inc. 2004-2010 All rights reserved."
 #END_VERSION_GENERATION
 
@@ -60,25 +60,25 @@ def set_power_status(compute_client, options):
 
 def define_new_opts():
     all_opt["resourceGroup"] = {
-        "getopt" : "rg:",
+        "getopt" : ":",
         "longopt" : "resourceGroup",
-        "help" : "-rg, --resourceGroup=[name]       Name of the resource group",
+        "help" : "--resourceGroup=[name]       Name of the resource group",
         "shortdesc" : "Name of resource group.",
         "required" : "1",
         "order" : 2
     }
     all_opt["tenantId"] = {
-        "getopt" : "tid:",
+        "getopt" : ":",
         "longopt" : "tenantId",
-        "help" : "-tid, --tenantId=[name]       Id of the Azure Active Directory tenant",
+        "help" : "--tenantId=[name]       Id of the Azure Active Directory tenant",
         "shortdesc" : "Id of Azure Active Directory tenant.",
         "required" : "1",
         "order" : 3
     }
     all_opt["subscriptionId"] = {
-        "getopt" : "sid:",
+        "getopt" : ":",
         "longopt" : "subscriptionId",
-        "help" : "-sid, --subscriptionId=[name]       Id of the Azure subscription",
+        "help" : "--subscriptionId=[name]       Id of the Azure subscription",
         "shortdesc" : "Id of the Azure subscription.",
         "required" : "1",
         "order" : 4

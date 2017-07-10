@@ -18,7 +18,12 @@
 		<content type="boolean"  />
 		<shortdesc lang="en">Forces agent to use IPv6 addresses only</shortdesc>
 	</parameter>
-	<parameter name="ipaddr" unique="0" required="1">
+	<parameter name="ip" unique="0" required="1" obsoletes="ipaddr">
+		<getopt mixed="-a, --ip=[ip]" />
+		<content type="string"  />
+		<shortdesc lang="en">IP Address or Hostname of a node within the Proxmox cluster.</shortdesc>
+	</parameter>
+	<parameter name="ipaddr" unique="0" required="1" deprecated="1">
 		<getopt mixed="-a, --ip=[ip]" />
 		<content type="string"  />
 		<shortdesc lang="en">IP Address or Hostname of a node within the Proxmox cluster.</shortdesc>
@@ -28,37 +33,72 @@
 		<content type="integer" default="8006"  />
 		<shortdesc lang="en">TCP/UDP port to use for connection with device</shortdesc>
 	</parameter>
-	<parameter name="login" unique="0" required="1">
+	<parameter name="login" unique="0" required="1" deprecated="1">
 		<getopt mixed="-l, --username=[name]" />
 		<content type="string" default="root@pam"  />
 		<shortdesc lang="en">Login name</shortdesc>
 	</parameter>
-	<parameter name="passwd" unique="0" required="0">
+	<parameter name="passwd" unique="0" required="0" deprecated="1">
 		<getopt mixed="-p, --password=[password]" />
 		<content type="string"  />
 		<shortdesc lang="en">Login password or passphrase</shortdesc>
 	</parameter>
-	<parameter name="passwd_script" unique="0" required="0">
+	<parameter name="passwd_script" unique="0" required="0" deprecated="1">
 		<getopt mixed="-S, --password-script=[script]" />
 		<content type="string"  />
 		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
 	</parameter>
-	<parameter name="port" unique="0" required="1">
+	<parameter name="password" unique="0" required="0" obsoletes="passwd">
+		<getopt mixed="-p, --password=[password]" />
+		<content type="string"  />
+		<shortdesc lang="en">Login password or passphrase</shortdesc>
+	</parameter>
+	<parameter name="password_script" unique="0" required="0" obsoletes="passwd_script">
+		<getopt mixed="-S, --password-script=[script]" />
+		<content type="string"  />
+		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
+	</parameter>
+	<parameter name="plug" unique="0" required="1" obsoletes="port">
 		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />
 		<shortdesc lang="en">Id of the virtual machine.</shortdesc>
 	</parameter>
-	<parameter name="node_name" unique="0" required="0">
+	<parameter name="port" unique="0" required="1" deprecated="1">
+		<getopt mixed="-n, --plug=[id]" />
+		<content type="string"  />
+		<shortdesc lang="en">Id of the virtual machine.</shortdesc>
+	</parameter>
+	<parameter name="username" unique="0" required="1" obsoletes="login">
+		<getopt mixed="-l, --username=[name]" />
+		<content type="string" default="root@pam"  />
+		<shortdesc lang="en">Login name</shortdesc>
+	</parameter>
+	<parameter name="node_name" unique="0" required="0" deprecated="1">
 		<getopt mixed="-N, --nodename" />
 		<content type="string"  />
 		<shortdesc lang="en">Node on which machine is located. (Optional, will be automatically determined)</shortdesc>
+	</parameter>
+	<parameter name="nodename" unique="0" required="0" obsoletes="node_name">
+		<getopt mixed="-N, --nodename" />
+		<content type="string"  />
+		<shortdesc lang="en">Node on which machine is located. (Optional, will be automatically determined)</shortdesc>
+	</parameter>
+	<parameter name="quiet" unique="0" required="0">
+		<getopt mixed="-q, --quiet" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Disable logging to stderr. Does not affect --verbose or --debug logging to syslog.</shortdesc>
 	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
 		<content type="boolean"  />
 		<shortdesc lang="en">Verbose mode</shortdesc>
 	</parameter>
-	<parameter name="debug" unique="0" required="0">
+	<parameter name="debug" unique="0" required="0" deprecated="1">
+		<getopt mixed="-D, --debug-file=[debugfile]" />
+		<content type="string"  />
+		<shortdesc lang="en">Write debug information to given file</shortdesc>
+	</parameter>
+	<parameter name="debug_file" unique="0" required="0" obsoletes="debug">
 		<getopt mixed="-D, --debug-file=[debugfile]" />
 		<content type="string"  />
 		<shortdesc lang="en">Write debug information to given file</shortdesc>
