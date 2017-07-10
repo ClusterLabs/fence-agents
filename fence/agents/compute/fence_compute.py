@@ -18,172 +18,94 @@ REDHAT_COPYRIGHT="Copyright (C) Red Hat, Inc. 2004-2010 All rights reserved."
 #END_VERSION_GENERATION
 
 override_status = ""
-nova = None
 
 EVACUABLE_TAG = "evacuable"
 TRUE_TAGS = ['true']
 
-def get_power_status(_, options):
-	global override_status
-
-	status = "unknown"
-	logging.debug("get action: " + options["--action"])
+def get_power_status(connection, options):
 
 	if len(override_status):
 		logging.debug("Pretending we're " + override_status)
 		return override_status
 
-	if nova:
+	status = "unknown"
+	logging.debug("get action: " + options["--action"])
+
+	if connection:
 		try:
-			services = nova.services.list(host=options["--plug"], binary="nova-compute")
+			services = connection.services.list(host=options["--plug"], binary="nova-compute")
 			for service in services:
-				logging.debug("Status of %s is %s" % (service.binary, service.state))
-				if service.state == "up":
-					status = "on"
+				logging.debug("Status of %s is %s, %s" % (service.binary, service.state, service.status))
+				if service.state == "up" and service.status == "enabled":
+					# Up and operational
+					status = "up"
+					
+				elif service.state == "down" and service.status == "disabled":
+					# Down and fenced
+					status = "down"
+
 				elif service.state == "down":
-					status = "off"
+					# Down and requires fencing
+					status = "failed"
+
+				elif service.state == "up":
+					# Up and requires unfencing
+					status = "running"
 				else:
-					logging.debug("Unknown status detected from nova: " + service.state)
+					logging.warning("Unknown status detected from nova for %s: %s, %s" % (options["--plug"], service.state, service.status))
+					status = "%s %s" % (service.state, service.status)
 				break
 		except requests.exception.ConnectionError as err:
 			logging.warning("Nova connection failed: " + str(err))
 	return status
 
-# NOTE(sbauza); We mimic the host-evacuate module since it's only a contrib
-# module which is not stable
-def _server_evacuate(server, on_shared_storage):
-	success = False
-	error_message = ""
-	try:
-		logging.debug("Resurrecting instance: %s" % server)
-		(response, dictionary) = nova.servers.evacuate(server=server, on_shared_storage=on_shared_storage)
-
-		if response == None:
-			error_message = "No response while evacuating instance"
-		elif response.status_code == 200:
-			success = True
-			error_message = response.reason
-		else:
-			error_message = response.reason
-
-	except Exception as e:
-		error_message = "Error while evacuating instance: %s" % e
-
-	return {
-		"uuid": server,
-		"accepted": success,
-		"reason": error_message,
-		}
-
-def _is_server_evacuable(server, evac_flavors, evac_images):
-	if server.flavor.get('id') in evac_flavors:
-		return True
-	if server.image.get('id') in evac_images:
-		return True
-	logging.debug("Instance %s is not evacuable" % server.image.get('id'))
-	return False
-
-def _get_evacuable_flavors():
-	result = []
-	flavors = nova.flavors.list()
-	# Since the detailed view for all flavors doesn't provide the extra specs,
-	# we need to call each of the flavor to get them.
-	for flavor in flavors:
-		tag = flavor.get_keys().get(EVACUABLE_TAG)
-		if tag and tag.strip().lower() in TRUE_TAGS:
-			result.append(flavor.id)
-	return result
-
-def _get_evacuable_images():
-	result = []
-	images = nova.images.list(detailed=True)
-	for image in images:
-		if hasattr(image, 'metadata'):
-			tag = image.metadata.get(EVACUABLE_TAG)
-			if tag and tag.strip().lower() in TRUE_TAGS:
-				result.append(image.id)
-	return result
-
-def _host_evacuate(options):
-	result = True
-	images = _get_evacuable_images()
-	flavors = _get_evacuable_flavors()
-	servers = nova.servers.list(search_opts={'host': options["--plug"], 'all_tenants': 1 })
-
-	if options["--instance-filtering"] == "False":
-		logging.debug("Not evacuating anything")
-		evacuables = []
-	elif len(flavors) or len(images):
-		logging.debug("Filtering images and flavors: %s %s" % (repr(flavors), repr(images)))
-		# Identify all evacuable servers
-		logging.debug("Checking %s" % repr(servers))
-		evacuables = [server for server in servers
-				if _is_server_evacuable(server, flavors, images)]
-		logging.debug("Evacuating %s" % repr(evacuables))
-	else:
-		logging.debug("Evacuating all images and flavors")
-		evacuables = servers
-
-	if options["--no-shared-storage"] != "False":
-		on_shared_storage = False
-	else:
-		on_shared_storage = True
-
-	for server in evacuables:
-		logging.debug("Processing %s" % server)
-		if hasattr(server, 'id'):
-			response = _server_evacuate(server.id, on_shared_storage)
-			if response["accepted"]:
-				logging.debug("Evacuated %s from %s: %s" %
-					      (response["uuid"], options["--plug"], response["reason"]))
-			else:
-				logging.error("Evacuation of %s on %s failed: %s" %
-					      (response["uuid"], options["--plug"], response["reason"]))
-				result = False
-		else:
-			logging.error("Could not evacuate instance: %s" % server.to_dict())
-			# Should a malformed instance result in a failed evacuation?
-			# result = False
-	return result
-
 def set_attrd_status(host, status, options):
 	logging.debug("Setting fencing status for %s to %s" % (host, status))
 	run_command(options, "attrd_updater -p -n evacuate -Q -N %s -U %s" % (host, status))
 
-def set_power_status(_, options):
-	global override_status
+def get_attrd_status(host, options):
+	(status, pipe_stdout, pipe_stderr) = run_command(options, "attrd_updater -p -n evacuate -Q -N %s" % (host))
+	return pipe_stdout
 
-	override_status = ""
-	logging.debug("set action: " + options["--action"])
+def set_power_status_on(connection, options):
+	status = get_power_status(connection, options)
+	if status in [ "down", "running" ]:
+		# Wait for any evacuations to complete
+		out = ""
+		while out != "no":
+			if len(out) > 0:
+				time.sleep(2)
+			logging.info("Waiting for %s to complete evacuations: %s" % (options["--plug"], out))
+			out = get_attrd_status(options["--plug"], options)
 
-	if not nova:
-		return
+		# Forcing the service back up in case it was disabled
+		connection.services.enable(options["--plug"], 'nova-compute')
+		try:
+			# Forcing the host back up
+			connection.services.force_down(
+				options["--plug"], "nova-compute", force_down=False)
+		except Exception as e:
+			# In theory, if force_down=False fails, that's for the exact
+			# same possible reasons that below with force_down=True
+			# eg. either an incompatible version or an old client.
+			# Since it's about forcing back to a default value, there is
+			# no real worries to just consider it's still okay even if the
+			# command failed
+			logging.info("Exception from attempt to force "
+				      "host back up via nova API: "
+				      "%s: %s" % (e.__class__.__name__, e))
 
-	if options["--action"] == "on":
-		if get_power_status(_, options) != "on":
-			# Forcing the service back up in case it was disabled
-			nova.services.enable(options["--plug"], 'nova-compute')
-			try:
-				# Forcing the host back up
-				nova.services.force_down(
-					options["--plug"], "nova-compute", force_down=False)
-			except Exception as e:
-				# In theory, if force_down=False fails, that's for the exact
-				# same possible reasons that below with force_down=True
-				# eg. either an incompatible version or an old client.
-				# Since it's about forcing back to a default value, there is
-				# no real worries to just consider it's still okay even if the
-				# command failed
-				logging.info("Exception from attempt to force "
-					      "host back up via nova API: "
-					      "%s: %s" % (e.__class__.__name__, e))
-		else:
-			# Pretend we're 'on' so that the fencing library doesn't loop forever waiting for the node to boot
-			override_status = "on"
-		return
+		# Pretend we're 'on' so that the fencing library doesn't loop forever waiting for the node to boot
+		override_status = "on"
+	elif status in ["on"]:
+		# Nothing to do
+	else:
+		# Not safe to unfence, don't waste time looping to see if the status changes to "on"
+		options["--power-timeout"] = "0"
 
+def set_power_status_off(connection, options):
 	try:
-		nova.services.force_down(
+		connection.services.force_down(
 			options["--plug"], "nova-compute", force_down=True)
 	except Exception as e:
 		# Something went wrong when we tried to force the host down.
@@ -197,7 +119,7 @@ def set_power_status(_, options):
 			      "%s: %s" % (e.__class__.__name__, e))
 		# need to wait for nova to update its internal status or we
 		# cannot call host-evacuate
-		while get_power_status(_, options) != "off":
+		while get_power_status(connection, options) != "off":
 			# Loop forever if need be.
 			#
 			# Some callers (such as Pacemaker) will have a timer
@@ -205,20 +127,30 @@ def set_power_status(_, options):
 			logging.debug("Waiting for nova to update its internal state for %s" % options["--plug"])
 			time.sleep(1)
 
-	if not _host_evacuate(options):
-		sys.exit(1)
+	set_attrd_status(options["--plug"], "yes", options)
 
-	return
+def set_power_status(connection, options):
+	global override_status
 
+	override_status = ""
+	logging.debug("set action: " + options["--action"])
 
-def fix_domain(options):
+	if not nova:
+		return
+
+	if options["--action"] in ["off", "reboot"]:
+		set_power_status_off(connection, options)
+	else:
+		set_power_status_on(connection, options)
+
+def fix_domain(connection, options):
 	domains = {}
 	last_domain = None
 
 	if nova:
 		# Find it in nova
 
-		services = nova.services.list(binary="nova-compute")
+		services = connection.services.list(binary="nova-compute")
 		for service in services:
 			shorthost = service.host.split('.')[0]
 
@@ -261,14 +193,14 @@ def fix_domain(options):
 
 	return last_domain
 
-def fix_plug_name(options):
+def fix_plug_name(connection, options):
 	if options["--action"] == "list":
 		return
 
 	if "--plug" not in options:
 		return
 
-	calculated = fix_domain(options)
+	calculated = fix_domain(connection, options)
 	if calculated is None or "--domain" not in options:
 		# Nothing supplied and nova not available... what to do... nothing
 		return
@@ -288,11 +220,11 @@ def fix_plug_name(options):
 		# Add the domain to the plug
 		options["--plug"] = short_plug + "." + options["--domain"]
 
-def get_plugs_list(_, options):
+def get_plugs_list(connection, options):
 	result = {}
 
 	if nova:
-		services = nova.services.list(binary="nova-compute")
+		services = connection.services.list(binary="nova-compute")
 		for service in services:
 			longhost = service.host
 			shorthost = longhost.split('.')[0]
@@ -301,7 +233,7 @@ def get_plugs_list(_, options):
 	return result
 
 def create_nova_connection(options):
-	global nova
+	nova = None
 
 	try:
 		from novaclient import client
@@ -311,49 +243,49 @@ def create_nova_connection(options):
 
 	versions = [ "2.11", "2" ]
 	for version in versions:
-                clientargs = inspect.getargspec(client.Client).varargs
+		clientargs = inspect.getargspec(client.Client).varargs
 
-                # Some versions of Openstack prior to Ocata only
-                # supported positional arguments for username,
-                # password and tenant.
-                #
-                # Versions since Ocata only support named arguments.
-                #
-                # So we need to use introspection to figure out how to
-                # create a Nova client.
-                #
-                # Happy days
-                #
-                if clientargs:
-                        # OSP < 11
-                        # ArgSpec(args=['version', 'username', 'password', 'project_id', 'auth_url'],
-                        #         varargs=None,
-                        #         keywords='kwargs', defaults=(None, None, None, None))
-		        nova = client.Client(version,
-				             options["--username"],
-				             options["--password"],
-				             options["--tenant-name"],
-				             options["--auth-url"],
-				             insecure=options["--insecure"],
-				             region_name=options["--region-name"],
-				             endpoint_type=options["--endpoint-type"],
-				             http_log_debug=options.has_key("--verbose"))
-                else:
-                        # OSP >= 11
-                        # ArgSpec(args=['version'], varargs='args', keywords='kwargs', defaults=None)
-		        nova = client.Client(version,
-				             username=options["--username"],
-				             password=options["--password"],
-				             tenant_name=options["--tenant-name"],
-				             auth_url=options["--auth-url"],
-				             insecure=options["--insecure"],
-				             region_name=options["--region-name"],
-				             endpoint_type=options["--endpoint-type"],
-				             http_log_debug=options.has_key("--verbose"))
+		# Some versions of Openstack prior to Ocata only
+		# supported positional arguments for username,
+		# password and tenant.
+		#
+		# Versions since Ocata only support named arguments.
+		#
+		# So we need to use introspection to figure out how to
+		# create a Nova client.
+		#
+		# Happy days
+		#
+		if clientargs:
+			# OSP < 11
+			# ArgSpec(args=['version', 'username', 'password', 'project_id', 'auth_url'],
+			#	 varargs=None,
+			#	 keywords='kwargs', defaults=(None, None, None, None))
+			nova = client.Client(version,
+					     options["--username"],
+					     options["--password"],
+					     options["--tenant-name"],
+					     options["--auth-url"],
+					     insecure=options["--insecure"],
+					     region_name=options["--region-name"],
+					     endpoint_type=options["--endpoint-type"],
+					     http_log_debug=options.has_key("--verbose"))
+		else:
+			# OSP >= 11
+			# ArgSpec(args=['version'], varargs='args', keywords='kwargs', defaults=None)
+			nova = client.Client(version,
+					     username=options["--username"],
+					     password=options["--password"],
+					     tenant_name=options["--tenant-name"],
+					     auth_url=options["--auth-url"],
+					     insecure=options["--insecure"],
+					     region_name=options["--region-name"],
+					     endpoint_type=options["--endpoint-type"],
+					     http_log_debug=options.has_key("--verbose"))
 
 		try:
 			nova.hypervisors.list()
-			return
+			return nova
 
 		except NotAcceptable as e:
 			logging.warning(e)
@@ -362,6 +294,7 @@ def create_nova_connection(options):
 			logging.warning("Nova connection failed. %s: %s" % (e.__class__.__name__, e))
 
 	logging.warning("Couldn't obtain a supported connection to nova, tried: %s\n" % repr(versions))
+        return None
 
 def define_new_opts():
 	all_opt["endpoint-type"] = {
@@ -469,30 +402,13 @@ def main():
 
 	run_delay(options)
 
-	create_nova_connection(options)
+	connection = create_nova_connection(options)
+	fix_plug_name(connection, options)
 
-	fix_plug_name(options)
-	if options["--record-only"] in [ "1", "True", "true", "Yes", "yes"]:
-		if options["--action"] == "on":
-			set_attrd_status(options["--plug"], "no", options)
-			sys.exit(0)
+	if options["--action"] in ["monitor", "status"]:
+		sys.exit(0)
 
-		elif options["--action"] in ["off", "reboot"]:
-			set_attrd_status(options["--plug"], "yes", options)
-			sys.exit(0)
-
-		elif options["--action"] in ["monitor", "status"]:
-			sys.exit(0)
-
-	if options["--action"] in ["off", "reboot"]:
-		# Pretend we're 'on' so that the fencing library will always call set_power_status(off)
-		override_status = "on"
-
-	if options["--action"] == "on":
-		# Pretend we're 'off' so that the fencing library will always call set_power_status(on)
-		override_status = "off"
-
-	result = fence_action(None, options, set_power_status, get_power_status, get_plugs_list, None)
+	result = fence_action(connection, options, set_power_status, get_power_status, get_plugs_list, None)
 	sys.exit(result)
 
 if __name__ == "__main__":
