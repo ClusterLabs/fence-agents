@@ -14,7 +14,6 @@ import __main__
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION = "New fence lib agent - test release on steroids"
 REDHAT_COPYRIGHT = ""
-BUILD_DATE = "March, 2008"
 #END_VERSION_GENERATION
 
 __all__ = ['atexit_handler', 'check_input', 'process_input', 'all_opt', 'show_docs',
@@ -781,7 +780,7 @@ def show_docs(options, docs=None):
 		sys.exit(0)
 
 	if "--version" in options:
-		print(__main__.RELEASE_VERSION, __main__.BUILD_DATE)
+		print(__main__.RELEASE_VERSION)
 		print(__main__.REDHAT_COPYRIGHT)
 		sys.exit(0)
 
