@@ -7,12 +7,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail_usage, is_executable, run_command, run_delay
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION=""
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 def get_power_status(_, options):
 	output = _run_command(options, "status")
 	match = re.search('[Cc]hassis [Pp]ower is [\\s]*([a-zA-Z]{2,3})', str(output))

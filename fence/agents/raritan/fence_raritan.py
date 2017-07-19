@@ -6,12 +6,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fspawn, fail, EC_LOGIN_DENIED, run_delay
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION=""
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 # --plug should include path to the outlet # such as port 1:
 # /system1/outlet1
 

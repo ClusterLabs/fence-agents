@@ -10,12 +10,6 @@ from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay
 __all__ = ['FencingSnmp']
 
 ## do not add code here.
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION = ""
-REDHAT_COPYRIGHT = ""
-BUILD_DATE = ""
-#END_VERSION_GENERATION
-
 class FencingSnmp:
 	def __init__(self, options):
 		self.options = options

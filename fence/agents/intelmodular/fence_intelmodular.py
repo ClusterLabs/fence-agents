@@ -17,12 +17,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing_snmp import FencingSnmp
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION="Intel Modular SNMP fence agent"
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 ### CONSTANTS ###
 # From INTELCORPORATION-MULTI-FLEX-SERVER-BLADES-MIB.my that ships with
 # firmware updates

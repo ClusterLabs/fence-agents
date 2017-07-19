@@ -16,12 +16,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, fail_usage, EC_STATUS_HMC
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION=""
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 def get_power_status(conn, options):
 	if options["--hmc-version"] == "3":
 		conn.send("lssyscfg -r lpar -m " + options["--managed"] + " -n " + options["--plug"] + " -F name,state\n")

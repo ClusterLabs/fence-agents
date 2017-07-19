@@ -15,12 +15,6 @@ from fencing import *
 from fencing import fail_usage, array_to_dict
 from fencing_snmp import FencingSnmp
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION="IF:MIB SNMP fence agent"
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 ### CONSTANTS ###
 # IF-MIB trees for alias, status and port
 ALIASES_OID = ".1.3.6.1.2.1.31.1.1.1.18"

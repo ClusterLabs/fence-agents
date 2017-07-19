@@ -13,12 +13,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import fail_usage, run_command, atexit_handler, check_input, process_input, show_docs, fence_action, all_opt
 from fencing import run_delay
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION=""
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 STORE_PATH = "/var/run/cluster/fence_scsi"
 
 

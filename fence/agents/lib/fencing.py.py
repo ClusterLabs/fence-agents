@@ -10,12 +10,7 @@ import socket
 import textwrap
 import __main__
 
-## do not add code here.
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION = "New fence lib agent - test release on steroids"
-REDHAT_COPYRIGHT = ""
-BUILD_DATE = "March, 2008"
-#END_VERSION_GENERATION
+RELEASE_VERSION = "@RELEASE_VERSION@"
 
 __all__ = ['atexit_handler', 'check_input', 'process_input', 'all_opt', 'show_docs',
 		'fence_login', 'fence_action', 'fence_logout']
@@ -781,8 +776,7 @@ def show_docs(options, docs=None):
 		sys.exit(0)
 
 	if "--version" in options:
-		print(__main__.RELEASE_VERSION, __main__.BUILD_DATE)
-		print(__main__.REDHAT_COPYRIGHT)
+		print(RELEASE_VERSION)
 		sys.exit(0)
 
 def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_list=None, reboot_cycle_fn=None):

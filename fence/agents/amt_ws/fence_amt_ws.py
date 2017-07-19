@@ -27,13 +27,6 @@ from fencing import run_delay, fail_usage, fail, EC_STATUS
 import pywsman
 from xml.etree import ElementTree
 
-
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION="Fence agent for Intel AMT (WS)"
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 POWER_ON='2'
 POWER_OFF='8'
 POWER_CYCLE='10'
