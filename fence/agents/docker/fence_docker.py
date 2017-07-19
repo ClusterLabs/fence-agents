@@ -13,7 +13,6 @@ from fencing import fail_usage, all_opt, fence_action, atexit_handler, check_inp
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION = ""
 REDHAT_COPYRIGHT = ""
-BUILD_DATE = ""
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):

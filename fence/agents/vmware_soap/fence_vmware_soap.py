@@ -17,7 +17,6 @@ from fencing import run_delay
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New VMWare Agent - test release on steroids"
 REDHAT_COPYRIGHT=""
-BUILD_DATE="April, 2011"
 #END_VERSION_GENERATION
 
 options_global = None

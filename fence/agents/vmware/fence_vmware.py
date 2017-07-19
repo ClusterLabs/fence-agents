@@ -32,7 +32,6 @@ from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="VMware Agent using VI Perl API and/or VIX vmrun command"
 REDHAT_COPYRIGHT=""
-BUILD_DATE=""
 #END_VERSION_GENERATION
 
 ### CONSTANTS ####

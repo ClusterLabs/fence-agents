@@ -18,7 +18,6 @@ from fencing import fail, EC_TIMED_OUT, EC_GENERIC_ERROR
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New Sanbox2 Agent - test release on steroids"
 REDHAT_COPYRIGHT=""
-BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):

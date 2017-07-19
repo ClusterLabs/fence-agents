@@ -16,7 +16,6 @@ from fencing_snmp import FencingSnmp
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="Cisco MDS 9xxx SNMP fence agent"
 REDHAT_COPYRIGHT=""
-BUILD_DATE=""
 #END_VERSION_GENERATION
 
 ### CONSTANTS ###

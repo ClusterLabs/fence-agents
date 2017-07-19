@@ -13,7 +13,6 @@ from fencing import *
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="Sun Advanced Lights Out Manager (ALOM)"
 REDHAT_COPYRIGHT=""
-BUILD_DATE=""
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):

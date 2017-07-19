@@ -9,7 +9,6 @@ from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION=""
-BUILD_DATE=""
 REDHAT_COPYRIGHT="Copyright (C) Red Hat, Inc. 2004-2010 All rights reserved."
 #END_VERSION_GENERATION
 

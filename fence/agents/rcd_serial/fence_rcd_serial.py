@@ -27,7 +27,6 @@ from fencing import *
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="rcd_serial (serial reset) fence agent"
 REDHAT_COPYRIGHT=""
-BUILD_DATE="22 Jul 2015"
 #END_VERSION_GENERATION
 
 

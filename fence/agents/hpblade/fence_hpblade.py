@@ -16,7 +16,6 @@ from fencing import fail, EC_STATUS
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="4.0.11-HP"
-BUILD_DATE="(built Mon Mar 30 08:31:24 EDT 2015)"
 REDHAT_COPYRIGHT="Copyright (C) Red Hat, Inc. 2004-2010 All rights reserved."
 #END_VERSION_GENERATION
 

@@ -18,7 +18,6 @@ from fencing import fail_usage
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION = "VirtualBox fence agent"
 REDHAT_COPYRIGHT = ""
-BUILD_DATE = ""
 #END_VERSION_GENERATION
 
 def _invoke(conn, options, *cmd):
