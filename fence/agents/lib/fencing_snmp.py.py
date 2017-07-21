@@ -97,7 +97,7 @@ class FencingSnmp:
 
 			logging.debug("%s\n", res_output)
 
-			if (res_code != 0) or (re.search("^Error ", res_output, re.MULTILINE) != None):
+			if (res_code != 0) or (re.search("^Error ", res_output.decode('utf-8'), re.MULTILINE) != None):
 				fail_usage("Returned %d: %s"% (res_code, res_output))
 		except pexpect.ExceptionPexpect:
 			fail_usage("Cannot run command %s"%(command))
@@ -131,4 +131,4 @@ class FencingSnmp:
 
 		output = self.run_command(cmd, additional_timemout).splitlines()
 
-		return [x.split(None, 1) for x in output if x.startswith(".")]
+		return [x.split(None, 1) for x in output if x.startswith(b".")]

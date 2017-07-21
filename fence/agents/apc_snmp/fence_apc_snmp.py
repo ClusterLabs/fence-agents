@@ -113,10 +113,10 @@ def apc_set_device(conn):
 	# First resolve type of APC
 	apc_type = conn.walk(OID_SYS_OBJECT_ID)
 
-	if not ((len(apc_type) == 1) and (apc_type[0][1] in agents_dir)):
+	if not ((len(apc_type) == 1) and (apc_type[0][1].decode('utf-8') in agents_dir)):
 		apc_type = [[None, None]]
 
-	device = agents_dir[apc_type[0][1]]
+	device = agents_dir[apc_type[0][1].decode('utf-8')]
 
 	logging.debug("Trying %s"%(device.ident_str))
 
@@ -136,8 +136,8 @@ def apc_resolv_port_id(conn, options):
 		table = conn.walk(device.outlet_table_oid, 30)
 
 		for x in table:
-			if x[1].strip('"') == options["--plug"]:
-				t = x[0].split('.')
+			if x[1].strip(b'"') == options["--plug"]:
+				t = x[0].split(b'.')
 				if device.has_switches:
 					port_id = int(t[len(t)-1])
 					switch_id = int(t[len(t)-3])
@@ -154,7 +154,7 @@ def get_power_status(conn, options):
 	oid = ((device.has_switches) and device.status_oid%(switch_id, port_id) or device.status_oid%(port_id))
 
 	(oid, status) = conn.get(oid)
-	return status == str(device.state_on) and "on" or "off"
+	return status.decode('utf-8') == str(device.state_on) and "on" or "off"
 
 def set_power_status(conn, options):
 	if port_id == None:
@@ -174,11 +174,11 @@ def get_outlets_status(conn, options):
 	res_ports = conn.walk(device.outlet_table_oid, 30)
 
 	for x in res_ports:
-		t = x[0].split('.')
+		t = x[0].split(b'.')
 
 		port_num = ((device.has_switches) and "%s:%s"%(t[len(t)-3], t[len(t)-1]) or "%s"%(t[len(t)-1]))
 
-		port_name = x[1].strip('"')
+		port_name = x[1].strip(b'"')
 		port_status = ""
 		result[port_num] = (port_name, port_status)
 
