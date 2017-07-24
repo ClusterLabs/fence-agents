@@ -182,7 +182,16 @@ def get_cluster_id(options):
 	cmd = options["--corosync-cmap-path"] + " totem.cluster_name"
 
 	match = re.search(r"\(str\) = (\S+)\n", run_cmd(options, cmd)["out"])
-	return hashlib.md5(match.group(1)).hexdigest() if match else fail_usage("Failed: cannot get cluster name")
+
+	if not match:
+		fail_usage("Failed: cannot get cluster name")
+
+	try:
+		return hashlib.md5(match.group(1)).hexdigest()
+	except ValueError:
+		# FIPS requires usedforsecurity=False and might not be
+		# available on all distros: https://bugs.python.org/issue9216
+		return hashlib.md5(match.group(1), usedforsecurity=False).hexdigest()
 
 
 def get_node_id(options):
