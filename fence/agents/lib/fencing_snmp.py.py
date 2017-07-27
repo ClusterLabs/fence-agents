@@ -83,14 +83,14 @@ class FencingSnmp:
 				"--ipport" in self.options and self.quote_for_run(":" + str(self.options["--ipport"])) or "")
 		return cmd
 
-	def run_command(self, command, additional_timemout=0):
+	def run_command(self, command, additional_timeout=0):
 		try:
 			logging.debug("%s\n", command)
 
 			(res_output, res_code) = pexpect.run(command,
 					int(self.options["--shell-timeout"]) +
 					int(self.options["--login-timeout"]) +
-					additional_timemout, True)
+					additional_timeout, True)
 
 			if res_code == None:
 				fail(EC_TIMED_OUT)
@@ -104,14 +104,14 @@ class FencingSnmp:
 
 		return res_output
 
-	def get(self, oid, additional_timemout=0):
+	def get(self, oid, additional_timeout=0):
 		cmd = "%s '%s'"% (self.prepare_cmd(self.options["--snmpget-path"]), self.quote_for_run(oid))
 
-		output = self.run_command(cmd, additional_timemout).splitlines()
+		output = self.run_command(cmd, additional_timeout).splitlines()
 
 		return output[len(output)-1].split(None, 1)
 
-	def set(self, oid, value, additional_timemout=0):
+	def set(self, oid, value, additional_timeout=0):
 		mapping = ((int, 'i'), (str, 's'))
 
 		type_of_value = ''
@@ -124,11 +124,11 @@ class FencingSnmp:
 		cmd = "%s '%s' %s '%s'" % (self.prepare_cmd(self.options["--snmpset-path"]),
 				self.quote_for_run(oid), type_of_value, self.quote_for_run(str(value)))
 
-		self.run_command(cmd, additional_timemout)
+		self.run_command(cmd, additional_timeout)
 
-	def walk(self, oid, additional_timemout=0):
+	def walk(self, oid, additional_timeout=0):
 		cmd = "%s '%s'"% (self.prepare_cmd(self.options["--snmpwalk-path"]), self.quote_for_run(oid))
 
-		output = self.run_command(cmd, additional_timemout).splitlines()
+		output = self.run_command(cmd, additional_timeout).splitlines()
 
 		return [x.split(None, 1) for x in output if x.startswith(".")]
