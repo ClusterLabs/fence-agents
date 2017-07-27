@@ -167,15 +167,17 @@ do_fence_request_tcp(int fd, fence_req_t *req, tcp_info *info)
 	char ip_addr_src[1024];
 	char response = 1;
 	struct tcp_hostlist_arg arg;
+	int ret;
 
 	/* Noops if auth == AUTH_NONE */
-	if (tcp_response(fd, info->args.auth, info->key, info->key_len, 10) <= 0) {
+	if (sock_response(fd, info->args.auth, info->key, info->key_len, 10) <= 0) {
 		printf("Failed to respond to challenge\n");
 		close(fd);
 		return -1;
 	}
 
-	if (tcp_challenge(fd, info->args.auth, info->key, info->key_len, 10) <= 0) {
+	ret = sock_challenge(fd, info->args.auth, info->key, info->key_len, 10);
+	if (ret <= 0) {
 		printf("Remote failed challenge\n");
 		close(fd);
 		return -1;

@@ -49,6 +49,7 @@ pm_fence_so_SOURCES = pm-fence.c
 cpg_so_SOURCES = cpg-virt.c cpg.c virt.c history.c uuid-test.c
 multicast_so_SOURCES = mcast.c history.c
 tcp_so_SOURCES = tcp.c history.c
+vsock_so_SOURCES = vsock.c history.c
 serial_so_SOURCES = virt-serial.c virt-sockets.c serial.c history.c
 
 
@@ -64,6 +65,7 @@ mod_cpg=@mod_cpg@
 mod_multicast=@mod_multicast@
 mod_serial=@mod_serial@
 mod_tcp=@mod_tcp@
+mod_vsock=@mod_vsock@
 
 ################################
 ifeq ($(with_modules),yes)
@@ -94,6 +96,9 @@ MODULES+=serial.so
 endif
 ifneq ($(mod_tcp),no)
 MODULES+=tcp.so
+endif
+ifneq ($(mod_vsock),no)
+MODULES+=vsock.so
 endif
 ifneq ($(mod_null),no)
 MODULES+=null.so

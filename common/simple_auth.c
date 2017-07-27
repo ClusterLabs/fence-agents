@@ -380,7 +380,7 @@ sha_response(int fd, fence_auth_type_t auth, void *key,
 
 
 int
-tcp_challenge(int fd, fence_auth_type_t auth, void *key, size_t key_len,
+sock_challenge(int fd, fence_auth_type_t auth, void *key, size_t key_len,
 	      int timeout)
 {
 	switch(auth) {
@@ -399,7 +399,7 @@ tcp_challenge(int fd, fence_auth_type_t auth, void *key, size_t key_len,
 
 
 int
-tcp_response(int fd, fence_auth_type_t auth, void *key, size_t key_len,
+sock_response(int fd, fence_auth_type_t auth, void *key, size_t key_len,
 	     int timeout)
 {
 	switch(auth) {

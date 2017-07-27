@@ -49,7 +49,7 @@ tcp_exchange(int fd, fence_auth_type_t auth, void *key,
 
 	/* Ok, we're connected */
 	dbg_printf(3, "Issuing TCP challenge\n");
-	if (tcp_challenge(fd, auth, key, key_len, timeout) <= 0) {
+	if (sock_challenge(fd, auth, key, key_len, timeout) <= 0) {
 		/* Challenge failed */
 		printf("Invalid response to challenge\n");
 		return 1;
@@ -57,7 +57,7 @@ tcp_exchange(int fd, fence_auth_type_t auth, void *key,
 
 	/* Now they'll send us one, so we need to respond here */
 	dbg_printf(3, "Responding to TCP challenge\n");
-	if (tcp_response(fd, auth, key, key_len, timeout) <= 0) {
+	if (sock_response(fd, auth, key, key_len, timeout) <= 0) {
 		printf("Invalid response to challenge\n");
 		return 1;
 	}

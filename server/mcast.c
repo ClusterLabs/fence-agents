@@ -165,13 +165,13 @@ connect_tcp(fence_req_t *req, fence_auth_type_t auth,
 	}
 
 	/* Noops if auth == AUTH_NONE */
-	if (tcp_response(fd, auth, key, key_len, 10) <= 0) {
+	if (sock_response(fd, auth, key, key_len, 10) <= 0) {
 		printf("Failed to respond to challenge\n");
 		close(fd);
 		return -1;
 	}
 
-	if (tcp_challenge(fd, auth, key, key_len, 10) <= 0) {
+	if (sock_challenge(fd, auth, key, key_len, 10) <= 0) {
 		printf("Remote failed challenge\n");
 		close(fd);
 		return -1;

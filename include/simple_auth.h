@@ -25,8 +25,8 @@
 #define DEFAULT_KEY_FILE "/etc/cluster/fence_xvm.key"
 
 int read_key_file(char *, char *, size_t);
-int tcp_challenge(int, fence_auth_type_t, void *, size_t, int);
-int tcp_response(int, fence_auth_type_t, void *, size_t, int);
+int sock_challenge(int, fence_auth_type_t, void *, size_t, int);
+int sock_response(int, fence_auth_type_t, void *, size_t, int);
 int sign_request(fence_req_t *, void *, size_t);
 int verify_request(fence_req_t *, fence_hash_t, void *, size_t);
 
