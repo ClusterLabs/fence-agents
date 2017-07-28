@@ -188,6 +188,31 @@ the IP address to listen on (default: 127.0.0.1 for IPv4, ::1 for IPv6)
 .
 the TCP port to listen on (default: 1229)
 
+.SS vsock
+The vsock listener operates similarly to the multicast listener but uses virtual machine sockets (AF_VSOCK) for communication instead of using multicast packets.
+
+.TP
+.B key_file
+.
+the shared key file to use (default: /etc/cluster/fence_xvm.key).
+
+.TP
+.B hash
+.
+the hashing algorithm to use for packet signing (default: sha256, but could
+be sha1, sha512, or none)
+
+.TP
+.B auth
+.
+the hashing algorithm to use for the simplistic challenge-response authentication
+(default: sha256, but could be sha1, sha512, or none)
+
+.TP
+.B port
+.
+the vsock port to listen on (default: 1229)
+
 .SH BACKENDS
 
 There are various backends available for fence_virtd, each one handles

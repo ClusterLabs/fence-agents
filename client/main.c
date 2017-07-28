@@ -56,7 +56,7 @@ main(int argc, char **argv)
        		my_options = "di:a:p:r:C:c:k:M:H:uo:t:?hVw:";
 		args.mode = MODE_MULTICAST;
 	} else {
-       		my_options = "dD:P:A:p:M:H:o:t:?hVT:C:c:k:w:";
+		my_options = "dD:P:A:p:M:H:o:t:?hVT:S::C:c:k:w:";
 		args.mode = MODE_SERIAL;
 	}
 
@@ -105,9 +105,11 @@ main(int argc, char **argv)
 		args.flags |= F_ERR;
 	}
 
-	if (args.net.ipaddr) {
+	if (args.net.ipaddr)
 		args.mode = MODE_TCP;
-	}
+
+	if (args.net.cid >= 2)
+		args.mode = MODE_VSOCK;
 
 	if (args.flags & F_ERR) {
         if (args.op != FENCE_VALIDATEALL)
@@ -138,6 +140,9 @@ main(int argc, char **argv)
 		break;
 	case MODE_TCP:
 		ret = tcp_fence_virt(&args);
+		break;
+	case MODE_VSOCK:
+		ret = vsock_fence_virt(&args);
 		break;
 	default:
 		ret = 1;

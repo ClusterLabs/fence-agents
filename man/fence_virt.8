@@ -99,7 +99,7 @@ Shared key file (Default Value: /etc/cluster/fence_xvm.key)
 Specify if using fence_virt with older fence_xvmd installations
 which are using UUIDs.  Fence_virtd ignores this parameter.
 
-.SH SERIAL/VMCHANNEL PARAMETERS
+.SH SERIAL/VMCHANNEL/TCP/VSOCK PARAMETERS
 These parameters are used only when using fence_virt in serial mode
 (e.g. by running fence_virt).
 
@@ -125,6 +125,14 @@ VMChannel IP address (Default Value: 10.0.2.179)
 .
 VMChannel IP port (Default Value: 1229)
 
+.TP
+.B -S [<CID>]
+.
+Connect to the fence_virt daemon via vsock. If CID is specified, fence_virt
+will attempt to connect to the specified CID, otherwise it will connect to
+the default hypervisor CID of 2.
+
+
 .SH GENERAL STDIN PARAMETERS
 These parameters are passed to fence_virt via standard input if
 no command line options are present.  They are presented to
@@ -141,6 +149,9 @@ Specify debugging level
 .B port
 . 
 Virtual machine (domain UUID or name) to fence
+
+.TP
+.B action
 
 .TP
 .B action
@@ -199,7 +210,7 @@ Shared key file (Default Value: /etc/cluster/fence_xvm.key)
 Specify if using fence_virt with older fence_xvmd installations
 which are using UUIDs.  Fence_virtd ignores this parameter.
 
-.SH SERIAL/VMCHANNEL STDIN PARAMETERS
+.SH SERIAL/VMCHANNEL/TCP/VSOCK STDIN PARAMETERS
 .TP
 .B serial_device
 . 
@@ -224,6 +235,11 @@ Channel IP.  Default=10.0.2.179
 . 
 Channel port.  Default=1229
 
+.TP
+.B vsock
+. 
+Connect to the fence_virt daemon via vsock. If an argument is given, fence_virt will use the argument specified as the CID for the connection. If no argument
+is given, it will connect to the default hypervisor CID of 2.
 
 .SH FENCING ACTIONS
 	

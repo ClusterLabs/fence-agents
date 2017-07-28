@@ -36,7 +36,8 @@ typedef enum {
 	/*MODE_BROADCAST  = 1,*/
 	MODE_SERIAL     = 2,
 	MODE_VMCHANNEL  = 3,
-	MODE_TCP		= 4
+	MODE_TCP		= 4,
+	MODE_VSOCK		= 5
 } client_mode_t;
 
 typedef struct {
@@ -53,6 +54,7 @@ typedef struct {
 		char *addr;
 		char *ipaddr;
 		char *key_file;
+		uint32_t cid;
 		int port;
 		fence_hash_t hash;
 		fence_auth_type_t auth;

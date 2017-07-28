@@ -4,5 +4,6 @@
 int tcp_fence_virt(fence_virt_args_t *args);
 int serial_fence_virt(fence_virt_args_t *args);
 int mcast_fence_virt(fence_virt_args_t *args);
+int vsock_fence_virt(fence_virt_args_t *args);
 
 #endif

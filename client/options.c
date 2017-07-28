@@ -136,6 +136,24 @@ assign_port(fence_virt_args_t *args, struct arg_info *arg, char *value)
 		args->net.port = ret;
 }
 
+static inline void
+assign_cid(fence_virt_args_t *args, struct arg_info *arg, char *value)
+{
+	char *p;
+	unsigned long ret;
+
+	if (!value) {
+		args->net.cid = 2;
+		return;
+	}
+
+	ret = strtoul(value, &p, 0);
+	if (!p || *p != '\0' || ret < 2 || ret >= 0xffffffff) {
+		printf("Invalid CID: '%s'\n", value);
+		args->flags |= F_ERR;
+	} else
+		args->net.cid = ret;
+}
 
 static inline void
 assign_interface(fence_virt_args_t *args, struct arg_info *arg, char *value)
@@ -423,6 +441,11 @@ static struct arg_info _arg_info[] = {
 	  "IP address to connect to in TCP mode (default=" IPV4_TCP_ADDR_DEFAULT " / " IPV6_TCP_ADDR_DEFAULT ")",
 	  assign_ip_address },
 
+	{ 'S', "-S <cid>", "vsock",
+          0, "int", "2",
+	  "vm socket CID to connect to in vsock mode",
+	  assign_cid },
+
 	{ 'A', "-A <address>", "channel_address",
           0, "string", "10.0.2.179",
 	  "VM Channel IP address (default=" DEFAULT_CHANNEL_IP ")",
@@ -430,7 +453,7 @@ static struct arg_info _arg_info[] = {
 
 	{ 'p', "-p <port>", "ipport",
           0, "string", "1229",
-	  "TCP, Multicast, or VMChannel IP port (default=1229)",
+	  "TCP, Multicast, VMChannel, or VM socket port (default=1229)",
 	  assign_port },
 
 	{ 'I', "-I <interface>", "interface",
@@ -572,6 +595,7 @@ args_init(fence_virt_args_t *args)
 	args->net.auth = DEFAULT_AUTH;
 	args->net.addr = NULL;
 	args->net.ipaddr = NULL;
+	args->net.cid = 0;
 	args->net.port = DEFAULT_MCAST_PORT;
 	args->net.ifindex = 0;
 	args->net.family = 0;  /* auto */
@@ -610,6 +634,7 @@ args_print(fence_virt_args_t *args)
 
 	_pr_str(args->net.addr);
 	_pr_str(args->net.ipaddr);
+	_pr_int(args->net.cid);
 	_pr_str(args->net.key_file);
 	_pr_int(args->net.port);
 	_pr_int(args->net.hash);
