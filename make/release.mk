@@ -5,6 +5,7 @@ gpgsignkey = 0x6CE95CA7  # signing key
 project = fence-agents
 
 deliverables = $(project)-$(version).sha256 \
+               $(project)-$(version).tar.bz2 \
                $(project)-$(version).tar.gz \
                $(project)-$(version).tar.xz
 
@@ -71,22 +72,18 @@ $(project)-$(version).sha256:
 
 .PHONY: sign
 ifeq (,$(gpgsignkey))
-sign: tarballs
+sign: $(deliverables)
 	@echo No GPG signing key defined
 else
 sign: $(project)-$(version).sha256.asc  # "$(deliverables:=.asc)" to sign all
 endif
 
-# NOTE: cannot sign multiple files at once like this
+# NOTE: cannot sign multiple files at once
 $(project)-$(version).%.asc: $(project)-$(version).%
-ifeq (,$(release))
-	@echo Building test release $(version), no sign
-else
-	gpg --default-key "$(gpgsignkey)" \
+	gpg --default-key "$(strip $(gpgsignkey))" \
 		--detach-sign \
 		--armor \
 		$<
-endif
 
 
 .PHONY: publish
