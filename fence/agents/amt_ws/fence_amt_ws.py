@@ -31,7 +31,6 @@ from xml.etree import ElementTree
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="Fence agent for Intel AMT (WS)"
 REDHAT_COPYRIGHT=""
-BUILD_DATE=""
 #END_VERSION_GENERATION
 
 POWER_ON='2'

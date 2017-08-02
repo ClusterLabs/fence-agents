@@ -14,7 +14,6 @@ import __main__
 ## do not add code here.
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="4.0.21.23-eaa13"
-BUILD_DATE="(built Wed Nov 4 13:28:43 CET 2015)"
 REDHAT_COPYRIGHT="Copyright (C) Red Hat, Inc. 2004-2010 All rights reserved."
 #END_VERSION_GENERATION
 
@@ -756,7 +755,7 @@ def show_docs(options, docs=None):
 		sys.exit(0)
 
 	if options.has_key("--version"):
-		print __main__.RELEASE_VERSION, __main__.BUILD_DATE
+		print __main__.RELEASE_VERSION
 		print __main__.REDHAT_COPYRIGHT
 		sys.exit(0)
 

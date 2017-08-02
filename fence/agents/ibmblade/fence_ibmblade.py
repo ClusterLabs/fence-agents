@@ -9,7 +9,6 @@ from fencing_snmp import FencingSnmp
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="IBM Blade SNMP fence agent"
 REDHAT_COPYRIGHT=""
-BUILD_DATE=""
 #END_VERSION_GENERATION
 
 ### CONSTANTS ###

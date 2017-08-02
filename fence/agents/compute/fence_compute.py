@@ -12,7 +12,6 @@ from fencing import fail_usage, is_executable, run_command, run_delay
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="4.0.11"
-BUILD_DATE="(built Wed Nov 12 06:33:38 EST 2014)"
 REDHAT_COPYRIGHT="Copyright (C) Red Hat, Inc. 2004-2010 All rights reserved."
 #END_VERSION_GENERATION
 

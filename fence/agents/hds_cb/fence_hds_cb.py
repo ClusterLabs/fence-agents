@@ -18,7 +18,6 @@ from fencing import *
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New Compute Blade 2000 Agent - test release on steroids"
 REDHAT_COPYRIGHT=""
-BUILD_DATE="November, 2012"
 #END_VERSION_GENERATION
 
 RE_STATUS_LINE = r"^([0-9]+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+).*$"

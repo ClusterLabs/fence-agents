@@ -19,7 +19,6 @@ from fencing import fail, fail_usage, EC_STATUS_HMC
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION=""
 REDHAT_COPYRIGHT=""
-BUILD_DATE=""
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):

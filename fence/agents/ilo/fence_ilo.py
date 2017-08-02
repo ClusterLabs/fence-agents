@@ -21,7 +21,6 @@ from fencing import fail, EC_LOGIN_DENIED
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New ILO Agent - test release on steroids"
 REDHAT_COPYRIGHT=""
-BUILD_DATE="March, 2008"
 #END_VERSION_GENERATION
 
 def get_power_status(conn, options):

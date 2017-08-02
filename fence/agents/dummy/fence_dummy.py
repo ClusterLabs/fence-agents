@@ -11,7 +11,6 @@ from fencing import fail_usage, run_delay
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New Dummy Agent - test release on steroids"
 REDHAT_COPYRIGHT=""
-BUILD_DATE=""
 #END_VERSION_GENERATION
 
 plug_status = "on"

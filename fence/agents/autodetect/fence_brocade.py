@@ -9,7 +9,6 @@ from fencing import fail, EC_STATUS
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="New Brocade Agent - test release on steroids"
 REDHAT_COPYRIGHT=""
-BUILD_DATE="March, 20013"
 #END_VERSION_GENERATION
 
 def set_power_status(conn, options):

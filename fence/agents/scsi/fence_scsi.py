@@ -16,7 +16,6 @@ from fencing import run_delay
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION=""
 REDHAT_COPYRIGHT=""
-BUILD_DATE=""
 #END_VERSION_GENERATION
 
 STORE_PATH = "/var/run/cluster/fence_scsi"

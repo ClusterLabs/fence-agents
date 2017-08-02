@@ -13,7 +13,6 @@ from fencing import fail_usage, is_executable, run_command, run_delay
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION=""
 REDHAT_COPYRIGHT=""
-BUILD_DATE=""
 #END_VERSION_GENERATION
 
 def get_name_or_uuid(options):
