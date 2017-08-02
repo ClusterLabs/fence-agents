@@ -89,8 +89,8 @@ def create_command(options, action):
 	if "--privlvl" in options:
 		Cmd.append(" -L " + options["--privlvl"])
 
-        if "--hexadecimal-kg" in options:
-                Cmd.append(" -y " + options["--hexadecimal-kg"])
+	if "--hexadecimal-kg" in options:
+		Cmd.append(" -y " + options["--hexadecimal-kg"])
 
 	# --action / -o
 	Cmd.append(" chassis power " + action)
