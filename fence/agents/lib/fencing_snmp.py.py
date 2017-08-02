@@ -5,7 +5,7 @@
 import re, pexpect
 import logging
 from fencing import *
-from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay
+from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay, frun
 
 __all__ = ['FencingSnmp']
 
@@ -87,7 +87,7 @@ class FencingSnmp:
 		try:
 			logging.debug("%s\n", command)
 
-			(res_output, res_code) = pexpect.run(command,
+			(res_output, res_code) = frun(command,
 					int(self.options["--shell-timeout"]) +
 					int(self.options["--login-timeout"]) +
 					additional_timeout, True)

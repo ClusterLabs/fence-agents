@@ -27,7 +27,7 @@ import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay
+from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay, frun
 
 #BEGIN_VERSION_GENERATION
 RELEASE_VERSION="VMware Agent using VI Perl API and/or VIX vmrun command"
@@ -146,7 +146,7 @@ def vmware_run_command(options, add_login_params, additional_params, additional_
 	try:
 		logging.debug("%s\n", command)
 
-		(res_output, res_code) = pexpect.run(command,
+		(res_output, res_code) = frun(command,
 				int(options["--shell-timeout"]) + int(options["--login-timeout"]) + additional_timeout, True)
 
 		if res_code == None:

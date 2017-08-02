@@ -472,9 +472,11 @@ DEPENDENCY_OPT = {
 	}
 
 class fspawn(pexpect.spawn):
-	def __init__(self, options, command):
+	def __init__(self, options, command, **kwargs):
+		if sys.version_info[0] > 2:
+			kwargs.setdefault('encoding', 'utf-8')
 		logging.info("Running command: %s", command)
-		pexpect.spawn.__init__(self, command)
+		pexpect.spawn.__init__(self, command, **kwargs)
 		self.opt = options
 
 	def log_expect(self, pattern, timeout):
@@ -489,6 +491,15 @@ class fspawn(pexpect.spawn):
 	# send EOL according to what was detected in login process (telnet)
 	def send_eol(self, message):
 		return self.send(message + self.opt["eol"])
+
+def frun(command, timeout=30, withexitstatus=False, events=None,
+	 extra_args=None, logfile=None, cwd=None, env=None, **kwargs):
+	if sys.version_info[0] > 2:
+		kwargs.setdefault('encoding', 'utf-8')
+	return pexpect.run(command, timeout=timeout,
+			   withexitstatus=withexitstatus, events=events,
+			   extra_args=extra_args, logfile=logfile, cwd=cwd,
+			   env=env, **kwargs)
 
 def atexit_handler():
 	try:
