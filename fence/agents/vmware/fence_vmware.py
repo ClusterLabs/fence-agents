@@ -29,12 +29,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay, frun
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION="VMware Agent using VI Perl API and/or VIX vmrun command"
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 ### CONSTANTS ####
 # VMware type is ESX/ESXi/VC
 VMWARE_TYPE_ESX = 0

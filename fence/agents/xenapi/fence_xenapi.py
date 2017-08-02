@@ -38,12 +38,6 @@ from fencing import *
 from fencing import run_delay
 import XenAPI
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION=""
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 EC_BAD_SESSION = 1
 # Find the status of the port given in the -U flag of options.
 def get_power_fn(session, options):

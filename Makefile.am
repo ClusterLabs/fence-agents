@@ -1,4 +1,4 @@
-EXTRA_DIST		= autogen.sh make/fencebuild.mk scripts/fenceparse \
+EXTRA_DIST		= autogen.sh make/fencebuild.mk \
 			  .version make/release.mk \
 			  make/git-version-gen make/gitlog-to-changelog tests
 
@@ -10,8 +10,6 @@ MAINTAINERCLEANFILES	= Makefile.in aclocal.m4 configure depcomp \
 			  ltmain.sh compile make/clusterautoconfig.h.in \
 			  make/clusterautoconfig.h.in~ autoscan.log \
 			  configure.scan
-
-noinst_HEADERS		= make/copyright.cf
 
 ACLOCAL_AMFLAGS		= -I m4
 

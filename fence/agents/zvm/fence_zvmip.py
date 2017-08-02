@@ -9,12 +9,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, fail_usage, run_delay, EC_LOGIN_DENIED, EC_TIMED_OUT
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION=""
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 INT4 = 4
 
 def open_socket(options):

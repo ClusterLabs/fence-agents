@@ -14,13 +14,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail_usage
 
-
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION = "VirtualBox fence agent"
-REDHAT_COPYRIGHT = ""
-BUILD_DATE = ""
-#END_VERSION_GENERATION
-
 def _invoke(conn, options, *cmd):
     prefix = options["--sudo-path"] + " " if "--use-sudo" in options else ""
     conn.send_eol(prefix + options["--vboxmanage-path"] + " " + " ".join(cmd))

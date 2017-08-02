@@ -9,12 +9,6 @@ from fencing import fail_usage, run_command, fence_action, all_opt
 from fencing import atexit_handler, check_input, process_input, show_docs
 from fencing import run_delay
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION=""
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 DEVICE_INIT = 1
 DEVICE_NOT_INIT = -3
 PATH_NOT_EXISTS = -1

@@ -11,14 +11,6 @@ from fencing import *
 from fencing import is_executable, fail_usage, run_delay
 import logging
 
-
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION="Powerman Fencing Agent"
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
-
 #### important!!! #######
 class PowerMan:
 	"""Python wrapper for calling powerman commands

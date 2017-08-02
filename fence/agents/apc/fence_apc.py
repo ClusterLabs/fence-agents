@@ -20,12 +20,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, fail_usage, EC_STATUS
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION="New APC Agent - test release on steroids"
-REDHAT_COPYRIGHT=""
-BUILD_DATE="March, 2008"
-#END_VERSION_GENERATION
-
 # Fix for connection timed out issue in:
 # https://bugzilla.redhat.com/show_bug.cgi?id=1342584
 TIMEDOUT_DELAY = 0.5

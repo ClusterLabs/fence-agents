@@ -14,12 +14,6 @@ from fencing import *
 from fencing import fail, fail_usage, EC_STATUS, EC_LOGIN_DENIED, EC_INVALID_PRIVILEGES, EC_WAITING_ON, EC_WAITING_OFF
 from fencing import run_delay
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION="New VMWare Agent - test release on steroids"
-REDHAT_COPYRIGHT=""
-BUILD_DATE="April, 2011"
-#END_VERSION_GENERATION
-
 options_global = None
 conn_global = None
 

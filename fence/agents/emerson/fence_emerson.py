@@ -6,12 +6,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing_snmp import FencingSnmp
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION="Emerson SNMP fence agent"
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 ### CONSTANTS ###
 STATUSES_OID = ".1.3.6.1.4.1.476.1.42.3.8.50.20.1.95"
 CONTROL_OID = ".1.3.6.1.4.1.476.1.42.3.8.50.20.1.100"

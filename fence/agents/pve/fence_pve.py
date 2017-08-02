@@ -16,13 +16,6 @@ from fencing import fail, EC_LOGIN_DENIED, atexit_handler, all_opt, check_input,
 if sys.version_info[0] > 2: import urllib.parse as urllib
 else: import urllib
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION=""
-BUILD_DATE=""
-REDHAT_COPYRIGHT=""
-#END_VERSION_GENERATION
-
-
 def get_power_status(conn, options):
 	del conn
 	state = {"running" : "on", "stopped" : "off"}

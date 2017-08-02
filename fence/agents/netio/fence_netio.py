@@ -6,12 +6,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fspawn, fail, EC_LOGIN_DENIED, run_delay
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION=""
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 def get_power_status(conn, options):
 	conn.send_eol("port %s" % options["--plug"])
 	re_status = re.compile("250 [01imt]")

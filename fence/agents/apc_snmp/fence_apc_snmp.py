@@ -20,12 +20,6 @@ from fencing import *
 from fencing import fail_usage
 from fencing_snmp import FencingSnmp
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION="APC SNMP fence agent"
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 ### CONSTANTS ###
 # oid defining fence device
 OID_SYS_OBJECT_ID = '.1.3.6.1.2.1.1.2.0'
