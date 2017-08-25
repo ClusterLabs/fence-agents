@@ -139,6 +139,10 @@ ifneq ($(mod_tcp),no)
 fence_virtd_SOURCES+=${tcp_so_SOURCES}
 LIBS+=$(NSS_LIBS)
 endif
+ifneq ($(mod_vsock),no)
+fence_virtd_SOURCES+=${vsock_so_SOURCES}
+LIBS+=$(NSS_LIBS)
+endif
 ifneq ($(mod_null),no)
 fence_virtd_SOURCES+=${null_so_SOURCES}
 endif
@@ -179,6 +183,9 @@ serial.so: ${serial_so_SOURCES:.c=.o}
 	$(CC) -o $@ $^ $(LIBS) -shared $(VIRT_LIBS) $(UUID_LIBS) $(XML_LIBS)
 
 tcp.so: ${tcp_so_SOURCES:.c=.o}
+	$(CC) -o $@ $^ $(LIBS) -shared $(NSS_LIBS)
+
+vsock.so: ${vsock_so_SOURCES:.c=.o}
 	$(CC) -o $@ $^ $(LIBS) -shared $(NSS_LIBS)
 
 %.o: %.c

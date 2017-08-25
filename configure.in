@@ -121,6 +121,13 @@ AC_ARG_ENABLE(serial-plugin,
 [ mod_serial=$enableval ], [ mod_serial=yes ])
 AC_SUBST(mod_serial)
 
+# vsock plugin: Enabled by default
+AC_ARG_ENABLE(vsock-plugin,
+[AS_HELP_STRING([--disable-vsock-plugin],
+		[Disable TCP listener plugin])],
+[ mod_vsock=$enableval ], [ mod_vsock=yes ])
+AC_SUBST(mod_vsock)
+
 #
 # Compatibility symlink: disabled by default
 #

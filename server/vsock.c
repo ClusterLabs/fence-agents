@@ -471,7 +471,7 @@ vsock_init(listener_context_t *c, const fence_callbacks_t *cb,
 	else if (ret > 0)
 		printf("%d errors found during vsock listener configuration\n", ret);
 
-    if (ret != 0) {
+	if (ret != 0) {
 		if (info->args.key_file)
 			free(info->args.key_file);
 		free(info);
