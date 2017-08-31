@@ -12,7 +12,7 @@ standard, these identifiers are very widely supported and will not change.
 
 Typical usage:
 --------------
-To use this agen with the switch used on the iSCSI network, you'll require:
+To use this agent with the switch used on the iSCSI network, you'll need:
    1) A managed switch running SNMP.
    2) An SNMP community with write privileges.
    3) Permission to send SNMP through any ACLs or firewalls from the nodes.
