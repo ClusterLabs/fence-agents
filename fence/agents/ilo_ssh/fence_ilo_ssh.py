@@ -29,7 +29,7 @@ def set_power_status(conn, options):
 	return
 
 def reboot_cycle(conn, options):
-	conn.send_eol("reset hard /system1")
+	conn.send_eol("reset /system1 hard")
 	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 	return
 
