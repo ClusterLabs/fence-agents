@@ -35,14 +35,14 @@ def get_power_status(connection, options):
 		try:
 			services = connection.services.list(host=options["--plug"], binary="nova-compute")
 			for service in services:
-				logging.debug("Status of %s is %s, %s" % (service.binary, service.state, service.status))
+				logging.debug("Status of %s on %s is %s, %s" % (service.binary, options["--plug"], service.state, service.status))
 				if service.state == "up" and service.status == "enabled":
 					# Up and operational
-					status = "up"
+					status = "on"
 					
 				elif service.state == "down" and service.status == "disabled":
 					# Down and fenced
-					status = "down"
+					status = "off"
 
 				elif service.state == "down":
 					# Down and requires fencing
@@ -57,7 +57,14 @@ def get_power_status(connection, options):
 				break
 		except requests.exception.ConnectionError as err:
 			logging.warning("Nova connection failed: " + str(err))
+	logging.debug("Final status of %s is %s" % (options["--plug"], status))
 	return status
+
+def get_power_status_simple(connection, options):
+	status = get_power_status(connection, options)
+	if status in [ "off" ]:
+		return status
+	return "on"
 
 def set_attrd_status(host, status, options):
 	logging.debug("Setting fencing status for %s to %s" % (host, status))
@@ -65,25 +72,31 @@ def set_attrd_status(host, status, options):
 
 def get_attrd_status(host, options):
 	(status, pipe_stdout, pipe_stderr) = run_command(options, "attrd_updater -p -n evacuate -Q -N %s" % (host))
-	return pipe_stdout
+	fields = pipe_stdout.split('"')
+	if len(fields) > 6:
+		return fields[5]
+	logging.debug("Got %s: o:%s e:%s n:%d" % (status, pipe_stdout, pipe_stderr, len(fields)))
+	return ""
 
 def set_power_status_on(connection, options):
-	status = get_power_status(connection, options)
-	if status in [ "down", "running" ]:
-		# Wait for any evacuations to complete
-		out = ""
-		while out != "no":
-			if len(out) > 0:
-				time.sleep(2)
-			logging.info("Waiting for %s to complete evacuations: %s" % (options["--plug"], out))
-			out = get_attrd_status(options["--plug"], options)
+	# Wait for any evacuations to complete
+	while True:
+		current = get_attrd_status(options["--plug"], options)
+		if current in ["no", ""]:
+			logging.info("Evacuation complete for: %s '%s'" % (options["--plug"], current))
+			break
+		else:
+			logging.info("Waiting for %s to complete evacuations: %s" % (options["--plug"], current))
+			time.sleep(2)
 
-		# Forcing the service back up in case it was disabled
-		connection.services.enable(options["--plug"], 'nova-compute')
+	status = get_power_status(connection, options)
+	# Should we do it for 'failed' too?
+	if status in [ "off", "running", "failed" ]:
 		try:
 			# Forcing the host back up
-			connection.services.force_down(
-				options["--plug"], "nova-compute", force_down=False)
+			logging.info("Forcing nova-compute back up on "+options["--plug"])
+			connection.services.force_down(options["--plug"], "nova-compute", force_down=False)
+			logging.info("Forced nova-compute back up on "+options["--plug"])
 		except Exception as e:
 			# In theory, if force_down=False fails, that's for the exact
 			# same possible reasons that below with force_down=True
@@ -91,20 +104,28 @@ def set_power_status_on(connection, options):
 			# Since it's about forcing back to a default value, there is
 			# no real worries to just consider it's still okay even if the
 			# command failed
-			logging.info("Exception from attempt to force "
+			logging.warn("Exception from attempt to force "
 				      "host back up via nova API: "
 				      "%s: %s" % (e.__class__.__name__, e))
 
+		# Forcing the service back up in case it was disabled
+		logging.info("Enabling nova-compute on "+options["--plug"])
+		connection.services.enable(options["--plug"], 'nova-compute')
+
 		# Pretend we're 'on' so that the fencing library doesn't loop forever waiting for the node to boot
 		override_status = "on"
-	elif status in ["on"]:
-		# Nothing to do
-	else:
+	elif status not in ["on"]:
 		# Not safe to unfence, don't waste time looping to see if the status changes to "on"
 		options["--power-timeout"] = "0"
 
 def set_power_status_off(connection, options):
+	status = get_power_status(connection, options)
+	if status in [ "off" ]:
+		return
+
+	connection.services.disable(options["--plug"], 'nova-compute')
 	try:
+		# Until 2.53
 		connection.services.force_down(
 			options["--plug"], "nova-compute", force_down=True)
 	except Exception as e:
@@ -119,7 +140,7 @@ def set_power_status_off(connection, options):
 			      "%s: %s" % (e.__class__.__name__, e))
 		# need to wait for nova to update its internal status or we
 		# cannot call host-evacuate
-		while get_power_status(connection, options) != "off":
+		while get_power_status(connection, options) not in ["off"]:
 			# Loop forever if need be.
 			#
 			# Some callers (such as Pacemaker) will have a timer
@@ -135,19 +156,21 @@ def set_power_status(connection, options):
 	override_status = ""
 	logging.debug("set action: " + options["--action"])
 
-	if not nova:
+	if not connection:
 		return
 
 	if options["--action"] in ["off", "reboot"]:
 		set_power_status_off(connection, options)
 	else:
 		set_power_status_on(connection, options)
+	logging.debug("set action passed: " + options["--action"])
+	sys.exit(0)
 
 def fix_domain(connection, options):
 	domains = {}
 	last_domain = None
 
-	if nova:
+	if connection:
 		# Find it in nova
 
 		services = connection.services.list(binary="nova-compute")
@@ -223,7 +246,7 @@ def fix_plug_name(connection, options):
 def get_plugs_list(connection, options):
 	result = {}
 
-	if nova:
+	if connection:
 		services = connection.services.list(binary="nova-compute")
 		for service in services:
 			longhost = service.host
@@ -294,7 +317,7 @@ def create_nova_connection(options):
 			logging.warning("Nova connection failed. %s: %s" % (e.__class__.__name__, e))
 
 	logging.warning("Couldn't obtain a supported connection to nova, tried: %s\n" % repr(versions))
-        return None
+	return None
 
 def define_new_opts():
 	all_opt["endpoint-type"] = {
@@ -378,11 +401,23 @@ def define_new_opts():
 		"order": 5,
 	}
 
+def set_multi_power_fn(connection, options, set_power_fn, get_power_fn, retry_attempts=1):
+	for _ in range(retry_attempts):
+		set_power_fn(connection, options)
+		time.sleep(int(options["--power-wait"]))
+
+		for _ in range(int(options["--power-timeout"])):
+			if get_power_fn(connection, options) != options["--action"]:
+				time.sleep(1)
+			else:
+				return True
+	return False
+
 def main():
 	global override_status
 	atexit.register(atexit_handler)
 
-	device_opt = ["login", "passwd", "tenant-name", "auth-url", "fabric_fencing", "on_target",
+	device_opt = ["login", "passwd", "tenant-name", "auth-url", "fabric_fencing",
 		"no_login", "no_password", "port", "domain", "no-shared-storage", "endpoint-type",
 		"record-only", "instance-filtering", "insecure", "region-name"]
 	define_new_opts()
@@ -402,13 +437,28 @@ def main():
 
 	run_delay(options)
 
+	logging.debug("Running "+options["--action"])
 	connection = create_nova_connection(options)
-	fix_plug_name(connection, options)
 
-	if options["--action"] in ["monitor", "status"]:
-		sys.exit(0)
+	if options["--action"] in ["off", "on", "reboot", "status"]:
+		fix_plug_name(connection, options)
 
-	result = fence_action(connection, options, set_power_status, get_power_status, get_plugs_list, None)
+
+	if options["--action"] in ["reboot"]:
+		options["--action"]="off"
+
+	if options["--action"] in ["off", "on"]:
+		# No status first, call our own version
+		result = not set_multi_power_fn(connection, options, set_power_status, get_power_status_simple,
+						1 + int(options["--retry-on"]))
+	elif options["--action"] in ["monitor"]:
+		result = 0
+	else:
+		result = fence_action(connection, options, set_power_status, get_power_status_simple, get_plugs_list, None)
+
+	logging.debug("Result for "+options["--action"]+": "+repr(result))
+	if result == None:
+		result = 0
 	sys.exit(result)
 
 if __name__ == "__main__":
