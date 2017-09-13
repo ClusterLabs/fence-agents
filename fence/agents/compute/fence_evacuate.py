@@ -32,11 +32,11 @@ def get_power_status(connection, options):
 				logging.debug("Status of %s is %s, %s" % (service.binary, service.state, service.status))
 				if service.state == "up" and service.status == "enabled":
 					# Up and operational
-					status = "up"
+					status = "on"
 					
 				elif service.state == "down" and service.status == "disabled":
 					# Down and fenced
-					status = "down"
+					status = "off"
 
 				elif service.state == "down":
 					# Down and requires fencing
@@ -82,8 +82,9 @@ def _server_evacuate(connection, server, on_shared_storage):
 def _is_server_evacuable(server, evac_flavors, evac_images):
 	if server.flavor.get('id') in evac_flavors:
 		return True
-	if server.image.get('id') in evac_images:
-		return True
+	if hasattr(server.image, 'get'):
+		if server.image.get('id') in evac_images:
+			return True
 	logging.debug("Instance %s is not evacuable" % server.image.get('id'))
 	return False
 
@@ -100,11 +101,21 @@ def _get_evacuable_flavors(connection):
 
 def _get_evacuable_images(connection):
 	result = []
-	images = connection.images.list(detailed=True)
+	images = []
+	if hasattr(connection, "images"):
+		images = connection.images.list(detailed=True)
+	elif hasattr(connection, "glance"):
+		# OSP12+
+		images = connection.glance.list()
+
 	for image in images:
 		if hasattr(image, 'metadata'):
 			tag = image.metadata.get(EVACUABLE_TAG)
 			if tag and tag.strip().lower() in TRUE_TAGS:
+				result.append(image.id)
+		elif hasattr(image, 'tags'):
+			# OSP12+
+			if EVACUABLE_TAG in image.tags:
 				result.append(image.id)
 	return result
 
@@ -239,7 +250,7 @@ def create_nova_connection(options):
 			logging.warning("Nova connection failed. %s: %s" % (e.__class__.__name__, e))
 
 	logging.warning("Couldn't obtain a supported connection to nova, tried: %s\n" % repr(versions))
-        return None
+	return None
 
 def define_new_opts():
 	all_opt["endpoint-type"] = {
@@ -343,7 +354,7 @@ def main():
 
 	if options["--action"] in ["off", "reboot"]:
 		status = get_power_status(connection, options)
-		if status != "down":
+		if status != "off":
 			logging.error("Cannot resurrect instances from %s in state '%s'" % (options["--plug"], status))
 			sys.exit(1)
 
@@ -354,7 +365,7 @@ def main():
 		logging.info("Resurrection of instances from %s complete" % (options["--plug"]))
 		sys.exit(0)
 
-	result = fence_action(nova, options, set_power_status, get_power_status, get_plugs_list, None)
+	result = fence_action(connection, options, set_power_status, get_power_status, get_plugs_list, None)
 	sys.exit(result)
 
 if __name__ == "__main__":
