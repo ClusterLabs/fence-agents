@@ -763,6 +763,9 @@ def set_multi_power_fn(connection, options, set_power_fn, get_power_fn, retry_at
 
 		for _ in range(int(options["--power-timeout"])):
 			if get_multi_power_fn(connection, options, get_power_fn) != options["--action"]:
+				if "no_status" in options["device_opt"]:
+					# no real status - take it as hacky return value
+					return False
 				time.sleep(1)
 			else:
 				return True
@@ -882,6 +885,9 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 					# fence action was completed succesfully even in that case
 					logging.warning("%s", str(ex))
 
+				# switch back to original action for the case it is used lateron
+				options["--action"] = "reboot"
+
 			if power_on == False:
 				# this should not fail as node was fenced succesfully
 				logging.error('Timed out waiting to power ON\n')
@@ -969,11 +975,21 @@ def run_command(options, command, timeout=None, env=None, log_command=None):
 
 	return (status, pipe_stdout, pipe_stderr)
 
-def run_delay(options):
-	## Delay is important for two-node clusters fencing but we do not need to delay 'status' operations
-	if options["--action"] in ["off", "reboot"]:
-		logging.info("Delay %s second(s) before logging in to the fence device", options["--delay"])
-		time.sleep(int(options["--delay"]))
+def run_delay(options, reserve=0, result=0):
+	## Delay is important for two-node clusters fencing
+	## but we do not need to delay 'status' operations
+	## and get us out quickly if we already know that we are gonna fail
+	## still wanna do something right before fencing? - reserve some time
+	if options["--action"] in ["off", "reboot"] \
+		and options["--delay"] != "0" \
+		and result == 0 \
+		and reserve >= 0:
+		time_left = 1 + int(options["--delay"]) - (time.time() - run_delay.time_start) - reserve
+		if time_left > 0:
+			logging.info("Delay %d second(s) before logging in to the fence device", time_left)
+			time.sleep(time_left)
+# mark time when fence-agent is started
+run_delay.time_start = time.time()
 
 def fence_logout(conn, logout_string, sleep=0):
 	# Logout is not required part of fencing but we should attempt to do it properly
