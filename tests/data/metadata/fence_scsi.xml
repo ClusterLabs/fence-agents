@@ -94,11 +94,7 @@ The fence_scsi agent works by having each node in the cluster register a unique 
 		<content type="integer" default="1"  />
 		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
 	</parameter>
-	<parameter name="corosync-cmap_path" unique="0" required="0" deprecated="1">
-		<getopt mixed="--corosync-cmap-path=[path]" />
-		<shortdesc lang="en">Path to corosync-cmapctl binary</shortdesc>
-	</parameter>
-	<parameter name="corosync_cmap_path" unique="0" required="0" obsoletes="corosync-cmap_path">
+	<parameter name="corosync_cmap_path" unique="0" required="0">
 		<getopt mixed="--corosync-cmap-path=[path]" />
 		<shortdesc lang="en">Path to corosync-cmapctl binary</shortdesc>
 	</parameter>
