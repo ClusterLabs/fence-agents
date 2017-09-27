@@ -1,11 +1,11 @@
 <?xml version="1.0" ?>
-<resource-agent name="fence_compute" shortdesc="Fence agent for the automatic resurrection of OpenStack compute instances" >
-<longdesc>Used to tell Nova that compute nodes are down and to reschedule flagged instances</longdesc>
+<resource-agent name="fence_evacuate" shortdesc="Fence agent for the automatic resurrection of OpenStack compute instances" >
+<longdesc>Used to reschedule flagged instances</longdesc>
 <vendor-url></vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
 		<getopt mixed="-o, --action=[action]" />
-		<content type="string" default="off"  />
+		<content type="string" default="reboot"  />
 		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
 	<parameter name="auth-url" unique="0" required="0" deprecated="1">
@@ -118,16 +118,6 @@
 		<content type="boolean" default="False"  />
 		<shortdesc lang="en">Disable functionality for dealing with shared storage</shortdesc>
 	</parameter>
-	<parameter name="record-only" unique="0" required="0" deprecated="1">
-		<getopt mixed="--record-only" />
-		<content type="string" default="False"  />
-		<shortdesc lang="en">Only record the target as needing evacuation</shortdesc>
-	</parameter>
-	<parameter name="record_only" unique="0" required="0" obsoletes="record-only">
-		<getopt mixed="--record-only" />
-		<content type="string" default="False"  />
-		<shortdesc lang="en">Only record the target as needing evacuation</shortdesc>
-	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
 		<content type="boolean"  />
@@ -195,8 +185,9 @@
 	</parameter>
 </parameters>
 <actions>
-	<action name="on" automatic="1"/>
+	<action name="on" automatic="0"/>
 	<action name="off" />
+	<action name="reboot" />
 	<action name="status" />
 	<action name="list" />
 	<action name="list-status" />
