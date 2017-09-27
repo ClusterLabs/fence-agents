@@ -195,7 +195,7 @@
 	</parameter>
 </parameters>
 <actions>
-	<action name="on" on_target="1" automatic="1"/>
+	<action name="on" automatic="1"/>
 	<action name="off" />
 	<action name="status" />
 	<action name="list" />
