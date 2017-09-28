@@ -1326,11 +1326,12 @@ def _parse_input_stdin(avail_opt):
 			continue
 
 		(name, value) = (line + "=").split("=", 1)
-		name = name.replace("-", "_");
 		value = value[:-1]
 
-		if name in mapping_longopt_names:
-			name = mapping_longopt_names[name]
+		if name.replace("-", "_") in mapping_longopt_names:
+			name = mapping_longopt_names[name.replace("-", "_")]
+		elif name.replace("_", "-") in mapping_longopt_names:
+			name = mapping_longopt_names[name.replace("_", "-")]
 
 		if avail_opt.count(name) == 0 and name in ["nodename"]:
 			continue

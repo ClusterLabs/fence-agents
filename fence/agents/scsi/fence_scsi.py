@@ -335,7 +335,7 @@ be removed from the device(s).",
 		"shortdesc" : "Log output (stdout and stderr) to file",
 		"order": 5
 	}
-	all_opt["corosync-cmap_path"] = {
+	all_opt["corosync_cmap_path"] = {
 		"getopt" : ":",
 		"longopt" : "corosync-cmap-path",
 		"help" : "--corosync-cmap-path=[path]    Path to corosync-cmapctl binary",
@@ -419,7 +419,7 @@ def main():
 	atexit.register(atexit_handler)
 
 	device_opt = ["no_login", "no_password", "devices", "nodename", "key",\
-	"aptpl", "fabric_fencing", "on_target", "corosync-cmap_path",\
+	"aptpl", "fabric_fencing", "on_target", "corosync_cmap_path",\
 	"sg_persist_path", "sg_turs_path", "logfile", "vgs_path", "force_on"]
 
 	define_new_opts()
