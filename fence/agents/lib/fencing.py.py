@@ -745,7 +745,7 @@ def get_multi_power_fn(connection, options, get_power_fn):
 
 	return status
 
-def set_multi_power_fn(connection, options, set_power_fn, get_power_fn, retry_attempts=1):
+def async_set_multi_power_fn(connection, options, set_power_fn, get_power_fn, retry_attempts):
 	plugs = options["--plugs"] if "--plugs" in options else [""]
 
 	for _ in range(retry_attempts):
@@ -763,13 +763,44 @@ def set_multi_power_fn(connection, options, set_power_fn, get_power_fn, retry_at
 
 		for _ in range(int(options["--power-timeout"])):
 			if get_multi_power_fn(connection, options, get_power_fn) != options["--action"]:
-				if "no_status" in options["device_opt"]:
-					# no real status - take it as hacky return value
-					return False
 				time.sleep(1)
 			else:
 				return True
 	return False
+
+def sync_set_multi_power_fn(connection, options, sync_set_power_fn, retry_attempts):
+	success = True
+	plugs = options["--plugs"] if "--plugs" in options else [""]
+
+	for plug in plugs:
+		try:
+			options["--uuid"] = str(uuid.UUID(plug))
+		except ValueError:
+			pass
+		except KeyError:
+			pass
+
+		options["--plug"] = plug
+		for retry in range(retry_attempts):
+			if sync_set_power_fn(connection, options):
+				break
+			if retry == retry_attempts-1:
+				success = False
+		time.sleep(int(options["--power-wait"]))
+
+	return success
+
+
+def set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set_power_fn, retry_attempts=1):
+
+	if set_power_fn != None:
+		if get_power_fn != None:
+			return async_set_multi_power_fn(connection, options, set_power_fn, get_power_fn, retry_attempts)
+	elif sync_set_power_fn != None:
+		return sync_set_multi_power_fn(connection, options, sync_set_power_fn, retry_attempts)
+
+	return False
+
 
 def show_docs(options, docs=None):
 	device_opt = options["device_opt"]
@@ -793,7 +824,7 @@ def show_docs(options, docs=None):
 		print(RELEASE_VERSION)
 		sys.exit(0)
 
-def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_list=None, reboot_cycle_fn=None):
+def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_list=None, reboot_cycle_fn=None, sync_set_power_fn=None):
 	result = 0
 
 	try:
@@ -850,12 +881,12 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 				return 0
 
 		if options["--action"] == "on":
-			if set_multi_power_fn(connection, options, set_power_fn, get_power_fn, 1 + int(options["--retry-on"])):
+			if set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set_power_fn, 1 + int(options["--retry-on"])):
 				print("Success: Powered ON")
 			else:
 				fail(EC_WAITING_ON)
 		elif options["--action"] == "off":
-			if set_multi_power_fn(connection, options, set_power_fn, get_power_fn):
+			if set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set_power_fn):
 				print("Success: Powered OFF")
 			else:
 				fail(EC_WAITING_OFF)
@@ -873,13 +904,13 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 			else:
 				if status != "off":
 					options["--action"] = "off"
-					if not set_multi_power_fn(connection, options, set_power_fn, get_power_fn):
+					if not set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set_power_fn):
 						fail(EC_WAITING_OFF)
 
 				options["--action"] = "on"
 
 				try:
-					power_on = set_multi_power_fn(connection, options, set_power_fn, get_power_fn, int(options["--retry-on"]))
+					power_on = set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set_power_fn, int(options["--retry-on"]))
 				except Exception as ex:
 					# an error occured during power ON phase in reboot
 					# fence action was completed succesfully even in that case

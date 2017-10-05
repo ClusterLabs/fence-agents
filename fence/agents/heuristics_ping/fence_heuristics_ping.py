@@ -18,22 +18,16 @@ from fencing import fail_usage, run_command, fence_action, all_opt
 from fencing import atexit_handler, check_input, process_input, show_docs
 from fencing import run_delay
 
-def get_power_fake(con, options):
-	# Hack to hand over an exit-code
-	return get_power_fake.result
-
 def ping_test(con, options):
 	# Send pings to the targets
 
 	if options["--action"] == "on":
 		# we want unfencing to always succeed
-		get_power_fake.result = "on"
 		return True
 
 	if not "--ping-targets" in options or options["--ping-targets"] == "":
 		# "off" was requested so fake "on" to provoke failure
 		logging.error("ping target required")
-		get_power_fake.result = "on"
 		return False
 
 	timeout = int(options["--ping-timeout"])
@@ -95,10 +89,6 @@ def ping_test(con, options):
 
 	if failcount > maxfail:
 		exitcode = False
-		# "off" was requested so fake "on" to provoke failure
-		get_power_fake.result = "on"
-	else:
-		get_power_fake.result = "off"
 
 	return exitcode
 
@@ -192,10 +182,10 @@ def main():
 	result = fence_action(\
 				None, \
 				options, \
-				ping_test, \
-				get_power_fake, \
 				None, \
-				ping_test)
+				None, \
+				reboot_cycle_fn = ping_test,
+				sync_set_power_fn = ping_test)
 
 	# execute the remaining delay
 	run_delay(options, result=result)
