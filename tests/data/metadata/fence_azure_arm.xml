@@ -1,6 +1,10 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_azure_arm" shortdesc="Fence agent for Azure Resource Manager" >
-<longdesc>Used to deallocate virtual machines and to report power state of virtual machines running in Azure</longdesc>
+<longdesc>Used to deallocate virtual machines and to report power state of virtual machines running in Azure. It uses Azure SDK for Python to connect to Azure.
+.P
+For instructions to setup credentials see: https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal
+.P
+Username and password are application ID and authentication key from "App registrations".</longdesc>
 <vendor-url>http://www.microsoft.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
@@ -9,14 +13,14 @@
 		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
 	<parameter name="login" unique="0" required="1" deprecated="1">
-		<getopt mixed="-l, --username=[name]" />
+		<getopt mixed="-l, --username=[appid]" />
 		<content type="string"  />
-		<shortdesc lang="en">Login name</shortdesc>
+		<shortdesc lang="en">Application ID</shortdesc>
 	</parameter>
 	<parameter name="passwd" unique="0" required="0" deprecated="1">
-		<getopt mixed="-p, --password=[password]" />
+		<getopt mixed="-p, --password=[authkey]" />
 		<content type="string"  />
-		<shortdesc lang="en">Login password or passphrase</shortdesc>
+		<shortdesc lang="en">Authentication key</shortdesc>
 	</parameter>
 	<parameter name="passwd_script" unique="0" required="0" deprecated="1">
 		<getopt mixed="-S, --password-script=[script]" />
@@ -24,9 +28,9 @@
 		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
 	</parameter>
 	<parameter name="password" unique="0" required="0" obsoletes="passwd">
-		<getopt mixed="-p, --password=[password]" />
+		<getopt mixed="-p, --password=[authkey]" />
 		<content type="string"  />
-		<shortdesc lang="en">Login password or passphrase</shortdesc>
+		<shortdesc lang="en">Authentication key</shortdesc>
 	</parameter>
 	<parameter name="password_script" unique="0" required="0" obsoletes="passwd_script">
 		<getopt mixed="-S, --password-script=[script]" />
@@ -44,9 +48,9 @@
 		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
 	</parameter>
 	<parameter name="username" unique="0" required="1" obsoletes="login">
-		<getopt mixed="-l, --username=[name]" />
+		<getopt mixed="-l, --username=[appid]" />
 		<content type="string"  />
-		<shortdesc lang="en">Login name</shortdesc>
+		<shortdesc lang="en">Application ID</shortdesc>
 	</parameter>
 	<parameter name="resourceGroup" unique="0" required="1">
 		<getopt mixed="--resourceGroup=[name]" />
@@ -110,7 +114,7 @@
 	</parameter>
 	<parameter name="power_timeout" unique="0" required="0">
 		<getopt mixed="--power-timeout=[seconds]" />
-		<content type="second" default="20"  />
+		<content type="second" default="150"  />
 		<shortdesc lang="en">Test X seconds for status change after ON/OFF</shortdesc>
 	</parameter>
 	<parameter name="power_wait" unique="0" required="0">
