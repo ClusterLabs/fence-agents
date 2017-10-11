@@ -745,7 +745,7 @@ def get_multi_power_fn(connection, options, get_power_fn):
 
 	return status
 
-def set_multi_power_fn(connection, options, set_power_fn, get_power_fn, retry_attempts=1):
+def async_set_multi_power_fn(connection, options, set_power_fn, get_power_fn, retry_attempts):
 	plugs = options["--plugs"] if "--plugs" in options else [""]
 
 	for _ in range(retry_attempts):
@@ -767,6 +767,40 @@ def set_multi_power_fn(connection, options, set_power_fn, get_power_fn, retry_at
 			else:
 				return True
 	return False
+
+def sync_set_multi_power_fn(connection, options, sync_set_power_fn, retry_attempts):
+	success = True
+	plugs = options["--plugs"] if "--plugs" in options else [""]
+
+	for plug in plugs:
+		try:
+			options["--uuid"] = str(uuid.UUID(plug))
+		except ValueError:
+			pass
+		except KeyError:
+			pass
+
+		options["--plug"] = plug
+		for retry in range(retry_attempts):
+			if sync_set_power_fn(connection, options):
+				break
+			if retry == retry_attempts-1:
+				success = False
+		time.sleep(int(options["--power-wait"]))
+
+	return success
+
+
+def set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set_power_fn, retry_attempts=1):
+
+	if set_power_fn != None:
+		if get_power_fn != None:
+			return async_set_multi_power_fn(connection, options, set_power_fn, get_power_fn, retry_attempts)
+	elif sync_set_power_fn != None:
+		return sync_set_multi_power_fn(connection, options, sync_set_power_fn, retry_attempts)
+
+	return False
+
 
 def show_docs(options, docs=None):
 	device_opt = options["device_opt"]
@@ -790,7 +824,7 @@ def show_docs(options, docs=None):
 		print(RELEASE_VERSION)
 		sys.exit(0)
 
-def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_list=None, reboot_cycle_fn=None):
+def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_list=None, reboot_cycle_fn=None, sync_set_power_fn=None):
 	result = 0
 
 	try:
@@ -847,12 +881,12 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 				return 0
 
 		if options["--action"] == "on":
-			if set_multi_power_fn(connection, options, set_power_fn, get_power_fn, 1 + int(options["--retry-on"])):
+			if set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set_power_fn, 1 + int(options["--retry-on"])):
 				print("Success: Powered ON")
 			else:
 				fail(EC_WAITING_ON)
 		elif options["--action"] == "off":
-			if set_multi_power_fn(connection, options, set_power_fn, get_power_fn):
+			if set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set_power_fn):
 				print("Success: Powered OFF")
 			else:
 				fail(EC_WAITING_OFF)
@@ -870,17 +904,20 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 			else:
 				if status != "off":
 					options["--action"] = "off"
-					if not set_multi_power_fn(connection, options, set_power_fn, get_power_fn):
+					if not set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set_power_fn):
 						fail(EC_WAITING_OFF)
 
 				options["--action"] = "on"
 
 				try:
-					power_on = set_multi_power_fn(connection, options, set_power_fn, get_power_fn, int(options["--retry-on"]))
+					power_on = set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set_power_fn, int(options["--retry-on"]))
 				except Exception as ex:
 					# an error occured during power ON phase in reboot
 					# fence action was completed succesfully even in that case
 					logging.warning("%s", str(ex))
+
+				# switch back to original action for the case it is used lateron
+				options["--action"] = "reboot"
 
 			if power_on == False:
 				# this should not fail as node was fenced succesfully
@@ -969,11 +1006,21 @@ def run_command(options, command, timeout=None, env=None, log_command=None):
 
 	return (status, pipe_stdout, pipe_stderr)
 
-def run_delay(options):
-	## Delay is important for two-node clusters fencing but we do not need to delay 'status' operations
-	if options["--action"] in ["off", "reboot"]:
-		logging.info("Delay %s second(s) before logging in to the fence device", options["--delay"])
-		time.sleep(int(options["--delay"]))
+def run_delay(options, reserve=0, result=0):
+	## Delay is important for two-node clusters fencing
+	## but we do not need to delay 'status' operations
+	## and get us out quickly if we already know that we are gonna fail
+	## still wanna do something right before fencing? - reserve some time
+	if options["--action"] in ["off", "reboot"] \
+		and options["--delay"] != "0" \
+		and result == 0 \
+		and reserve >= 0:
+		time_left = 1 + int(options["--delay"]) - (time.time() - run_delay.time_start) - reserve
+		if time_left > 0:
+			logging.info("Delay %d second(s) before logging in to the fence device", time_left)
+			time.sleep(time_left)
+# mark time when fence-agent is started
+run_delay.time_start = time.time()
 
 def fence_logout(conn, logout_string, sleep=0):
 	# Logout is not required part of fencing but we should attempt to do it properly

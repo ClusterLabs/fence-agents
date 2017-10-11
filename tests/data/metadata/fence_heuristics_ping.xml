@@ -1,0 +1,118 @@
+<?xml version="1.0" ?>
+<resource-agent name="fence_heuristics_ping" shortdesc="Fence agent for ping-heuristic based fencing" >
+<longdesc>fence_heuristics_ping uses ping-heuristics to control execution of another fencing agent on the same fencing-level.</longdesc>
+<vendor-url></vendor-url>
+<parameters>
+	<parameter name="action" unique="0" required="1">
+		<getopt mixed="-o, --action=[action]" />
+		<content type="string" default="reboot"  />
+		<shortdesc lang="en">Fencing action</shortdesc>
+	</parameter>
+	<parameter name="method" unique="0" required="0">
+		<getopt mixed="-m, --method=[method]" />
+		<content type="select" default="cycle"  >
+			<option value="onoff" />
+			<option value="cycle" />
+		</content>
+		<shortdesc lang="en">Method to fence</shortdesc>
+	</parameter>
+	<parameter name="ping_count" unique="0" required="0">
+		<getopt mixed="--ping-count=[number]" />
+		<content type="string" default="10"  />
+		<shortdesc lang="en">The number of ping-probes that is being sent per target</shortdesc>
+	</parameter>
+	<parameter name="ping_good_count" unique="0" required="0">
+		<getopt mixed="--ping-good-count=[number]" />
+		<content type="string" default="8"  />
+		<shortdesc lang="en">The number of positive ping-probes required to account a target as available</shortdesc>
+	</parameter>
+	<parameter name="ping_interval" unique="0" required="0">
+		<getopt mixed="--ping-interval=[seconds]" />
+		<content type="string" default="1"  />
+		<shortdesc lang="en">The interval in seconds between ping-probes</shortdesc>
+	</parameter>
+	<parameter name="ping_maxfail" unique="0" required="0">
+		<getopt mixed="--ping-maxfail=[number]" />
+		<content type="string" default="0"  />
+		<shortdesc lang="en">The number of failed ping-targets to still account as overall success</shortdesc>
+	</parameter>
+	<parameter name="ping_targets" unique="0" required="1">
+		<getopt mixed="--ping-targets=tgt1,[inet6:]tgt2" />
+		<content type="string" default="localhost"  />
+		<shortdesc lang="en">A comma separated list of ping-targets (optionally prepended by 'inet:' or 'inet6:') to be probed</shortdesc>
+	</parameter>
+	<parameter name="ping_timeout" unique="0" required="0">
+		<getopt mixed="--ping-timeout=[seconds]" />
+		<content type="string" default="2"  />
+		<shortdesc lang="en">The timeout in seconds till an individual ping-probe is accounted as lost</shortdesc>
+	</parameter>
+	<parameter name="quiet" unique="0" required="0">
+		<getopt mixed="-q, --quiet" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Disable logging to stderr. Does not affect --verbose or --debug logging to syslog.</shortdesc>
+	</parameter>
+	<parameter name="verbose" unique="0" required="0">
+		<getopt mixed="-v, --verbose" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Verbose mode</shortdesc>
+	</parameter>
+	<parameter name="debug" unique="0" required="0" deprecated="1">
+		<getopt mixed="-D, --debug-file=[debugfile]" />
+		<content type="string"  />
+		<shortdesc lang="en">Write debug information to given file</shortdesc>
+	</parameter>
+	<parameter name="debug_file" unique="0" required="0" obsoletes="debug">
+		<getopt mixed="-D, --debug-file=[debugfile]" />
+		<content type="string"  />
+		<shortdesc lang="en">Write debug information to given file</shortdesc>
+	</parameter>
+	<parameter name="version" unique="0" required="0">
+		<getopt mixed="-V, --version" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Display version information and exit</shortdesc>
+	</parameter>
+	<parameter name="help" unique="0" required="0">
+		<getopt mixed="-h, --help" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Display help and exit</shortdesc>
+	</parameter>
+	<parameter name="delay" unique="0" required="0">
+		<getopt mixed="--delay=[seconds]" />
+		<content type="second" default="0"  />
+		<shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
+	</parameter>
+	<parameter name="login_timeout" unique="0" required="0">
+		<getopt mixed="--login-timeout=[seconds]" />
+		<content type="second" default="5"  />
+		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
+	</parameter>
+	<parameter name="power_timeout" unique="0" required="0">
+		<getopt mixed="--power-timeout=[seconds]" />
+		<content type="second" default="20"  />
+		<shortdesc lang="en">Test X seconds for status change after ON/OFF</shortdesc>
+	</parameter>
+	<parameter name="power_wait" unique="0" required="0">
+		<getopt mixed="--power-wait=[seconds]" />
+		<content type="second" default="0"  />
+		<shortdesc lang="en">Wait X seconds after issuing ON/OFF</shortdesc>
+	</parameter>
+	<parameter name="shell_timeout" unique="0" required="0">
+		<getopt mixed="--shell-timeout=[seconds]" />
+		<content type="second" default="3"  />
+		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
+	</parameter>
+	<parameter name="retry_on" unique="0" required="0">
+		<getopt mixed="--retry-on=[attempts]" />
+		<content type="integer" default="1"  />
+		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
+	</parameter>
+</parameters>
+<actions>
+	<action name="on" automatic="0"/>
+	<action name="off" />
+	<action name="reboot" />
+	<action name="monitor" />
+	<action name="metadata" />
+	<action name="validate-all" />
+</actions>
+</resource-agent>

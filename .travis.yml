@@ -15,6 +15,7 @@ addons:
     - libxml2-utils
     - libcimcclient0-dev
     - swig
+    - iputils-ping
 
 before_install:
   - pip install suds
