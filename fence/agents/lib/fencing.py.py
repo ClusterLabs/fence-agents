@@ -28,6 +28,8 @@ EC_STATUS_HMC = 9
 EC_PASSWORD_MISSING = 10
 EC_INVALID_PRIVILEGES = 11
 
+LOG_FORMAT = "%(asctime)-15s %(levelname)s: %(message)s"
+
 all_opt = {
 	"help"    : {
 		"getopt" : "h",
@@ -677,11 +679,15 @@ def check_input(device_opt, opt, other_conditions = False):
 	if "--verbose" in options:
 		logging.getLogger().setLevel(logging.DEBUG)
 
+	formatter = logging.Formatter(LOG_FORMAT)
+
 	## add logging to syslog
 	logging.getLogger().addHandler(SyslogLibHandler())
 	if "--quiet" not in options:
 		## add logging to stderr
-		logging.getLogger().addHandler(logging.StreamHandler(sys.stderr))
+		stderrHandler = logging.StreamHandler(sys.stderr)
+		stderrHandler.setFormatter(formatter)
+		logging.getLogger().addHandler(stderrHandler)
 
 	(acceptable_actions, _) = _get_available_actions(device_opt)
 
@@ -710,6 +716,7 @@ def check_input(device_opt, opt, other_conditions = False):
 		try:
 			debug_file = logging.FileHandler(options["--debug-file"])
 			debug_file.setLevel(logging.DEBUG)
+			debug_file.setFormatter(formatter)
 			logging.getLogger().addHandler(debug_file)
 		except IOError:
 			logging.error("Unable to create file %s", options["--debug-file"])
