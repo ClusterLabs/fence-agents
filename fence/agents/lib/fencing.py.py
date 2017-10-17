@@ -444,7 +444,7 @@ all_opt = {
 	"quiet": {
 		"getopt" : "q",
 		"longopt": "quiet",
-		"help" : "-q, --quiet                    Disable logging to stderr. Does not affect --verbose or --debug logging to syslog.",
+		"help" : "-q, --quiet                    Disable logging to stderr. Does not affect --verbose or --debug-file or logging to syslog.",
 		"required" : "0",
 		"order" : 50}
 }
