@@ -150,7 +150,7 @@ def define_new_opts():
 		"required" : "1",
 		"help" : "--ping-targets=tgt1,[inet6:]tgt2  Comma separated list of ping-targets",
 		"shortdesc" : "A comma separated list of ping-targets (optionally prepended by 'inet:' or 'inet6:') to be probed",
-		"default" : "localhost",
+		"default" : "",
 		"order" : 1
 		}
 
@@ -168,7 +168,10 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for ping-heuristic based fencing"
-	docs["longdesc"] = "fence_heuristics_ping uses ping-heuristics to control execution of another fencing agent on the same fencing-level."
+	docs["longdesc"] = "fence_heuristics_ping uses ping-heuristics to control execution of another fence agent on the same fencing level.\
+\n.P\n\
+This is not a fence agent by itself! \
+Its only purpose is to enable/disable another fence agent that lives on the same fencing level but after fence_heuristics_ping."
 	docs["vendorurl"] = ""
 	show_docs(options, docs)
 

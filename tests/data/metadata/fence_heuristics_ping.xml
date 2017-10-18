@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_heuristics_ping" shortdesc="Fence agent for ping-heuristic based fencing" >
-<longdesc>fence_heuristics_ping uses ping-heuristics to control execution of another fencing agent on the same fencing-level.</longdesc>
+<longdesc>fence_heuristics_ping uses ping-heuristics to control execution of another fence agent on the same fencing level.
+.P
+This is not a fence agent by itself! Its only purpose is to enable/disable another fence agent that lives on the same fencing level but after fence_heuristics_ping.</longdesc>
 <vendor-url></vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
@@ -38,7 +40,7 @@
 	</parameter>
 	<parameter name="ping_targets" unique="0" required="1">
 		<getopt mixed="--ping-targets=tgt1,[inet6:]tgt2" />
-		<content type="string" default="localhost"  />
+		<content type="string" default=""  />
 		<shortdesc lang="en">A comma separated list of ping-targets (optionally prepended by 'inet:' or 'inet6:') to be probed</shortdesc>
 	</parameter>
 	<parameter name="ping_timeout" unique="0" required="0">
