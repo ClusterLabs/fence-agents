@@ -10,12 +10,12 @@
 	</parameter>
 	<parameter name="cmd_prompt" unique="0" required="0" deprecated="1">
 		<getopt mixed="-c, --command-prompt=[prompt]" />
-		<content type="string" default="[&apos;\\$&apos;, &apos;DRAC\\/MC:&apos;]"  />
+		<content type="string" default="[&apos;\\$&apos;, &apos;DRAC\\/MC:&apos;, &apos;\\/admin1-&gt;&apos;]"  />
 		<shortdesc lang="en">Force Python regex for command prompt</shortdesc>
 	</parameter>
 	<parameter name="command_prompt" unique="0" required="0" obsoletes="cmd_prompt">
 		<getopt mixed="-c, --command-prompt=[prompt]" />
-		<content type="string" default="[&apos;\\$&apos;, &apos;DRAC\\/MC:&apos;]"  />
+		<content type="string" default="[&apos;\\$&apos;, &apos;DRAC\\/MC:&apos;, &apos;\\/admin1-&gt;&apos;]"  />
 		<shortdesc lang="en">Force Python regex for command prompt</shortdesc>
 	</parameter>
 	<parameter name="drac_version" unique="0" required="0">

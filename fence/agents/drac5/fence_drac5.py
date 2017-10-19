@@ -8,6 +8,7 @@
 ## +-----------------+---------------------------+
 ##  DRAC 5             1.0  (Build 06.05.12)
 ##  DRAC 5             1.21 (Build 07.05.04)
+##  DRAC 8             2.43.43.43
 ##
 ## @note: drac_version was removed
 #####
@@ -104,7 +105,7 @@ def main():
 
 	define_new_opts()
 
-	all_opt["cmd_prompt"]["default"] = [r"\$", r"DRAC\/MC:"]
+	all_opt["cmd_prompt"]["default"] = [r"\$", r"DRAC\/MC:", r"\/admin1->"]
 
 	options = check_input(device_opt, process_input(device_opt))
 
