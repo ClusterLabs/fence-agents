@@ -63,7 +63,8 @@ port=1\n\
 managed=1\n\
 devices=test\n\
 session_url=http://test\n\
-email=test@test.te
+email=test@test.te\n\
+ping_targets=localhost
 
 manual/fence_ack_manual: manual/fence_ack_manual.in
 	mkdir -p $(@D)
