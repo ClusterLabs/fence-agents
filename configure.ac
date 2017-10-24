@@ -189,6 +189,9 @@ AC_PYTHON_MODULE(requests, 1)
 if echo "$AGENTS_LIST" | grep -q amt_ws; then
 	AC_PYTHON_MODULE(pywsman, 1)
 fi
+if echo "$AGENTS_LIST" | grep -q aws; then
+	AC_PYTHON_MODULE(boto3, 1)
+fi
 if echo "$AGENTS_LIST" | grep -q -E "ovh|vmware_soap"; then
 	AC_PYTHON_MODULE(suds, 1)
 fi
