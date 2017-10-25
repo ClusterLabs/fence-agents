@@ -31,7 +31,7 @@ def set_power_status(conn, options):
 def reboot_cycle(conn, options):
 	conn.send_eol("reset /system1 hard")
 	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
-	return
+	return True
 
 def main():
 	device_opt = ["ipaddr", "login", "passwd", "secure", "cmd_prompt", "method", "telnet"]
