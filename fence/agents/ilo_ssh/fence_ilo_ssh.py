@@ -2,6 +2,7 @@
 
 import sys, re
 import atexit
+import logging
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 
@@ -31,6 +32,10 @@ def set_power_status(conn, options):
 def reboot_cycle(conn, options):
 	conn.send_eol("reset /system1 hard")
 	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
+
+	if get_power_status(conn, options) == "off":
+		logging.error("Timed out waiting to power ON\n")
+
 	return True
 
 def main():
