@@ -51,10 +51,10 @@ def ping_test(con, options):
 				p[target] = None
 				continue
 			ping_path = '@PING6_CMD@'
-			target_mangled = target.lstrip('inet6:')
+			target_mangled = target.split(':',2)[1]
 		elif target.startswith('inet:'):
 			ping_path = '@PING4_CMD@'
-			target_mangled = target.lstrip('inet:')
+			target_mangled = target.split(':',2)[1]
 
 		ping_cmd = "%s -n -q -W %d -c %d -i %d %s" % (
 			ping_path, timeout, count, interval, target_mangled)
