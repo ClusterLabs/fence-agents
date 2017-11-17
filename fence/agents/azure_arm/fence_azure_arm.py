@@ -12,8 +12,11 @@ def get_nodes_list(compute_client, options):
     if compute_client:
         rgName = options["--resourceGroup"]
         vms = compute_client.virtual_machines.list(rgName)
-        for vm in vms:
-            result[vm.name] = ("", None)
+        try:
+            for vm in vms:
+                result[vm.name] = ("", None)
+        except Exception as e:
+            fail_usage("Failed: %s" % e)
 
     return result
 
@@ -25,7 +28,10 @@ def get_power_status(compute_client, options):
         vmName = options["--plug"]
 
         powerState = "unknown"
-        vmStatus = compute_client.virtual_machines.get(rgName, vmName, "instanceView")
+        try:
+            vmStatus = compute_client.virtual_machines.get(rgName, vmName, "instanceView")
+        except Exception as e:
+            fail_usage("Failed: %s" % e)
         for status in vmStatus.instance_view.statuses:
             if status.code.startswith("PowerState"):
                 powerState = status.code
@@ -56,7 +62,7 @@ def define_new_opts():
     all_opt["resourceGroup"] = {
         "getopt" : ":",
         "longopt" : "resourceGroup",
-        "help" : "--resourceGroup=[name]       Name of the resource group",
+        "help" : "--resourceGroup=[name]         Name of the resource group",
         "shortdesc" : "Name of resource group.",
         "required" : "1",
         "order" : 2
@@ -64,7 +70,7 @@ def define_new_opts():
     all_opt["tenantId"] = {
         "getopt" : ":",
         "longopt" : "tenantId",
-        "help" : "--tenantId=[name]       Id of the Azure Active Directory tenant",
+        "help" : "--tenantId=[name]              Id of the Azure Active Directory tenant",
         "shortdesc" : "Id of Azure Active Directory tenant.",
         "required" : "1",
         "order" : 3
@@ -72,7 +78,7 @@ def define_new_opts():
     all_opt["subscriptionId"] = {
         "getopt" : ":",
         "longopt" : "subscriptionId",
-        "help" : "--subscriptionId=[name]       Id of the Azure subscription",
+        "help" : "--subscriptionId=[name]        Id of the Azure subscription",
         "shortdesc" : "Id of the Azure subscription.",
         "required" : "1",
         "order" : 4
@@ -87,11 +93,21 @@ def main():
     atexit.register(atexit_handler)
 
     define_new_opts()
+
+    all_opt["power_timeout"]["default"] = "150"
+
+    all_opt["login"]["help"] = "-l, --username=[appid]         Application ID"
+    all_opt["passwd"]["help"] = "-p, --password=[authkey]       Authentication key"
+
     options = check_input(device_opt, process_input(device_opt))
 
     docs = {}
     docs["shortdesc"] = "Fence agent for Azure Resource Manager"
-    docs["longdesc"] = "Used to deallocate virtual machines and to report power state of virtual machines running in Azure"
+    docs["longdesc"] = "Used to deallocate virtual machines and to report power state of virtual machines running in Azure. It uses Azure SDK for Python to connect to Azure.\
+\n.P\n\
+For instructions to setup credentials see: https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal\
+\n.P\n\
+Username and password are application ID and authentication key from \"App registrations\"."
     docs["vendorurl"] = "http://www.microsoft.com"
     show_docs(options, docs)
 
@@ -115,7 +131,9 @@ def main():
             subscriptionId
         )
     except ImportError:
-        fail_usage("Azure Resource Manager Pyhton SDK not found or not accessible")
+        fail_usage("Azure Resource Manager Python SDK not found or not accessible")
+    except Exception as e:
+        fail_usage("Failed: %s" % re.sub("^, ", "", str(e)))
 
     # Operate the fencing device
     result = fence_action(compute_client, options, set_power_status, get_power_status, get_nodes_list)
