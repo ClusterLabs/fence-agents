@@ -23,6 +23,7 @@ before_install:
   - pip install requests
   - pip install pexpect
   - pip install boto3
+  - pip install google-api-python-client
 
 before_script:
   - wget https://github.com/Openwsman/openwsman/archive/v2.6.3.tar.gz
