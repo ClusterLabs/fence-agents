@@ -195,6 +195,9 @@ fi
 if echo "$AGENTS_LIST" | grep -q -E "ovh|vmware_soap"; then
 	AC_PYTHON_MODULE(suds, 1)
 fi
+if echo "$AGENTS_LIST" | grep -q gce; then
+	AC_PYTHON_MODULE(googleapiclient, 1)
+fi
 
 ## path to 3rd-party binaries
 AC_PATH_PROG([IPMITOOL_PATH], [ipmitool], [/usr/bin/ipmitool])
