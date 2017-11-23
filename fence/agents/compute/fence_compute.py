@@ -264,13 +264,37 @@ def create_nova_connection(options):
 	except ImportError:
 		fail_usage("Nova not found or not accessible")
 
-	versions = [ "2.11", "2" ]
-	for version in versions:
-		clientargs = inspect.getargspec(client.Client).varargs
+	from keystoneauth1 import loading
+	from keystoneauth1 import session
+	from keystoneclient import discover
 
+	# Prefer the oldest and strip the leading 'v'
+	keystone_versions = discover.available_versions(options["--auth-url"])
+	keystone_version = keystone_versions[0]['id'][1:]
+	kwargs = dict(
+		auth_url=options["--auth-url"],
+		username=options["--username"],
+		password=options["--password"]
+		)
+
+	if discover.version_match("2", keystone_version):
+		kwargs["tenant_name"] = options["--tenant-name"]
+
+	elif discover.version_match("3", keystone_version):
+		kwargs["project_name"] = options["--tenant-name"]
+		kwargs["user_domain_name"] = options["--user-domain"]
+		kwargs["project_domain_name"] = options["--project-domain"]
+
+	loader = loading.get_plugin_loader('password')
+	keystone_auth = loader.load_from_options(**kwargs)
+	keystone_session = session.Session(auth=keystone_auth, verify=(not options["--insecure"]))
+
+	nova_versions = [ "2.11", "2" ]
+	for version in nova_versions:
+		clientargs = inspect.getargspec(client.Client).varargs
 		# Some versions of Openstack prior to Ocata only
 		# supported positional arguments for username,
-		# password and tenant.
+		# password, and tenant.
 		#
 		# Versions since Ocata only support named arguments.
 		#
@@ -285,25 +309,22 @@ def create_nova_connection(options):
 			#	 varargs=None,
 			#	 keywords='kwargs', defaults=(None, None, None, None))
 			nova = client.Client(version,
-					     options["--username"],
-					     options["--password"],
-					     options["--tenant-name"],
-					     options["--auth-url"],
+					     None, # User
+					     None, # Password
+					     None, # Tenant
+					     None, # Auth URL
 					     insecure=options["--insecure"],
 					     region_name=options["--region-name"],
 					     endpoint_type=options["--endpoint-type"],
+					     session=keystone_session, auth=keystone_auth,
 					     http_log_debug=options.has_key("--verbose"))
 		else:
 			# OSP >= 11
 			# ArgSpec(args=['version'], varargs='args', keywords='kwargs', defaults=None)
 			nova = client.Client(version,
-					     username=options["--username"],
-					     password=options["--password"],
-					     tenant_name=options["--tenant-name"],
-					     auth_url=options["--auth-url"],
-					     insecure=options["--insecure"],
 					     region_name=options["--region-name"],
 					     endpoint_type=options["--endpoint-type"],
+					     session=keystone_session, auth=keystone_auth,
 					     http_log_debug=options.has_key("--verbose"))
 
 		try:
@@ -332,11 +353,29 @@ def define_new_opts():
 	all_opt["tenant-name"] = {
 		"getopt" : "t:",
 		"longopt" : "tenant-name",
-		"help" : "-t, --tenant-name=[tenant]     Keystone Admin Tenant",
+		"help" : "-t, --tenant-name=[name]       Keystone v2 Tenant or v3 Project Name",
 		"required" : "0",
-		"shortdesc" : "Keystone Admin Tenant",
+		"shortdesc" : "Keystone Admin Tenant or v3 Project",
 		"default" : "",
 		"order": 1,
+	}
+	all_opt["user-domain"] = {
+		"getopt" : "u:",
+		"longopt" : "user-domain",
+		"help" : "-u, --user-domain=[name]       Keystone v3 User Domain",
+		"required" : "0",
+		"shortdesc" : "Keystone v3 User Domain",
+		"default" : "Default",
+		"order": 2,
+	}
+	all_opt["project-domain"] = {
+		"getopt" : "P:",
+		"longopt" : "project-domain",
+		"help" : "-d, --project-domain=[name]    Keystone v3 Project Domain",
+		"required" : "0",
+		"shortdesc" : "Keystone v3 Project Domain",
+		"default" : "Default",
+		"order": 2,
 	}
 	all_opt["auth-url"] = {
 		"getopt" : "k:",
@@ -365,7 +404,7 @@ def define_new_opts():
 		"default" : "False",
 		"order": 2,
 	}
-	all_opt["domain"] = {
+	all_opt["compute-domain"] = {
 		"getopt" : "d:",
 		"longopt" : "domain",
 		"help" : "-d, --domain=[string]          DNS domain in which hosts live, useful when the cluster uses short names and nova uses FQDN",
@@ -418,8 +457,9 @@ def main():
 	atexit.register(atexit_handler)
 
 	device_opt = ["login", "passwd", "tenant-name", "auth-url", "fabric_fencing",
-		"no_login", "no_password", "port", "domain", "no-shared-storage", "endpoint-type",
-		"record-only", "instance-filtering", "insecure", "region-name"]
+		      "no_login", "no_password", "port", "compute-domain", "project-domain", "user-domain",
+                      "no-shared-storage", "endpoint-type", "record-only", "instance-filtering", "insecure",
+                      "region-name"]
 	define_new_opts()
 	all_opt["shell_timeout"]["default"] = "180"
 
