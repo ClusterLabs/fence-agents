@@ -10,12 +10,7 @@ import socket
 import textwrap
 import __main__
 
-## do not add code here.
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION = "New fence lib agent - test release on steroids"
-REDHAT_COPYRIGHT = ""
-BUILD_DATE = "March, 2008"
-#END_VERSION_GENERATION
+RELEASE_VERSION = "@RELEASE_VERSION@"
 
 __all__ = ['atexit_handler', 'check_input', 'process_input', 'all_opt', 'show_docs',
 		'fence_login', 'fence_action', 'fence_logout']
@@ -32,6 +27,8 @@ EC_STATUS = 8
 EC_STATUS_HMC = 9
 EC_PASSWORD_MISSING = 10
 EC_INVALID_PRIVILEGES = 11
+
+LOG_FORMAT = "%(asctime)-15s %(levelname)s: %(message)s"
 
 all_opt = {
 	"help"    : {
@@ -449,7 +446,7 @@ all_opt = {
 	"quiet": {
 		"getopt" : "q",
 		"longopt": "quiet",
-		"help" : "-q, --quiet                    Disable logging to stderr. Does not affect --verbose or --debug logging to syslog.",
+		"help" : "-q, --quiet                    Disable logging to stderr. Does not affect --verbose or --debug-file or logging to syslog.",
 		"required" : "0",
 		"order" : 50}
 }
@@ -472,9 +469,11 @@ DEPENDENCY_OPT = {
 	}
 
 class fspawn(pexpect.spawn):
-	def __init__(self, options, command):
+	def __init__(self, options, command, **kwargs):
+		if sys.version_info[0] > 2:
+			kwargs.setdefault('encoding', 'utf-8')
 		logging.info("Running command: %s", command)
-		pexpect.spawn.__init__(self, command)
+		pexpect.spawn.__init__(self, command, **kwargs)
 		self.opt = options
 
 	def log_expect(self, pattern, timeout):
@@ -489,6 +488,15 @@ class fspawn(pexpect.spawn):
 	# send EOL according to what was detected in login process (telnet)
 	def send_eol(self, message):
 		return self.send(message + self.opt["eol"])
+
+def frun(command, timeout=30, withexitstatus=False, events=None,
+	 extra_args=None, logfile=None, cwd=None, env=None, **kwargs):
+	if sys.version_info[0] > 2:
+		kwargs.setdefault('encoding', 'utf-8')
+	return pexpect.run(command, timeout=timeout,
+			   withexitstatus=withexitstatus, events=events,
+			   extra_args=extra_args, logfile=logfile, cwd=cwd,
+			   env=env, **kwargs)
 
 def atexit_handler():
 	try:
@@ -671,11 +679,15 @@ def check_input(device_opt, opt, other_conditions = False):
 	if "--verbose" in options:
 		logging.getLogger().setLevel(logging.DEBUG)
 
+	formatter = logging.Formatter(LOG_FORMAT)
+
 	## add logging to syslog
 	logging.getLogger().addHandler(SyslogLibHandler())
 	if "--quiet" not in options:
 		## add logging to stderr
-		logging.getLogger().addHandler(logging.StreamHandler(sys.stderr))
+		stderrHandler = logging.StreamHandler(sys.stderr)
+		stderrHandler.setFormatter(formatter)
+		logging.getLogger().addHandler(stderrHandler)
 
 	(acceptable_actions, _) = _get_available_actions(device_opt)
 
@@ -704,6 +716,7 @@ def check_input(device_opt, opt, other_conditions = False):
 		try:
 			debug_file = logging.FileHandler(options["--debug-file"])
 			debug_file.setLevel(logging.DEBUG)
+			debug_file.setFormatter(formatter)
 			logging.getLogger().addHandler(debug_file)
 		except IOError:
 			logging.error("Unable to create file %s", options["--debug-file"])
@@ -739,7 +752,7 @@ def get_multi_power_fn(connection, options, get_power_fn):
 
 	return status
 
-def set_multi_power_fn(connection, options, set_power_fn, get_power_fn, retry_attempts=1):
+def async_set_multi_power_fn(connection, options, set_power_fn, get_power_fn, retry_attempts):
 	plugs = options["--plugs"] if "--plugs" in options else [""]
 
 	for _ in range(retry_attempts):
@@ -762,6 +775,40 @@ def set_multi_power_fn(connection, options, set_power_fn, get_power_fn, retry_at
 				return True
 	return False
 
+def sync_set_multi_power_fn(connection, options, sync_set_power_fn, retry_attempts):
+	success = True
+	plugs = options["--plugs"] if "--plugs" in options else [""]
+
+	for plug in plugs:
+		try:
+			options["--uuid"] = str(uuid.UUID(plug))
+		except ValueError:
+			pass
+		except KeyError:
+			pass
+
+		options["--plug"] = plug
+		for retry in range(retry_attempts):
+			if sync_set_power_fn(connection, options):
+				break
+			if retry == retry_attempts-1:
+				success = False
+		time.sleep(int(options["--power-wait"]))
+
+	return success
+
+
+def set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set_power_fn, retry_attempts=1):
+
+	if set_power_fn != None:
+		if get_power_fn != None:
+			return async_set_multi_power_fn(connection, options, set_power_fn, get_power_fn, retry_attempts)
+	elif sync_set_power_fn != None:
+		return sync_set_multi_power_fn(connection, options, sync_set_power_fn, retry_attempts)
+
+	return False
+
+
 def show_docs(options, docs=None):
 	device_opt = options["device_opt"]
 
@@ -781,11 +828,10 @@ def show_docs(options, docs=None):
 		sys.exit(0)
 
 	if "--version" in options:
-		print(__main__.RELEASE_VERSION, __main__.BUILD_DATE)
-		print(__main__.REDHAT_COPYRIGHT)
+		print(RELEASE_VERSION)
 		sys.exit(0)
 
-def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_list=None, reboot_cycle_fn=None):
+def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_list=None, reboot_cycle_fn=None, sync_set_power_fn=None):
 	result = 0
 
 	try:
@@ -842,12 +888,12 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 				return 0
 
 		if options["--action"] == "on":
-			if set_multi_power_fn(connection, options, set_power_fn, get_power_fn, 1 + int(options["--retry-on"])):
+			if set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set_power_fn, 1 + int(options["--retry-on"])):
 				print("Success: Powered ON")
 			else:
 				fail(EC_WAITING_ON)
 		elif options["--action"] == "off":
-			if set_multi_power_fn(connection, options, set_power_fn, get_power_fn):
+			if set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set_power_fn):
 				print("Success: Powered OFF")
 			else:
 				fail(EC_WAITING_OFF)
@@ -865,17 +911,20 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 			else:
 				if status != "off":
 					options["--action"] = "off"
-					if not set_multi_power_fn(connection, options, set_power_fn, get_power_fn):
+					if not set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set_power_fn):
 						fail(EC_WAITING_OFF)
 
 				options["--action"] = "on"
 
 				try:
-					power_on = set_multi_power_fn(connection, options, set_power_fn, get_power_fn, int(options["--retry-on"]))
+					power_on = set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set_power_fn, int(options["--retry-on"]))
 				except Exception as ex:
 					# an error occured during power ON phase in reboot
 					# fence action was completed succesfully even in that case
 					logging.warning("%s", str(ex))
+
+				# switch back to original action for the case it is used lateron
+				options["--action"] = "reboot"
 
 			if power_on == False:
 				# this should not fail as node was fenced succesfully
@@ -964,11 +1013,21 @@ def run_command(options, command, timeout=None, env=None, log_command=None):
 
 	return (status, pipe_stdout, pipe_stderr)
 
-def run_delay(options):
-	## Delay is important for two-node clusters fencing but we do not need to delay 'status' operations
-	if options["--action"] in ["off", "reboot"]:
-		logging.info("Delay %s second(s) before logging in to the fence device", options["--delay"])
-		time.sleep(int(options["--delay"]))
+def run_delay(options, reserve=0, result=0):
+	## Delay is important for two-node clusters fencing
+	## but we do not need to delay 'status' operations
+	## and get us out quickly if we already know that we are gonna fail
+	## still wanna do something right before fencing? - reserve some time
+	if options["--action"] in ["off", "reboot"] \
+		and options["--delay"] != "0" \
+		and result == 0 \
+		and reserve >= 0:
+		time_left = 1 + int(options["--delay"]) - (time.time() - run_delay.time_start) - reserve
+		if time_left > 0:
+			logging.info("Delay %d second(s) before logging in to the fence device", time_left)
+			time.sleep(time_left)
+# mark time when fence-agent is started
+run_delay.time_start = time.time()
 
 def fence_logout(conn, logout_string, sleep=0):
 	# Logout is not required part of fencing but we should attempt to do it properly
@@ -1321,11 +1380,12 @@ def _parse_input_stdin(avail_opt):
 			continue
 
 		(name, value) = (line + "=").split("=", 1)
-		name = name.replace("-", "_");
 		value = value[:-1]
 
-		if name in mapping_longopt_names:
-			name = mapping_longopt_names[name]
+		if name.replace("-", "_") in mapping_longopt_names:
+			name = mapping_longopt_names[name.replace("-", "_")]
+		elif name.replace("_", "-") in mapping_longopt_names:
+			name = mapping_longopt_names[name.replace("_", "-")]
 
 		if avail_opt.count(name) == 0 and name in ["nodename"]:
 			continue

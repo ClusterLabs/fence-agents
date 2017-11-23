@@ -1,11 +1,9 @@
 define gen_agent_from_py
 	mkdir -p `dirname $@`
-	bash $(top_srcdir)/scripts/fenceparse \
-		$(top_srcdir)/make/copyright.cf REDHAT_COPYRIGHT \
-		$(VERSION) \
-		$(abs_srcdir) $@ | \
+	cat $(abs_srcdir)/$@.py | \
 	sed \
 		-e 's#@''PYTHON@#${PYTHON}#g' \
+		-e 's#@''RELEASE_VERSION#${VERSION}#g' \
 		-e 's#@''FENCEAGENTSLIBDIR@#${FENCEAGENTSLIBDIR}#g' \
 		-e 's#@''LOGDIR@#${LOGDIR}#g' \
 		-e 's#@''SBINDIR@#${sbindir}#g' \
@@ -30,6 +28,9 @@ define gen_agent_from_py
 		-e 's#@''SNMPGET_PATH@#${SNMPGET_PATH}#g' \
 		-e 's#@''NOVA_PATH@#${NOVA_PATH}#g' \
 		-e 's#@''POWERMAN_PATH@#${POWERMAN_PATH}#g' \
+		-e 's#@''PING_CMD@#${PING_CMD}#g' \
+		-e 's#@''PING6_CMD@#${PING6_CMD}#g' \
+		-e 's#@''PING4_CMD@#${PING4_CMD}#g' \
 	> $@
 
 	if [ 0 -eq `echo "$(@)" | grep fence_ &> /dev/null; echo $$?` ]; then \

@@ -12,12 +12,6 @@ import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION="New RSA2 Agent - test release on steroids"
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 def get_power_status(conn, options):
 	conn.send_eol("power state")
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))

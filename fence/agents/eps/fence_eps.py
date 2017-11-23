@@ -16,12 +16,6 @@ if sys.version_info[0] > 2:
 else:
 	import httplib
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION="ePowerSwitch 8M+ (eps)"
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 # Run command on EPS device.
 # @param options Device options
 # @param params HTTP GET parameters (without ?)

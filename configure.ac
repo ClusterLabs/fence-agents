@@ -182,11 +182,22 @@ if test -z "$PYTHON"; then
     exit 1
 fi
 
-AC_PYTHON_MODULE(suds, 1)
 AC_PYTHON_MODULE(pexpect, 1)
 AC_PYTHON_MODULE(pycurl, 1)
 AC_PYTHON_MODULE(requests, 1)
-AC_PYTHON_MODULE(pywsman, 1)
+
+if echo "$AGENTS_LIST" | grep -q amt_ws; then
+	AC_PYTHON_MODULE(pywsman, 1)
+fi
+if echo "$AGENTS_LIST" | grep -q aws; then
+	AC_PYTHON_MODULE(boto3, 1)
+fi
+if echo "$AGENTS_LIST" | grep -q -E "ovh|vmware_soap"; then
+	AC_PYTHON_MODULE(suds, 1)
+fi
+if echo "$AGENTS_LIST" | grep -q gce; then
+	AC_PYTHON_MODULE(googleapiclient, 1)
+fi
 
 ## path to 3rd-party binaries
 AC_PATH_PROG([IPMITOOL_PATH], [ipmitool], [/usr/bin/ipmitool])
@@ -208,6 +219,27 @@ AC_PATH_PROG([SNMPSET_PATH], [snmpset], [/usr/bin/snmpset])
 AC_PATH_PROG([SNMPGET_PATH], [snmpget], [/usr/bin/snmpget])
 AC_PATH_PROG([NOVA_PATH], [nova], [/usr/bin/nova])
 AC_PATH_PROG([POWERMAN_PATH], [powerman], [/usr/bin/powerman])
+
+AC_PATH_PROG([PING_CMD], [ping])
+AC_PATH_PROG([PING6_CMD], [ping6])
+AC_PATH_PROG([PING4_CMD], [ping4])
+
+if test "x${ac_cv_path_PING_CMD}" = x; then
+	# assume multicall-ping just not available in build-environment
+	PING_CMD="/bin/ping"
+	PING4_CMD="/bin/ping -4"
+	PING6_CMD="/bin/ping -6"
+elif test "x${ac_cv_path_PING6_CMD}" = x; then
+	# just IPv4
+	PING4_CMD="${ac_cv_path_PING_CMD}"
+elif test -L ${ac_cv_path_PING6_CMD}; then
+	# assume multicall-ping
+	PING4_CMD="${ac_cv_path_PING_CMD} -4"
+else
+	# ping is just IPv4
+	PING4_CMD="${ac_cv_path_PING_CMD}"
+fi
+
 
 ## do subst
 
@@ -245,6 +277,7 @@ AC_SUBST([SG_PERSIST_PATH])
 AC_SUBST([SG_TURS_PATH])
 AC_SUBST([VGS_PATH])
 AC_SUBST([POWERMAN_PATH])
+
 
 ## *FLAGS handling
 

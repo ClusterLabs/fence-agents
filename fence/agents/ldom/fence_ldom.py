@@ -13,12 +13,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail_usage
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION="Logical Domains (LDoms) fence Agent"
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 COMMAND_PROMPT_REG = r"\[PEXPECT\]$"
 COMMAND_PROMPT_NEW = "[PEXPECT]"
 

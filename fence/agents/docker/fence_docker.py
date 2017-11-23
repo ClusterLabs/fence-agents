@@ -10,12 +10,6 @@ import json
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import fail_usage, all_opt, fence_action, atexit_handler, check_input, process_input, show_docs, run_delay
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION = ""
-REDHAT_COPYRIGHT = ""
-BUILD_DATE = ""
-#END_VERSION_GENERATION
-
 def get_power_status(conn, options):
 	del conn
 	status = send_cmd(options, "containers/%s/json" % options["--plug"])

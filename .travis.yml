@@ -15,12 +15,15 @@ addons:
     - libxml2-utils
     - libcimcclient0-dev
     - swig
+    - iputils-ping
 
 before_install:
   - pip install suds
   - pip install pycurl
   - pip install requests
   - pip install pexpect
+  - pip install boto3
+  - pip install google-api-python-client
 
 before_script:
   - wget https://github.com/Openwsman/openwsman/archive/v2.6.3.tar.gz

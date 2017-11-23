@@ -13,12 +13,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import fail_usage, run_command, atexit_handler, check_input, process_input, show_docs, fence_action, all_opt
 from fencing import run_delay
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION=""
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 STORE_PATH = "/var/run/cluster/fence_scsi"
 
 
@@ -182,7 +176,16 @@ def get_cluster_id(options):
 	cmd = options["--corosync-cmap-path"] + " totem.cluster_name"
 
 	match = re.search(r"\(str\) = (\S+)\n", run_cmd(options, cmd)["out"])
-	return hashlib.md5(match.group(1)).hexdigest() if match else fail_usage("Failed: cannot get cluster name")
+
+	if not match:
+		fail_usage("Failed: cannot get cluster name")
+
+	try:
+		return hashlib.md5(match.group(1)).hexdigest()
+	except ValueError:
+		# FIPS requires usedforsecurity=False and might not be
+		# available on all distros: https://bugs.python.org/issue9216
+		return hashlib.md5(match.group(1), usedforsecurity=False).hexdigest()
 
 
 def get_node_id(options):
@@ -332,7 +335,7 @@ be removed from the device(s).",
 		"shortdesc" : "Log output (stdout and stderr) to file",
 		"order": 5
 	}
-	all_opt["corosync-cmap_path"] = {
+	all_opt["corosync_cmap_path"] = {
 		"getopt" : ":",
 		"longopt" : "corosync-cmap-path",
 		"help" : "--corosync-cmap-path=[path]    Path to corosync-cmapctl binary",
@@ -416,7 +419,7 @@ def main():
 	atexit.register(atexit_handler)
 
 	device_opt = ["no_login", "no_password", "devices", "nodename", "key",\
-	"aptpl", "fabric_fencing", "on_target", "corosync-cmap_path",\
+	"aptpl", "fabric_fencing", "on_target", "corosync_cmap_path",\
 	"sg_persist_path", "sg_turs_path", "logfile", "vgs_path", "force_on"]
 
 	define_new_opts()

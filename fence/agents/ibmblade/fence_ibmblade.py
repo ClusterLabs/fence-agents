@@ -6,12 +6,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing_snmp import FencingSnmp
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION="IBM Blade SNMP fence agent"
-REDHAT_COPYRIGHT=""
-BUILD_DATE=""
-#END_VERSION_GENERATION
-
 ### CONSTANTS ###
 # From fence_ibmblade.pl
 STATUSES_OID = ".1.3.6.1.4.1.2.3.51.2.22.1.5.1.1.4" # remoteControlBladePowerState

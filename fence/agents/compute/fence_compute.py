@@ -11,12 +11,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail_usage, is_executable, run_command, run_delay
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION="4.0.11"
-BUILD_DATE="(built Wed Nov 12 06:33:38 EST 2014)"
-REDHAT_COPYRIGHT="Copyright (C) Red Hat, Inc. 2004-2010 All rights reserved."
-#END_VERSION_GENERATION
-
 override_status = ""
 
 EVACUABLE_TAG = "evacuable"
@@ -341,7 +335,7 @@ def create_nova_connection(options):
 	return None
 
 def define_new_opts():
-	all_opt["endpoint-type"] = {
+	all_opt["endpoint_type"] = {
 		"getopt" : "e:",
 		"longopt" : "endpoint-type",
 		"help" : "-e, --endpoint-type=[endpoint] Nova Endpoint type (publicURL, internalURL, adminURL)",
@@ -350,7 +344,7 @@ def define_new_opts():
 		"default" : "internalURL",
 		"order": 1,
 	}
-	all_opt["tenant-name"] = {
+	all_opt["tenant_name"] = {
 		"getopt" : "t:",
 		"longopt" : "tenant-name",
 		"help" : "-t, --tenant-name=[name]       Keystone v2 Tenant or v3 Project Name",
@@ -377,7 +371,7 @@ def define_new_opts():
 		"default" : "Default",
 		"order": 2,
 	}
-	all_opt["auth-url"] = {
+	all_opt["auth_url"] = {
 		"getopt" : "k:",
 		"longopt" : "auth-url",
 		"help" : "-k, --auth-url=[url]           Keystone Admin Auth URL",
@@ -386,7 +380,7 @@ def define_new_opts():
 		"default" : "",
 		"order": 1,
 	}
-	all_opt["region-name"] = {
+	all_opt["region_name"] = {
 		"getopt" : "",
 		"longopt" : "region-name",
 		"help" : "--region-name=[region]         Region Name",
@@ -412,7 +406,7 @@ def define_new_opts():
 		"shortdesc" : "DNS domain in which hosts live",
 		"order": 5,
 	}
-	all_opt["record-only"] = {
+	all_opt["record_only"] = {
 		"getopt" : "r:",
 		"longopt" : "record-only",
 		"help" : "--record-only                  Record the target as needing evacuation but as yet do not intiate it",
@@ -421,7 +415,7 @@ def define_new_opts():
 		"default" : "False",
 		"order": 5,
 	}
-	all_opt["instance-filtering"] = {
+	all_opt["instance_filtering"] = {
 		"getopt" : "",
 		"longopt" : "instance-filtering",
 		"help" : "--instance-filtering           Allow instances created from images and flavors with evacuable=true to be evacuated (or all if no images/flavors have been tagged)",
@@ -430,7 +424,7 @@ def define_new_opts():
 		"default" : "True",
 		"order": 5,
 	}
-	all_opt["no-shared-storage"] = {
+	all_opt["no_shared_storage"] = {
 		"getopt" : "",
 		"longopt" : "no-shared-storage",
 		"help" : "--no-shared-storage            Disable functionality for shared storage",
@@ -456,10 +450,9 @@ def main():
 	global override_status
 	atexit.register(atexit_handler)
 
-	device_opt = ["login", "passwd", "tenant-name", "auth-url", "fabric_fencing",
+	device_opt = ["login", "passwd", "tenant_name", "auth_url", "fabric_fencing",
 		      "no_login", "no_password", "port", "compute-domain", "project-domain", "user-domain",
-                      "no-shared-storage", "endpoint-type", "record-only", "instance-filtering", "insecure",
-                      "region-name"]
+		      "no_shared_storage", "endpoint_type", "record_only", "instance_filtering", "insecure", "region_name"]
 	define_new_opts()
 	all_opt["shell_timeout"]["default"] = "180"
 

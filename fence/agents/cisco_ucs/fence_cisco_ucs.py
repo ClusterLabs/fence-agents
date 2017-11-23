@@ -8,12 +8,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, EC_STATUS, EC_LOGIN_DENIED, run_delay
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION="New Cisco UCS Agent - test release on steroids"
-REDHAT_COPYRIGHT=""
-BUILD_DATE="March, 2008"
-#END_VERSION_GENERATION
-
 RE_COOKIE = re.compile("<aaaLogin .* outCookie=\"(.*?)\"", re.IGNORECASE)
 RE_STATUS = re.compile("<lsPower .*? state=\"(.*?)\"", re.IGNORECASE)
 RE_GET_DN = re.compile(" dn=\"(.*?)\"", re.IGNORECASE)

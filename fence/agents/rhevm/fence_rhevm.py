@@ -8,13 +8,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, EC_STATUS, run_delay
 
-#BEGIN_VERSION_GENERATION
-RELEASE_VERSION="New RHEV-M Agent - test release on steroids"
-REDHAT_COPYRIGHT=""
-BUILD_DATE="March, 2008"
-#END_VERSION_GENERATION
-
-
 RE_GET_ID = re.compile("<vm( .*)? id=\"(.*?)\"", re.IGNORECASE)
 RE_STATUS = re.compile("<state>(.*?)</state>", re.IGNORECASE)
 RE_GET_NAME = re.compile("<name>(.*?)</name>", re.IGNORECASE)
