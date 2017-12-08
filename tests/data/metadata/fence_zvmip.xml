@@ -11,9 +11,10 @@ Column 1                   Column 66                Column 131
    |                          |                        |
    V                          V                        V
 
-XXXXXXXX                      ALL                      IMAGE_OPERATIONS
+XXXXXXXX                      ALL                      IMAGE_CHARACTERISTICS
 
-Where XXXXXXX is the name of the virtual machine used in the authuser field of the request.
+Where XXXXXXX is the name of the virtual machine used in the authuser field of the request. This virtual machine also has to be authorized
+to access the system's directory manager.
 </longdesc>
 <vendor-url>http://www.ibm.com</vendor-url>
 <parameters>

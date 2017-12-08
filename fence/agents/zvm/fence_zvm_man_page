@@ -77,10 +77,11 @@ something similar to this:
 Column 1                   Column 66                Column 131
 |                          |                        |
 V                          V                        V
-XXXXXXXX                   ALL                      IMAGE_OPERATIONS
+XXXXXXXX                   ALL                      IMAGE_CHARACTERISTICS
 .fi
 
-Where XXXXXXX is the name of the virtual machine where the agent resides. 
+Where XXXXXXX is the name of the virtual machine used in the authuser field of the request. This virtual machine also has to be authorized
+to access the system's directory manager.
 
 In addition, the VM directory entry that defines this virtual machine requires the
 IUCV ANY statement (or IUCV <userid of SMAPI Server>). This authorizes use of IUCV
