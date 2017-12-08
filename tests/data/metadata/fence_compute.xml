@@ -59,9 +59,9 @@
 		<shortdesc lang="en">Region Name</shortdesc>
 	</parameter>
 	<parameter name="tenant_name" unique="0" required="0">
-		<getopt mixed="-t, --tenant-name=[tenant]" />
+		<getopt mixed="-t, --tenant-name=[name]" />
 		<content type="string" default=""  />
-		<shortdesc lang="en">Keystone Admin Tenant</shortdesc>
+		<shortdesc lang="en">Keystone Admin Tenant or v3 Project</shortdesc>
 	</parameter>
 	<parameter name="username" unique="0" required="0" obsoletes="login">
 		<getopt mixed="-l, --username=[name]" />
@@ -73,7 +73,32 @@
 		<content type="boolean" default="False"  />
 		<shortdesc lang="en">Allow Insecure TLS Requests</shortdesc>
 	</parameter>
-	<parameter name="domain" unique="0" required="0">
+	<parameter name="project-domain" unique="0" required="0" deprecated="1">
+		<getopt mixed="-d, --project-domain=[name]" />
+		<content type="string" default="Default"  />
+		<shortdesc lang="en">Keystone v3 Project Domain</shortdesc>
+	</parameter>
+	<parameter name="project_domain" unique="0" required="0" obsoletes="project-domain">
+		<getopt mixed="-d, --project-domain=[name]" />
+		<content type="string" default="Default"  />
+		<shortdesc lang="en">Keystone v3 Project Domain</shortdesc>
+	</parameter>
+	<parameter name="user-domain" unique="0" required="0" deprecated="1">
+		<getopt mixed="-u, --user-domain=[name]" />
+		<content type="string" default="Default"  />
+		<shortdesc lang="en">Keystone v3 User Domain</shortdesc>
+	</parameter>
+	<parameter name="user_domain" unique="0" required="0" obsoletes="user-domain">
+		<getopt mixed="-u, --user-domain=[name]" />
+		<content type="string" default="Default"  />
+		<shortdesc lang="en">Keystone v3 User Domain</shortdesc>
+	</parameter>
+	<parameter name="compute-domain" unique="0" required="0" deprecated="1">
+		<getopt mixed="-d, --domain=[string]" />
+		<content type="string"  />
+		<shortdesc lang="en">DNS domain in which hosts live</shortdesc>
+	</parameter>
+	<parameter name="domain" unique="0" required="0" obsoletes="compute-domain">
 		<getopt mixed="-d, --domain=[string]" />
 		<content type="string"  />
 		<shortdesc lang="en">DNS domain in which hosts live</shortdesc>
