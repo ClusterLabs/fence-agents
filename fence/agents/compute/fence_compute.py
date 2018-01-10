@@ -331,7 +331,7 @@ def create_nova_connection(options):
 		except Exception as e:
 			logging.warning("Nova connection failed. %s: %s" % (e.__class__.__name__, e))
 
-	logging.warning("Couldn't obtain a supported connection to nova, tried: %s\n" % repr(versions))
+	logging.warning("Couldn't obtain a supported connection to nova, tried: %s\n" % repr(nova_versions))
 	return None
 
 def define_new_opts():
