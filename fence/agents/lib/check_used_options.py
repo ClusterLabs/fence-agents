@@ -24,7 +24,7 @@ def main():
 	## all_opt defined in fence agent are found
 	agent_file = open(agent)
 	opt_re = re.compile(r"\s*all_opt\[\"([^\"]*)\"\] = {")
-	opt_longopt_re = re.compile(r"\s*\"longopt\" : \"([^\"]*)\"")
+	opt_longopt_re = re.compile(r"\"longopt\"\s*:\s*\"([^\"]*)\"")
 
 	in_opt = False
 	for line in agent_file:
