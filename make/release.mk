@@ -1,7 +1,5 @@
 # to build official release tarballs, handle tagging and publish.
 
-gpgsignkey = 0x6CE95CA7  # signing key
-
 project = fence-agents
 
 deliverables = $(project)-$(version).sha256 \
@@ -11,7 +9,7 @@ deliverables = $(project)-$(version).sha256 \
 
 
 .PHONY: all
-all: tag tarballs sign  # first/last skipped per release/gpgsignkey respectively
+all: tag tarballs
 
 
 .PHONY: checks
@@ -34,7 +32,7 @@ endif
 setup: checks
 	./autogen.sh
 	./configure
-	make maintainer-clean
+	$(MAKE) maintainer-clean
 
 
 .PHONY: tag
@@ -55,35 +53,17 @@ endif
 tarballs: tag
 	./autogen.sh
 	./configure
-	make distcheck
+	$(MAKE) distcheck
 
 
 .PHONY: sha256
 sha256: $(project)-$(version).sha256
 
-# NOTE: dependency backtrack may fail trying to sign missing tarballs otherwise
-#       (actually, only when signing tarballs directly, but doesn't hurt anyway)
 $(deliverables): tarballs
 
 $(project)-$(version).sha256:
 	# checksum anything from deliverables except for in-prep checksums file
 	sha256sum $(deliverables:$@=) | sort -k2 > $@
-
-
-.PHONY: sign
-ifeq (,$(gpgsignkey))
-sign: $(deliverables)
-	@echo No GPG signing key defined
-else
-sign: $(project)-$(version).sha256.asc  # "$(deliverables:=.asc)" to sign all
-endif
-
-# NOTE: cannot sign multiple files at once
-$(project)-$(version).%.asc: $(project)-$(version).%
-	gpg --default-key "$(strip $(gpgsignkey))" \
-		--detach-sign \
-		--armor \
-		$<
 
 
 .PHONY: publish
