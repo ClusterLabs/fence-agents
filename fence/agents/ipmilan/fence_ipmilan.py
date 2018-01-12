@@ -166,14 +166,12 @@ def main():
 	all_opt["power_wait"]["default"] = 2
 	if os.path.basename(sys.argv[0]) == "fence_ilo3":
 		all_opt["power_wait"]["default"] = "4"
-		all_opt["method"]["default"] = "cycle"
 		all_opt["lanplus"]["default"] = "1"
 	elif os.path.basename(sys.argv[0]) == "fence_ilo4":
 		all_opt["lanplus"]["default"] = "1"
 
 	all_opt["ipport"]["default"] = "623"
-	if all_opt["method"]["default"] == "cycle":
-		all_opt["method"]["help"] = "-m, --method=[method]          Method to fence (onoff|cycle) (Default: cycle)\n" \
+	all_opt["method"]["help"] = "-m, --method=[method]          Method to fence (onoff|cycle) (Default: cycle)\n" \
 				    "WARNING! This fence agent might report success before the node is powered off. " \
 				    "You should use -m/method onoff if your fence device works correctly with that option."
 
