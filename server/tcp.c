@@ -278,9 +278,14 @@ tcp_dispatch(listener_context_t c, struct timeval *timeout)
 	FD_ZERO(&rfds);
 	FD_SET(info->listen_sock, &rfds);
 
-	n = _select_retry(info->listen_sock + 1, &rfds, NULL, NULL, timeout);
-	if (n <= 0)
+	n = select(info->listen_sock + 1, &rfds, NULL, NULL, timeout);
+	if (n <= 0) {
+		if (errno == EINTR || errno == EAGAIN)
+			n = 0;
+		else
+			dbg_printf(2, "select: %s\n", strerror(errno));
 		return n;
+	}
 	
 	client_fd = accept(info->listen_sock, NULL, NULL);
 	if (client_fd < 0) {

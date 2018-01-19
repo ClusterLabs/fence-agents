@@ -350,9 +350,14 @@ mcast_dispatch(listener_context_t c, struct timeval *timeout)
 	FD_ZERO(&rfds);
 	FD_SET(info->mc_sock, &rfds);
 
-	n = _select_retry((info->mc_sock)+1, &rfds, NULL, NULL, timeout);
-	if (n <= 0)
+	n = select((info->mc_sock)+1, &rfds, NULL, NULL, timeout);
+	if (n <= 0) {
+		if (errno == EINTR || errno == EAGAIN)
+			n = 0;
+		else
+			dbg_printf(2, "select: %s\n", strerror(errno));
 		return n;
+	}
 	
 	slen = sizeof(sin);
 	len = recvfrom(info->mc_sock, &data, sizeof(data), 0,
