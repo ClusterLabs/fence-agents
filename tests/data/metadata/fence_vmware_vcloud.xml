@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_vmware_vcloud" shortdesc="Fence agent for VMware vCloud Director API" >
-<longdesc>fence_vmware_rest is an I/O Fencing agent which can be used with VMware API to fence virtual machines.</longdesc>
+<longdesc>fence_vmware_vcloud is an I/O Fencing agent which can be used with VMware vCloud Director API to fence virtual machines.</longdesc>
 <vendor-url>https://www.vmware.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
