@@ -143,25 +143,63 @@ def dev_write(options, dev):
 		store_fh.write(dev + "\t" + options["--key"] + "\n")
 	store_fh.close()
 
-def dev_read(options):
+def dev_read(options, fail=True):
 	dev_key = {}
 	file_path = options["--store-path"] + "/mpath.devices"
 	try:
 		store_fh = open(file_path, "r")
 	except IOError:
-		fail_usage("Failed: Cannot open file \"" + file_path + "\"")
+		if fail:
+			fail_usage("Failed: Cannot open file \"" + file_path + "\"")
+		else:
+			return None
 	# get not empty lines from file
 	for (device, key) in [line.strip().split() for line in store_fh if line.strip()]:
 		dev_key[device] = key
 	store_fh.close()
 	return dev_key
 
+def mpath_check_get_verbose():
+	try:
+		f = open("/etc/sysconfig/watchdog", "r")
+	except IOError:
+		return False
+	match = re.search(r"^\s*verbose=yes", "".join(f.readlines()), re.MULTILINE)
+	f.close()
+	return bool(match)
+
+def mpath_check(hardreboot=False):
+	if len(sys.argv) >= 3 and sys.argv[1] == "repair":
+		return int(sys.argv[2])
+	options = {}
+	options["--mpathpersist-path"] = "/usr/sbin/mpathpersist"
+	options["--store-path"] = "/var/run/cluster"
+	options["--power-timeout"] = "5"
+	if mpath_check_get_verbose():
+		logging.getLogger().setLevel(logging.DEBUG)
+	devs = dev_read(options, fail=False)
+	if not devs:
+		logging.error("No devices found")
+		return 0
+	for dev, key in list(devs.items()):
+		if key in get_registration_keys(options, dev):
+			logging.debug("key " + key + " registered with device " + dev)
+			return 0
+		else:
+			logging.debug("key " + key + " not registered with device " + dev)
+	logging.debug("key " + key + " registered with any devices")
+
+	if hardreboot == True:
+		libc = ctypes.cdll['libc.so.6']
+		libc.reboot(0x1234567)
+	return 2
+
 def define_new_opts():
 	all_opt["devices"] = {
 		"getopt" : "d:",
 		"longopt" : "devices",
 		"help" : "-d, --devices=[devices]        List of devices to use for current operation",
-		"required" : "1",
+		"required" : "0",
 		"shortdesc" : "List of devices to use for current operation. Devices can \
 be comma-separated list of device-mapper multipath devices (eg. /dev/mapper/3600508b400105df70000e00000ac0000 or /dev/mapper/mpath1). \
 Each device must support SCSI-3 persistent reservations.",
@@ -204,6 +242,12 @@ def main():
 	        "fabric_fencing", "on_target", "store_path", "mpathpersist_path", "force_on"]
 
 	define_new_opts()
+
+	# fence_mpath_check
+	if os.path.basename(sys.argv[0]) == "fence_mpath_check":
+		sys.exit(mpath_check())
+	elif os.path.basename(sys.argv[0]) == "fence_mpath_check_hardreboot":
+		sys.exit(mpath_check(hardreboot=True))
 
 	options = check_input(device_opt, process_input(device_opt), other_conditions=True)
 
