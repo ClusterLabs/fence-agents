@@ -136,10 +136,11 @@ def set_power_status(clients, options):
         network_client = clients[1]
         rgName = options["--resourceGroup"]
         vmName = options["--plug"]
-
-        if (options["--action"]=="off"):
-            logging.info("Fencing %s in resource group %s" % (vmName, rgName))
-            try:
+        try:
+        
+            if (options["--action"]=="off"):
+                logging.info("Fencing %s in resource group %s" % (vmName, rgName))
+           
                 from azure.mgmt.network.models import SecurityRule
 
                 powerState = "unknown"
@@ -216,11 +217,97 @@ def set_power_status(clients, options):
                             fail_usage("Network interface id %s does not have a network security group." % nic.id)
                     else:
                         fail_usage("Network interface id %s could not be parsed. Contact support" % nic.id)
-            except Exception as e:
-                fail_usage("Failed: %s" % e)        
-        elif (options["--action"]=="on"):
-            logging.info("Starting %s in resource group %s" % (vmName, rgName))
-            #compute_client.virtual_machines.start(rgName, vmName)
+                
+                logging.info("Network fencing done. Deallocating VM %s in resource group %s" % (vmName, rgName))
+                compute_client.virtual_machines.deallocate(rgName, vmName)            
+              
+            elif (options["--action"]=="on"):
+                logging.info("Unfencing %s in resource group %s" % (vmName, rgName))
+                
+                while True:
+                    powerState = "unknown"
+                    provState = "unknown"
+                    vm = compute_client.virtual_machines.get(rgName, vmName, "instanceView")
+                    for status in vm.instance_view.statuses:
+                        if status.code.startswith("PowerState"):
+                            powerState = status.code.replace("PowerState/", "")
+                        if status.code.startswith("ProvisioningState"):
+                            provState = status.code.replace("ProvisioningState/", "")
+                
+                    logging.info("Testing VM state: ProvisioningState %s, PowerState %s" % (provState, powerState))
+                    
+                    if (provState.lower() == "succeeded" and (powerState.lower() == "deallocated" or powerState.lower() == "stopped")):
+                        break
+                    elif (provState.lower() == "succeeded" and not (powerState.lower() == "deallocated" or powerState.lower() == "stopped")):
+                        fail_usage("Virtual machine %s needs to be deallocated or stopped to be unfenced" % (vm.id))                        
+                    elif (provState.lower() == "failed" or provState.lower() == "canceled"):
+                        fail_usage("Virtual machine operation %s failed or canceled. Virtual machine %s needs to be deallocated or stopped to be unfenced" % (vm.id))
+                    else:
+                        time.sleep(10)
+
+                logging.info("Starting virtual machine %s in resource group %s" % (vmName, rgName))
+                waitOp = compute_client.virtual_machines.start(rgName, vmName)
+                logging.info("Virtual machine %s started. Waiting for until operation is completed." % (vmName))
+                waitOp.wait()
+                logging.info("Virtual machine %s in resource group %s started." % (vmName, rgName))
+
+                for nic in vm.network_profile.network_interfaces:
+                    match = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))?', nic.id)
+                    
+                    if match:
+                        logging.info("Getting network interface.")
+                        nic = network_client.network_interfaces.get(match.group(3), match.group(6))
+                        logging.info("Getting network interface done.")
+                        if nic.network_security_group:
+                            nsgmatch = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))?', nic.network_security_group.id)
+                            if nsgmatch:
+                                logging.info("Getting NSG.")
+                                nsg = network_client.network_security_groups.get(nsgmatch.group(3), nsgmatch.group(6))                                
+                                logging.info("Getting NSG done.")
+
+                                if len(nsg.network_interfaces) == 1 and ((not nsg.subnets) or len(nsg.subnets) == 0):
+                                    inboundOk = False
+                                    outboundOk = False
+                                    inboundRule = None
+                                    outboundRule = None
+                                    for rule in nsg.security_rules:
+                                        logging.info("Testing if security rule %s needs to be removed" % rule.name)   
+                                        if rule.name == "FENCE_DENY_ALL_INBOUND":
+                                            logging.info("Inbound rule found.")
+                                            inboundOk = True
+                                            inboundRule = rule
+                                        elif  rule.name == "FENCE_DENY_ALL_OUTBOUND":
+                                            logging.info("Outbound rule found.")
+                                            outboundOk = True
+                                            outboundRule = rule
+                                    
+                                    if (inboundRule):
+                                        nsg.security_rules.remove(inboundRule)                                   
+                                    if (outboundRule):
+                                        nsg.security_rules.remove(outboundRule)                                   
+
+                                    if (inboundOk or outboundOk):
+                                        logging.info("Updating %s" % nsg.name)                               
+                                        op = network_client.network_security_groups.create_or_update(nsgmatch.group(3), nsg.name, nsg)
+                                        logging.info("Updating of %s started - waiting" % nsg.name)
+                                        op.wait()
+                                        logging.info("Updating of %s done" % nsg.name)
+
+                                elif len(nsg.network_interfaces) != 1:
+                                    fail_usage("Network security group %s of network interface %s is used by multiple network interfaces. Virtual Machine %s cannot be fenced" % (nic.network_security_group.id, nic.id, vm.id ))
+                                else:
+                                    fail_usage("Network security group %s of network interface %s is also used by a subnet. Virtual Machine %s cannot be fenced" % (nic.network_security_group.id, nic.id, vm.id ))                        
+                            else:
+                                fail_usage("Network Security Group id %s could not be parsed. Contact support" % nic.network_security_group.id)
+                        else:            
+                            fail_usage("Network interface id %s does not have a network security group." % nic.id)
+                    else:
+                        fail_usage("Network interface id %s could not be parsed. Contact support" % nic.id)
+
+
+
+        except Exception as e:
+            fail_usage("Failed: %s" % e)      
     else:
         fail_usage("No Azure clients configured. Contact support")
 
@@ -257,6 +344,14 @@ def define_new_opts():
         "required" : "0",
         "order" : 5
     }
+    all_opt["cloud"] = {
+        "getopt" : ":",
+        "longopt" : "cloud",
+        "help" : "--cloud=[value]        Id of the Azure subscription",
+        "shortdesc" : "Id of the Azure subscription.",
+        "required" : "0",
+        "order" : 6
+    }
 
 # Main agent method
 def main():
@@ -270,7 +365,6 @@ def main():
     network_client = None
     device_opt = None
     credentials = None
-    baseurl=None
 
     atexit.register(atexit_handler)
 
@@ -281,13 +375,13 @@ def main():
     all_opt["login"]["help"] = "-l, --username=[appid]         Application ID"
     all_opt["passwd"]["help"] = "-p, --password=[authkey]       Authentication key"
 
-    msi_opt = ["resourceGroup","subscriptionId","port","useMSI","login","passwd","tenantId"]
+    msi_opt = ["resourceGroup","subscriptionId","port","useMSI","login","passwd","tenantId","cloud"]
     msiOptions = process_input(msi_opt)
 
     if "--useMSI" in msiOptions:
         device_opt = ["resourceGroup", "subscriptionId","port","useMSI","no_login","no_password"]
     else:
-        device_opt = ["resourceGroup", "login", "passwd", "tenantId", "subscriptionId","port"]
+        device_opt = ["resourceGroup", "login", "passwd", "tenantId", "subscriptionId","port","cloud"]
 
     options = check_input(device_opt, process_input(device_opt))
 
@@ -307,31 +401,71 @@ Username and password are application ID and authentication key from \"App regis
         from azure.mgmt.compute import ComputeManagementClient
         from azure.mgmt.network import NetworkManagementClient        
 
-        if "--useMSI" in options:
+        cloud_environment = None
+        if "--cloud" in options:                
+            cloud = options["--cloud"]
+            logging.info("Cloud parameter %s provided." % (cloud))
+
+                
+            if (cloud.lower() == "china"):
+                from msrestazure.azure_cloud import AZURE_CHINA_CLOUD
+                cloud_environment = AZURE_CHINA_CLOUD
+            elif (cloud.lower() == "german"):
+                from msrestazure.azure_cloud import AZURE_GERMAN_CLOUD
+                cloud_environment = AZURE_GERMAN_CLOUD
+            elif (cloud.lower() == "usgov"):
+                from msrestazure.azure_cloud import AZURE_US_GOV_CLOUD
+                cloud_environment = AZURE_US_GOV_CLOUD
+
+        if ("--useMSI" in options) and (options["--useMSI"] == "1"):
             from msrestazure.azure_active_directory import MSIAuthentication
-            credentials = MSIAuthentication()            
+            if cloud_environment:
+                credentials = MSIAuthentication(cloud_environment=cloud_environment)
+            else:
+                credentials = MSIAuthentication()
         else:
             from azure.common.credentials import ServicePrincipalCredentials
             tenantid = options["--tenantId"]
             servicePrincipal = options["--username"]
-            spPassword = options["--password"]
-            subscriptionId = options["--subscriptionId"]
-            credentials = ServicePrincipalCredentials(
-                client_id = servicePrincipal,
-                secret = spPassword,
-                tenant = tenantid
-            )
+            spPassword = options["--password"]         
+            
+            if cloud_environment:
+                credentials = ServicePrincipalCredentials(
+                    client_id = servicePrincipal,
+                    secret = spPassword,
+                    tenant = tenantid,
+                    cloud_environment=cloud_environment
+                )
+            else:
+                credentials = ServicePrincipalCredentials(
+                    client_id = servicePrincipal,
+                    secret = spPassword,
+                    tenant = tenantid
+                )
+        
 
-        compute_client = ComputeManagementClient(
-            credentials,
-            subscriptionId,
-            base_url=baseurl
-        )
-        network_client = NetworkManagementClient(
-            credentials,
-            subscriptionId,
-            base_url=baseurl
-        )
+        subscriptionId = options["--subscriptionId"]
+        if cloud_environment:
+            compute_client = ComputeManagementClient(
+                credentials,
+                subscriptionId,
+                base_url=cloud_environment.endpoints.resource_manager
+            )
+            network_client = NetworkManagementClient(
+                credentials,
+                subscriptionId,
+                base_url=cloud_environment.endpoints.resource_manager
+            )
+        else:
+            compute_client = ComputeManagementClient(
+                credentials,
+                subscriptionId
+            )
+            network_client = NetworkManagementClient(
+                credentials,
+                subscriptionId
+            )
+    
     except ImportError as ie:
         fail_usage("Azure Resource Manager Python SDK not found or not accessible: %s" % re.sub("^, ", "", str(ie)))
     except Exception as e:
