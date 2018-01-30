@@ -94,14 +94,14 @@ def get_power_status(clients, options):
                                         and (rule.source_port_range == "*") and (rule.destination_port_range == "*") \
                                         and (rule.protocol == "*") and (rule.destination_address_prefix == "*") \
                                         and (rule.source_address_prefix == "*") and (rule.provisioning_state == "Succeeded") \
-                                        and (rule.priority == 100):
+                                        and (rule.priority == 100) and (rule.name == "FENCE_DENY_ALL_INBOUND"):
                                         logging.info("Inbound rule found.")
                                         inboundOk = True
                                     elif (rule.access == "Deny") and (rule.direction == "Outbound")  \
                                         and (rule.source_port_range == "*") and (rule.destination_port_range == "*") \
                                         and (rule.protocol == "*") and (rule.destination_address_prefix == "*") \
                                         and (rule.source_address_prefix == "*") and (rule.provisioning_state == "Succeeded") \
-                                        and (rule.priority == 100):
+                                        and (rule.priority == 100) and (rule.name == "FENCE_DENY_ALL_OUTBOUND"):
                                         logging.info("Outbound rule found.")
                                         outboundOk = True
                                 
@@ -339,16 +339,16 @@ def define_new_opts():
     all_opt["useMSI"] = {
         "getopt" : ":",
         "longopt" : "useMSI",
-        "help" : "--useMSI=[value]        Id of the Azure subscription",
-        "shortdesc" : "Id of the Azure subscription.",
+        "help" : "--useMSI=[value]        Determines if Managed Service Identity should be used instead of username and password. If this parameter is specified, parameters tenantId, login and passwd are not allowed.",
+        "shortdesc" : "Determines if Managed Service Identity should be used.",
         "required" : "0",
         "order" : 5
     }
     all_opt["cloud"] = {
         "getopt" : ":",
         "longopt" : "cloud",
-        "help" : "--cloud=[value]        Id of the Azure subscription",
-        "shortdesc" : "Id of the Azure subscription.",
+        "help" : "--cloud=[value]        Name of the cloud you want to use. Supported values are china, germany or usgov. Do not use this parameter if you want to use public Azure",
+        "shortdesc" : "Name of the cloud you want to use.",
         "required" : "0",
         "order" : 6
     }
@@ -410,12 +410,14 @@ Username and password are application ID and authentication key from \"App regis
             if (cloud.lower() == "china"):
                 from msrestazure.azure_cloud import AZURE_CHINA_CLOUD
                 cloud_environment = AZURE_CHINA_CLOUD
-            elif (cloud.lower() == "german"):
+            elif (cloud.lower() == "germany"):
                 from msrestazure.azure_cloud import AZURE_GERMAN_CLOUD
                 cloud_environment = AZURE_GERMAN_CLOUD
             elif (cloud.lower() == "usgov"):
                 from msrestazure.azure_cloud import AZURE_US_GOV_CLOUD
                 cloud_environment = AZURE_US_GOV_CLOUD
+            else:
+                fail_usage("Value %s for cloud parameter not supported. Supported values are china, germany and usgov" % cloud)
 
         if ("--useMSI" in options) and (options["--useMSI"] == "1"):
             from msrestazure.azure_active_directory import MSIAuthentication
