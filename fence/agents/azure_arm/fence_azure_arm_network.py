@@ -383,7 +383,7 @@ def main():
     else:
         device_opt = ["resourceGroup", "login", "passwd", "tenantId", "subscriptionId","port","cloud"]
 
-    options = check_input(device_opt, process_input(device_opt))
+    options = check_input(device_opt, msiOptions)
 
     docs = {}
     docs["shortdesc"] = "Fence agent for Azure Resource Manager"
