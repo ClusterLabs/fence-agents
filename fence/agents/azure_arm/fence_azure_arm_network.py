@@ -219,9 +219,11 @@ def set_power_status(clients, options):
                         fail_usage("Network interface id %s could not be parsed. Contact support" % nic.id)
                 
                 logging.info("Network fencing done. Deallocating VM %s in resource group %s" % (vmName, rgName))
-                waitOp = compute_client.virtual_machines.deallocate(rgName, vmName)            
-                waitOpStatus = waitOp.status()
-                logging.info("Network fencing done. Deallocate operation started. Status is %s" % (waitOpStatus))
+                waitOp = compute_client.virtual_machines.deallocate(rgName, vmName, raw=True)
+                if waitOp.response.status_code < 200 or waitOp.response.status_code > 202:
+                    fail_usage("Response code is %s. Must be 200, 201 or 202" % waitOp.response.status_code)
+
+                logging.info("Network fencing done. Deallocate operation started. Status is %s" % (waitOp.response.status_code))
               
             elif (options["--action"]=="on"):
                 logging.info("Unfencing %s in resource group %s" % (vmName, rgName))
