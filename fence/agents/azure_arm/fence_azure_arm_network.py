@@ -249,12 +249,6 @@ def set_power_status(clients, options):
                     else:
                         time.sleep(10)
 
-                logging.info("Starting virtual machine %s in resource group %s" % (vmName, rgName))
-                waitOp = compute_client.virtual_machines.start(rgName, vmName)
-                logging.info("Virtual machine %s started. Waiting for until operation is completed." % (vmName))
-                waitOp.wait()
-                logging.info("Virtual machine %s in resource group %s started." % (vmName, rgName))
-
                 for nic in vm.network_profile.network_interfaces:
                     match = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))?', nic.id)
                     
@@ -308,7 +302,12 @@ def set_power_status(clients, options):
                     else:
                         fail_usage("Network interface id %s could not be parsed. Contact support" % nic.id)
 
+                logging.info("Starting virtual machine %s in resource group %s" % (vmName, rgName))
+                waitOp = compute_client.virtual_machines.start(rgName, vmName, raw=True)
+                if waitOp.response.status_code < 200 or waitOp.response.status_code > 202:
+                    fail_usage("Response code is %s. Must be 200, 201 or 202" % waitOp.response.status_code)
 
+                logging.info("Virtual machine starting up. Status is %s" % (waitOp.response.status_code))
 
         except Exception as e:
             fail_usage("Failed: %s" % e)      
