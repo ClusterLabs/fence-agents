@@ -49,7 +49,7 @@ Make sure that every network interface has a network security group" % nic.id)
     return result
 
 def get_power_status(clients, options):
-    logging.info("getting power status for VM %s" % (options["--plug"]))
+    logging.info("{get_power_status} getting power status for VM %s" % (options["--plug"]))
     result = "on"
 
     if clients:
@@ -59,7 +59,7 @@ def get_power_status(clients, options):
         vmName = options["--plug"]
         
         try:
-            logging.info("Testing VM state")
+            logging.info("{get_power_status} Testing VM state")
             powerState = "unknown"
             vm = compute_client.virtual_machines.get(rgName, vmName, "instanceView")
             for status in vm.instance_view.statuses:
@@ -76,15 +76,15 @@ def get_power_status(clients, options):
                 match = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))?', nic.id)
                 
                 if match:
-                    logging.info("Getting network interface.")
+                    logging.info("{get_power_status} Getting network interface.")
                     nic = network_client.network_interfaces.get(match.group(3), match.group(6))
-                    logging.info("Getting network interface done.")
+                    logging.info("{get_power_status} Getting network interface done.")
                     if nic.network_security_group:
                         nsgmatch = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))?', nic.network_security_group.id)
                         if nsgmatch:
-                            logging.info("Getting NSG.")
+                            logging.info("{get_power_status} Getting NSG.")
                             nsg = network_client.network_security_groups.get(nsgmatch.group(3), nsgmatch.group(6))                                
-                            logging.info("Getting NSG done.")
+                            logging.info("{get_power_status} Getting NSG done.")
 
                             if len(nsg.network_interfaces) == 1 and ((not nsg.subnets) or len(nsg.subnets) == 0):
                                 inboundOk = False
@@ -95,37 +95,38 @@ def get_power_status(clients, options):
                                         and (rule.protocol == "*") and (rule.destination_address_prefix == "*") \
                                         and (rule.source_address_prefix == "*") and (rule.provisioning_state == "Succeeded") \
                                         and (rule.priority == 100) and (rule.name == "FENCE_DENY_ALL_INBOUND"):
-                                        logging.info("Inbound rule found.")
+                                        logging.info("{get_power_status} Inbound rule found.")
                                         inboundOk = True
                                     elif (rule.access == "Deny") and (rule.direction == "Outbound")  \
                                         and (rule.source_port_range == "*") and (rule.destination_port_range == "*") \
                                         and (rule.protocol == "*") and (rule.destination_address_prefix == "*") \
                                         and (rule.source_address_prefix == "*") and (rule.provisioning_state == "Succeeded") \
                                         and (rule.priority == 100) and (rule.name == "FENCE_DENY_ALL_OUTBOUND"):
-                                        logging.info("Outbound rule found.")
+                                        logging.info("{get_power_status} Outbound rule found.")
                                         outboundOk = True
                                 
                                 nicOK = outboundOk and inboundOk
                                 allNICOK = allNICOK & nicOK
 
                             elif len(nsg.network_interfaces) != 1:
-                                fail_usage("Network security group %s of network interface %s is used by multiple network interfaces. Virtual Machine %s cannot be fenced" % (nic.network_security_group.id, nic.id, vm.id ))
+                                fail_usage("{get_power_status} Network security group %s of network interface %s is used by multiple network interfaces. Virtual Machine %s cannot be fenced" % (nic.network_security_group.id, nic.id, vm.id ))
                             else:
-                                fail_usage("Network security group %s of network interface %s is also used by a subnet. Virtual Machine %s cannot be fenced" % (nic.network_security_group.id, nic.id, vm.id ))                        
+                                fail_usage("{get_power_status} Network security group %s of network interface %s is also used by a subnet. Virtual Machine %s cannot be fenced" % (nic.network_security_group.id, nic.id, vm.id ))                        
                         else:
-                            fail_usage("Network Security Group id %s could not be parsed. Contact support" % nic.network_security_group.id)
+                            fail_usage("{get_power_status} Network Security Group id %s could not be parsed. Contact support" % nic.network_security_group.id)
                     else:            
-                        fail_usage("Network interface id %s does not have a network security group." % nic.id)
+                        fail_usage("{get_power_status} Network interface id %s does not have a network security group." % nic.id)
                 else:
-                    fail_usage("Network interface id %s could not be parsed. Contact support" % nic.id)
+                    fail_usage("{get_power_status} Network interface id %s could not be parsed. Contact support" % nic.id)
         except Exception as e:
-            fail_usage("Failed: %s" % e)
+            fail_usage("{get_power_status} Failed: %s" % e)
         if allNICOK:
-            logging.info("All network interface have inbound and outbound deny all rules. Declaring VM as off")
+            logging.info("{get_power_status} All network interface have inbound and outbound deny all rules. Declaring VM as off")
             result = "off"
     else:
-        fail_usage("No Azure clients configured. Contact support")
+        fail_usage("{get_power_status} No Azure clients configured. Contact support")
     
+    logging.info("{get_power_status} result is %s" % result)
     return result
 
 def set_power_status(clients, options):        
@@ -264,32 +265,21 @@ def set_power_status(clients, options):
                                 logging.info("Getting NSG done.")
 
                                 if len(nsg.network_interfaces) == 1 and ((not nsg.subnets) or len(nsg.subnets) == 0):
-                                    inboundOk = False
-                                    outboundOk = False
-                                    inboundRule = None
-                                    outboundRule = None
-                                    for rule in nsg.security_rules:
-                                        logging.info("Testing if security rule %s needs to be removed" % rule.name)   
-                                        if rule.name == "FENCE_DENY_ALL_INBOUND":
-                                            logging.info("Inbound rule found.")
-                                            inboundOk = True
-                                            inboundRule = rule
-                                        elif  rule.name == "FENCE_DENY_ALL_OUTBOUND":
-                                            logging.info("Outbound rule found.")
-                                            outboundOk = True
-                                            outboundRule = rule
-                                    
-                                    if (inboundRule):
-                                        nsg.security_rules.remove(inboundRule)                                   
-                                    if (outboundRule):
-                                        nsg.security_rules.remove(outboundRule)                                   
+                                    rulesCountBefore = len(nsg.security_rules)
+                                    logging.info("Rules cound before %s" % rulesCountBefore)
+                                    nsg.security_rules[:] = [rule for rule in nsg.security_rules if \
+                                        rule.name != "FENCE_DENY_ALL_INBOUND" and rule.name != "FENCE_DENY_ALL_OUTBOUND"]
+                                    rulesCountAfter = len(nsg.security_rules)
+                                    logging.info("Rules cound after %s" % rulesCountAfter)                                
 
-                                    if (inboundOk or outboundOk):
+                                    if (rulesCountBefore != rulesCountAfter):
                                         logging.info("Updating %s" % nsg.name)                               
                                         op = network_client.network_security_groups.create_or_update(nsgmatch.group(3), nsg.name, nsg)
                                         logging.info("Updating of %s started - waiting" % nsg.name)
                                         op.wait()
                                         logging.info("Updating of %s done" % nsg.name)
+                                    else:
+                                        logging.info("No update of NSG since nothing changed")
 
                                 elif len(nsg.network_interfaces) != 1:
                                     fail_usage("Network security group %s of network interface %s is used by multiple network interfaces. Virtual Machine %s cannot be fenced" % (nic.network_security_group.id, nic.id, vm.id ))
@@ -358,7 +348,10 @@ def define_new_opts():
 
 # Main agent method
 def main():
-
+    #logging.getLogger().setLevel(logging.INFO)
+    # handler = logging.StreamHandler(stdout)
+    # handler.setFormatter(logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(message)s',datefmt='%a, %d %b %Y %H:%M:%S'))    
+    # logging.getLogger().addHandler(handler)
     compute_client = None
     network_client = None
     device_opt = None
