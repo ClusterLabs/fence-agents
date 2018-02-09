@@ -22,9 +22,9 @@ def get_power_status(conn, options):
 
         if (VM.attrib['status'] == '3'):
                 return state['SUSPENDED']
-        if (VM.attrib['status'] == '4'):
+        elif (VM.attrib['status'] == '4'):
                 return state['POWERED_ON']
-        if (VM.attrib['status'] == '8'):
+        elif (VM.attrib['status'] == '8'):
                 return state['POWERED_OFF']
         return EC_STATUS
 
@@ -64,12 +64,8 @@ def connect(opt):
                 conn.base_url = "https:"
         else:
                 conn.base_url = "http:"
-        if "--api-path" in opt:
-                api_path = opt["--api-path"]
-        else:
-                api_path = "/api"
 
-        conn.base_url += "//" + opt["--ip"] + ":" + str(opt["--ipport"]) + api_path + "/"
+        conn.base_url += "//" + opt["--ip"] + ":" + str(opt["--ipport"]) + opt["--api-path"] + "/"
 
         ## send command through pycurl
         conn.setopt(pycurl.HTTPHEADER, [
@@ -78,14 +74,12 @@ def connect(opt):
 
         conn.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_BASIC)
         conn.setopt(pycurl.USERPWD, opt["--username"] + ":" + opt["--password"])
-        # conn.setopt(pycurl.VERBOSE, True)
 
         conn.setopt(pycurl.TIMEOUT, int(opt["--shell-timeout"]))
         if "--ssl" in opt or "--ssl-secure" in opt:
                 conn.setopt(pycurl.SSL_VERIFYPEER, 1)
                 conn.setopt(pycurl.SSL_VERIFYHOST, 2)
-
-        if "--ssl-insecure" in opt:
+        elif "--ssl-insecure" in opt:
                 conn.setopt(pycurl.SSL_VERIFYPEER, 0)
                 conn.setopt(pycurl.SSL_VERIFYHOST, 0)
 
@@ -132,9 +126,9 @@ def send_command(conn, command, method="GET", headers={}):
 
         if method == "GET":
                 conn.setopt(pycurl.POST, 0)
-        if method == "POST":
+        elif method == "POST":
                 conn.setopt(pycurl.POSTFIELDS, "")
-        if method == "DELETE":
+        elif method == "DELETE":
                 conn.setopt(pycurl.CUSTOMREQUEST, "DELETE")
 
         conn.setopt(pycurl.WRITEFUNCTION, web_buffer.write)
