@@ -72,7 +72,7 @@ def ping_test(con, options):
 			p[target].wait()
 			if p[target].returncode == 0:
 				for line in p[target].stdout:
-					searchres = packet_count.search(line)
+					searchres = packet_count.search(line.decode())
 					if searchres:
 						good = int(searchres.group(1))
 						break
