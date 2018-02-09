@@ -83,6 +83,11 @@
 		<content type="string"  />
 		<shortdesc lang="en">Node on which machine is located. (Optional, will be automatically determined)</shortdesc>
 	</parameter>
+	<parameter name="vmtype" unique="0" required="1">
+		<getopt mixed="--vmtype" />
+		<content type="string" default="qemu"  />
+		<shortdesc lang="en">Virtual machine type lxc or qemu. (Default: qemu)</shortdesc>
+	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
 		<content type="boolean"  />

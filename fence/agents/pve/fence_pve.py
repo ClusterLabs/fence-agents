@@ -35,7 +35,7 @@ def get_power_status(conn, options):
 				options["--nodename"] = None
 		return status
 	else:
-		cmd = "nodes/" + options["--nodename"] + "/qemu/" + options["--plug"] + "/status/current"
+		cmd = "nodes/" + options["--nodename"] + "/" + options["--vmtype"] +"/" + options["--plug"] + "/status/current"
 		result = send_cmd(options, cmd)
 		if type(result) is dict and "data" in result:
 			if type(result["data"]) is dict and "status" in result["data"]:
@@ -50,7 +50,7 @@ def set_power_status(conn, options):
 		'on' : "start",
 		'off': "stop"
 	}[options["--action"]]
-	cmd = "nodes/" + options["--nodename"] + "/qemu/" + options["--plug"] + "/status/" + action
+	cmd = "nodes/" + options["--nodename"] + "/" + options["--vmtype"] +"/" + options["--plug"] + "/status/" + action
 	send_cmd(options, cmd, post={"skiplock":1})
 
 
@@ -63,7 +63,7 @@ def get_outlet_list(conn, options):
 	for node in nodes["data"]:
 		if type(node) is not dict or "node" not in node:
 			return None
-		vms = send_cmd(options, "nodes/" + node["node"] + "/qemu")
+		vms = send_cmd(options, "nodes/" + node["node"] + "/" + options["--vmtype"])
 		if type(vms) is not dict or "data" not in vms or type(vms["data"]) is not list:
 			return None
 		for vm in vms["data"]:
@@ -142,8 +142,19 @@ def main():
 			"(Optional, will be automatically determined)",
 		"order": 2
 	}
+	all_opt["vmtype"] = {
+		"getopt" : ":",
+		"longopt" : "vmtype",
+		"default" : "qemu",
+		"help" : "--vmtype					   "
+			"Virtual machine type lxc or qemu (default: qemu)",
+		"required" : "1",
+		"shortdesc" : "Virtual machine type lxc or qemu. "
+			"(Default: qemu)",
+		"order": 2
+	}
 
-	device_opt = ["ipaddr", "login", "passwd", "web", "port", "node_name"]
+	device_opt = ["ipaddr", "login", "passwd", "web", "port", "node_name", "vmtype"]
 
 	all_opt["login"]["required"] = "0"
 	all_opt["login"]["default"] = "root@pam"
