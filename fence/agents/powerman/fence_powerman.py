@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!@PYTHON@ -tt
 import os
 import time
 from datetime import datetime
