@@ -203,7 +203,7 @@ def main():
 	docs["shortdesc"] = "Fence agent for Citrix XenServer over XenAPI"
 	docs["longdesc"] = "\
 fence_cxs is an I/O Fencing agent used on Citrix XenServer hosts. \
-It uses the XenAPI, supplied by Citrix, to establish an XML-RPC sesssion \
+It uses the XenAPI, supplied by Citrix, to establish an XML-RPC session \
 to a XenServer host. Once the session is established, further XML-RPC \
 commands are issued in order to switch on, switch off, restart and query \
 the status of virtual machines running on the host."
