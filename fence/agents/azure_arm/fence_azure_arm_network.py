@@ -8,38 +8,145 @@ from fencing import *
 from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay
 import time
 
+FENCE_SUBNET_NAME = "fence-subnet"
+FENCE_INBOUND_RULE_NAME = "FENCE_DENY_ALL_INBOUND"
+FENCE_INBOUND_RULE_DIRECTION = "Inbound"
+FENCE_OUTBOUND_RULE_NAME = "FENCE_DENY_ALL_OUTBOUND"
+FENCE_OUTBOUND_RULE_DIRECTION = "Outbound"
+VM_STATE_POWER_PREFIX = "PowerState"
+VM_STATE_POWER_DEALLOCATED = "deallocated"
+VM_STATE_POWER_STOPPED = "stopped"
+FENCE_STATE_OFF = "off"
+FENCE_STATE_ON = "on"
+
+class AzureResource:
+    Id = None
+    SubscriptionId = None
+    ResourceGroupName = None
+    ResourceName = None
+
+def get_azure_resource(id):
+    match = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))?', id)
+    resource = AzureResource()
+    resource.Id = id
+    resource.SubscriptionId = match.group(2)
+    resource.ResourceGroupName = match.group(3)
+    resource.ResourceName = match.group(6)
+
+    return resource
+
+# get_fence_subnet(nicId, network_client):
+#     nicresource = get_azure_resource(nicId)
+#     nic = network_client.network_interfaces.get(nicresource.ResourceGroupName, nicresource.ResourceName)
+#     if nic.ip_configurations:
+#         for ipConfig in nic.ip_configurations:                                
+#             subnetResource = get_azure_resource(ipConfig.subnet.id)
+#             vnet = network_client.virtual_networks.get(subnetResource.ResourceGroupName, subnetResource.ResourceName)
+#             for avSubnet in vnet.subnets:
+#                 if (avSubnet.name == FENCE_SUBNET_NAME):                    
+#                         return avSubnet
+#     return None
+
+def get_fence_subnet_for_config(ipConfig, network_client):
+    subnetResource = get_azure_resource(ipConfig.subnet.id)
+    logging.info("{get_fence_subnet_for_config} testing virtual network %s in resource group %s for a fence subnet" %(subnetResource.ResourceName, subnetResource.ResourceGroupName))
+    vnet = network_client.virtual_networks.get(subnetResource.ResourceGroupName, subnetResource.ResourceName)
+    for avSubnet in vnet.subnets:
+        logging.info("{get_fence_subnet_for_config} testing subnet %s", avSubnet.name)
+        if (avSubnet.name.lower() == FENCE_SUBNET_NAME.lower()):
+                logging.info("{get_fence_subnet_for_config} fence subnet found")
+                return avSubnet
+
+def test_fence_subnet(fenceSubnet, nic, network_client):
+    logging.info("{test_fence_subnet}")
+    testOk = True
+    if not fenceSubnet:
+        testOk = False
+        logging.info("{test_fence_subnet} No fence subnet found for virtual network of network interface %s" % nic.id)
+    else:
+        if not fenceSubnet.network_security_group:
+            testOk = False
+            logging.info("{test_fence_subnet} Fence subnet %s has not network security group" % fenceSubnet.id)
+        else:
+            nsgResource = get_azure_resource(fenceSubnet.network_security_group.id)
+            logging.info("{test_fence_subnet} Getting network security group %s in resource group %s" % (nsgResource.ResourceName, nsgResource.ResourceGroupName))
+            nsg = network_client.network_security_groups.get(nsgResource.ResourceGroupName, nsgResource.ResourceName)
+            inboundRule = get_inbound_rule_for_nsg(nsg)
+            outboundRule = get_outbound_rule_for_nsg(nsg)
+            if not outboundRule:
+                testOk = False
+                logging.info("{test_fence_subnet} Network Securiy Group %s of fence subnet %s has no outbound security rule that blocks all traffic" % (nsgResource.ResourceName, fenceSubnet.id))
+            elif not inboundRule:
+                testOk = False
+                logging.info("{test_fence_subnet} Network Securiy Group %s of fence subnet %s has no inbound security rule that blocks all traffic" % (nsgResource.ResourceName, fenceSubnet.id))
+    
+    return testOk
+
+
+def get_inbound_rule_for_nsg(nsg):
+    return get_rule_for_nsg(nsg, FENCE_INBOUND_RULE_NAME, FENCE_INBOUND_RULE_DIRECTION)
+
+def get_outbound_rule_for_nsg(nsg):
+    return get_rule_for_nsg(nsg, FENCE_OUTBOUND_RULE_NAME, FENCE_OUTBOUND_RULE_DIRECTION)
+
+def get_rule_for_nsg(nsg, ruleName, direction):
+    logging.info("{get_rule_for_nsg} Looking for security rule %s with direction %s" % (ruleName, direction))
+    if not nsg:
+        logging.info("{get_rule_for_nsg} Network security group not set")
+        return None
+
+    for rule in nsg.security_rules:
+        logging.info("{get_rule_for_nsg} Testing a %s securiy rule %s" % (rule.direction, rule.name))
+        if (rule.access == "Deny") and (rule.direction == direction)  \
+                and (rule.source_port_range == "*") and (rule.destination_port_range == "*") \
+                and (rule.protocol == "*") and (rule.destination_address_prefix == "*") \
+                and (rule.source_address_prefix == "*") and (rule.provisioning_state == "Succeeded") \
+                and (rule.priority == 100) and (rule.name == ruleName):
+            logging.info("{get_rule_for_nsg} %s rule found" % direction)
+            return rule
+
+    return None
+
+def get_vm_state(vm, prefix):
+    for status in vm.instance_view.statuses:
+        if status.code.startswith(prefix):
+            return status.code.replace(prefix + "/", "").lower()
+
+    return None
+
+def get_vm_power_state(vm):
+    return get_vm_state(vm, VM_STATE_POWER_PREFIX)
+
 def get_nodes_list(clients, options):
+    logging.info("{get_nodes_list}")
     result = {}
     if clients:
         compute_client = clients[0]
         network_client = clients[1]
         rgName = options["--resourceGroup"]
+        logging.info("{get_nodes_list} listing virtual machines")
         vms = compute_client.virtual_machines.list(rgName)
+        logging.info("{get_nodes_list} listing virtual machines done")
         try:
             for vm in vms:
-                for nic in vm.network_profile.network_interfaces:
-                    match = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))?', nic.id)
-                    if match:
-                        nic = network_client.network_interfaces.get(match.group(3), match.group(6))
-                        if nic.network_security_group:
-                            
-                            nsgmatch = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))?', nic.network_security_group.id)
-                            if nsgmatch:
-                                nsg = network_client.network_security_groups.get(nsgmatch.group(3), nsgmatch.group(6))                                
-                                if len(nsg.network_interfaces) == 1 and ((not nsg.subnets) or len(nsg.subnets) == 0):
-                                    logging.info("{get_nodes_list} Virtual machine %s can be fenced" % vm.name)
-                                    result[vm.name] = ("", None)
-                                elif len(nsg.network_interfaces) != 1:
-                                    logging.info("{get_nodes_list} Network security group %s of network interface %s is used by multiple network interfaces. Virtual Machine %s cannot be fenced" % (nic.network_security_group.id, nic.id, vm.id ))
-                                else:
-                                    logging.info("{get_nodes_list} Network security group %s of network interface %s is also used by a subnet. Virtual Machine %s cannot be fenced" % (nic.network_security_group.id, nic.id, vm.id ))
-                            else:
-                                fail_usage("{get_nodes_list} Network Security Group id %s could not be parsed. Contact support" % nic.network_security_group.id)
-                        else:
-                            logging.info("{get_nodes_list} Network interface %s does not have a Network Security Group that could be used to fence the node. \
-Make sure that every network interface has a network security group" % nic.id)
-                    else:
-                        fail_usage("{get_nodes_list} Network interface id %s could not be parsed. Contact support" % nic.id)
+                allOk = True
+
+                for nicRef in vm.network_profile.network_interfaces:
+                    logging.info("{get_nodes_list} testing network interface %s" % nicRef.id)
+
+                    nicresource = get_azure_resource(nicRef.id)
+                    nic = network_client.network_interfaces.get(nicresource.ResourceGroupName, nicresource.ResourceName)
+                    if nic.ip_configurations:
+                        for ipConfig in nic.ip_configurations:
+                            logging.info("{get_nodes_list} testing network interface ip config")
+                            fenceSubnet = get_fence_subnet_for_config(ipConfig, network_client)
+                            testOk = test_fence_subnet(fenceSubnet, nic, network_client)
+                            if not testOk:
+                                allOk = False
+
+                if allOk:
+                    logging.info("{get_nodes_list} Virtual machine %s can be fenced" % vm.name)
+                    result[vm.name] = ("", None)
                 
         except Exception as e:
             fail_usage("{get_nodes_list} Failed: %s" % e)
@@ -50,7 +157,7 @@ Make sure that every network interface has a network security group" % nic.id)
 
 def get_power_status(clients, options):
     logging.info("{get_power_status} getting power status for VM %s" % (options["--plug"]))
-    result = "on"
+    result = FENCE_STATE_ON
 
     if clients:
         compute_client = clients[0]
@@ -59,77 +166,38 @@ def get_power_status(clients, options):
         vmName = options["--plug"]
         
         try:
-            logging.info("{get_power_status} Testing VM state")
-            powerState = "unknown"
+            logging.info("{get_power_status} Testing VM state")            
             vm = compute_client.virtual_machines.get(rgName, vmName, "instanceView")
-            for status in vm.instance_view.statuses:
-                if status.code.startswith("PowerState"):
-                    powerState = status.code
-                    break
-            if powerState == "PowerState/deallocated":
-                return "off"
-            if powerState == "PowerState/stopped":
-                return "off"
+            powerState = get_vm_power_state(vm)            
+            if powerState == VM_STATE_POWER_DEALLOCATED:
+                return FENCE_STATE_OFF
+            if powerState == VM_STATE_POWER_STOPPED:
+                return FENCE_STATE_OFF
             
             allNICOK = True
-            for nic in vm.network_profile.network_interfaces:
-                match = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))', nic.id)
-                
-                if match:
-                    logging.info("{get_power_status} Getting network interface %s in resource group %s." %(match.group(6), match.group(3)))
-                    nic = network_client.network_interfaces.get(match.group(3), match.group(6))
-                    logging.info("{get_power_status} Getting network interface done.")
-                    if nic.network_security_group:
-                        nsgmatch = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))', nic.network_security_group.id)
-                        if nsgmatch:
-                            logging.info("{get_power_status} Getting NSG.")
-                            nsg = network_client.network_security_groups.get(nsgmatch.group(3), nsgmatch.group(6))                                
-                            logging.info("{get_power_status} Getting NSG done.")
-
-                            if len(nsg.network_interfaces) == 1 and ((not nsg.subnets) or len(nsg.subnets) == 0):
-                                inboundOk = False
-                                outboundOk = False
-                                for rule in nsg.security_rules:                                    
-                                    if (rule.access == "Deny") and (rule.direction == "Inbound")  \
-                                        and (rule.source_port_range == "*") and (rule.destination_port_range == "*") \
-                                        and (rule.protocol == "*") and (rule.destination_address_prefix == "*") \
-                                        and (rule.source_address_prefix == "*") and (rule.provisioning_state == "Succeeded") \
-                                        and (rule.priority == 100) and (rule.name == "FENCE_DENY_ALL_INBOUND"):
-                                        logging.info("{get_power_status} Inbound rule found.")
-                                        inboundOk = True
-                                    elif (rule.access == "Deny") and (rule.direction == "Outbound")  \
-                                        and (rule.source_port_range == "*") and (rule.destination_port_range == "*") \
-                                        and (rule.protocol == "*") and (rule.destination_address_prefix == "*") \
-                                        and (rule.source_address_prefix == "*") and (rule.provisioning_state == "Succeeded") \
-                                        and (rule.priority == 100) and (rule.name == "FENCE_DENY_ALL_OUTBOUND"):
-                                        logging.info("{get_power_status} Outbound rule found.")
-                                        outboundOk = True
-                                
-                                nicOK = outboundOk and inboundOk
-                                allNICOK = allNICOK & nicOK
-
-                            elif len(nsg.network_interfaces) != 1:
-                                fail_usage("{get_power_status} Network security group %s of network interface %s is used by multiple network interfaces. Virtual Machine %s cannot be fenced" % (nic.network_security_group.id, nic.id, vm.id ))
-                            else:
-                                fail_usage("{get_power_status} Network security group %s of network interface %s is also used by a subnet. Virtual Machine %s cannot be fenced" % (nic.network_security_group.id, nic.id, vm.id ))                        
-                        else:
-                            fail_usage("{get_power_status} Network Security Group id %s could not be parsed. Contact support" % nic.network_security_group.id)
-                    else:            
-                        fail_usage("{get_power_status} Network interface id %s does not have a network security group." % nic.id)
-                else:
-                    fail_usage("{get_power_status} Network interface id %s could not be parsed. Contact support" % nic.id)
+            for nicRef in vm.network_profile.network_interfaces:
+                nicresource = get_azure_resource(nicRef.id)
+                nic = network_client.network_interfaces.get(nicresource.ResourceGroupName, nicresource.ResourceName)
+                for ipConfig in nic.ip_configurations: 
+                    fenceSubnet = get_fence_subnet_for_config(ipConfig, network_client)
+                    testOk = test_fence_subnet(fenceSubnet, nic, network_client)
+                    if not testOk:
+                        allNICOK = False
+                    elif fenceSubnet.id != ipConfig.subnet.id:            
+                        allNICOK = False
+            if allNICOK:
+                logging.info("{get_power_status} All IP configurations of all network interfaces are in the fence subnet. Declaring VM as off")
+                result = FENCE_STATE_OFF
         except Exception as e:
-            fail_usage("{get_power_status} Failed: %s" % e)
-        if allNICOK:
-            logging.info("{get_power_status} All network interface have inbound and outbound deny all rules. Declaring VM as off")
-            result = "off"
+            fail_usage("{get_power_status} Failed: %s" % e)        
     else:
         fail_usage("{get_power_status} No Azure clients configured. Contact support")
     
     logging.info("{get_power_status} result is %s" % result)
     return result
 
-def set_power_status(clients, options):        
+def set_power_status(clients, options):
+    from azure.mgmt.network.models import SecurityRule
     logging.info("{set_power_status} setting power status for VM " + options["--plug"] + " to " + options["--action"])
 
     if clients:
@@ -141,163 +209,33 @@ def set_power_status(clients, options):
         
             if (options["--action"]=="off"):
                 logging.info("{set_power_status} Fencing %s in resource group %s" % (vmName, rgName))
-           
-                from azure.mgmt.network.models import SecurityRule
-
-                powerState = "unknown"
+                          
                 vm = compute_client.virtual_machines.get(rgName, vmName, "instanceView")
-                for status in vm.instance_view.statuses:
-                    if status.code.startswith("PowerState"):
-                        powerState = status.code
-                        break
-                if powerState == "PowerState/deallocated" or powerState == "PowerState/stopped":
-                    logging.info("VM %s is already fenced. Powerstate is %s" % (vmName, powerState))
-                    return            
                 
-                for nic in vm.network_profile.network_interfaces:
-                    match = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))', nic.id)
-                    
-                    if match:
-                        logging.info("{set_power_status} Getting network interface %s in resource group %s." %(match.group(6), match.group(3)))
-                        nic = network_client.network_interfaces.get(match.group(3), match.group(6))
-                        logging.info("{set_power_status} Getting network interface done.")
-                        if nic.network_security_group:
-                            nsgmatch = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))', nic.network_security_group.id)
-                            if nsgmatch:
-                                logging.info("{set_power_status} Getting NSG.")
-                                nsg = network_client.network_security_groups.get(nsgmatch.group(3), nsgmatch.group(6))                                
-                                logging.info("{set_power_status} Getting NSG done.")
-
-                                if len(nsg.network_interfaces) == 1 and ((not nsg.subnets) or len(nsg.subnets) == 0):
-                                    inboundOk = False
-                                    outboundOk = False
-                                    for rule in nsg.security_rules:                                    
-                                        if (rule.access == "Deny") and (rule.direction == "Inbound")  \
-                                            and (rule.source_port_range == "*") and (rule.destination_port_range == "*") \
-                                            and (rule.protocol == "*") and (rule.destination_address_prefix == "*") \
-                                            and (rule.source_address_prefix == "*") and (rule.provisioning_state == "Succeeded") \
-                                            and (rule.priority == 100):
-                                            logging.info("{set_power_status} Inbound rule found.")
-                                            inboundOk = True
-                                        elif (rule.access == "Deny") and (rule.direction == "Outbound")  \
-                                            and (rule.source_port_range == "*") and (rule.destination_port_range == "*") \
-                                            and (rule.protocol == "*") and (rule.destination_address_prefix == "*") \
-                                            and (rule.source_address_prefix == "*") and (rule.provisioning_state == "Succeeded") \
-                                            and (rule.priority == 100):
-                                            logging.info("{set_power_status} Outbound rule found.")
-                                            outboundOk = True
-                                    
-                                    if (not inboundOk):
-                                        logging.info("{set_power_status} Creating new inbound deny all rule for network security group %s" % nsg.name)
-                                        newIRule = SecurityRule("*", source_address_prefix="*", destination_address_prefix="*", \
-                                            access="Deny", direction="Inbound", source_port_range="*", destination_port_range="*", \
-                                            priority=100, name="FENCE_DENY_ALL_INBOUND")
-                                        nsg.security_rules.append(newIRule)
-
-                                    if (not outboundOk):
-                                        logging.info("{set_power_status} Creating new outbound deny all rule for network security group %s" % nsg.name)
-                                        newORule = SecurityRule("*", source_address_prefix="*", destination_address_prefix="*", \
-                                            access="Deny", direction="Outbound", source_port_range="*", destination_port_range="*", \
-                                            priority=100, name="FENCE_DENY_ALL_OUTBOUND")
-                                        nsg.security_rules.append(newORule)
-                                    
-                                    if ((not inboundOk) or (not outboundOk)):
-                                        logging.info("{set_power_status} Updating %s" % nsg.name)                               
-                                        op = network_client.network_security_groups.create_or_update(nsgmatch.group(3), nsg.name, nsg)
-                                        logging.info("{set_power_status} Updating of %s started - waiting" % nsg.name)
-                                        op.wait()
-                                        logging.info("{set_power_status} Updating of %s done" % nsg.name)
-
-                                elif len(nsg.network_interfaces) != 1:
-                                    fail_usage("{set_power_status} Network security group %s of network interface %s is used by multiple network interfaces. Virtual Machine %s cannot be fenced" % (nic.network_security_group.id, nic.id, vm.id ))
-                                else:
-                                    fail_usage("{set_power_status} Network security group %s of network interface %s is also used by a subnet. Virtual Machine %s cannot be fenced" % (nic.network_security_group.id, nic.id, vm.id ))                        
-                            else:
-                                fail_usage("{set_power_status} Network Security Group id %s could not be parsed. Contact support" % nic.network_security_group.id)
+                operations = []
+                for nicRef in vm.network_profile.network_interfaces:
+                    nicresource = get_azure_resource(nicRef.id)
+                    nic = network_client.network_interfaces.get(nicresource.ResourceGroupName, nicresource.ResourceName)
+                    for ipConfig in nic.ip_configurations: 
+                        fenceSubnet = get_fence_subnet_for_config(ipConfig, network_client)
+                        testOk = test_fence_subnet(fenceSubnet, nic, network_client)
+                        if testOk:
+                            logging.info("{set_power_status} Changing subnet of ip config of nic %s" % nic.id)
+                            ipConfig.subnet = fenceSubnet                
                         else:            
-                            fail_usage("{set_power_status} Network interface id %s does not have a network security group." % nic.id)
-                    else:
-                        fail_usage("{set_power_status} Network interface id %s could not be parsed. Contact support" % nic.id)
-                
-                logging.info("{set_power_status} Network fencing done. Deallocating VM %s in resource group %s" % (vmName, rgName))
-                waitOp = compute_client.virtual_machines.deallocate(rgName, vmName, raw=True)
-                if waitOp.response.status_code < 200 or waitOp.response.status_code > 202:
-                     fail_usage("Response code is %s. Must be 200, 201 or 202" % waitOp.response.status_code)
+                            fail_usage("{get_power_status} Network interface id %s does not have a network security group." % nic.id)
+                    
+                    op = network_client.network_interfaces.create_or_update(nicresource.ResourceGroupName, nicresource.ResourceName, nic)
+                    operations.append(op)
 
-                logging.info("{set_power_status} Network fencing done. Deallocate operation started. Status is %s" % (waitOp.response.status_code))
-              
+                iCount = 1
+                for waitOp in operations:
+                    logging.info("{set_power_status} Waiting for network update operation (%s/%s)" % (iCount, len(operations)))
+                    iCount += 1
+                    waitOp.wait()
+
             elif (options["--action"]=="on"):
-                logging.info("Unfencing %s in resource group %s" % (vmName, rgName))
-                
-                while True:
-                    powerState = "unknown"
-                    provState = "unknown"
-                    vm = compute_client.virtual_machines.get(rgName, vmName, "instanceView")
-                    for status in vm.instance_view.statuses:
-                        if status.code.startswith("PowerState"):
-                            powerState = status.code.replace("PowerState/", "")
-                        if status.code.startswith("ProvisioningState"):
-                            provState = status.code.replace("ProvisioningState/", "")
-                
-                    logging.info("Testing VM state: ProvisioningState %s, PowerState %s" % (provState, powerState))
-                    
-                    if (provState.lower() == "succeeded" and (powerState.lower() == "deallocated" or powerState.lower() == "stopped")):
-                        break
-                    elif (provState.lower() == "succeeded" and not (powerState.lower() == "deallocated" or powerState.lower() == "stopped")):
-                        fail_usage("Virtual machine %s needs to be deallocated or stopped to be unfenced" % (vm.id))                        
-                    elif (provState.lower() == "failed" or provState.lower() == "canceled"):
-                        fail_usage("Virtual machine operation %s failed or canceled. Virtual machine %s needs to be deallocated or stopped to be unfenced" % (vm.id))
-                    else:
-                        time.sleep(10)
-
-                for nic in vm.network_profile.network_interfaces:
-                    match = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))?', nic.id)
-                    
-                    if match:
-                        logging.info("Getting network interface.")
-                        nic = network_client.network_interfaces.get(match.group(3), match.group(6))
-                        logging.info("Getting network interface done.")
-                        if nic.network_security_group:
-                            nsgmatch = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))?', nic.network_security_group.id)
-                            if nsgmatch:
-                                logging.info("Getting NSG.")
-                                nsg = network_client.network_security_groups.get(nsgmatch.group(3), nsgmatch.group(6))                                
-                                logging.info("Getting NSG done.")
-
-                                if len(nsg.network_interfaces) == 1 and ((not nsg.subnets) or len(nsg.subnets) == 0):
-                                    rulesCountBefore = len(nsg.security_rules)
-                                    logging.info("Rules cound before %s" % rulesCountBefore)
-                                    nsg.security_rules[:] = [rule for rule in nsg.security_rules if \
-                                        rule.name != "FENCE_DENY_ALL_INBOUND" and rule.name != "FENCE_DENY_ALL_OUTBOUND"]
-                                    rulesCountAfter = len(nsg.security_rules)
-                                    logging.info("Rules cound after %s" % rulesCountAfter)                                
-
-                                    if (rulesCountBefore != rulesCountAfter):
-                                        logging.info("Updating %s" % nsg.name)                               
-                                        op = network_client.network_security_groups.create_or_update(nsgmatch.group(3), nsg.name, nsg)
-                                        logging.info("Updating of %s started - waiting" % nsg.name)
-                                        op.wait()
-                                        logging.info("Updating of %s done" % nsg.name)
-                                    else:
-                                        logging.info("No update of NSG since nothing changed")
-
-                                elif len(nsg.network_interfaces) != 1:
-                                    fail_usage("Network security group %s of network interface %s is used by multiple network interfaces. Virtual Machine %s cannot be fenced" % (nic.network_security_group.id, nic.id, vm.id ))
-                                else:
-                                    fail_usage("Network security group %s of network interface %s is also used by a subnet. Virtual Machine %s cannot be fenced" % (nic.network_security_group.id, nic.id, vm.id ))                        
-                            else:
-                                fail_usage("Network Security Group id %s could not be parsed. Contact support" % nic.network_security_group.id)
-                        else:            
-                            fail_usage("Network interface id %s does not have a network security group." % nic.id)
-                    else:
-                        fail_usage("Network interface id %s could not be parsed. Contact support" % nic.id)
-
-                logging.info("Starting virtual machine %s in resource group %s" % (vmName, rgName))
-                waitOp = compute_client.virtual_machines.start(rgName, vmName, raw=True)
-                if waitOp.response.status_code < 200 or waitOp.response.status_code > 202:
-                    fail_usage("Response code is %s. Must be 200, 201 or 202" % waitOp.response.status_code)
-
-                logging.info("Virtual machine starting up. Status is %s" % (waitOp.response.status_code))
+                fail_usage("This fence agent does not support on operation")
 
         except Exception as e:
             fail_usage("Failed: %s" % e)      
@@ -349,7 +287,7 @@ def define_new_opts():
 # Main agent method
 def main():
     logging.getLogger().setLevel(logging.INFO)
-    # handler = logging.StreamHandler(stdout)
+    # handler = logging.StreamHandler(sys.stdout)
     # handler.setFormatter(logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(message)s',datefmt='%a, %d %b %Y %H:%M:%S'))    
     # logging.getLogger().addHandler(handler)
     compute_client = None
