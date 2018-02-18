@@ -3,7 +3,7 @@ define gen_agent_from_py
 	cat $(abs_srcdir)/$@.py | \
 	sed \
 		-e 's#@''PYTHON@#${PYTHON}#g' \
-		-e 's#@''RELEASE_VERSION#${VERSION}#g' \
+		-e 's#@''RELEASE_VERSION@#${VERSION}#g' \
 		-e 's#@''FENCEAGENTSLIBDIR@#${FENCEAGENTSLIBDIR}#g' \
 		-e 's#@''LOGDIR@#${LOGDIR}#g' \
 		-e 's#@''SBINDIR@#${sbindir}#g' \
