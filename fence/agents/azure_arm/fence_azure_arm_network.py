@@ -18,20 +18,35 @@ VM_STATE_POWER_DEALLOCATED = "deallocated"
 VM_STATE_POWER_STOPPED = "stopped"
 FENCE_STATE_OFF = "off"
 FENCE_STATE_ON = "on"
+TAG_SUBNET_ID = "FENCE_TAG_SUBNET_ID"
+TAG_IP_TYPE = "FENCE_TAG_IP_TYPE"
+TAG_IP = "FENCE_TAG_IP"
+
+class AzureSubResource:
+    Type = None
+    Name = None
 
 class AzureResource:
     Id = None
     SubscriptionId = None
     ResourceGroupName = None
     ResourceName = None
+    SubResources = []
 
 def get_azure_resource(id):
-    match = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))?', id)
+    match = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))?(/([^/]*)/([^/]*))?', id)
     resource = AzureResource()
     resource.Id = id
     resource.SubscriptionId = match.group(2)
     resource.ResourceGroupName = match.group(3)
     resource.ResourceName = match.group(6)
+    i = 7
+    while i < len(match.groups):
+        subRes = AzureSubResource()
+        subRes.Type = match.group(i + 1)
+        subRes.Name = match.group(i + 2)
+        resource.SubResources.append(subRes)
+        i += 3
 
     return resource
 
@@ -51,10 +66,13 @@ def get_fence_subnet_for_config(ipConfig, network_client):
     subnetResource = get_azure_resource(ipConfig.subnet.id)
     logging.info("{get_fence_subnet_for_config} testing virtual network %s in resource group %s for a fence subnet" %(subnetResource.ResourceName, subnetResource.ResourceGroupName))
     vnet = network_client.virtual_networks.get(subnetResource.ResourceGroupName, subnetResource.ResourceName)
+    return get_subnet(vnet, FENCE_SUBNET_NAME)
+
+def get_subnet(vnet, subnetName):
     for avSubnet in vnet.subnets:
-        logging.info("{get_fence_subnet_for_config} testing subnet %s", avSubnet.name)
-        if (avSubnet.name.lower() == FENCE_SUBNET_NAME.lower()):
-                logging.info("{get_fence_subnet_for_config} fence subnet found")
+        logging.info("{get_subnet} searching subnet %s testing subnet %s" % (subnetName, avSubnet.name))
+        if (avSubnet.name.lower() == subnetName.lower()):
+                logging.info("{get_subnet} subnet %s found" % subnetName)
                 return avSubnet
 
 def test_fence_subnet(fenceSubnet, nic, network_client):
@@ -235,7 +253,44 @@ def set_power_status(clients, options):
                     waitOp.wait()
 
             elif (options["--action"]=="on"):
-                fail_usage("This fence agent does not support on operation")
+                logging.info("{set_power_status} Unfencing %s in resource group %s" % (vmName, rgName))
+                          
+                vm = compute_client.virtual_machines.get(rgName, vmName, "instanceView")
+                
+                operations = []
+                for nicRef in vm.network_profile.network_interfaces:
+                    nicresource = get_azure_resource(nicRef.id)
+                    nic = network_client.network_interfaces.get(nicresource.ResourceGroupName, nicresource.ResourceName)
+                    logging.info("{set_power_status} Searching for tags required to unfence this virtual machine")                    
+                    for ipConfig in nic.ip_configurations:
+                        subnetId = None
+                        ipType = None
+                        ipAddress = None
+                        
+                        for tagKey in nic.tags.keys():
+                            if (tagKey.startswith(FENCE_TAG_SUBNET_ID)):
+                                subnetId = nic.tags.get(tagKey).replace(FENCE_TAG_SUBNET_ID, "")
+                            elif (tagKey.startswith(FENCE_TAG_IP_TYPE)):
+                                ipType = nic.tags.get(tagKey).replace(FENCE_TAG_IP_TYPE, "")
+                            elif (tagKey.startswith(FENCE_TAG_IP)):
+                                ipAddress = nic.tags.get(tagKey).replace(FENCE_TAG_IP, "")
+
+                        if (subnetId and ipType and ipAddress):
+                            subnetResource = get_azure_resource(subnetId)
+                            vnet = network_client.virtual_networks.get(subnetResource.ResourceGroupName, subnetResource.ResourceName)                            
+                            oldSubnet = get_subnet(vnet, subnetResource.SubResources[0].ResourceName)
+                            ipConfig.subnet = oldSubnet
+                            ipConfig.private_ip_address = ipAddress
+                            ipConfig.private_ip_allocation_method = ipType
+                    
+                    op = network_client.network_interfaces.create_or_update(nicresource.ResourceGroupName, nicresource.ResourceName, nic)
+                    operations.append(op)
+
+                iCount = 1
+                for waitOp in operations:
+                    logging.info("{set_power_status} Waiting for network update operation (%s/%s)" % (iCount, len(operations)))
+                    iCount += 1
+                    waitOp.wait()
 
         except Exception as e:
             fail_usage("Failed: %s" % e)      
