@@ -93,6 +93,7 @@ ipv4_recv_sk(char *addr, int port, unsigned int ifindex)
 	 */
 	/* mreq.imr_multiaddr.s_addr is set above */
 	if (ifindex == 0) {
+		dbg_printf(4, "Setting mcast addr to INADDR_ANY due to ifindex of 0\n");
 		mreq.imr_address.s_addr = htonl(INADDR_ANY);
 	} else {
 		mreq.imr_ifindex = ifindex;

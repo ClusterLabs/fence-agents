@@ -158,10 +158,18 @@ assign_cid(fence_virt_args_t *args, struct arg_info *arg, char *value)
 static inline void
 assign_interface(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
+	int ret;
+
 	if (!value)
 		return;
 
-	args->net.ifindex = if_nametoindex(value);
+	ret = if_nametoindex(value);
+	if (ret <= 0) {
+		printf("Invalid interface: %s: %s\n", value, strerror(errno));
+		args->net.ifindex = 0;
+	}
+
+	args->net.ifindex = ret;
 }
 
 
