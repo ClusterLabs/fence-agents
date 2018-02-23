@@ -72,7 +72,7 @@ def define_new_opts():
         "longopt" : "tenantId",
         "help" : "--tenantId=[name]              Id of the Azure Active Directory tenant",
         "shortdesc" : "Id of Azure Active Directory tenant.",
-        "required" : "0",
+        "required" : "1",
         "order" : 3
     }
     all_opt["subscriptionId"] = {
@@ -82,14 +82,6 @@ def define_new_opts():
         "shortdesc" : "Id of the Azure subscription.",
         "required" : "1",
         "order" : 4
-    }
-    all_opt["useMSI"] = {
-        "getopt" : ":",
-        "longopt" : "useMSI",
-        "help" : "--useMSI=[value]        Id of the Azure subscription",
-        "shortdesc" : "Id of the Azure subscription.",
-        "required" : "0",
-        "order" : 5
     }
 
 # Main agent method
@@ -124,28 +116,20 @@ Username and password are application ID and authentication key from \"App regis
     try:
         from azure.common.credentials import ServicePrincipalCredentials
         from azure.mgmt.compute import ComputeManagementClient
-        from msrestazure.azure_active_directory import MSIAuthentication
 
-        if "--useMSI" in options:
-            credentials = MSIAuthentication()
-            compute_client = ComputeManagementClient(
-                credentials,
-                subscriptionId
-            )
-        else:
-            tenantid = options["--tenantId"]
-            servicePrincipal = options["--username"]
-            spPassword = options["--password"]
-            subscriptionId = options["--subscriptionId"]
-            credentials = ServicePrincipalCredentials(
-                client_id = servicePrincipal,
-                secret = spPassword,
-                tenant = tenantid
-            )
-            compute_client = ComputeManagementClient(
-                credentials,
-                subscriptionId
-            )
+        tenantid = options["--tenantId"]
+        servicePrincipal = options["--username"]
+        spPassword = options["--password"]
+        subscriptionId = options["--subscriptionId"]
+        credentials = ServicePrincipalCredentials(
+            client_id = servicePrincipal,
+            secret = spPassword,
+            tenant = tenantid
+        )
+        compute_client = ComputeManagementClient(
+            credentials,
+            subscriptionId
+        )
     except ImportError:
         fail_usage("Azure Resource Manager Python SDK not found or not accessible")
     except Exception as e:
@@ -157,3 +141,4 @@ Username and password are application ID and authentication key from \"App regis
 
 if __name__ == "__main__":
     main()
+    
