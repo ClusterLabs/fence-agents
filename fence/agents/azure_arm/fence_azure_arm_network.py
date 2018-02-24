@@ -145,7 +145,7 @@ def define_new_opts():
 
 # Main agent method
 def main():
-    logging.getLogger().setLevel(logging.INFO)
+    #logging.getLogger().setLevel(logging.INFO)
     # handler = logging.StreamHandler(sys.stdout)
     # handler.setFormatter(logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(message)s',datefmt='%a, %d %b %Y %H:%M:%S'))
     # logging.getLogger().addHandler(handler)
