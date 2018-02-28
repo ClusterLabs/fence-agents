@@ -57,17 +57,17 @@ def define_new_opts():
 	all_opt["zone"] = {
 		"getopt" : ":",
 		"longopt" : "zone",
-		"help" : "--zone=[name]            Zone, e.g. us-central1-b",
+		"help" : "--zone=[name]                  Zone, e.g. us-central1-b",
 		"shortdesc" : "Zone.",
-		"required" : "0",
+		"required" : "1",
 		"order" : 2
 	}
 	all_opt["project"] = {
 		"getopt" : ":",
 		"longopt" : "project",
-		"help" : "--project=[name]            Project",
-		"shortdesc" : "Project.",
-		"required" : "0",
+		"help" : "--project=[name]               Project ID",
+		"shortdesc" : "Project ID.",
+		"required" : "1",
 		"order" : 3
 	}
 
