@@ -52,20 +52,20 @@ Username and password are application ID and authentication key from "App regist
 		<content type="string"  />
 		<shortdesc lang="en">Application ID</shortdesc>
 	</parameter>
-	<parameter name="resourceGroup" unique="0" required="1">
+	<parameter name="resourceGroup" unique="0" required="0">
 		<getopt mixed="--resourceGroup=[name]" />
 		<content type="string"  />
-		<shortdesc lang="en">Name of resource group.</shortdesc>
+		<shortdesc lang="en">Name of resource group. Metadata service is used if the value is not provided.</shortdesc>
 	</parameter>
 	<parameter name="tenantId" unique="0" required="0">
 		<getopt mixed="--tenantId=[name]" />
 		<content type="string"  />
 		<shortdesc lang="en">Id of Azure Active Directory tenant.</shortdesc>
 	</parameter>
-	<parameter name="subscriptionId" unique="0" required="1">
+	<parameter name="subscriptionId" unique="0" required="0">
 		<getopt mixed="--subscriptionId=[name]" />
 		<content type="string"  />
-		<shortdesc lang="en">Id of the Azure subscription.</shortdesc>
+		<shortdesc lang="en">Id of the Azure subscription. Metadata service is used if the value is not provided.</shortdesc>
 	</parameter>
 	<parameter name="useMSI" unique="0" required="0">
 		<getopt mixed="--useMSI=[value]" />

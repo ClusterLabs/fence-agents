@@ -22,8 +22,16 @@ def get_azure_config(options):
     config.Tenantid = options.get("--tenantId")
     config.ApplicationId = options.get("--username")
     config.ApplicationKey = options.get("--password")
-    config.Verbose = options.get("--verbose") 
+    config.Verbose = options.get("--verbose")
     
+    if not config.RGName:
+        logging.info("resourceGroup not provided. Using metadata service")
+        config.RGName = azure_fence_lib.get_resource_group_from_metadata()
+
+    if not config.SubscriptionId:
+        logging.info("subscriptionId not provided. Using metadata service")
+        config.RGName = azure_fence_lib.get_subscription_id_from_metadata()
+
     return config
 
 def get_nodes_list(clients, options):
@@ -106,8 +114,8 @@ def define_new_opts():
         "getopt" : ":",
         "longopt" : "resourceGroup",
         "help" : "--resourceGroup=[name]         Name of the resource group",
-        "shortdesc" : "Name of resource group.",
-        "required" : "1",
+        "shortdesc" : "Name of resource group. Metadata service is used if the value is not provided.",
+        "required" : "0",
         "order" : 2
     }
     all_opt["tenantId"] = {
@@ -122,8 +130,8 @@ def define_new_opts():
         "getopt" : ":",
         "longopt" : "subscriptionId",
         "help" : "--subscriptionId=[name]        Id of the Azure subscription",
-        "shortdesc" : "Id of the Azure subscription.",
-        "required" : "1",
+        "shortdesc" : "Id of the Azure subscription. Metadata service is used if the value is not provided.",
+        "required" : "0",
         "order" : 4
     }
     all_opt["useMSI"] = {
