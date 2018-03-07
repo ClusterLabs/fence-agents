@@ -1,16 +1,11 @@
-#!@PYTHON@ -tt
 import logging, re, time
+from fencing import fail_usage
 
 FENCE_SUBNET_NAME = "fence-subnet"
 FENCE_INBOUND_RULE_NAME = "FENCE_DENY_ALL_INBOUND"
 FENCE_INBOUND_RULE_DIRECTION = "Inbound"
 FENCE_OUTBOUND_RULE_NAME = "FENCE_DENY_ALL_OUTBOUND"
 FENCE_OUTBOUND_RULE_DIRECTION = "Outbound"
-VM_STATE_POWER_PREFIX = "PowerState"
-VM_STATE_POWER_DEALLOCATED = "deallocated"
-VM_STATE_POWER_STOPPED = "stopped"
-VM_STATE_POWER_RUNNING = "running"
-VM_STATE_POWER_STARTING = "starting"
 FENCE_STATE_OFF = "off"
 FENCE_STATE_ON = "on"
 FENCE_TAG_SUBNET_ID = "FENCE_TAG_SUBNET_ID"
@@ -42,37 +37,20 @@ class AzureConfiguration:
     ApplicationKey = None
     Verbose = None
 
-def get_resource_group_from_metadata():
+def get_from_metadata(parameter):
     import requests
     try:
         r = requests.get('http://169.254.169.254/metadata/instance?api-version=2017-08-01', headers = {"Metadata":"true"})
-        return r.json()["compute"]["resourceGroupName"]
+        return str(r.json()["compute"][parameter])
     except:
         logging.warning("Not able to use metadata service. Am I running in Azure?")
 
     return None
-
-def get_subscription_id_from_metadata():
-    import requests
-    try:
-        r = requests.get('http://169.254.169.254/metadata/instance?api-version=2017-08-01', headers = {"Metadata":"true"})
-        return r.json()["compute"]["subscriptionId"]
-    except:
-        logging.warning("Not able to use metadata service. Am I running in Azure?")
-
-    return None
-
-def fail_usage(message):
-    raise ValueError("%s Run with parameter help to get more information" % message)
-
-# https://stackoverflow.com/questions/715417/converting-from-a-string-to-boolean-in-python
-def ocf_is_true(strValue):
-    return strValue and strValue.lower() in ("yes", "true", "1", "YES", "TRUE", "ja", "on", "ON")
 
 def get_azure_resource(id):
     match = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))?((/([^/]*)/([^/]*))*)', id)
     if not match:
-        fail_usage("{get_azure_resource}: cannot parse resource id %s" % id)
+        fail_usage("{get_azure_resource} cannot parse resource id %s" % id)
 
     logging.debug("{get_azure_resource} found %s matches for %s" % (len(match.groups()), id))
     iGroup = 0
@@ -85,15 +63,15 @@ def get_azure_resource(id):
     resource.SubscriptionId = match.group(2)
     resource.SubResources = []
 
-    if len(match.groups()) > 3:        
+    if len(match.groups()) > 3:
         resource.ResourceGroupName = match.group(3)
         logging.debug("{get_azure_resource} resource group %s" % resource.ResourceGroupName)
-    
+
     if len(match.groups()) > 6:
-        resource.ResourceName = match.group(6)    
+        resource.ResourceName = match.group(6)
         logging.debug("{get_azure_resource} resource name %s" % resource.ResourceName)
-    
-    if len(match.groups()) > 7 and match.group(7):        
+
+    if len(match.groups()) > 7 and match.group(7):
         splits = match.group(7).split("/")
         logging.debug("{get_azure_resource} splitting subtypes '%s' (%s)" % (match.group(7), len(splits)))
         i = 1 # the string starts with / so the first split is empty
@@ -142,7 +120,7 @@ def test_fence_subnet(fenceSubnet, nic, network_client):
             elif not inboundRule:
                 testOk = False
                 logging.info("{test_fence_subnet} Network Securiy Group %s of fence subnet %s has no inbound security rule that blocks all traffic" % (nsgResource.ResourceName, fenceSubnet.id))
-    
+
     return testOk
 
 def get_inbound_rule_for_nsg(nsg):
@@ -169,161 +147,124 @@ def get_rule_for_nsg(nsg, ruleName, direction):
 
     return None
 
-def get_vm_state(vm, prefix):
-    for status in vm.instance_view.statuses:
-        if status.code.startswith(prefix):
-            return status.code.replace(prefix + "/", "").lower()
-
-    return None
-
-def get_vm_power_state(vm):
-    return get_vm_state(vm, VM_STATE_POWER_PREFIX)
-
-def get_power_status_impl(compute_client, network_client, rgName, vmName):
+def get_network_state(compute_client, network_client, rgName, vmName):
     result = FENCE_STATE_ON
 
     try:
-        logging.info("{get_power_status_impl} Testing VM state")
         vm = compute_client.virtual_machines.get(rgName, vmName, "instanceView")
-        powerState = get_vm_power_state(vm)
-        if powerState == VM_STATE_POWER_DEALLOCATED:
-            return FENCE_STATE_OFF
-        if powerState == VM_STATE_POWER_STOPPED:
-            return FENCE_STATE_OFF
-        
+
         allNICOK = True
         for nicRef in vm.network_profile.network_interfaces:
             nicresource = get_azure_resource(nicRef.id)
             nic = network_client.network_interfaces.get(nicresource.ResourceGroupName, nicresource.ResourceName)
             for ipConfig in nic.ip_configurations:
-                logging.info("{get_power_status_impl} Testing ip configuration %s" % ipConfig.name)
+                logging.info("{get_network_state} Testing ip configuration %s" % ipConfig.name)
                 fenceSubnet = get_fence_subnet_for_config(ipConfig, network_client)
                 testOk = test_fence_subnet(fenceSubnet, nic, network_client)
                 if not testOk:
                     allNICOK = False
                 elif fenceSubnet.id.lower() != ipConfig.subnet.id.lower():
-                    logging.info("{get_power_status_impl} IP configuration %s is not in fence subnet (ip subnet: %s, fence subnet: %s)" % (ipConfig.name, ipConfig.subnet.id.lower(), fenceSubnet.id.lower()))
+                    logging.info("{get_network_state} IP configuration %s is not in fence subnet (ip subnet: %s, fence subnet: %s)" % (ipConfig.name, ipConfig.subnet.id.lower(), fenceSubnet.id.lower()))
                     allNICOK = False
         if allNICOK:
-            logging.info("{get_power_status_impl} All IP configurations of all network interfaces are in the fence subnet. Declaring VM as off")
+            logging.info("{get_network_state} All IP configurations of all network interfaces are in the fence subnet. Declaring VM as off")
             result = FENCE_STATE_OFF
     except Exception as e:
-        fail_usage("{get_power_status_impl} Failed: %s" % e)
-    
+        fail_usage("{get_network_state} Failed: %s" % e)
+
     return result
 
-def set_power_status_off(compute_client, network_client, rgName, vmName):
-    logging.info("{set_power_status_off} Fencing %s in resource group %s" % (vmName, rgName))
-                          
-    vm = compute_client.virtual_machines.get(rgName, vmName, "instanceView")
-    
-    operations = []
-    for nicRef in vm.network_profile.network_interfaces:
-        nicresource = get_azure_resource(nicRef.id)
-        nic = network_client.network_interfaces.get(nicresource.ResourceGroupName, nicresource.ResourceName)
-        if not nic.tags:
-            nic.tags = {}
-
-        for ipConfig in nic.ip_configurations: 
-            fenceSubnet = get_fence_subnet_for_config(ipConfig, network_client)
-            testOk = test_fence_subnet(fenceSubnet, nic, network_client)
-            if testOk:
-                logging.info("{set_power_status_off} Changing subnet of ip config of nic %s" % nic.id)
-                nic.tags[("%s_%s" % (FENCE_TAG_SUBNET_ID, ipConfig.name))] = ipConfig.subnet.id
-                nic.tags[("%s_%s" % (FENCE_TAG_IP_TYPE, ipConfig.name))] = ipConfig.private_ip_allocation_method
-                nic.tags[("%s_%s" % (FENCE_TAG_IP, ipConfig.name))] = ipConfig.private_ip_address
-                ipConfig.subnet = fenceSubnet
-                ipConfig.private_ip_allocation_method = IP_TYPE_DYNAMIC
-            else:            
-                fail_usage("{set_power_status_off} Network interface id %s does not have a network security group." % nic.id)
-        
-        op = network_client.network_interfaces.create_or_update(nicresource.ResourceGroupName, nicresource.ResourceName, nic)
-        operations.append(op)
-    
-    # while True:
-    #     vm = compute_client.virtual_machines.get(rgName, vmName, "instanceView")
-    #     if get_vm_power_state(vm) == VM_STATE_POWER_STARTING:
-    #         break
-    #     else:
-    #         logging.info("{set_power_status_off} waiting for starting state")
-    #         time.sleep(5)     
-
-    iCount = 1
-    for waitOp in operations:
-       logging.info("{set_power_status} Waiting for network update operation (%s/%s)" % (iCount, len(operations)))                    
-       waitOp.wait()
-       logging.info("{set_power_status} Waiting for network update operation (%s/%s) done" % (iCount, len(operations)))
-       iCount += 1
-
-def set_power_status_on(compute_client, network_client, rgName, vmName):
+def set_network_state(compute_client, network_client, rgName, vmName, operation):
     import msrestazure.azure_exceptions
-    logging.info("{set_power_status_on} Unfencing %s in resource group %s" % (vmName, rgName))
+    logging.info("{set_network_state} Setting state %s for  %s in resource group %s" % (operation, vmName, rgName))
 
-    vm = None          
-    while True:
-        vm = compute_client.virtual_machines.get(rgName, vmName, "instanceView")
-        if get_vm_power_state(vm) == VM_STATE_POWER_RUNNING:
-            break
-        else:
-            logging.info("{set_power_status_on} waiting for running state")
-            time.sleep(10)                
-    
+    vm = compute_client.virtual_machines.get(rgName, vmName, "instanceView")
+
     operations = []
     for nicRef in vm.network_profile.network_interfaces:
-        attempt = 0
-        while attempt < MAX_RETRY:
-            attempt += 1
+        for attempt in range(0, MAX_RETRY):
             try:
                 nicresource = get_azure_resource(nicRef.id)
                 nic = network_client.network_interfaces.get(nicresource.ResourceGroupName, nicresource.ResourceName)
-                logging.info("{set_power_status_on} Searching for tags required to unfence this virtual machine")
+
+                if not nic.tags and operation == "block":
+                    nic.tags = {}
+
+                logging.info("{set_network_state} Searching for tags required to unfence this virtual machine")
                 for ipConfig in nic.ip_configurations:
+                    if operation == "block":
+                        fenceSubnet = get_fence_subnet_for_config(ipConfig, network_client)
+                        testOk = test_fence_subnet(fenceSubnet, nic, network_client)
+                        if testOk:
+                            logging.info("{set_network_state} Changing subnet of ip config of nic %s" % nic.id)
+                            nic.tags[("%s_%s" % (FENCE_TAG_SUBNET_ID, ipConfig.name))] = ipConfig.subnet.id
+                            nic.tags[("%s_%s" % (FENCE_TAG_IP_TYPE, ipConfig.name))] = ipConfig.private_ip_allocation_method
+                            nic.tags[("%s_%s" % (FENCE_TAG_IP, ipConfig.name))] = ipConfig.private_ip_address
+                            ipConfig.subnet = fenceSubnet
+                            ipConfig.private_ip_allocation_method = IP_TYPE_DYNAMIC
+                        else:
+                            fail_usage("{set_network_state} Network interface id %s does not have a network security group." % nic.id)
+                    elif operation == "unblock":
+                        if not nic.tags:
+                            fail_usage("{set_network_state} IP configuration %s is missing the required resource tags (empty)" % ipConfig.name)
 
-                    if not nic.tags:
-                        fail_usage("{set_power_status_on}: IP configuration %s is missing the required resource tags (empty)" % ipConfig.name)
+                        subnetId = nic.tags.pop("%s_%s" % (FENCE_TAG_SUBNET_ID, ipConfig.name))
+                        ipType = nic.tags.pop("%s_%s" % (FENCE_TAG_IP_TYPE, ipConfig.name))
+                        ipAddress = nic.tags.pop("%s_%s" % (FENCE_TAG_IP, ipConfig.name))
 
-                    subnetId = nic.tags.pop("%s_%s" % (FENCE_TAG_SUBNET_ID, ipConfig.name))
-                    ipType = nic.tags.pop("%s_%s" % (FENCE_TAG_IP_TYPE, ipConfig.name))
-                    ipAddress = nic.tags.pop("%s_%s" % (FENCE_TAG_IP, ipConfig.name))
+                        if (subnetId and ipType and (ipAddress or (ipType.lower() == IP_TYPE_DYNAMIC.lower()))):
+                            logging.info("{set_network_state} tags found (subnetId: %s, ipType: %s, ipAddress: %s)" % (subnetId, ipType, ipAddress))
 
-                    if (subnetId and ipType and (ipAddress or (ipType.lower() == IP_TYPE_DYNAMIC.lower()))):
-                        logging.info("{set_power_status_on} tags found (subnetId: %s, ipType: %s, ipAddress: %s)" % (subnetId, ipType, ipAddress))
+                            subnetResource = get_azure_resource(subnetId)
+                            vnet = network_client.virtual_networks.get(subnetResource.ResourceGroupName, subnetResource.ResourceName)
+                            logging.info("{set_network_state} looking for subnet %s" % len(subnetResource.SubResources))
+                            oldSubnet = get_subnet(vnet, subnetResource.SubResources[0].Name)
+                            if not oldSubnet:
+                                fail_usage("{set_network_state} subnet %s not found" % subnetId)
 
-                        subnetResource = get_azure_resource(subnetId)
-                        vnet = network_client.virtual_networks.get(subnetResource.ResourceGroupName, subnetResource.ResourceName)
-                        logging.info("{set_power_status_on} looking for subnet %s" % len(subnetResource.SubResources))
-                        oldSubnet = get_subnet(vnet, subnetResource.SubResources[0].Name)
-                        if not oldSubnet:
-                            fail_usage("{set_power_status_on}: subnet %s not found" % subnetId)
+                            ipConfig.subnet = oldSubnet
+                            ipConfig.private_ip_allocation_method = ipType
+                            if ipAddress:
+                                ipConfig.private_ip_address = ipAddress
+                        else:
+                            fail_usage("{set_network_state} IP configuration %s is missing the required resource tags(subnetId: %s, ipType: %s, ipAddress: %s)" % (ipConfig.name, subnetId, ipType, ipAddress))
 
-                        ipConfig.subnet = oldSubnet
-                        ipConfig.private_ip_allocation_method = ipType
-                        if ipAddress:
-                            ipConfig.private_ip_address = ipAddress
-                    else:
-                        fail_usage("{set_power_status_on}: IP configuration %s is missing the required resource tags(subnetId: %s, ipType: %s, ipAddress: %s)" % (ipConfig.name, subnetId, ipType, ipAddress))
-                
-                logging.info("{set_power_status_on} updating nic %s" % (nic.id))
+                logging.info("{set_network_state} updating nic %s" % (nic.id))
                 op = network_client.network_interfaces.create_or_update(nicresource.ResourceGroupName, nicresource.ResourceName, nic)
                 operations.append(op)
                 break
             except msrestazure.azure_exceptions.CloudError as cex:
-                logging.error("{set_power_status_on} CloudError in attempt %s '%s'" % (attempt, cex))
+                logging.error("{set_network_state} CloudError in attempt %s '%s'" % (attempt, cex))
                 if cex.error and cex.error.error and cex.error.error.lower() == "PrivateIPAddressIsBeingCleanedUp":
-                    logging.error("{set_power_status_on} PrivateIPAddressIsBeingCleanedUp")
+                    logging.error("{set_network_state} PrivateIPAddressIsBeingCleanedUp")
                 time.sleep(RETRY_WAIT)
 
             except Exception as ex:
-                logging.error("{set_power_status_on} Exception of type %s: %s" % (type(ex).__name__, ex))
+                logging.error("{set_network_state} Exception of type %s: %s" % (type(ex).__name__, ex))
                 break
 
-    while True:
-        vm = compute_client.virtual_machines.get(rgName, vmName, "instanceView")
-        if get_vm_power_state(vm) == VM_STATE_POWER_STARTING:
-            break
-        else:
-            logging.info("{set_power_status_on} waiting for starting state")
-            time.sleep(5)
+def get_azure_config(options):
+    config = AzureConfiguration()
+
+    config.RGName = options.get("--resourceGroup")
+    config.VMName = options.get("--plug")
+    config.SubscriptionId = options.get("--subscriptionId")
+    config.Cloud = options.get("--cloud")
+    config.UseMSI = "--msi" in options
+    config.Tenantid = options.get("--tenantId")
+    config.ApplicationId = options.get("--username")
+    config.ApplicationKey = options.get("--password")
+    config.Verbose = options.get("--verbose")
+
+    if not config.RGName:
+        logging.info("resourceGroup not provided. Using metadata service")
+        config.RGName = get_from_metadata("resourceGroupName")
+
+    if not config.SubscriptionId:
+        logging.info("subscriptionId not provided. Using metadata service")
+        config.RGName = get_from_metadata("subscriptionId")
+
+    return config
 
 def get_azure_cloud_environment(config):
     cloud_environment = None
@@ -343,14 +284,14 @@ def get_azure_cloud_environment(config):
 def get_azure_credentials(config):
     credentials = None
     cloud_environment = get_azure_cloud_environment(config)
-    if ocf_is_true(config.UseMSI) and cloud_environment:
-        from msrestazure.azure_active_directory import MSIAuthentication            
+    if config.UseMSI and cloud_environment:
+        from msrestazure.azure_active_directory import MSIAuthentication
         credentials = MSIAuthentication(cloud_environment=cloud_environment)
-    elif ocf_is_true(config.UseMSI):
-        from msrestazure.azure_active_directory import MSIAuthentication            
+    elif config.UseMSI:
+        from msrestazure.azure_active_directory import MSIAuthentication
         credentials = MSIAuthentication()
     elif cloud_environment:
-        from azure.common.credentials import ServicePrincipalCredentials            
+        from azure.common.credentials import ServicePrincipalCredentials
         credentials = ServicePrincipalCredentials(
             client_id = config.ApplicationId,
             secret = config.ApplicationKey,
@@ -358,7 +299,7 @@ def get_azure_credentials(config):
             cloud_environment=cloud_environment
         )
     else:
-        from azure.common.credentials import ServicePrincipalCredentials            
+        from azure.common.credentials import ServicePrincipalCredentials
         credentials = ServicePrincipalCredentials(
             client_id = config.ApplicationId,
             secret = config.ApplicationKey,
