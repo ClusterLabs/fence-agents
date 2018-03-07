@@ -38,7 +38,7 @@ def get_list(conn, options):
 	output = send_cmd(options, "containers/json?all=1")
 	containers = {}
 	for container in output:
-		containers[container["Id"]] = (container["Names"][0], {True:"off", False: "on"}[container["Status"][:4].lower() == "exit"])
+		containers[container["Id"]] = (container["Names"][0][1:], {True:"off", False: "on"}[container["Status"][:4].lower() == "exit"])
 	return containers
 
 
