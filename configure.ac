@@ -4,7 +4,7 @@ AC_PREREQ([2.63])
 
 AC_INIT([fence-agents],
 	m4_esyscmd([make/git-version-gen .tarball-version]),
-	[linux-cluster@redhat.com])
+	[developers@clusterlabs.org])
 
 AC_CONFIG_AUX_DIR([.])
 
