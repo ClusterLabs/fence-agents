@@ -1,7 +1,7 @@
 ###############################################################################
 ###############################################################################
 ##
-##  Copyright (C) 2004-2011 Red Hat, Inc.  All rights reserved.
+##  Copyright (C) 2018 Red Hat, Inc.  All rights reserved.
 ##
 ##  This copyrighted material is made available to anyone wishing to use,
 ##  modify, copy, or redistribute it subject to the terms and conditions
@@ -46,9 +46,6 @@ exit 1
 %endif
 %setup -q -n %{name}-%{version}%{?rcver:%{rcver}}%{?numcomm:.%{numcomm}}%{?alphatag:-%{alphatag}}%{?dirty:-%{dirty}}
 %autopatch -p1
-
-# use Python2 until python3-suds bug is fixed
-sed -i -e "/^#\!/c#\!\/usr\/bin\/python2 -tt" fence/agents/vmware_soap/fence_vmware_soap.py fence/agents/ovh/fence_ovh.py
 
 %build
 ./autogen.sh
