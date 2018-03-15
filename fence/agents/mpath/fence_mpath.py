@@ -96,7 +96,7 @@ def is_block_device(dev):
 
 # cancel registration
 def preempt_abort(options, host, dev):
-	cmd = options["--mpathpersist-path"] + " -o --preempt-abort --prout-type=5 --param-rk=" + host +" --param-sark=" + options["--key"] +"-d " + dev
+	cmd = options["--mpathpersist-path"] + " -o --preempt-abort --prout-type=5 --param-rk=" + host +" --param-sark=" + options["--key"] +" -d " + dev
 	return not bool(run_cmd(options, cmd)["err"])
 
 def register_dev(options, dev):
