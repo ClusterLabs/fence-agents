@@ -96,12 +96,20 @@ zvm/fence_zvm.8: zvm/fence_zvm
 
 cisco_mds/fence_cisco_mds.delay-check: cisco_mds/fence_cisco_mds
 	$(eval INPUT=$(subst .delay-check,,$@))
-	FENCE_TEST_ARGS_CISCO_MDS=$$(/bin/echo -e '$(FENCE_TEST_ARGS)' | sed 's#port=1#port=fc1/1#'); \
-	test `PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib /usr/bin/time -f "%e" \
-	sh -c "/bin/echo -e 'delay=10\n $$FENCE_TEST_ARGS_CISCO_MDS' | $(PYTHON) ./$(INPUT)" 2>&1 |\
-	sed 's/\.//' | tail -n 1` -ge 1000 || ( \
-	PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib /usr/bin/time -f "%e" \
-	sh -c "/bin/echo -e "delay=0\n $$FENCE_TEST_ARGS_CISCO_MDS" | $(PYTHON) ./$(INPUT)"; false )
+	FENCE_TEST_ARGS_CISCO_MDS=$$(printf '$(FENCE_TEST_ARGS)' | sed 's#port=1#port=fc1/1#'); \
+	test `PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib /usr/bin/time -p \
+	sh -c "printf 'delay=10\n $$FENCE_TEST_ARGS_CISCO_MDS' | $(PYTHON) ./$(INPUT)" 2>&1 |\
+	awk -F"[. ]" -vOFS= '/real/ {print $$2,$$3}'` -ge 1000 || ( \
+	PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib /usr/bin/time -p \
+	sh -c "printf "delay=0\n $$FENCE_TEST_ARGS_CISCO_MDS" | $(PYTHON) ./$(INPUT)"; false )
+
+heuristics_ping/fence_heuristics_ping.delay-check: heuristics_ping/fence_heuristics_ping
+	$(eval INPUT=$(subst .delay-check,,$@))
+	test `PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib /usr/bin/time -p \
+	sh -c "printf 'delay=11\n $(FENCE_TEST_ARGS)' | $(PYTHON) ./$(INPUT)" 2>&1 |\
+	awk -F"[. ]" -vOFS= '/real/ {print $$2,$$3}'` -ge 1000 || ( \
+	PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib /usr/bin/time -p \
+	sh -c "printf "delay=0\n $(FENCE_TEST_ARGS)" | $(PYTHON) ./$(INPUT)"; false )
 
 include $(top_srcdir)/make/fencebuild.mk
 include $(top_srcdir)/make/fenceman.mk
