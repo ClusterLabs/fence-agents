@@ -132,7 +132,13 @@ fi
 
 FENCE_KDUMP=0
 if echo "$AGENTS_LIST" | grep -q -E "all|kdump"; then
-	FENCE_KDUMP=1
+	case "$host_os" in
+		*bsd*)
+			;;
+		*)
+			FENCE_KDUMP=1
+			;;
+	esac
 	AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s/kdump( |$)//")
 fi
 
@@ -162,7 +168,7 @@ if test "x$AGENTS_LIST" != xall; then
 fi
 
 if test "x$AGENTS_LIST" = xall; then
-	AGENTS_LIST=`find $srcdir/fence/agents -mindepth 2 -maxdepth 2 -name '*.py' -printf '%P ' | sed -e 's#lib/[A-Za-z_.]* ##g' -e 's#nss_wrapper/[A-Za-z_.]* ##g' -e 's#autodetect/[A-Za-z_.]* ##g'`
+	AGENTS_LIST=`find $srcdir/fence/agents -mindepth 2 -maxdepth 2 -name 'fence_*.py' -print0 | xargs -0 | sed -e 's#[^ ]*/fence/agents/##g' -e 's#lib/[A-Za-z_.]* ##g' -e 's#nss_wrapper/[A-Za-z_.]* ##g' -e 's#autodetect/[A-Za-z_.]* ##g'`
 fi
 
 XENAPILIB=0
@@ -187,16 +193,32 @@ AC_PYTHON_MODULE(pycurl, 1)
 AC_PYTHON_MODULE(requests, 1)
 
 if echo "$AGENTS_LIST" | grep -q amt_ws; then
-	AC_PYTHON_MODULE(pywsman, 1)
+	AC_PYTHON_MODULE(pywsman)
+	if test "x${HAVE_PYMOD_pywsman}" != xyes; then
+		AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s#amt_ws/fence_amt_ws.py( |$)##")
+		AC_MSG_WARN("Not building fence_amt_ws")
+	fi
 fi
 if echo "$AGENTS_LIST" | grep -q aws; then
-	AC_PYTHON_MODULE(boto3, 1)
+	AC_PYTHON_MODULE(boto3)
+	if test "x${HAVE_PYMOD_boto3}" != xyes; then
+		AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s#aws/fence_aws.py( |$)##")
+		AC_MSG_WARN("Not building fence_aws")
+	fi
 fi
 if echo "$AGENTS_LIST" | grep -q -E "ovh|vmware_soap"; then
-	AC_PYTHON_MODULE(suds, 1)
+	AC_PYTHON_MODULE(suds)
+	if test "x${HAVE_PYMOD_suds}" != xyes; then
+		AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s#(ovh/fence_ovh|vmware_soap/fence_vmware_soap).py( |$)##g")
+		AC_MSG_WARN("Not building fence_ovh and fence_vmware_soap")
+	fi
 fi
 if echo "$AGENTS_LIST" | grep -q gce; then
-	AC_PYTHON_MODULE(googleapiclient, 1)
+	AC_PYTHON_MODULE(googleapiclient)
+	if test "x${HAVE_PYMOD_googleapiclient}" != xyes; then
+		AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s#gce/fence_gce.py( |$)##")
+		AC_MSG_WARN("Not building fence_ovh and fence_gce")
+	fi
 fi
 
 ## path to 3rd-party binaries

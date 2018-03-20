@@ -40,7 +40,7 @@ def ping_test(con, options):
 	p = {}
 	failcount = 0
 	# search string for parsing the results of the ping-executable
-	packet_count = re.compile(r".*transmitted, ([0-9]*) received.*")
+	packet_count = re.compile(r".*transmitted, ([0-9]*)( packets)? received.*")
 
 	# start a ping-process per target
 	for target in targets:

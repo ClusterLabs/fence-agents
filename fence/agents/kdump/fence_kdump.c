@@ -32,6 +32,7 @@
 #include <netdb.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/in.h>
 
 #include "options.h"
 #include "message.h"

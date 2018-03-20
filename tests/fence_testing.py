@@ -108,7 +108,7 @@ def test_action(agent, action_file, method, verbose = False):
 
 		# @note: Broken pipe can occur here and I'm not sure why - non-deterministic
 		if method == "stdin" and sleep_wait == None:
-			current_command = "/bin/echo -e \"" + current_stdin_options + "\" | " + current_command
+			current_command = "printf \"" + current_stdin_options + "\" | " + current_command
 
 		if verbose == False:
 			result = os.system(current_command + " &> /dev/null")

@@ -17,7 +17,7 @@ xml-upload.%: %
 # If test will fail, rerun fence agents to show problems
 delay-check.%: %
 	$(eval INPUT=$(subst delay-check.,,$@))
-	test `/usr/bin/time -f "%e" ./$(INPUT) --delay 10 $(FENCE_TEST_ARGS) -- 2>&1 |\
-	sed 's/\.//' | tail -n 1` -ge 1000 || \
-	/usr/bin/time -f "%e" ./$(INPUT) --delay 0 $(FENCE_TEST_ARGS) --
+	test `/usr/bin/time -p ./$(INPUT) --delay 10 $(FENCE_TEST_ARGS) -- 2>&1 |\
+	awk -F"[. ]" -vOFS= '/real/ {print $$2,$$3}' | tail -n 1` -ge 1000 || \
+	/usr/bin/time -p ./$(INPUT) --delay 0 $(FENCE_TEST_ARGS) --
 
