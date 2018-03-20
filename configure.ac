@@ -182,6 +182,22 @@ LOGDIR=${localstatedir}/log/cluster
 CLUSTERVARRUN=${localstatedir}/run/cluster
 CLUSTERDATA=${datadir}/cluster
 
+AC_PATH_PROGS(XMLLINT, xmllint)
+AM_CONDITIONAL(BUILD_DOC, test "x$XMLLINT" != "x" )
+if test "x$XMLLINT" = "x"; then
+   AC_MSG_WARN([xmllint not installed, unable to (re-)build manual pages])
+   exit 1
+fi
+AC_SUBST(XMLLINT)
+
+AC_PATH_PROGS(XSLTPROC, xsltproc)
+AM_CONDITIONAL(BUILD_DOC, test "x$XSLTPROC" != "x" )
+if test "x$XSLTPROC" = "x"; then
+   AC_MSG_WARN([xsltproc not installed, unable to (re-)build manual pages])
+   exit 1
+fi
+AC_SUBST(XSLTPROC)
+
 AM_PATH_PYTHON
 if test -z "$PYTHON"; then
     echo "*** Essential program python not found" 1>&2
