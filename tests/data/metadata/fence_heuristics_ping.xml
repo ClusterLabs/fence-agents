@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_heuristics_ping" shortdesc="Fence agent for ping-heuristic based fencing" >
 <longdesc>fence_heuristics_ping uses ping-heuristics to control execution of another fence agent on the same fencing level.
-.P
+
 This is not a fence agent by itself! Its only purpose is to enable/disable another fence agent that lives on the same fencing level but after fence_heuristics_ping.</longdesc>
 <vendor-url></vendor-url>
 <parameters>
@@ -115,6 +115,7 @@ This is not a fence agent by itself! Its only purpose is to enable/disable anoth
 	<action name="reboot" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="manpage" />
 	<action name="validate-all" />
 </actions>
 </resource-agent>

@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_aws" shortdesc="Fence agent for AWS (Amazon Web Services)" >
 <longdesc>fence_aws is an I/O Fencing agent for AWS (Amazon WebServices). It uses the boto3 library to connect to AWS.
-.P
+
 boto3 can be configured with AWS CLI or by creating ~/.aws/credentials.
 For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.html#configuration</longdesc>
 <vendor-url>http://www.amazon.com</vendor-url>
@@ -111,6 +111,7 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="manpage" />
 	<action name="validate-all" />
 </actions>
 </resource-agent>

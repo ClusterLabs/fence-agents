@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_vbox" shortdesc="Fence agent for VirtualBox" >
 <longdesc>fence_vbox is an I/O Fencing agent which can be used with the virtual machines managed by VirtualBox. It logs via ssh to a dom0 where it runs VBoxManage to do all of the work. 
-.P
+
 By default, vbox needs to log in as a user that is a member of the vboxusers group. Also, you must allow ssh login in your sshd_config.</longdesc>
 <vendor-url>https://www.virtualbox.org/</vendor-url>
 <parameters>
@@ -216,6 +216,7 @@ By default, vbox needs to log in as a user that is a member of the vboxusers gro
 	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="manpage" />
 	<action name="validate-all" />
 </actions>
 </resource-agent>

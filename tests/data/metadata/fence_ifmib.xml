@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_ifmib" shortdesc="Fence agent for IF MIB" >
 <longdesc>fence_ifmib is an I/O Fencing agent which can be used with any SNMP IF-MIB capable device. 
-.P
+
 It was written with managed ethernet switches in mind, in order to fence iSCSI SAN connections. However, there are many devices that support the IF-MIB interface. The agent uses IF-MIB::ifAdminStatus to control the state of an interface.</longdesc>
 <vendor-url>http://www.ietf.org/wg/concluded/ifmib.html</vendor-url>
 <parameters>
@@ -210,6 +210,7 @@ It was written with managed ethernet switches in mind, in order to fence iSCSI S
 	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="manpage" />
 	<action name="validate-all" />
 </actions>
 </resource-agent>

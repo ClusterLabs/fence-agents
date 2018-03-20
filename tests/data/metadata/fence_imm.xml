@@ -215,6 +215,7 @@
 	<action name="status" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="manpage" />
 	<action name="validate-all" />
 	<action name="diag" />
 </actions>

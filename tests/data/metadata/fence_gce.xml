@@ -105,6 +105,7 @@ For instructions see: https://cloud.google.com/compute/docs/tutorials/python-gui
 	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="manpage" />
 	<action name="validate-all" />
 </actions>
 </resource-agent>
