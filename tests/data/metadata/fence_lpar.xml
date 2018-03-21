@@ -196,6 +196,7 @@
 	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="manpage" />
 	<action name="validate-all" />
 </actions>
 </resource-agent>

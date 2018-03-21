@@ -557,7 +557,7 @@ def usage(avail_opt):
 		if len(value["help"]) != 0:
 			print("   " + _join_wrap([value["help"]], first_indent=3))
 
-def metadata(avail_opt, docs):
+def metadata(options, avail_opt, docs):
 	# avail_opt has to be unique, if there are duplicities then they should be removed
 	sorted_list = [(key, all_opt[key]) for key in list(set(avail_opt)) if "longopt" in all_opt[key]]
 	# Find keys that are going to replace inconsistent names
@@ -566,6 +566,9 @@ def metadata(avail_opt, docs):
 	sorted_list.extend(new_options)
 
 	sorted_list.sort(key=lambda x: (x[1]["order"], x[0]))
+
+	if options["--action"] == "metadata":
+		docs["longdesc"] = re.sub("\.P|\.TP|\.br\n", "", docs["longdesc"])
 
 	print("<?xml version=\"1.0\" ?>")
 	print("<resource-agent name=\"" + os.path.basename(sys.argv[0]) + \
@@ -673,7 +676,7 @@ def check_input(device_opt, opt, other_conditions = False):
 	if options["--action"] == "meta-data":
 		options["--action"] = "metadata"
 
-	if options["--action"] == "metadata" or any(k in options for k in ("--help", "--version")):
+	if options["--action"] in ["metadata", "manpage"] or any(k in options for k in ("--help", "--version")):
 		return options
 
 	if "--verbose" in options:
@@ -821,10 +824,10 @@ def show_docs(options, docs=None):
 		usage(device_opt)
 		sys.exit(0)
 
-	if options.get("--action", "") == "metadata":
+	if options.get("--action", "") in ["metadata", "manpage"]:
 		if "port_as_ip" in device_opt:
 			device_opt.remove("separator")
-		metadata(device_opt, docs)
+		metadata(options, device_opt, docs)
 		sys.exit(0)
 
 	if "--version" in options:
@@ -1490,7 +1493,7 @@ def _verify_unique_getopt(avail_opt):
 
 def _get_available_actions(device_opt):
 	available_actions = ["on", "off", "reboot", "status", "list", "list-status", \
-		"monitor", "metadata", "validate-all"]
+		"monitor", "metadata", "manpage", "validate-all"]
 	default_value = "reboot"
 
 	if device_opt.count("fabric_fencing"):

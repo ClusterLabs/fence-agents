@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_virsh" shortdesc="Fence agent for virsh" >
 <longdesc>fence_virsh is an I/O Fencing agent which can be used with the virtual machines managed by libvirt. It logs via ssh to a dom0 and there run virsh command, which does all work. 
-.P
+
 By default, virsh needs root account to do properly work. So you must allow ssh login in your sshd_config.</longdesc>
 <vendor-url>http://libvirt.org</vendor-url>
 <parameters>
@@ -203,6 +203,7 @@ By default, virsh needs root account to do properly work. So you must allow ssh 
 	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="manpage" />
 	<action name="validate-all" />
 </actions>
 </resource-agent>

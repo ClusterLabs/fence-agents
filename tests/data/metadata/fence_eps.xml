@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_eps" shortdesc="Fence agent for ePowerSwitch" >
 <longdesc>fence_eps  is an I/O Fencing agent which can be used with the ePowerSwitch 8M+ power switch to fence connected machines. Fence agent works ONLY on 8M+ device, because this is only one, which has support for hidden page feature. 
-.TP
+
 Agent basically works by connecting to hidden page and pass appropriate arguments to GET request. This means, that hidden page feature must be enabled and properly configured.</longdesc>
 <vendor-url>http://www.epowerswitch.com</vendor-url>
 <parameters>
@@ -160,6 +160,7 @@ Agent basically works by connecting to hidden page and pass appropriate argument
 	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="manpage" />
 	<action name="validate-all" />
 </actions>
 </resource-agent>

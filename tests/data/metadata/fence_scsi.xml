@@ -117,6 +117,7 @@ The fence_scsi agent works by having each node in the cluster register a unique 
 	<action name="status" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="manpage" />
 	<action name="validate-all" />
 </actions>
 </resource-agent>
