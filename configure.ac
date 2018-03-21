@@ -210,28 +210,28 @@ AC_PYTHON_MODULE(requests, 1)
 
 if echo "$AGENTS_LIST" | grep -q amt_ws; then
 	AC_PYTHON_MODULE(pywsman)
-	if test "x${HAVE_PYMOD_pywsman}" != xyes; then
+	if test "x${HAVE_PYMOD_PYWSMAN}" != xyes; then
 		AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s#amt_ws/fence_amt_ws.py( |$)##")
 		AC_MSG_WARN("Not building fence_amt_ws")
 	fi
 fi
 if echo "$AGENTS_LIST" | grep -q aws; then
 	AC_PYTHON_MODULE(boto3)
-	if test "x${HAVE_PYMOD_boto3}" != xyes; then
+	if test "x${HAVE_PYMOD_BOTO3}" != xyes; then
 		AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s#aws/fence_aws.py( |$)##")
 		AC_MSG_WARN("Not building fence_aws")
 	fi
 fi
 if echo "$AGENTS_LIST" | grep -q -E "ovh|vmware_soap"; then
 	AC_PYTHON_MODULE(suds)
-	if test "x${HAVE_PYMOD_suds}" != xyes; then
+	if test "x${HAVE_PYMOD_SUDS}" != xyes; then
 		AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s#(ovh/fence_ovh|vmware_soap/fence_vmware_soap).py( |$)##g")
 		AC_MSG_WARN("Not building fence_ovh and fence_vmware_soap")
 	fi
 fi
 if echo "$AGENTS_LIST" | grep -q gce; then
 	AC_PYTHON_MODULE(googleapiclient)
-	if test "x${HAVE_PYMOD_googleapiclient}" != xyes; then
+	if test "x${HAVE_PYMOD_GOOGLEAPICLIENT}" != xyes; then
 		AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s#gce/fence_gce.py( |$)##")
 		AC_MSG_WARN("Not building fence_ovh and fence_gce")
 	fi
