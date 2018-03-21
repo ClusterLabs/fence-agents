@@ -4,7 +4,18 @@
 
 For instructions to setup credentials see: https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal
 
-Username and password are application ID and authentication key from "App registrations".</longdesc>
+Username and password are application ID and authentication key from "App registrations".
+
+NOTE: NETWORK FENCING
+Network fencing requires an additional Subnet named "fence-subnet" for the Virtual Network using a Network Security Group with the following rules:
++-----------+-----+-------------------------+------+------+-----+-----+--------+
+| DIRECTION | PRI | NAME                    | PORT | PROT | SRC | DST | ACTION |
++-----------+-----+-------------------------+------+------+-----+-----+--------+
+| Inbound   | 100 | FENCE_DENY_ALL_INBOUND  | Any  | Any  | Any | Any | Deny   |
+| Outbound  | 100 | FENCE_DENY_ALL_OUTBOUND | Any  | Any  | Any | Any | Deny   |
++-----------+-----+-------------------------+------+------+-----+-----+--------+
+
+When using network fencing the reboot-action will cause a quick-return once the network has been fenced (instead of waiting for the off-action to succeed). It will check the status during the monitor-action, and request power-on when the shutdown operation is complete.</longdesc>
 <vendor-url>http://www.microsoft.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
@@ -52,20 +63,40 @@ Username and password are application ID and authentication key from "App regist
 		<content type="string"  />
 		<shortdesc lang="en">Application ID</shortdesc>
 	</parameter>
-	<parameter name="resourceGroup" unique="0" required="1">
+	<parameter name="resourceGroup" unique="0" required="0">
 		<getopt mixed="--resourceGroup=[name]" />
 		<content type="string"  />
-		<shortdesc lang="en">Name of resource group.</shortdesc>
+		<shortdesc lang="en">Name of resource group. Metadata service is used if the value is not provided.</shortdesc>
 	</parameter>
-	<parameter name="tenantId" unique="0" required="1">
+	<parameter name="tenantId" unique="0" required="0">
 		<getopt mixed="--tenantId=[name]" />
 		<content type="string"  />
 		<shortdesc lang="en">Id of Azure Active Directory tenant.</shortdesc>
 	</parameter>
-	<parameter name="subscriptionId" unique="0" required="1">
+	<parameter name="subscriptionId" unique="0" required="0">
 		<getopt mixed="--subscriptionId=[name]" />
 		<content type="string"  />
-		<shortdesc lang="en">Id of the Azure subscription.</shortdesc>
+		<shortdesc lang="en">Id of the Azure subscription. Metadata service is used if the value is not provided.</shortdesc>
+	</parameter>
+	<parameter name="network-fencing" unique="0" required="0" deprecated="1">
+		<getopt mixed="--network-fencing" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Use network fencing. See NOTE-section for configuration.</shortdesc>
+	</parameter>
+	<parameter name="network_fencing" unique="0" required="0" obsoletes="network-fencing">
+		<getopt mixed="--network-fencing" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Use network fencing. See NOTE-section for configuration.</shortdesc>
+	</parameter>
+	<parameter name="msi" unique="0" required="0">
+		<getopt mixed="--msi" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Determines if Managed Service Identity should be used.</shortdesc>
+	</parameter>
+	<parameter name="cloud" unique="0" required="0">
+		<getopt mixed="--cloud=[name]" />
+		<content type="string"  />
+		<shortdesc lang="en">Name of the cloud you want to use.</shortdesc>
 	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
