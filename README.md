@@ -11,3 +11,5 @@ Fence agents do not use configuration files, as configuration management is outs
 Because many fence agents are quite similar to each other, a fencing library (in Python) was developed. Please use it for further development. Creating or modifying a new fence agent should be quite simple using this library.
 
 Detailed user and developer documentation can be found here: [https://docs.pagure.org/ClusterLabs.fence-agents/FenceAgentAPI.md](https://docs.pagure.org/ClusterLabs.fence-agents/FenceAgentAPI.md)
+
+
