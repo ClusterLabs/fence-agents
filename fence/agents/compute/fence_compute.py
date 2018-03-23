@@ -353,7 +353,7 @@ def define_new_opts():
 		"default" : "",
 		"order": 1,
 	}
-	all_opt["user-domain"] = {
+	all_opt["user_domain"] = {
 		"getopt" : "u:",
 		"longopt" : "user-domain",
 		"help" : "-u, --user-domain=[name]       Keystone v3 User Domain",
@@ -362,7 +362,7 @@ def define_new_opts():
 		"default" : "Default",
 		"order": 2,
 	}
-	all_opt["project-domain"] = {
+	all_opt["project_domain"] = {
 		"getopt" : "P:",
 		"longopt" : "project-domain",
 		"help" : "-d, --project-domain=[name]    Keystone v3 Project Domain",
@@ -398,7 +398,7 @@ def define_new_opts():
 		"default" : "False",
 		"order": 2,
 	}
-	all_opt["compute-domain"] = {
+	all_opt["domain"] = {
 		"getopt" : "d:",
 		"longopt" : "domain",
 		"help" : "-d, --domain=[string]          DNS domain in which hosts live, useful when the cluster uses short names and nova uses FQDN",
@@ -451,7 +451,7 @@ def main():
 	atexit.register(atexit_handler)
 
 	device_opt = ["login", "passwd", "tenant_name", "auth_url", "fabric_fencing",
-		      "no_login", "no_password", "port", "compute-domain", "project-domain", "user-domain",
+		      "no_login", "no_password", "port", "domain", "project_domain", "user_domain",
 		      "no_shared_storage", "endpoint_type", "record_only", "instance_filtering", "insecure", "region_name"]
 	define_new_opts()
 	all_opt["shell_timeout"]["default"] = "180"

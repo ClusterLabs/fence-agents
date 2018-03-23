@@ -73,32 +73,17 @@
 		<content type="boolean" default="False"  />
 		<shortdesc lang="en">Allow Insecure TLS Requests</shortdesc>
 	</parameter>
-	<parameter name="project-domain" unique="0" required="0" deprecated="1">
+	<parameter name="project_domain" unique="0" required="0">
 		<getopt mixed="-d, --project-domain=[name]" />
 		<content type="string" default="Default"  />
 		<shortdesc lang="en">Keystone v3 Project Domain</shortdesc>
 	</parameter>
-	<parameter name="project_domain" unique="0" required="0" obsoletes="project-domain">
-		<getopt mixed="-d, --project-domain=[name]" />
-		<content type="string" default="Default"  />
-		<shortdesc lang="en">Keystone v3 Project Domain</shortdesc>
-	</parameter>
-	<parameter name="user-domain" unique="0" required="0" deprecated="1">
+	<parameter name="user_domain" unique="0" required="0">
 		<getopt mixed="-u, --user-domain=[name]" />
 		<content type="string" default="Default"  />
 		<shortdesc lang="en">Keystone v3 User Domain</shortdesc>
 	</parameter>
-	<parameter name="user_domain" unique="0" required="0" obsoletes="user-domain">
-		<getopt mixed="-u, --user-domain=[name]" />
-		<content type="string" default="Default"  />
-		<shortdesc lang="en">Keystone v3 User Domain</shortdesc>
-	</parameter>
-	<parameter name="compute-domain" unique="0" required="0" deprecated="1">
-		<getopt mixed="-d, --domain=[string]" />
-		<content type="string"  />
-		<shortdesc lang="en">DNS domain in which hosts live</shortdesc>
-	</parameter>
-	<parameter name="domain" unique="0" required="0" obsoletes="compute-domain">
+	<parameter name="domain" unique="0" required="0">
 		<getopt mixed="-d, --domain=[string]" />
 		<content type="string"  />
 		<shortdesc lang="en">DNS domain in which hosts live</shortdesc>
