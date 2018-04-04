@@ -10,6 +10,8 @@ import socket
 import textwrap
 import __main__
 
+from compat import to_ascii
+
 RELEASE_VERSION = "@RELEASE_VERSION@"
 
 __all__ = ['atexit_handler', 'check_input', 'process_input', 'all_opt', 'show_docs',
@@ -1014,7 +1016,7 @@ def run_command(options, command, timeout=None, env=None, log_command=None):
 
 	logging.debug("%s %s %s\n", str(status), str(pipe_stdout), str(pipe_stderr))
 
-	return (status, pipe_stdout, pipe_stderr)
+	return (status, to_ascii(pipe_stdout), to_ascii(pipe_stderr))
 
 def run_delay(options, reserve=0, result=0):
 	## Delay is important for two-node clusters fencing
