@@ -262,7 +262,7 @@ def get_azure_config(options):
 
     if not config.SubscriptionId:
         logging.info("subscriptionId not provided. Using metadata service")
-        config.RGName = get_from_metadata("subscriptionId")
+        config.SubscriptionId = get_from_metadata("subscriptionId")
 
     return config
 
