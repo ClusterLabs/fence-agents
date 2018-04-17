@@ -3,11 +3,18 @@
 import atexit
 import sys
 sys.path.append("@FENCEAGENTSLIBDIR@")
-from googleapiclient import discovery
-from oauth2client.client import GoogleCredentials
 
-from fencing import *
-from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay
+import googleapiclient
+import oauth2client
+from fencing import fail_usage, run_delay, all_opt, atexit_handler, check_input, process_input, show_docs, fence_action
+
+def translate_status(instance_status):
+	"Returns on | off | unknown."
+	if instance_status == "RUNNING":
+		return "on"
+	elif instance_status == "TERMINATED":
+		return "off"
+	return "unknown"
 
 
 def get_nodes_list(conn, options):
@@ -15,43 +22,38 @@ def get_nodes_list(conn, options):
 	try:
 		instanceList = conn.instances().list(project=options["--project"], zone=options["--zone"]).execute()
 		for instance in instanceList["items"]:
-			status = "unknown"
-			if instance["status"] == "RUNNING":
-				status = "on"
-			elif instance["status"] == "TERMINATED":
-				status = "off"
-			result[instance["id"]] = (instance["name"], status)
-	# TODO: check which Exceptions it can throw
-	except:
-		fail_usage("Failed: Unable to connect to GCE. Check your configuration.")
+			result[instance["id"]] = (instance["name"], translate_status(instance["status"]))
+	except Exception as err:
+		fail_usage("Failed: get_nodes_list: {}".format(str(err)))
 
 	return result
 
 def get_power_status(conn, options):
 	try:
-		instance = conn.instances().get(project=options["--project"], zone=options["--zone"],
-						instance=options["--plug"]).execute()
-		if instance["status"] == "RUNNING":
-			return "on"
-		elif instance["status"] == "TERMINATED":
-			return "off"
-		else:
-			return "unknown"
-	# TODO: check which Exceptions it can throw
-	except:
-		fail_usage("Failed: Unable to connect to GCE. Check your configuration.")
+		instance = conn.instances().get(
+				project=options["--project"],
+				zone=options["--zone"],
+				instance=options["--plug"]).execute()
+		return translate_status(instance["status"])
+	except Exception as err:
+		fail_usage("Failed: get_power_status: {}".format(str(err)))
+
 
 def set_power_status(conn, options):
 	try:
-		if (options["--action"]=="off"):
-			conn.instances().stop(project=options["--project"], zone=options["--zone"],
-							instance=options["--plug"]).execute()
-		elif (options["--action"]=="on"):
-			conn.instances().start(project=options["--project"], zone=options["--zone"],
-							instance=options["--plug"]).execute()
-	# TODO: check which Exceptions it can throw
-	except :
-		fail_usage("Failed: Unable to connect to GCE. Check your configuration.")
+		if options["--action"] == "off":
+			conn.instances().stop(
+					project=options["--project"],
+					zone=options["--zone"],
+					instance=options["--plug"]).execute()
+		elif options["--action"] == "on":
+			conn.instances().start(
+					project=options["--project"],
+					zone=options["--zone"],
+					instance=options["--plug"]).execute()
+	except Exception as err:
+		fail_usage("Failed: set_power_status: {}".format(str(err)))
+
 
 def define_new_opts():
 	all_opt["zone"] = {
@@ -97,10 +99,10 @@ def main():
 	run_delay(options)
 
 	try:
-		credentials = GoogleCredentials.get_application_default()
-		conn = discovery.build('compute', 'v1', credentials=credentials)
-	except:
-		fail_usage("Failed: Unable to connect to GCE. Check your configuration.")
+		credentials = oauth2client.GoogleCredentials.get_application_default()
+		conn = googleapiclient.discovery.build('compute', 'v1', credentials=credentials)
+	except Exception as err:
+		fail_usage("Failed: Create GCE compute v1 connection: {}".format(str(err)))
 
 	# Operate the fencing device
 	result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list)
