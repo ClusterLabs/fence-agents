@@ -24,8 +24,13 @@ The fence_scsi agent works by having each node in the cluster register a unique 
 		<content type="string"  />
 		<shortdesc lang="en">Key to use for the current operation. This key should be unique to a node. For the "on" action, the key specifies the key use to register the local node. For the "off" action, this key specifies the key to be removed from the device(s).</shortdesc>
 	</parameter>
-	<parameter name="nodename" unique="0" required="0">
-		<getopt mixed="-n, --nodename=[nodename]" />
+	<parameter name="plug" unique="0" required="1" obsoletes="port">
+		<getopt mixed="-n, --plug=[nodename]" />
+		<content type="string"  />
+		<shortdesc lang="en">Name of the node to be fenced. The node name is used to generate the key value used for the current operation. This option will be ignored when used with the -k option.</shortdesc>
+	</parameter>
+	<parameter name="port" unique="0" required="1" deprecated="1">
+		<getopt mixed="-n, --plug=[nodename]" />
 		<content type="string"  />
 		<shortdesc lang="en">Name of the node to be fenced. The node name is used to generate the key value used for the current operation. This option will be ignored when used with the -k option.</shortdesc>
 	</parameter>

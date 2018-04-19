@@ -191,7 +191,7 @@ def get_cluster_id(options):
 def get_node_id(options):
 	cmd = options["--corosync-cmap-path"] + " nodelist"
 
-	match = re.search(r".(\d).ring._addr \(str\) = " + options["--nodename"] + "\n", run_cmd(options, cmd)["out"])
+	match = re.search(r".(\d).ring._addr \(str\) = " + options["--plug"] + "\n", run_cmd(options, cmd)["out"])
 	return match.group(1) if match else fail_usage("Failed: unable to parse output of corosync-cmapctl or node does not exist")
 
 
@@ -299,13 +299,11 @@ persistent reservations.",
 		"order": 1
 	}
 	all_opt["nodename"] = {
-		"getopt" : "n:",
+		"getopt" : ":",
 		"longopt" : "nodename",
-		"help" : "-n, --nodename=[nodename]      Name of the node to be fenced",
+		"help" : "",
 		"required" : "0",
-		"shortdesc" : "Name of the node to be fenced. The node name is used to \
-generate the key value used for the current operation. This option will be \
-ignored when used with the -k option.",
+		"shortdesc" : "",
 		"order": 1
 	}
 	all_opt["key"] = {
@@ -418,13 +416,18 @@ def main():
 
 	atexit.register(atexit_handler)
 
-	device_opt = ["no_login", "no_password", "devices", "nodename", "key",\
-	"aptpl", "fabric_fencing", "on_target", "corosync_cmap_path",\
+	device_opt = ["no_login", "no_password", "devices", "nodename", "port",\
+	"no_port", "key", "aptpl", "fabric_fencing", "on_target", "corosync_cmap_path",\
 	"sg_persist_path", "sg_turs_path", "logfile", "vgs_path", "force_on"]
 
 	define_new_opts()
 
 	all_opt["delay"]["getopt"] = "H:"
+
+	all_opt["port"]["help"] = "-n, --plug=[nodename]          Name of the node to be fenced"
+	all_opt["port"]["shortdesc"] = "Name of the node to be fenced. The node name is used to \
+generate the key value used for the current operation. This option will be \
+ignored when used with the -k option."
 
 	#fence_scsi_check
 	if os.path.basename(sys.argv[0]) == "fence_scsi_check":
@@ -433,6 +436,9 @@ def main():
 		sys.exit(scsi_check(True))
 
 	options = check_input(device_opt, process_input(device_opt), other_conditions=True)
+
+	# hack to remove list/list-status actions which are not supported
+	options["device_opt"] = [ o for o in options["device_opt"] if o != "separator" ]
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for SCSI persistent reservation"
@@ -470,7 +476,12 @@ longer be able to write to the device(s). A manual reboot is required."
 	if options["--action"] == "monitor":
 		sys.exit(do_action_monitor(options))
 
-	if not (("--nodename" in options and options["--nodename"])\
+	# workaround to avoid regressions
+	if "--nodename" in options and options["--nodename"]:
+		options["--plug"] = options["--nodename"]
+		del options["--nodename"]
+
+	if not (("--plug" in options and options["--plug"])\
 	or ("--key" in options and options["--key"])):
 		fail_usage("Failed: nodename or key is required", stop_after_error)
 
