@@ -12,7 +12,7 @@ LT_PREREQ([2.2.6])
 LT_INIT
 
 AC_CONFIG_MACRO_DIR([m4])
-AC_CONFIG_SRCDIR([fence/agents/lib/fencing.py.py])
+AC_CONFIG_SRCDIR([lib/fencing.py.py])
 AC_CONFIG_HEADERS([make/clusterautoconfig.h])
 
 AC_CANONICAL_HOST
@@ -160,7 +160,7 @@ fi
 
 if test "x$AGENTS_LIST" != xall; then
 	for j in $AGENTS_LIST; do
-		if ! test -f fence/agents/$j/fence_$j*.py; then
+		if ! test -f agents/$j/fence_$j*.py; then
 			AC_ERROR([Agent $j does not exists])
 		fi
 		AGENTS_LIST=`echo "$AGENTS_LIST" | sed -E -e "s#$j([^_/]|$)#$j/fence_$j\1#g" -e "s#zvm/fence_zvm( |$)#zvm/fence_zvmip\1#g"`
@@ -168,7 +168,7 @@ if test "x$AGENTS_LIST" != xall; then
 fi
 
 if test "x$AGENTS_LIST" = xall; then
-	AGENTS_LIST=`find $srcdir/fence/agents -mindepth 2 -maxdepth 2 -name 'fence_*.py' -print0 | xargs -0 | sed -e 's#[^ ]*/fence/agents/##g' -e 's#lib/[A-Za-z_.]* ##g' -e 's#nss_wrapper/[A-Za-z_.]* ##g' -e 's#autodetect/[A-Za-z_.]* ##g'`
+	AGENTS_LIST=`find $srcdir/agents -mindepth 2 -maxdepth 2 -name 'fence_*.py' -print0 | xargs -0 | sed -e 's#[^ ]*/agents/##g' -e 's#lib/[A-Za-z_.]* ##g' -e 's#nss_wrapper/[A-Za-z_.]* ##g' -e 's#autodetect/[A-Za-z_.]* ##g'`
 fi
 
 XENAPILIB=0
@@ -376,9 +376,8 @@ LDFLAGS="$ENV_LDFLAGS"
 
 AM_EXTRA_RECURSIVE_TARGETS([xml-upload])
 AC_CONFIG_FILES([Makefile
-		 fence/Makefile
-		 fence/agents/Makefile
-		 fence/agents/lib/Makefile
+		 agents/Makefile
+		 lib/Makefile
 		 doc/Makefile])
 
 AC_OUTPUT

@@ -5,37 +5,37 @@ Copyright (C) 2004-2011 Red Hat, Inc.  All rights reserved.
 
 Exceptions:
 
-fence/agents/hds_cb/*:
+agents/hds_cb/*:
  Copyright (C) 2012 Matthew Clark.
  Author: Matthew Clark <mattjclark0407 at hotmail.com>
  
-fence/agents/xenapi/*:
+agents/xenapi/*:
  Copyright (C) 2011 Matthew Clark.
  Author: Matthew Clark <mattjclark0407 at hotmail.com>
  
-fence/agents/apc_snmp/powernet369.mib:
+agents/apc_snmp/powernet369.mib:
  Copyright (c) 2005 American Power Conversion, Inc.
  PowerNet is a Trademark of American Power Conversion Corp.
 
-fence/agents/eaton_snmp/fence_eaton_snmp.py:
+agents/eaton_snmp/fence_eaton_snmp.py:
  Copyright (c) 2011 eaton.com
  Author: Arnaud Quette <ArnaudQuette at Eaton.com>
 
-fence/agents/ifmib/fence_ifmib.py:
+agents/ifmib/fence_ifmib.py:
  Copyright (C) 2008-2011 Ross Vandegrift.
  Written by Ross Vandegrift <ross at kallisti.us>
 
-fence/agents/intelmodular/fence_intelmodular.pl:
+agents/intelmodular/fence_intelmodular.pl:
  Contributed by Matthew Kent <matt at bravenet.com>
 
-fence/agents/ipmilan/expect.{c,h}:
+agents/ipmilan/expect.{c,h}:
  Copyright (C) 2000 Alan Robertson <alanr at unix.sh>
 
-fence/agents/node_assassin/*
+agents/node_assassin/*
  Copyright (C) 2009-2011 Madison Kelly/Alteeve's Niche!
  Author: Digimer <digimer at alteeve.com>
 
-fence/man/fence_ifmib.8:
+man/fence_ifmib.8:
  Copyright (C) 2008-2011 Ross Vandegrift.
  Written by Ross Vandegrift <ross at kallisti.us>
 
