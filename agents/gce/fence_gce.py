@@ -4,7 +4,7 @@ import atexit
 import sys
 sys.path.append("@FENCEAGENTSLIBDIR@")
 
-import googleapiclient
+import googleapiclient.discovery
 import oauth2client
 from fencing import fail_usage, run_delay, all_opt, atexit_handler, check_input, process_input, show_docs, fence_action
 
