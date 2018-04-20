@@ -995,7 +995,9 @@ def run_command(options, command, timeout=None, env=None, log_command=None):
 	logging.info("Executing: %s\n", log_command or command)
 
 	try:
-		process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+		process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env,
+				# decodes newlines and in python3 also converts bytes to str
+				universal_newlines=(sys.version_info[0] > 2))
 	except OSError:
 		fail_usage("Unable to run %s\n" % command)
 
