@@ -5,7 +5,6 @@ import sys
 sys.path.append("@FENCEAGENTSLIBDIR@")
 
 import googleapiclient.discovery
-import oauth2client.client
 from fencing import fail_usage, run_delay, all_opt, atexit_handler, check_input, process_input, show_docs, fence_action
 
 def translate_status(instance_status):
@@ -99,7 +98,10 @@ def main():
 	run_delay(options)
 
 	try:
-		credentials = oauth2client.client.GoogleCredentials.get_application_default()
+		credentials = None
+		if tuple(googleapiclient.__version__) < tuple("1.6.0"):
+			import oauth2client.client
+			credentials = oauth2client.client.GoogleCredentials.get_application_default()
 		conn = googleapiclient.discovery.build('compute', 'v1', credentials=credentials)
 	except Exception as err:
 		fail_usage("Failed: Create GCE compute v1 connection: {}".format(str(err)))
