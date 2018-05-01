@@ -13,7 +13,7 @@ MAINTAINERCLEANFILES	= Makefile.in aclocal.m4 configure depcomp \
 
 ACLOCAL_AMFLAGS		= -I m4
 
-SUBDIRS			= fence/agents/lib fence doc
+SUBDIRS			= lib agents doc
 
 install-exec-local:
 			$(INSTALL) -d $(DESTDIR)/$(LOGDIR)

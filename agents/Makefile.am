@@ -78,12 +78,12 @@ scsi/fence_scsi_check: scsi/fence_scsi
 scsi/fence_scsi_check_hardreboot: scsi/fence_scsi
 	cp $^ $@
 
-kdump/fence_kdump.8: kdump/fence_kdump $(top_srcdir)/fence/agents/lib/fence2man.xsl
+kdump/fence_kdump.8: kdump/fence_kdump $(top_srcdir)/lib/fence2man.xsl
 	set -e && \
 		./$(@:%.8=%) -o metadata > $(@D)/.$(@F).tmp && \
-	xmllint --noout --relaxng $(top_srcdir)/fence/agents/lib/metadata.rng $(@D)/.$(@F).tmp && \
-	xsltproc $(top_srcdir)/fence/agents/lib/fence2man.xsl $(@D)/.$(@F).tmp > $@
-	xsltproc $(top_srcdir)/fence/agents/lib/fence2wiki.xsl $(@D)/.$(@F).tmp | grep -v '<?xml' > $(@D)/$(@F:%.8=%.wiki)
+	xmllint --noout --relaxng $(top_srcdir)/lib/metadata.rng $(@D)/.$(@F).tmp && \
+	xsltproc $(top_srcdir)/lib/fence2man.xsl $(@D)/.$(@F).tmp > $@
+	xsltproc $(top_srcdir)/lib/fence2wiki.xsl $(@D)/.$(@F).tmp | grep -v '<?xml' > $(@D)/$(@F:%.8=%.wiki)
 
 kdump/fence_kdump_send.8:
 	true
@@ -92,15 +92,15 @@ manual/fence_ack_manual.8:
 	true
 
 zvm/fence_zvm.8: zvm/fence_zvm
-	cp $(top_srcdir)/fence/agents/zvm/fence_zvm_man_page $(@D)/fence_zvm.8
+	cp $(top_srcdir)/agents/zvm/fence_zvm_man_page $(@D)/fence_zvm.8
 
 cisco_mds/fence_cisco_mds.delay-check: cisco_mds/fence_cisco_mds
 	$(eval INPUT=$(subst .delay-check,,$@))
 	FENCE_TEST_ARGS_CISCO_MDS=$$(printf '$(FENCE_TEST_ARGS)' | sed 's#port=1#port=fc1/1#'); \
-	test `PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib /usr/bin/time -p \
+	test `PYTHONPATH=$(abs_top_srcdir)/lib:$(abs_top_builddir)/lib /usr/bin/time -p \
 	sh -c "printf 'delay=10\n $$FENCE_TEST_ARGS_CISCO_MDS' | $(PYTHON) ./$(INPUT)" 2>&1 |\
 	awk -F"[. ]" -vOFS= '/real/ {print $$2,$$3}'` -ge 1000 || ( \
-	PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib /usr/bin/time -p \
+	PYTHONPATH=$(abs_top_srcdir)/lib:$(abs_top_builddir)/lib /usr/bin/time -p \
 	sh -c "printf "delay=0\n $$FENCE_TEST_ARGS_CISCO_MDS" | $(PYTHON) ./$(INPUT)"; false )
 
 include $(top_srcdir)/make/fencebuild.mk

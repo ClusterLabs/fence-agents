@@ -34,10 +34,10 @@ define gen_agent_from_py
 	> $@
 
 	if [ 0 -eq `echo "$(@)" | grep fence_ 2>&1 /dev/null; echo $$?` ]; then \
-		PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib $(PYTHON) $(top_srcdir)/fence/agents/lib/check_used_options.py $@; \
+		PYTHONPATH=$(abs_top_srcdir)/lib:$(abs_top_builddir)/lib $(PYTHON) $(top_srcdir)/lib/check_used_options.py $@; \
 	else true ; fi
 
-	for x in `PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib $(PYTHON) $(@) -o metadata | grep symlink | sed -e "s/.*\(fence.*\)\" .*/\1/g"`; do \
+	for x in `PYTHONPATH=$(abs_top_srcdir)/lib:$(abs_top_builddir)/lib $(PYTHON) $(@) -o metadata | grep symlink | sed -e "s/.*\(fence.*\)\" .*/\1/g"`; do \
 		cp -f $(@) $(@D)/$$x; \
 		$(MAKE) $(@D)/$$x.8; \
 	done
@@ -51,9 +51,9 @@ $(TARGET):
 	$(call gen_agent_from_py)
 
 clean: clean-man
-	rm -f $(CLEAN_TARGET:%.8=%) $(CLEAN_TARGET_ADDITIONAL) $(scsidata_SCRIPTS) */*.pyc */*.wiki
+	rm -f $(CLEAN_TARGET:%.8=%) $(CLEAN_TARGET_ADDITIONAL) $(scsidata_SCRIPTS) */*.pyc *.pyc */*.wiki
 
-	if [ "$(abs_builddir)" = "$(abs_top_builddir)/fence/agents/lib" ]; then \
+	if [ "$(abs_builddir)" = "$(abs_top_builddir)/lib" ]; then \
 		rm -f $(TARGET); \
 	fi
 
@@ -66,7 +66,7 @@ install-exec-hook: $(TARGET)
 	fi
 	for p in $(TARGET); do \
 		dir=`dirname $$p`; \
-		for x in `PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib $(PYTHON) $$p -o metadata | grep symlink | sed -e "s/.*\(fence.*\)\" .*/\1/g"`; do \
+		for x in `PYTHONPATH=$(abs_top_srcdir)/lib:$(abs_top_builddir)/lib $(PYTHON) $$p -o metadata | grep symlink | sed -e "s/.*\(fence.*\)\" .*/\1/g"`; do \
 			echo " $(INSTALL_SCRIPT) $$dir/$$x '$(DESTDIR)$(sbindir)'"; \
 			$(INSTALL_SCRIPT) $$dir/$$x "$(DESTDIR)$(sbindir)" || exit $$?; \
 			echo " $(INSTALL_DATA) '$$dir/$$x.8' '$(DESTDIR)$(man8dir)'"; \
@@ -76,7 +76,7 @@ install-exec-hook: $(TARGET)
 
 uninstall-hook: $(TARGET)
 	files=`for p in $(TARGET); do \
-		for x in \`PYTHONPATH=$(abs_srcdir)/lib:$(abs_builddir)/lib $(PYTHON) $$p -o metadata | grep symlink | sed -e "s/.*\(fence.*\)\" .*/\1/g"\`; do \
+		for x in \`PYTHONPATH=$(abs_top_srcdir)/lib:$(abs_top_builddir)/lib $(PYTHON) $$p -o metadata | grep symlink | sed -e "s/.*\(fence.*\)\" .*/\1/g"\`; do \
 			echo " rm -f '$(DESTDIR)$(sbindir)/$$x'"; \
 			rm -f "$(DESTDIR)$(sbindir)/$$x"; \
 			echo " rm -f '$(DESTDIR)$(man8dir)/$$x.8'"; \
