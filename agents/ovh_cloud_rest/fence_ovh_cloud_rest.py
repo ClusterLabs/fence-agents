@@ -96,9 +96,6 @@ def main():
                 result = 1
             while not status(options, "RESCUE"):
                 time.sleep(POLL_INTERVAL_SECONDS)
-        except ovh.exceptions.BadParametersError as exception:
-            print(exception)
-            result = 0
         except Exception as exception:
             print(exception)
             result = 0
@@ -111,9 +108,6 @@ def main():
                 result = 1
             while not status(options, "ACTIVE"):
                 time.sleep(POLL_INTERVAL_SECONDS)
-        except ovh.exceptions.BadParametersError as exception:
-            print(exception)
-            result = 0
         except Exception as exception:
             print(exception)
             result = 0
