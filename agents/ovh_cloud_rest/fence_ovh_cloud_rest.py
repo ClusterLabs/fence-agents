@@ -88,10 +88,11 @@ def main():
 
     session = ovh_login(options);
 
+    rescue_url = "/cloud/project/%s/instance/%s/rescueMode" % (options['--service-name'], options['--instance-id'])
+
     if options["--action"] == "off":
         try:
-            url = "/cloud/project/%s/instance/%s/rescueMode" % (options['--service-name'], options['--instance-id'])
-            response = session.post(url, rescue=True)
+            response = session.post(rescue_url, rescue=True)
             if response["adminPassword"] != None:
                 result = 1
             while not status(options, "RESCUE"):
@@ -102,8 +103,7 @@ def main():
 
     if options["--action"] == "on":
         try:
-            url = "/cloud/project/%s/instance/%s/rescueMode" % (options['--service-name'], options['--instance-id'])
-            response = session.post(url, rescue=False)
+            response = session.post(rescue_url, rescue=False)
             if response["adminPassword"] == None:
                 result = 1
             while not status(options, "ACTIVE"):
