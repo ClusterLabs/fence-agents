@@ -3,10 +3,11 @@
 import sys
 import time
 import atexit
+import ovh
 sys.path.append("@FENCEAGENTSLIBDIR@")
+sys.path.append("/root/fence-agents/lib")
 from fencing import *
 from fencing import fail_usage, run_command, run_delay
-import ovh
 
 POLL_INTERVAL_SECONDS = 1
 
