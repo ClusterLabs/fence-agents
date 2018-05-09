@@ -234,7 +234,7 @@ def dev_write(dev, options):
 	except IOError:
 		fail_usage("Failed: Cannot open file \""+ file_path + "\"")
 	out = f.read()
-	if not re.search(r"^" + dev + "\s+", out):
+	if not re.search(r"^" + dev + "\s+", out, flags=re.MULTILINE):
 		f.write(dev + "\n")
 	f.close()
 
