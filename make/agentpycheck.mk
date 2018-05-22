@@ -4,6 +4,7 @@ AWK_VAL='BEGIN {store=-1} /name=\".*_path\"/ {store=2} {if (store!=0) {print}; s
 TEST_TARGET=$(filter-out $(TEST_TARGET_SKIP),$(TARGET))
 
 check: $(TEST_TARGET:%=%.xml-check) $(SYMTARGET:%=%.xml-check) $(TEST_TARGET:%=%.delay-check) $(TEST_TARGET:%=%.rng-check)
+xml-check: $(TEST_TARGET:%=%.xml-check) $(SYMTARGET:%=%.xml-check)
 xml-upload: $(TEST_TARGET:%=%.xml-upload) $(SYMTARGET:%=%.xml-upload)
 
 %.xml-check: %
@@ -11,7 +12,7 @@ xml-upload: $(TEST_TARGET:%=%.xml-upload) $(SYMTARGET:%=%.xml-upload)
 	for x in $(INPUT) `PYTHONPATH=$(abs_top_srcdir)/lib:$(abs_top_builddir)/lib $(PYTHON) $(@D)/$(INPUT) -o metadata | grep symlink | sed -e "s/.*\(fence.*\)\" .*/\1/g"`; do \
 		TEMPFILE=$$(mktemp); \
 		PYTHONPATH=$(abs_top_srcdir)/lib:$(abs_top_builddir)/lib $(PYTHON) $(@D)/$$x -o metadata | $(AWK) $(AWK_VAL) > $$TEMPFILE && \
-		diff $$TEMPFILE $(DATADIR)/$$x.xml && \
+		diff $$TEMPFILE $(DATADIR)/$$x.xml || exit 1 && \
 		rm $$TEMPFILE; \
 	done
 
