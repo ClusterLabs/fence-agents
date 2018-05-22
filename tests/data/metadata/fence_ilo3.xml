@@ -4,7 +4,7 @@
 <symlink name="fence_ilo4" shortdesc="Fence agent for HP iLO4"/>
 <symlink name="fence_imm" shortdesc="Fence agent for IBM Integrated Management Module"/>
 <symlink name="fence_idrac" shortdesc="Fence agent for Dell iDRAC"/>
-<longdesc>fence_ipmilan is an I/O Fencing agentwhich can be used with machines controlled by IPMI.This agent calls support software ipmitool (http://ipmitool.sf.net/). WARNING! This fence agent might report success before the node is powered off. You should use -m/method onoff if your fence device works correctly with that option.</longdesc>
+<longdesc>fence_ipmilan FAIL is an I/O Fencing agentwhich can be used with machines controlled by IPMI.This agent calls support software ipmitool (http://ipmitool.sf.net/). WARNING! This fence agent might report success before the node is powered off. You should use -m/method onoff if your fence device works correctly with that option.</longdesc>
 <vendor-url></vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
