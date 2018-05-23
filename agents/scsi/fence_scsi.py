@@ -181,11 +181,11 @@ def get_cluster_id(options):
 		fail_usage("Failed: cannot get cluster name")
 
 	try:
-		return hashlib.md5(match.group(1)).hexdigest()
+		return hashlib.md5(match.group(1).encode('ascii')).hexdigest()
 	except ValueError:
 		# FIPS requires usedforsecurity=False and might not be
 		# available on all distros: https://bugs.python.org/issue9216
-		return hashlib.md5(match.group(1), usedforsecurity=False).hexdigest()
+		return hashlib.md5(match.group(1).encode('ascii'), usedforsecurity=False).hexdigest()
 
 
 def get_node_id(options):
