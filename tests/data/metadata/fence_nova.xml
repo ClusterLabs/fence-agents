@@ -16,12 +16,12 @@
 	<parameter name="login" unique="0" required="1">
 		<getopt mixed="-l, --username=[name]" />
 		<content type="string"  />
-		<shortdesc lang="en">Login name</shortdesc>
+		<shortdesc lang="en">Openstack Login name</shortdesc>
 	</parameter>
 	<parameter name="passwd" unique="0" required="1">
 		<getopt mixed="-p, --password=[password]" />
 		<content type="string"  />
-		<shortdesc lang="en">Login password</shortdesc>
+		<shortdesc lang="en">Openstack Login password</shortdesc>
 	</parameter>
 	<parameter name="project-name" unique="0" required="1">
 		<getopt mixed="--project-name=[project]" />
