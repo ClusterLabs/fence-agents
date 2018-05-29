@@ -237,6 +237,15 @@ if echo "$AGENTS_LIST" | grep -q gce; then
 	fi
 fi
 
+if echo "$AGENTS_LIST" | grep -q nova; then
+        AC_PYTHON_MODULE(novaclient)
+        AC_PYTHON_MODULE(keystoneclient)
+        if test "x${HAVE_PYMOD_NOVACLIENT}" != xyes; then
+                AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s#nova/fence_nova.py( |$)##")
+                AC_MSG_WARN("Not building fence_nova")
+        fi
+fi
+
 ## path to 3rd-party binaries
 AC_PATH_PROG([IPMITOOL_PATH], [ipmitool], [/usr/bin/ipmitool])
 AC_PATH_PROG([OPENSTACK_PATH], [openstack], [/usr/bin/openstack])
