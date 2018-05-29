@@ -95,7 +95,6 @@ def define_new_opts():
         "help" : "--uuid=[uuid]      UUID of the nova instance",
         "required" : "1",
         "shortdesc" : "UUID of the nova instance",
-        "default": "Default",
         "order": 1
     }
 
@@ -108,7 +107,7 @@ def main():
     options = check_input(device_opt, process_input(device_opt))
 
     docs = {}
-    docs["shortdesc"] = "Fence agent for OpenStack's Novae service"
+    docs["shortdesc"] = "Fence agent for OpenStack's Nova service"
     docs["longdesc"] = "fence_nova is a Fencing agent \
 which can be used with machines controlled by the Nova service. \
 This agent calls the python-novaclient and it is mandatory to be installed "
