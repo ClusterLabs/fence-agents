@@ -10,7 +10,7 @@ sys.path.append("/usr/share/fence")
 from fencing import *
 from fencing import fail_usage, is_executable, run_command, run_delay
 from keystoneclient.v3 import client as ksclient
-from novaclient.v1_1 import client as novaclient
+from novaclient import client as novaclient
 from keystoneclient import session as ksc_session
 from keystoneclient.auth.identity import v3
 
