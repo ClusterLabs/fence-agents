@@ -24,6 +24,8 @@ before_install:
   - pip install pexpect
   - pip install boto3
   - pip install google-api-python-client
+  - pip install python-novaclient
+  - pip install python-keystoneclient
 
 before_script:
   - wget https://github.com/Openwsman/openwsman/archive/v2.6.3.tar.gz
