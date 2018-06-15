@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
-<resource-agent name="fence_nova" shortdesc="Fence agent for OpenStack's Nova service" >
-<longdesc>fence_nova is a Fencing agent which can be used with machines controlled by the Nova service. This agent calls the python-novaclient and it is mandatory to be installed </longdesc>
+<resource-agent name="fence_openstack" shortdesc="Fence agent for OpenStack's Nova service" >
+<longdesc>fence_nova is a Fencing agent which can be used with machines controlled by the Openstack's Nova service. This agent calls the python-novaclient and it is mandatory to be installed </longdesc>
 <vendor-url>https://wiki.openstack.org/wiki/Nova</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
