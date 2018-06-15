@@ -237,12 +237,12 @@ if echo "$AGENTS_LIST" | grep -q gce; then
 	fi
 fi
 
-if echo "$AGENTS_LIST" | grep -q nova; then
+if echo "$AGENTS_LIST" | grep -q openstack; then
         AC_PYTHON_MODULE(novaclient)
         AC_PYTHON_MODULE(keystoneclient)
-        if test "x${HAVE_PYMOD_NOVACLIENT}" != xyes; then
-                AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s#nova/fence_nova.py( |$)##")
-                AC_MSG_WARN("Not building fence_nova")
+        if test "x${HAVE_PYMOD_OPENSTACKCLIENT}" != xyes; then
+                AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s#nova/fence_openstack.py( |$)##")
+                AC_MSG_WARN("Not building fence_openstack")
         fi
 fi
 
