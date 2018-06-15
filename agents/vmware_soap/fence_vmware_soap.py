@@ -56,7 +56,7 @@ def soap_login(options):
 	atexit.register(remove_tmp_dir, tmp_dir)
 
 	try:
-		headers = {"Content-Type" : "text/xml;charset=UTF-8", "SOAPAction" : ""}
+		headers = {"Content-Type" : "text/xml;charset=UTF-8", "SOAPAction" : "vim25"}
 		conn = Client(url + "/vimService.wsdl", location=url, transport=RequestsTransport(verify=verify), headers=headers)
 
 		mo_ServiceInstance = Property('ServiceInstance')
