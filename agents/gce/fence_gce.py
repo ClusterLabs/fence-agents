@@ -12,6 +12,8 @@ from fencing import fail_usage, run_delay, all_opt, atexit_handler, check_input,
 
 
 LOGGER = logging
+METADATA_SERVER = 'http://metadata.google.internal/computeMetadata/v1/'
+METADATA_HEADERS = {'Metadata-Flavor': 'Google'}
 
 
 def translate_status(instance_status):
@@ -81,13 +83,56 @@ def set_power_status(conn, options):
 		fail_usage("Failed: set_power_status: {}".format(str(err)))
 
 
+def get_instance(conn, project, zone, instance):
+	request = conn.instances().get(
+			project=project, zone=zone, instance=instance)
+	return request.execute()
+
+
+def get_zone(conn, project, instance):
+	request = conn.instances().aggregatedList(project=project)
+	while request is not None:
+		response = request.execute()
+		zones = response.get('items', {})
+		for zone in zones.values():
+			for inst in zone.get('instances', []):
+				if inst['name'] == instance:
+					return inst['zone'].split("/")[-1]
+		request = conn.instances().aggregatedList_next(
+				previous_request=request, previous_response=response)
+	raise Exception("Unable to find instance %s" % (instance))
+
+
+def get_metadata(metadata_key, params=None, timeout=None):
+	"""Performs a GET request with the metadata headers.
+
+	Args:
+		metadata_key: string, the metadata to perform a GET request on.
+		params: dictionary, the query parameters in the GET request.
+		timeout: int, timeout in seconds for metadata requests.
+
+	Returns:
+		HTTP response from the GET request.
+
+	Raises:
+		urlerror.HTTPError: raises when the GET request fails.
+	"""
+	timeout = timeout or 60
+	metadata_url = os.path.join(METADATA_SERVER, metadata_key)
+	params = urlparse.urlencode(params or {})
+	url = '%s?%s' % (metadata_url, params)
+	request = urlrequest.Request(url, headers=METADATA_HEADERS)
+	request_opener = urlrequest.build_opener(urlrequest.ProxyHandler({}))
+	return request_opener.open(request, timeout=timeout * 1.1).read()
+
+
 def define_new_opts():
 	all_opt["zone"] = {
 		"getopt" : ":",
 		"longopt" : "zone",
 		"help" : "--zone=[name]                  Zone, e.g. us-central1-b",
 		"shortdesc" : "Zone.",
-		"required" : "1",
+		"required" : "0",
 		"order" : 2
 	}
 	all_opt["project"] = {
@@ -95,7 +140,7 @@ def define_new_opts():
 		"longopt" : "project",
 		"help" : "--project=[name]               Project ID",
 		"shortdesc" : "Project ID.",
-		"required" : "1",
+		"required" : "0",
 		"order" : 3
 	}
 	all_opt["logging"] = {
@@ -108,6 +153,7 @@ def define_new_opts():
 		"default" : "false",
 		"order" : 4
 	}
+
 
 def main():
 	conn = None
@@ -164,6 +210,19 @@ def main():
 		conn = googleapiclient.discovery.build('compute', 'v1', credentials=credentials)
 	except Exception as err:
 		fail_usage("Failed: Create GCE compute v1 connection: {}".format(str(err)))
+
+	# Get project and zone
+	if not options.get("--project"):
+		try:
+			options["--project"] = get_metadata('project/project-id')
+		except Exception as err:
+			fail_usage("Failed retrieving GCE project. Please provide --project option: {}".format(str(err)))
+
+	if not options.get("--zone"):
+		try:
+			options["--zone"] = get_zone(conn, options['--project'], options['--plug'])
+		except Exception as err:
+			fail_usage("Failed retrieving GCE zone. Please provide --zone option: {}".format(str(err)))
 
 	# Operate the fencing device
 	result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list)
