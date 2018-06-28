@@ -24,8 +24,12 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import run_delay, fail_usage, fail, EC_STATUS
 
-import pywsman
 from xml.etree import ElementTree
+
+try:
+	import pywsman
+except ImportError:
+	pass
 
 POWER_ON='2'
 POWER_OFF='8'
