@@ -1,4 +1,4 @@
-MAINTAINERCLEANFILES	= Makefile.in
+MAINTAINERCLEANFILES	= Makefile.in *.pyc
 
 TARGET			= fencing.py fencing_snmp.py azure_fence.py
 
