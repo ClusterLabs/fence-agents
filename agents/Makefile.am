@@ -50,6 +50,11 @@ zvm_fence_zvm_SOURCES		= zvm/fence_zvm.c
 zvm_fence_zvm_CFLAGS		= -D_GNU_SOURCE -Izvm
 endif
 
+if BUILD_FENCE_MPATH
+mpathdatadir			= $(CLUSTERDATA)
+mpathdata_SCRIPTS		= mpath/fence_mpath_check mpath/fence_mpath_check_hardreboot
+endif
+
 if BUILD_FENCE_SCSI
 scsidatadir			= $(CLUSTERDATA)
 scsidata_SCRIPTS		= scsi/fence_scsi_check scsi/fence_scsi_check_hardreboot
@@ -71,6 +76,12 @@ manual/fence_ack_manual: manual/fence_ack_manual.in
 	cat $^ | sed \
 		-e 's#@clustervarrun@#${CLUSTERVARRUN}#g' \
 	> $@
+
+mpath/fence_mpath_check: mpath/fence_mpath
+	cp $^ $@
+
+mpath/fence_mpath_check_hardreboot: mpath/fence_mpath
+	cp $^ $@
 
 scsi/fence_scsi_check: scsi/fence_scsi
 	cp $^ $@

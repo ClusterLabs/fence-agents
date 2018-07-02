@@ -51,7 +51,7 @@ $(TARGET):
 	$(call gen_agent_from_py)
 
 clean: clean-man
-	rm -f $(CLEAN_TARGET:%.8=%) $(CLEAN_TARGET_ADDITIONAL) $(scsidata_SCRIPTS) */*.pyc *.pyc */*.wiki
+	rm -f $(CLEAN_TARGET:%.8=%) $(CLEAN_TARGET_ADDITIONAL) $(mpathdata_SCRIPTS) $(scsidata_SCRIPTS) */*.pyc *.pyc */*.wiki
 
 	if [ "$(abs_builddir)" = "$(abs_top_builddir)/lib" ]; then \
 		rm -f $(TARGET); \
