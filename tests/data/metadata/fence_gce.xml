@@ -10,6 +10,14 @@ For instructions see: https://cloud.google.com/compute/docs/tutorials/python-gui
 		<content type="string" default="reboot"  />
 		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
+	<parameter name="method" unique="0" required="0">
+		<getopt mixed="-m, --method=[method]" />
+		<content type="select" default="cycle"  >
+			<option value="onoff" />
+			<option value="cycle" />
+		</content>
+		<shortdesc lang="en">Method to fence</shortdesc>
+	</parameter>
 	<parameter name="plug" unique="0" required="1" obsoletes="port">
 		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />

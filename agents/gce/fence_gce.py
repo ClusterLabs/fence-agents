@@ -83,6 +83,21 @@ def set_power_status(conn, options):
 		fail_usage("Failed: set_power_status: {}".format(str(err)))
 
 
+def power_cycle(conn, options):
+	try:
+		LOGGER.info('Issuing reset of %s in zone %s' % (options["--plug"], options["--zone"]))
+		operation = conn.instances().reset(
+				project=options["--project"],
+				zone=options["--zone"],
+				instance=options["--plug"]).execute()
+		wait_for_operation(conn, options["--project"], options["--zone"], operation)
+		LOGGER.info('Reset of %s in zone %s complete' % (options["--plug"], options["--zone"]))
+		return True
+	except Exception as err:
+		LOGGER.error("Failed: power_cycle: {}".format(str(err)))
+		return False
+
+
 def get_instance(conn, project, zone, instance):
 	request = conn.instances().get(
 			project=project, zone=zone, instance=instance)
@@ -161,13 +176,15 @@ def main():
 
 	hostname = platform.node()
 
-	device_opt = ["port", "no_password", "zone", "project", "logging"]
+	device_opt = ["port", "no_password", "zone", "project", "logging", "method"]
 
 	atexit.register(atexit_handler)
 
 	define_new_opts()
 
 	all_opt["power_timeout"]["default"] = "60"
+	all_opt["method"]["default"] = "cycle"
+	all_opt["method"]["help"] = "-m, --method=[method]          Method to fence (onoff|cycle) (Default: cycle)"
 
 	options = check_input(device_opt, process_input(device_opt))
 
@@ -225,7 +242,7 @@ def main():
 			fail_usage("Failed retrieving GCE zone. Please provide --zone option: {}".format(str(err)))
 
 	# Operate the fencing device
-	result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list)
+	result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list, power_cycle)
 	sys.exit(result)
 
 if __name__ == "__main__":
