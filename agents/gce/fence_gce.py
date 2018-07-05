@@ -167,14 +167,13 @@ def define_new_opts():
 		"required" : "0",
 		"order" : 3
 	}
-	all_opt["logging"] = {
-		"getopt" : ":",
-		"longopt" : "logging",
-		"help" : "--logging=[bool]               Logging, true/false",
+	all_opt["stackdriver-logging"] = {
+		"getopt" : "",
+		"longopt" : "stackdriver-logging",
+		"help" : "--stackdriver-logging		Enable Logging to Stackdriver",
 		"shortdesc" : "Stackdriver-logging support.",
-		"longdesc" : "If enabled (set to true), IP failover logs will be posted to stackdriver logging.",
+		"longdesc" : "If enabled IP failover logs will be posted to stackdriver logging.",
 		"required" : "0",
-		"default" : "false",
 		"order" : 4
 	}
 
@@ -185,7 +184,7 @@ def main():
 
 	hostname = platform.node()
 
-	device_opt = ["port", "no_password", "zone", "project", "logging", "method"]
+	device_opt = ["port", "no_password", "zone", "project", "stackdriver-logging", "method"]
 
 	atexit.register(atexit_handler)
 
@@ -210,22 +209,19 @@ def main():
 	run_delay(options)
 
 	# Prepare logging
-	logging_env = options.get('--logging')
-	if logging_env:
-		logging_env = logging_env.lower()
-		if any(x in logging_env for x in ['yes', 'true', 'enabled']):
-			try:
-				import google.cloud.logging.handlers
-				client = google.cloud.logging.Client()
-				handler = google.cloud.logging.handlers.CloudLoggingHandler(client, name=hostname)
-				formatter = logging.Formatter('gcp:stonish "%(message)s"')
-				LOGGER = logging.getLogger(hostname)
-				handler.setFormatter(formatter)
-				LOGGER.addHandler(handler)
-				LOGGER.setLevel(logging.INFO)
-			except ImportError:
-				LOGGER.error('Couldn\'t import google.cloud.logging, '
-					'disabling Stackdriver-logging support')
+	if options.get('--stackdriver-logging'):
+		try:
+			import google.cloud.logging.handlers
+			client = google.cloud.logging.Client()
+			handler = google.cloud.logging.handlers.CloudLoggingHandler(client, name=hostname)
+			formatter = logging.Formatter('gcp:stonish "%(message)s"')
+			LOGGER = logging.getLogger(hostname)
+			handler.setFormatter(formatter)
+			LOGGER.addHandler(handler)
+			LOGGER.setLevel(logging.INFO)
+		except ImportError:
+			LOGGER.error('Couldn\'t import google.cloud.logging, '
+				'disabling Stackdriver-logging support')
 
 	# Prepare cli
 	try:

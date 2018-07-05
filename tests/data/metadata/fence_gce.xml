@@ -38,9 +38,14 @@ For instructions see: https://cloud.google.com/compute/docs/tutorials/python-gui
 		<content type="string"  />
 		<shortdesc lang="en">Project ID.</shortdesc>
 	</parameter>
-	<parameter name="logging" unique="0" required="0">
-		<getopt mixed="--logging=[bool]" />
-		<content type="string" default="false"  />
+	<parameter name="stackdriver-logging" unique="0" required="0" deprecated="1">
+		<getopt mixed="--stackdriver-logging" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Stackdriver-logging support.</shortdesc>
+	</parameter>
+	<parameter name="stackdriver_logging" unique="0" required="0" obsoletes="stackdriver-logging">
+		<getopt mixed="--stackdriver-logging" />
+		<content type="boolean"  />
 		<shortdesc lang="en">Stackdriver-logging support.</shortdesc>
 	</parameter>
 	<parameter name="quiet" unique="0" required="0">
