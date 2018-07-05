@@ -2,9 +2,18 @@
 
 import atexit
 import logging
+import os
 import platform
 import sys
 import time
+if sys.version_info >= (3, 0):
+  # Python 3 imports.
+  import urllib.parse as urlparse
+  import urllib.request as urlrequest
+else:
+  # Python 2 imports.
+  import urllib as urlparse
+  import urllib2 as urlrequest
 sys.path.append("@FENCEAGENTSLIBDIR@")
 
 import googleapiclient.discovery
