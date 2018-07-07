@@ -20,7 +20,6 @@ import googleapiclient.discovery
 from fencing import fail_usage, run_delay, all_opt, atexit_handler, check_input, process_input, show_docs, fence_action
 
 
-LOGGER = logging
 METADATA_SERVER = 'http://metadata.google.internal/computeMetadata/v1/'
 METADATA_HEADERS = {'Metadata-Flavor': 'Google'}
 
@@ -73,37 +72,37 @@ def wait_for_operation(conn, project, zone, operation):
 def set_power_status(conn, options):
 	try:
 		if options["--action"] == "off":
-			LOGGER.info("Issuing poweroff of %s in zone %s" % (options["--plug"], options["--zone"]))
+			logging.info("Issuing poweroff of %s in zone %s" % (options["--plug"], options["--zone"]))
 			operation = conn.instances().stop(
 					project=options["--project"],
 					zone=options["--zone"],
 					instance=options["--plug"]).execute()
 			wait_for_operation(conn, options["--project"], options["--zone"], operation)
-			LOGGER.info("Poweroff of %s in zone %s complete" % (options["--plug"], options["--zone"]))
+			logging.info("Poweroff of %s in zone %s complete" % (options["--plug"], options["--zone"]))
 		elif options["--action"] == "on":
-			LOGGER.info("Issuing poweron of %s in zone %s" % (options["--plug"], options["--zone"]))
+			logging.info("Issuing poweron of %s in zone %s" % (options["--plug"], options["--zone"]))
 			operation = conn.instances().start(
 					project=options["--project"],
 					zone=options["--zone"],
 					instance=options["--plug"]).execute()
 			wait_for_operation(conn, options["--project"], options["--zone"], operation)
-			LOGGER.info("Poweron of %s in zone %s complete" % (options["--plug"], options["--zone"]))
+			logging.info("Poweron of %s in zone %s complete" % (options["--plug"], options["--zone"]))
 	except Exception as err:
 		fail_usage("Failed: set_power_status: {}".format(str(err)))
 
 
 def power_cycle(conn, options):
 	try:
-		LOGGER.info('Issuing reset of %s in zone %s' % (options["--plug"], options["--zone"]))
+		logging.info('Issuing reset of %s in zone %s' % (options["--plug"], options["--zone"]))
 		operation = conn.instances().reset(
 				project=options["--project"],
 				zone=options["--zone"],
 				instance=options["--plug"]).execute()
 		wait_for_operation(conn, options["--project"], options["--zone"], operation)
-		LOGGER.info('Reset of %s in zone %s complete' % (options["--plug"], options["--zone"]))
+		logging.info('Reset of %s in zone %s complete' % (options["--plug"], options["--zone"]))
 		return True
 	except Exception as err:
-		LOGGER.error("Failed: power_cycle: {}".format(str(err)))
+		logging.error("Failed: power_cycle: {}".format(str(err)))
 		return False
 
 
@@ -180,7 +179,6 @@ def define_new_opts():
 
 def main():
 	conn = None
-	global LOGGER
 
 	hostname = platform.node()
 
@@ -209,18 +207,21 @@ def main():
 	run_delay(options)
 
 	# Prepare logging
-	if options.get('--stackdriver-logging'):
+	if options.get('--stackdriver-logging') is not None:
 		try:
 			import google.cloud.logging.handlers
 			client = google.cloud.logging.Client()
 			handler = google.cloud.logging.handlers.CloudLoggingHandler(client, name=hostname)
+			handler.setLevel(logging.INFO)
 			formatter = logging.Formatter('gcp:stonish "%(message)s"')
-			LOGGER = logging.getLogger(hostname)
 			handler.setFormatter(formatter)
-			LOGGER.addHandler(handler)
-			LOGGER.setLevel(logging.INFO)
+			root_logger = logging.getLogger()
+			if options.get('--verbose') is None:
+				root_logger.setLevel(logging.INFO)
+				logging.getLogger("googleapiclient").setLevel(logging.ERROR)
+			root_logger.addHandler(handler)
 		except ImportError:
-			LOGGER.error('Couldn\'t import google.cloud.logging, '
+			logging.error('Couldn\'t import google.cloud.logging, '
 				'disabling Stackdriver-logging support')
 
 	# Prepare cli
