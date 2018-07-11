@@ -3,7 +3,6 @@
 import atexit
 import logging
 import os
-import platform
 import sys
 import time
 if sys.version_info >= (3, 0):
@@ -180,8 +179,6 @@ def define_new_opts():
 def main():
 	conn = None
 
-	hostname = platform.node()
-
 	device_opt = ["port", "no_password", "zone", "project", "stackdriver-logging", "method"]
 
 	atexit.register(atexit_handler)
@@ -207,18 +204,20 @@ def main():
 	run_delay(options)
 
 	# Prepare logging
-	if options.get('--stackdriver-logging') is not None:
+	if options.get('--verbose') is None:
+		logging.getLogger('googleapiclient').setLevel(logging.ERROR)
+		logging.getLogger('oauth2client').setLevel(logging.ERROR)
+	if options.get('--stackdriver-logging') is not None and options.get('--plug'):
 		try:
 			import google.cloud.logging.handlers
 			client = google.cloud.logging.Client()
-			handler = google.cloud.logging.handlers.CloudLoggingHandler(client, name=hostname)
+			handler = google.cloud.logging.handlers.CloudLoggingHandler(client, name=options['--plug'])
 			handler.setLevel(logging.INFO)
-			formatter = logging.Formatter('gcp:stonish "%(message)s"')
+			formatter = logging.Formatter('gcp:stonith "%(message)s"')
 			handler.setFormatter(formatter)
 			root_logger = logging.getLogger()
 			if options.get('--verbose') is None:
 				root_logger.setLevel(logging.INFO)
-				logging.getLogger("googleapiclient").setLevel(logging.ERROR)
 			root_logger.addHandler(handler)
 		except ImportError:
 			logging.error('Couldn\'t import google.cloud.logging, '
