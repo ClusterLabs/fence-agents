@@ -10,6 +10,14 @@ For instructions see: https://cloud.google.com/compute/docs/tutorials/python-gui
 		<content type="string" default="reboot"  />
 		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
+	<parameter name="method" unique="0" required="0">
+		<getopt mixed="-m, --method=[method]" />
+		<content type="select" default="cycle"  >
+			<option value="onoff" />
+			<option value="cycle" />
+		</content>
+		<shortdesc lang="en">Method to fence</shortdesc>
+	</parameter>
 	<parameter name="plug" unique="0" required="1" obsoletes="port">
 		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />
@@ -20,15 +28,25 @@ For instructions see: https://cloud.google.com/compute/docs/tutorials/python-gui
 		<content type="string"  />
 		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
 	</parameter>
-	<parameter name="zone" unique="0" required="1">
+	<parameter name="zone" unique="0" required="0">
 		<getopt mixed="--zone=[name]" />
 		<content type="string"  />
 		<shortdesc lang="en">Zone.</shortdesc>
 	</parameter>
-	<parameter name="project" unique="0" required="1">
+	<parameter name="project" unique="0" required="0">
 		<getopt mixed="--project=[name]" />
 		<content type="string"  />
 		<shortdesc lang="en">Project ID.</shortdesc>
+	</parameter>
+	<parameter name="stackdriver-logging" unique="0" required="0" deprecated="1">
+		<getopt mixed="--stackdriver-logging" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Stackdriver-logging support.</shortdesc>
+	</parameter>
+	<parameter name="stackdriver_logging" unique="0" required="0" obsoletes="stackdriver-logging">
+		<getopt mixed="--stackdriver-logging" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Stackdriver-logging support.</shortdesc>
 	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
