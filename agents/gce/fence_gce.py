@@ -112,7 +112,8 @@ def get_instance(conn, project, zone, instance):
 
 
 def get_zone(conn, project, instance):
-	request = conn.instances().aggregatedList(project=project)
+	fl = 'name="%s"' % instance
+	request = conn.instances().aggregatedList(project=project, filter=fl)
 	while request is not None:
 		response = request.execute()
 		zones = response.get('items', {})
