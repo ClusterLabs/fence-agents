@@ -1,14 +1,14 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
+
+import sys, re
+import logging
+import atexit
+import json
+sys.path.append("@FENCEAGENTSLIBDIR@")
+from fencing import *
+from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay
 
 try:
-	import sys, re
-	import logging
-	import atexit
-	import json
-	sys.path.append("@FENCEAGENTSLIBDIR@")
-	from fencing import *
-	from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay
-
 	from aliyunsdkcore import client
 
 	from aliyunsdkecs.request.v20140526.DescribeInstancesRequest import DescribeInstancesRequest
@@ -17,6 +17,7 @@ try:
 	from aliyunsdkecs.request.v20140526.RebootInstanceRequest import RebootInstanceRequest
 except ImportError:
 	pass
+
 def _send_request(conn, request):
 	request.set_accept_format('json')
 	try:
