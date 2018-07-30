@@ -23,9 +23,10 @@ def _send_request(conn, request):
 	try:
 		response_str = conn.do_action_with_exception(request)
 		response_detail = json.loads(response_str)
+		logging.debug("_send_request reponse: %s" % response_detail)
 		return response_detail
 	except Exception as e:
-		fail_usage("Failed: _send_request failed")
+		fail_usage("Failed: _send_request failed: %s" % e)
 
 def start_instance(conn, instance_id):
 	request = StartInstanceRequest()
@@ -69,15 +70,22 @@ def get_nodes_list(conn, options):
 
 def get_power_status(conn, options):
 	state = get_status(conn, options["--plug"])
+
 	if state == "Running":
-		return "on"
+		status = "on"
 	elif state == "Stopped":
-		return "off"
+		status = "off"
 	else:
-		return "unknown"
+		status = "unknown"
+
+	logging.info("get_power_status: %s" % status)
+
+	return status
 
 
 def set_power_status(conn, options):
+	logging.info("set_power_status: %s" % options["--action"])
+
 	if (options["--action"]=="off"):
 		stop_instance(conn, options["--plug"])
 	elif (options["--action"]=="on"):
