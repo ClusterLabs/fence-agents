@@ -351,7 +351,7 @@ get_options_node (fence_kdump_opts_t *opts)
     hints.ai_protocol = IPPROTO_UDP;
     hints.ai_flags = AI_NUMERICSERV;
 
-    strncpy (node->name, opts->nodename, sizeof (node->name));
+    strncpy (node->name, opts->nodename, sizeof (node->name) - 1);
     snprintf (node->port, sizeof (node->port), "%d", opts->ipport);
 
     node->info = NULL;
