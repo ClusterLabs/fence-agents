@@ -245,7 +245,7 @@ def create_nova_connection(options):
 					     region_name=options["--region-name"],
 					     endpoint_type=options["--endpoint-type"],
 					     session=keystone_session, auth=keystone_auth,
-					     http_log_debug=options.has_key("--verbose"))
+					     http_log_debug="--verbose" in options)
 		else:
 			# OSP >= 11
 			# ArgSpec(args=['version'], varargs='args', keywords='kwargs', defaults=None)
@@ -253,7 +253,7 @@ def create_nova_connection(options):
 					     region_name=options["--region-name"],
 					     endpoint_type=options["--endpoint-type"],
 					     session=keystone_session, auth=keystone_auth,
-					     http_log_debug=options.has_key("--verbose"))
+					     http_log_debug="--verbose" in options)
 
 		try:
 			nova.hypervisors.list()

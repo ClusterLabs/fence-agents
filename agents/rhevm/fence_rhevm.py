@@ -74,11 +74,11 @@ def send_command(opt, command, method="GET"):
 		url = "https:"
 	else:
 		url = "http:"
-	if opt.has_key("--api-path"):
+	if "--api-path" in opt:
 		api_path = opt["--api-path"]
 	else:
 		api_path = "/ovirt-engine/api"
-	if opt.has_key("--disable-http-filter"):
+	if "--disable-http-filter" in opt:
 		http_filter = 'false'
 	else:
 		http_filter = 'true'
