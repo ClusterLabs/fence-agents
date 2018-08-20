@@ -74,12 +74,15 @@ def _server_evacuate(connection, server, on_shared_storage):
 		}
 
 def _is_server_evacuable(server, evac_flavors, evac_images):
+	reason = "flavor "+server.flavor.get('id')
 	if server.flavor.get('id') in evac_flavors:
 		return True
 	if hasattr(server.image, 'get'):
 		if server.image.get('id') in evac_images:
 			return True
-	logging.debug("Instance %s is not evacuable" % server.image.get('id'))
+		reason = reason +" and image "+server.image.get('id')
+
+	logging.debug("Instance is not evacuable: no match for %s" % reason)
 	return False
 
 def _get_evacuable_flavors(connection):
