@@ -136,6 +136,14 @@ def send_command(opt, command, method="GET"):
 	return result
 
 def define_new_opts():
+
+	all_opt["port"] = {
+		"getopt" : "n:",
+		"longopt" : "plug",
+		"help" : "-n, --plug=[name]              "
+		"The VM name in RHV",
+		"required" : "1",
+		"order" : 1}
 	all_opt["use_cookies"] = {
 		"getopt" : "",
 		"longopt" : "use-cookies",
