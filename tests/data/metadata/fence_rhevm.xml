@@ -66,12 +66,12 @@
 	<parameter name="plug" unique="0" required="1" obsoletes="port">
 		<getopt mixed="-n, --plug=[name]" />
 		<content type="string"  />
-		<shortdesc lang="en">The VM name in RHV</shortdesc>
+		<shortdesc lang="en">VM name in RHV</shortdesc>
 	</parameter>
 	<parameter name="port" unique="0" required="1" deprecated="1">
 		<getopt mixed="-n, --plug=[name]" />
 		<content type="string"  />
-		<shortdesc lang="en">The VM name in RHV</shortdesc>
+		<shortdesc lang="en">VM name in RHV</shortdesc>
 	</parameter>
 	<parameter name="ssl" unique="0" required="0">
 		<getopt mixed="-z, --ssl" />
