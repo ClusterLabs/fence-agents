@@ -2,6 +2,7 @@
 <resource-agent name="fence_ilo_ssh" shortdesc="Fence agent for HP iLO over SSH" >
 <symlink name="fence_ilo3_ssh" shortdesc="Fence agent for HP iLO3 over SSH"/>
 <symlink name="fence_ilo4_ssh" shortdesc="Fence agent for HP iLO4 over SSH"/>
+<symlink name="fence_ilo5_ssh" shortdesc="Fence agent for HP iLO5 over SSH"/>
 <longdesc>fence_ilo_ssh is a fence agent that connects to iLO device. It logs into device via ssh and reboot a specified outlet. </longdesc>
 <vendor-url>http://www.hp.com</vendor-url>
 <parameters>

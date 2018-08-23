@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<resource-agent name="fence_imm" shortdesc="Fence agent for IPMI" >
+<resource-agent name="fence_ilo5" shortdesc="Fence agent for IPMI" >
 <symlink name="fence_ilo3" shortdesc="Fence agent for HP iLO3"/>
 <symlink name="fence_ilo4" shortdesc="Fence agent for HP iLO4"/>
 <symlink name="fence_ilo5" shortdesc="Fence agent for HP iLO5"/>
@@ -59,7 +59,7 @@
 	</parameter>
 	<parameter name="lanplus" unique="0" required="0">
 		<getopt mixed="-P, --lanplus" />
-		<content type="boolean" default="0"  />
+		<content type="boolean" default="1"  />
 		<shortdesc lang="en">Use Lanplus to improve security of connection</shortdesc>
 	</parameter>
 	<parameter name="login" unique="0" required="0" deprecated="1">

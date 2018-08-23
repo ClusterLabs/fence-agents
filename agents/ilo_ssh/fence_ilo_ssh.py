@@ -54,7 +54,8 @@ def main():
 device via ssh and reboot a specified outlet. "
 	docs["vendorurl"] = "http://www.hp.com"
 	docs["symlink"] = [("fence_ilo3_ssh", "Fence agent for HP iLO3 over SSH"),
-		("fence_ilo4_ssh", "Fence agent for HP iLO4 over SSH")]
+		("fence_ilo4_ssh", "Fence agent for HP iLO4 over SSH"),
+		("fence_ilo5_ssh", "Fence agent for HP iLO5 over SSH")]
 	show_docs(options, docs)
 
 	options["eol"] = "\r"
