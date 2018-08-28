@@ -59,13 +59,15 @@ def get_status(conn, instance_id):
 def get_nodes_list(conn, options):
 	result = {}
 	request = DescribeInstancesRequest()
+	request.set_PageSize(100)
 	response = _send_request(conn, request)
 	instance_status = None
 	if response is not None:
 		instance_list = response.get('Instances').get('Instance')
 		for item in instance_list:
 			instance_id = item.get('InstanceId')
-			result[instance_id] = ("", None)
+			instance_name = item.get('InstanceName')
+			result[instance_id] = (instance_name, None)
 	return result
 
 def get_power_status(conn, options):
