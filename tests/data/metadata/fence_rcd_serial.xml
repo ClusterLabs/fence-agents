@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_rcd_serial" shortdesc="rcd_serial fence agent" >
 <longdesc>fence_rcd_serial operates a serial cable that toggles a reset of an opposing server using the reset switch on its motherboard. The cable itself is simple with no power, network or moving parts. An example of the cable is available here: https://smcleod.net/rcd-stonith/ and the circuit design is available in the fence-agents src as SVG</longdesc>
-<vendor-url>http://www.scl.co.uk/rcd_serial/</vendor-url>
+<vendor-url>https://github.com/sammcj/fence_rcd_serial</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
 		<getopt mixed="-o, --action=[action]" />

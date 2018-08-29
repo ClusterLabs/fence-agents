@@ -1,12 +1,12 @@
 #!@PYTHON@ -tt
 
-# Copyright 2015 Infoxchange, Danielle Madeley, Sam McLeod-Jones
+# Copyright 2018 Infoxchange, Danielle Madeley, Sam McLeod-Jones
 
 # Controls an RCD serial device
 # Ported from stonith/rcd_serial.c
 
 # The Following Agent Has Been Tested On:
-# CentOS Linux release 7.1.1503
+# CentOS Linux release 7.5.1804
 
 # Resource example:
 # primitive stonith_node_1 ocf:rcd_serial_py params port="/dev/ttyS0" time=1000 hostlist=stonith_node_1 stonith-timeout=5s
@@ -82,7 +82,7 @@ reset of an opposing server using the reset switch on its motherboard. The \
 cable itself is simple with no power, network or moving parts. An example of \
 the cable is available here: https://smcleod.net/rcd-stonith/ and the circuit \
 design is available in the fence-agents src as SVG"
-	docs["vendorurl"] = "http://www.scl.co.uk/rcd_serial/"
+	docs["vendorurl"] = "https://github.com/sammcj/fence_rcd_serial"
 	show_docs(options, docs)
 
 	if options["--action"] in ["off", "reboot"]:
