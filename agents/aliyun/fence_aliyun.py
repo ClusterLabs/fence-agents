@@ -108,7 +108,7 @@ def define_new_opts():
 	all_opt["access_key"] = {
 		"getopt" : "a:",
 		"longopt" : "access-key",
-		"help" : "-a, --access-key=[name]         Access Key",
+		"help" : "-a, --access-key=[name]        Access Key",
 		"shortdesc" : "Access Key.",
 		"required" : "0",
 		"order" : 3
@@ -116,7 +116,7 @@ def define_new_opts():
 	all_opt["secret_key"] = {
 		"getopt" : "s:",
 		"longopt" : "secret-key",
-		"help" : "-s, --secret-key=[name]         Secret Key",
+		"help" : "-s, --secret-key=[name]        Secret Key",
 		"shortdesc" : "Secret Key.",
 		"required" : "0",
 		"order" : 4
