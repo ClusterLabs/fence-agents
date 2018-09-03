@@ -27,6 +27,7 @@ EC_STATUS = 8
 EC_STATUS_HMC = 9
 EC_PASSWORD_MISSING = 10
 EC_INVALID_PRIVILEGES = 11
+EC_FETCH_VM_UUID = 12
 
 LOG_FORMAT = "%(asctime)-15s %(levelname)s: %(message)s"
 
@@ -540,7 +541,9 @@ def fail(error_code):
 		EC_STATUS_HMC : "Failed: Either unable to obtain correct plug status, "
 				"partition is not available or incorrect HMC version used",
 		EC_PASSWORD_MISSING : "Failed: You have to set login password",
-		EC_INVALID_PRIVILEGES : "Failed: The user does not have the correct privileges to do the requested action."
+		EC_INVALID_PRIVILEGES : "Failed: The user does not have the correct privileges to do the requested action.",
+		EC_FETCH_VM_UUID : "Failed: Can not find VM UUID by its VM name given in the <plug> parameter."
+
 	}[error_code] + "\n"
 	logging.error("%s\n", message)
 	sys.exit(EC_GENERIC_ERROR)

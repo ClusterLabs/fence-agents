@@ -6,7 +6,7 @@ import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, EC_STATUS, run_delay
+from fencing import fail, EC_FETCH_VM_UUID, run_delay
 
 RE_GET_ID = re.compile("<vm( .*)? id=\"(.*?)\"", re.IGNORECASE)
 RE_STATUS = re.compile("<state>(.*?)</state>", re.IGNORECASE)
@@ -21,7 +21,7 @@ def get_power_status(conn, options):
 	result = RE_GET_ID.search(res)
 	if result == None:
 		# Unable to obtain ID needed to access virtual machine
-		fail(EC_STATUS)
+		fail(EC_FETCH_VM_UUID)
 
 	options["id"] = result.group(2)
 
