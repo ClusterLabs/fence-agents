@@ -169,6 +169,8 @@ def main():
 		all_opt["lanplus"]["default"] = "1"
 	elif os.path.basename(sys.argv[0]) == "fence_ilo4":
 		all_opt["lanplus"]["default"] = "1"
+	elif os.path.basename(sys.argv[0]) == "fence_ilo5":
+		all_opt["lanplus"]["default"] = "1"
 
 	all_opt["ipport"]["default"] = "623"
 	all_opt["method"]["help"] = "-m, --method=[method]          Method to fence (onoff|cycle) (Default: onoff)\n" \
@@ -187,6 +189,7 @@ You should use -m/method onoff if your fence device works correctly with that op
 	docs["vendorurl"] = ""
 	docs["symlink"] = [("fence_ilo3", "Fence agent for HP iLO3"),
 		("fence_ilo4", "Fence agent for HP iLO4"),
+		("fence_ilo5", "Fence agent for HP iLO5"),
 		("fence_imm", "Fence agent for IBM Integrated Management Module"),
 		("fence_idrac", "Fence agent for Dell iDRAC")]
 	show_docs(options, docs)
