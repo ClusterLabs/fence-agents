@@ -111,7 +111,7 @@ def send_command(opt, command, timeout):
 	web_buffer = io.BytesIO()
 	conn.setopt(pycurl.URL, url.encode("ascii"))
 	conn.setopt(pycurl.HTTPHEADER, ["Content-type: text/xml"])
-	conn.setopt(pycurl.POSTFIELDS, command)
+	conn.setopt(pycurl.POSTFIELDS, command.encode("ascii"))
 	conn.setopt(pycurl.WRITEFUNCTION, web_buffer.write)
 	conn.setopt(pycurl.TIMEOUT, timeout)
 	if "--ssl" in opt or "--ssl-secure" in opt:
