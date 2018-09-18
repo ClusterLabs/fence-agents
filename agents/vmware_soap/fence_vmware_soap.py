@@ -3,7 +3,7 @@
 import sys
 import shutil, tempfile, suds
 import logging, requests
-import atexit
+import atexit, signal
 sys.path.append("@FENCEAGENTSLIBDIR@")
 
 from suds.client import Client
@@ -211,6 +211,9 @@ def logout():
 	except Exception:
 		pass
 
+def signal_handler(signum, frame):
+	raise Exception("Signal \"%d\" received which has triggered an exit of the process." % signum)
+
 def main():
 	global options_global
 	global conn_global
@@ -218,6 +221,8 @@ def main():
 
 	atexit.register(atexit_handler)
 	atexit.register(logout)
+
+	signal.signal(signal.SIGTERM, signal_handler)
 
 	options_global = check_input(device_opt, process_input(device_opt))
 
