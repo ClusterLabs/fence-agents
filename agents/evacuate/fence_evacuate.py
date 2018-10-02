@@ -290,7 +290,7 @@ def define_new_opts():
 		"default" : "",
 		"order": 1,
 	}
-	all_opt["user_domain"] = {
+	all_opt["user-domain"] = {
 		"getopt" : "u:",
 		"longopt" : "user-domain",
 		"help" : "-u, --user-domain=[name]       Keystone v3 User Domain",
@@ -299,7 +299,7 @@ def define_new_opts():
 		"default" : "Default",
 		"order": 2,
 	}
-	all_opt["project_domain"] = {
+	all_opt["project-domain"] = {
 		"getopt" : "P:",
 		"longopt" : "project-domain",
 		"help" : "-d, --project-domain=[name]    Keystone v3 Project Domain",
@@ -361,14 +361,22 @@ def define_new_opts():
 		"default" : "False",
 		"order": 5,
 	}
+	all_opt["compute-domain"] = {
+		"getopt" : ":",
+		"longopt" : "compute-domain",
+		"help" : "--compute-domain=[string]      Replaced by --domain",
+		"required" : "0",
+		"shortdesc" : "Replaced by domain",
+		"order": 6,
+	}
 
 def main():
 	atexit.register(atexit_handler)
 
 	device_opt = ["login", "passwd", "tenant_name", "auth_url",
-		      "no_login", "no_password", "port", "domain", "project_domain",
-		      "user_domain", "no_shared_storage", "endpoint_type",
-		      "instance_filtering", "insecure", "region_name"]
+		      "no_login", "no_password", "port", "domain", "compute-domain",
+		      "project-domain", "user-domain", "no_shared_storage",
+		      "endpoint_type", "instance_filtering", "insecure", "region_name"]
 	define_new_opts()
 	all_opt["shell_timeout"]["default"] = "180"
 
@@ -382,6 +390,12 @@ def main():
 	show_docs(options, docs)
 
 	run_delay(options)
+
+	# workaround to avoid regressions
+	if "--compute-domain" in options and options["--compute-domain"]:
+		options["--domain"] = options["--compute-domain"]
+		del options["--domain"]
+
 
 	connection = create_nova_connection(options)
 
