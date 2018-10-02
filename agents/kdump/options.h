@@ -36,6 +36,7 @@ enum {
     FENCE_KDUMP_ACTION_LIST     = 4,
     FENCE_KDUMP_ACTION_MONITOR  = 5,
     FENCE_KDUMP_ACTION_METADATA = 6,
+    FENCE_KDUMP_ACTION_VALIDATE = 7,
 };
 
 enum {
@@ -191,6 +192,8 @@ set_option_action (fence_kdump_opts_t *opts, const char *arg)
         opts->action = FENCE_KDUMP_ACTION_METADATA;
     } else if (!strcasecmp (arg, "monitor")) {
         opts->action = FENCE_KDUMP_ACTION_MONITOR;
+    } else if (!strcasecmp (arg, "validate-all")) {
+        opts->action = FENCE_KDUMP_ACTION_VALIDATE;
     } else {
         fprintf (stderr, "[error]: unsupported action '%s'\n", arg);
         exit (1);

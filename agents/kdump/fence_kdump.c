@@ -295,6 +295,7 @@ do_action_metadata (const char *self)
     fprintf (stdout, "\t<action name=\"off\" />\n");
     fprintf (stdout, "\t<action name=\"monitor\" />\n");
     fprintf (stdout, "\t<action name=\"metadata\" />\n");
+    fprintf (stdout, "\t<action name=\"validate-all\" />\n");
     fprintf (stdout, "</actions>\n");
 
     fprintf (stdout, "</resource-agent>\n");
@@ -316,7 +317,7 @@ print_usage (const char *self)
     fprintf (stdout, "%s\n",
              "  -f, --family=FAMILY          Network family: ([auto], ipv4, ipv6)");
     fprintf (stdout, "%s\n",
-             "  -o, --action=ACTION          Fencing action: ([off], monitor, metadata)");
+             "  -o, --action=ACTION          Fencing action: ([off], monitor, metadata, validate-all)");
     fprintf (stdout, "%s\n",
              "  -t, --timeout=TIMEOUT        Timeout in seconds (default: 60)");
     fprintf (stdout, "%s\n",
@@ -556,6 +557,9 @@ main (int argc, char **argv)
     case FENCE_KDUMP_ACTION_MONITOR:
         error = do_action_monitor ();
         break;
+    case FENCE_KDUMP_ACTION_VALIDATE:
+	error = 0;
+	break;
     default:
         break;
     }
