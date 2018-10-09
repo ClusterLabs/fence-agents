@@ -9,10 +9,14 @@ from pipes import quote
 sys.path.append("/usr/share/fence")
 from fencing import *
 from fencing import fail_usage, is_executable, run_command, run_delay
-from keystoneclient.v3 import client as ksclient
-from novaclient import client as novaclient
-from keystoneclient import session as ksc_session
-from keystoneclient.auth.identity import v3
+
+try:
+        from keystoneclient.v3 import client as ksclient
+        from novaclient import client as novaclient
+        from keystoneclient import session as ksc_session
+        from keystoneclient.auth.identity import v3
+except ImportError:
+        pass
 
 def get_name_or_uuid(options):
         return options["--uuid"] if "--uuid" in options else options["--plug"]
