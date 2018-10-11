@@ -36,7 +36,7 @@ def nova_login(username,password,projectname,auth_url,user_domain_name,project_d
         auth=v3.Password(username=username,password=password,project_name=projectname,user_domain_name=user_domain_name,project_domain_name=project_domain_name,auth_url=auth_url)
         session = ksc_session.Session(auth=auth)
         keystone = ksclient.Client(session=session)
-        nova = novaclient.Client(session=session)
+        nova = novaclient.Client("2", session=session)
         return nova
 
 def nova_run_command(options,action,timeout=None):
