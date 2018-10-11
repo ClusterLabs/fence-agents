@@ -245,7 +245,8 @@ fi
 if echo "$AGENTS_LIST" | grep -q openstack; then
         AC_PYTHON_MODULE(novaclient)
         AC_PYTHON_MODULE(keystoneclient)
-        if test "x${HAVE_PYMOD_OPENSTACKCLIENT}" != xyes; then
+        if test "x${HAVE_PYMOD_NOVACLIENT}" != xyes || \
+           test "x${HAVE_PYMOD_KEYSTONECLIENT}" != xyes; then
                 AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s#openstack/fence_openstack.py( |$)##")
                 AC_MSG_WARN("Not building fence_openstack")
         fi

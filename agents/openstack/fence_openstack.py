@@ -9,10 +9,14 @@ from pipes import quote
 sys.path.append("/usr/share/fence")
 from fencing import *
 from fencing import fail_usage, is_executable, run_command, run_delay
-from keystoneclient.v3 import client as ksclient
-from novaclient import client as novaclient
-from keystoneclient import session as ksc_session
-from keystoneclient.auth.identity import v3
+
+try:
+        from keystoneclient.v3 import client as ksclient
+        from novaclient import client as novaclient
+        from keystoneclient import session as ksc_session
+        from keystoneclient.auth.identity import v3
+except ImportError:
+        pass
 
 def get_name_or_uuid(options):
         return options["--uuid"] if "--uuid" in options else options["--plug"]
@@ -32,7 +36,7 @@ def nova_login(username,password,projectname,auth_url,user_domain_name,project_d
         auth=v3.Password(username=username,password=password,project_name=projectname,user_domain_name=user_domain_name,project_domain_name=project_domain_name,auth_url=auth_url)
         session = ksc_session.Session(auth=auth)
         keystone = ksclient.Client(session=session)
-        nova = novaclient.Client(session=session)
+        nova = novaclient.Client("2", session=session)
         return nova
 
 def nova_run_command(options,action,timeout=None):
