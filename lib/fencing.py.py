@@ -711,10 +711,16 @@ def check_input(device_opt, opt, other_conditions = False):
 		options["--action"] = "off"
 
 
-	if options["--action"] == "validate-all" and not other_conditions:
-		if not _validate_input(options, False):
-			fail_usage("validate-all failed")
-		sys.exit(EC_OK)
+	if options["--action"] in ["validate-all", "validate-all-xml"] and not other_conditions:
+		if options["--action"] == "validate-all":
+			if not _validate_input(options, False, 'text'):
+				fail_usage("validate-all failed")
+			sys.exit(EC_OK)
+		elif options["--action"] == "validate-all-xml":
+			if _validate_input(options, False, 'xml'):
+				sys.exit(EC_OK)
+			else:
+				sys.exit(EC_GENERIC_ERROR)
 	else:
 		_validate_input(options, True)
 
@@ -1295,64 +1301,130 @@ def _set_default_values(options):
 	return options
 
 # stop = True/False : exit fence agent when problem is encountered
-def _validate_input(options, stop = True):
+def _validate_input(options, stop = True, output_format = 'text'):
 	device_opt = options["device_opt"]
 	valid_input = True
+	errors = []
 
 	if "--username" not in options and \
 			device_opt.count("login") and (device_opt.count("no_login") == 0):
-		valid_input = False
-		fail_usage("Failed: You have to set login name", stop)
+		errors.append({
+			'fields': ['login'],
+			'text': 'You have to enter login name',
+			'text_cli': 'You have to enter login name (-l)',
+			'error_type': 'REQUIRE',
+			'error': True,
+		})
 
 	if device_opt.count("ipaddr") and "--ip" not in options and "--managed" not in options and "--target" not in options:
-		valid_input = False
-		fail_usage("Failed: You have to enter fence address", stop)
+		errors.append({
+			'fields': ['ipaddr', 'managed', 'target'],
+			'text': 'You have to enter fence address',
+			'text_cli': 'You have to enter fence address (-a)',
+			'error_type': 'REQUIRE',
+			'criticalError': True,
+		})
 
 	if device_opt.count("no_password") == 0:
 		if 0 == device_opt.count("identity_file"):
 			if not ("--password" in options or "--password-script" in options):
-				valid_input = False
-				fail_usage("Failed: You have to enter password or password script", stop)
+				errors.append({
+					'fields': ['passwd', 'passwd_script'],
+					'text': 'You have to enter password or password script',
+					'text_cli': 'You have to enter password (-p) or password script (-S)',
+					'error_type': 'REQUIRE-ONE-OF',
+				})
 		else:
 			if not ("--password" in options or \
 					"--password-script" in options or "--identity-file" in options):
-				valid_input = False
-				fail_usage("Failed: You have to enter password, password script or identity file", stop)
+				errors.append({
+					'fields': ['passwd', 'passwd_script', 'identity_file'],
+					'text': 'You have to enter password, password script or identity file',
+					'text_cli': 'You have to enter password (-p), password script (-S) or identity file (-k)',
+					'error_type': 'REQUIRE-ONE-OF',
+				})
 
 	if "--ssh" not in options and "--identity-file" in options:
-		valid_input = False
-		fail_usage("Failed: You have to use identity file together with ssh connection (-x)", stop)
+		errors.append({
+			'fields': ['secure', 'identity_file'],
+			'text': 'You have to use identity file together with ssh connection',
+			'text_cli': 'You have to use identity file (-k) together with ssh connection (-x)',
+			'error_type': 'INVALID-COMBINATION',
+		})
 
 	if "--identity-file" in options and not os.path.isfile(options["--identity-file"]):
-		valid_input = False
-		fail_usage("Failed: Identity file " + options["--identity-file"] + " does not exist", stop)
+		errors.append({
+			'fields': ['identity_file'],
+			'text': "Identity file" + options["--identity-file"] + " does not exist",
+			'text_cli': "Identity file (-k)" + options["--identity-file"] + " does not exist",
+		})
 
 	if (0 == ["list", "list-status", "monitor"].count(options["--action"])) and \
 		"--plug" not in options and device_opt.count("port") and \
 		device_opt.count("no_port") == 0 and not device_opt.count("port_as_ip"):
-		valid_input = False
-		fail_usage("Failed: You have to enter plug number or machine identification", stop)
+		errors.append({
+			'fields': ['port'],
+			'text': "You have to enter plug number or machine identification",
+			'text_cli': "You have to enter plug number (-n) or machine identification (-n)",
+			'error_type': 'REQUIRE'
+		})
 
 	if "--plug" in options and len(options["--plug"].split(",")) > 1 and \
 			"--method" in options and options["--method"] == "cycle":
-		valid_input = False
-		fail_usage("Failed: Cannot use --method cycle for more than 1 plug", stop)
+		errors.append({
+			'fields': ['plug', 'method'],
+			'text': "Cannot use method=cycle for more than 1 plug",
+			'text_cli': "Cannot use method=cycle (-m) for more than 1 plug",
+			'error_type': 'INVALID-COMBINATION'
+		})
 
 	for failed_opt in _get_opts_with_invalid_choices(options):
-		valid_input = False
-		fail_usage("Failed: You have to enter a valid choice for %s from the valid values: %s" % \
-			("--" + all_opt[failed_opt]["longopt"], str(all_opt[failed_opt]["choices"])), stop)
+		errors.append({
+			'fields': [failed_opt],
+			'text': ("You have to enter a valid choice for %s (%s) from the valid values: %s" % \
+				(failed_opt, str(all_opt[failed_opt]["choices"]))),
+			'text_cli': ("You have to enter a valid choice for %s (%s) from the valid values: %s" % \
+				(failed_opt, ("--" + all_opt[failed_opt]["longopt"]), str(all_opt[failed_opt]["choices"]))),
+			'error_type': 'INVALID_CONTENT'
+		})
 
 	for failed_opt in _get_opts_with_invalid_types(options):
 		valid_input = False
 		if all_opt[failed_opt]["type"] == "second":
-			fail_usage("Failed: The value you have entered for %s is not a valid time in seconds" % \
-				("--" + all_opt[failed_opt]["longopt"]), stop)
+			errors.append({
+				'fields': [failed_opt],
+				'text': ("The value you have entered for %s is not a valid time in seconds" % \
+					(failed_opt)),
+				'text_cli': ("The value you have entered for %s (%s) is not a valid time in seconds" % \
+					(failed_opt, ("--" + all_opt[failed_opt]["longopt"]))),
+				'error_type': 'INVALID_CONTENT'
+			})
 		else:
-			fail_usage("Failed: The value you have entered for %s is not a valid %s" % \
-				("--" + all_opt[failed_opt]["longopt"], all_opt[failed_opt]["type"]), stop)
+			errors.append({
+				'fields': [failed_opt],
+				'text': ("The value you have entered for %s is not a valid %s" % \
+					(failed_opt, all_opt[failed_opt]["type"])),
+				'text_cli': ("The value you have entered for %s (%s) is not a valid %s" % \
+					(failed_opt, ("--" + all_opt[failed_opt]["longopt"]), all_opt[failed_opt]["type"])),
+				'error_type': 'INVALID_CONTENT'
+			})
 
-	return valid_input
+	if output_format == "xml":
+		print ("<error-list>")
+		for error in errors:
+			print ("\t<error type=\"%s\">" % (error.get('error_type', 'UNKNOWN')))
+			for field in error['fields']:
+				# do not print those fields that are not available for given agent
+				if (field in device_opt):
+					print ("\t\t<field name=\"%s\" />" % (field))
+			print ("\t\t<message>%s</message>" % (error.get('text')))
+			print ("\t</error>")
+		print ("</error-list>")
+	else:
+		for error in errors:
+			fail_usage(error['text_cli'], stop)
+
+	return len(errors) == 0
 
 def _encode_html_entities(text):
 	return text.replace("&", "&amp;").replace('"', "&quot;").replace('<', "&lt;"). \
@@ -1498,7 +1570,7 @@ def _verify_unique_getopt(avail_opt):
 
 def _get_available_actions(device_opt):
 	available_actions = ["on", "off", "reboot", "status", "list", "list-status", \
-		"monitor", "metadata", "manpage", "validate-all"]
+		"monitor", "metadata", "manpage", "validate-all", "validate-all-xml"]
 	default_value = "reboot"
 
 	if device_opt.count("fabric_fencing"):
