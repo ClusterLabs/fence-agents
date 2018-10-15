@@ -663,7 +663,7 @@ def process_input(avail_opt):
 ## in each of the fencing agents. It looks for possible errors and run
 ## password script to set a correct password
 ######
-def check_input(device_opt, opt, other_conditions = False):
+def check_input(device_opt, opt, local_validation = None):
 	device_opt.extend(_add_dependency_options(device_opt))
 
 	options = dict(opt)
@@ -710,19 +710,17 @@ def check_input(device_opt, opt, other_conditions = False):
 	if options["--action"] == "disable":
 		options["--action"] = "off"
 
-
-	if options["--action"] in ["validate-all", "validate-all-xml"] and not other_conditions:
-		if options["--action"] == "validate-all":
-			if not _validate_input(options, False, 'text'):
-				fail_usage("validate-all failed")
+	if options["--action"] == "validate-all-xml":
+		if _validate_input(options, local_validation, 'xml'):
 			sys.exit(EC_OK)
-		elif options["--action"] == "validate-all-xml":
-			if _validate_input(options, False, 'xml'):
-				sys.exit(EC_OK)
-			else:
-				sys.exit(EC_GENERIC_ERROR)
+		else:
+			sys.exit(EC_GENERIC_ERROR)
 	else:
-		_validate_input(options, True)
+		if not _validate_input(options, local_validation, 'text'):
+			fail_usage("validate-all failed")
+
+		if options["--action"] == "validate-all":
+			sys.exit(EC_OK)
 
 	if "--debug-file" in options:
 		try:
@@ -1300,8 +1298,7 @@ def _set_default_values(options):
 
 	return options
 
-# stop = True/False : exit fence agent when problem is encountered
-def _validate_input(options, stop = True, output_format = 'text'):
+def _validate_input(options, local_validation, output_format = 'text'):
 	device_opt = options["device_opt"]
 	valid_input = True
 	errors = []
@@ -1312,7 +1309,7 @@ def _validate_input(options, stop = True, output_format = 'text'):
 			'fields': ['login'],
 			'text': 'You have to enter login name',
 			'text_cli': 'You have to enter login name (-l)',
-			'error_type': 'REQUIRE',
+			'error_type': 'REQUIRE-ONE',
 			'error': True,
 		})
 
@@ -1321,7 +1318,7 @@ def _validate_input(options, stop = True, output_format = 'text'):
 			'fields': ['ipaddr', 'managed', 'target'],
 			'text': 'You have to enter fence address',
 			'text_cli': 'You have to enter fence address (-a)',
-			'error_type': 'REQUIRE',
+			'error_type': 'REQUIRE-ONE',
 			'criticalError': True,
 		})
 
@@ -1332,7 +1329,7 @@ def _validate_input(options, stop = True, output_format = 'text'):
 					'fields': ['passwd', 'passwd_script'],
 					'text': 'You have to enter password or password script',
 					'text_cli': 'You have to enter password (-p) or password script (-S)',
-					'error_type': 'REQUIRE-ONE-OF',
+					'error_type': 'REQUIRE-ONE',
 				})
 		else:
 			if not ("--password" in options or \
@@ -1341,7 +1338,7 @@ def _validate_input(options, stop = True, output_format = 'text'):
 					'fields': ['passwd', 'passwd_script', 'identity_file'],
 					'text': 'You have to enter password, password script or identity file',
 					'text_cli': 'You have to enter password (-p), password script (-S) or identity file (-k)',
-					'error_type': 'REQUIRE-ONE-OF',
+					'error_type': 'REQUIRE-ONE',
 				})
 
 	if "--ssh" not in options and "--identity-file" in options:
@@ -1366,7 +1363,7 @@ def _validate_input(options, stop = True, output_format = 'text'):
 			'fields': ['port'],
 			'text': "You have to enter plug number or machine identification",
 			'text_cli': "You have to enter plug number (-n) or machine identification (-n)",
-			'error_type': 'REQUIRE'
+			'error_type': 'REQUIRE-ONE'
 		})
 
 	if "--plug" in options and len(options["--plug"].split(",")) > 1 and \
@@ -1385,7 +1382,7 @@ def _validate_input(options, stop = True, output_format = 'text'):
 				(failed_opt, str(all_opt[failed_opt]["choices"]))),
 			'text_cli': ("You have to enter a valid choice for %s (%s) from the valid values: %s" % \
 				(failed_opt, ("--" + all_opt[failed_opt]["longopt"]), str(all_opt[failed_opt]["choices"]))),
-			'error_type': 'INVALID_CONTENT'
+			'error_type': 'INVALID-CONTENT'
 		})
 
 	for failed_opt in _get_opts_with_invalid_types(options):
@@ -1397,7 +1394,7 @@ def _validate_input(options, stop = True, output_format = 'text'):
 					(failed_opt)),
 				'text_cli': ("The value you have entered for %s (%s) is not a valid time in seconds" % \
 					(failed_opt, ("--" + all_opt[failed_opt]["longopt"]))),
-				'error_type': 'INVALID_CONTENT'
+				'error_type': 'INVALID-CONTENT'
 			})
 		else:
 			errors.append({
@@ -1406,8 +1403,11 @@ def _validate_input(options, stop = True, output_format = 'text'):
 					(failed_opt, all_opt[failed_opt]["type"])),
 				'text_cli': ("The value you have entered for %s (%s) is not a valid %s" % \
 					(failed_opt, ("--" + all_opt[failed_opt]["longopt"]), all_opt[failed_opt]["type"])),
-				'error_type': 'INVALID_CONTENT'
+				'error_type': 'INVALID-CONTENT'
 			})
+
+	if not local_validation == None:
+		errors.extend(local_validation(options))
 
 	if output_format == "xml":
 		print ("<error-list>")
@@ -1422,7 +1422,7 @@ def _validate_input(options, stop = True, output_format = 'text'):
 		print ("</error-list>")
 	else:
 		for error in errors:
-			fail_usage(error['text_cli'], stop)
+			fail_usage(error['text_cli'], False)
 
 	return len(errors) == 0
 

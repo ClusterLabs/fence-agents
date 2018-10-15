@@ -411,6 +411,22 @@ def scsi_check(hardreboot=False):
 		libc.reboot(0x1234567)
 	return 2
 
+def validate_options(options):
+	errors = []
+
+	if not (
+		("--plug" in options and options["--plug"]) \
+		or ("--nodename" in options and options["--nodename"]) \
+		or ("--key" in options and options["--key"]) \
+		):
+		errors.append({
+			'fields': ['plug', 'key'],
+			'text': "You have to enter nodename or key",
+			'text_cli': "You have to enter nodename (-n) or key (-k)",
+			'error_type': 'REQUIRE-ONE'
+		})
+
+	return errors
 
 def main():
 
@@ -435,7 +451,7 @@ ignored when used with the -k option."
 	elif os.path.basename(sys.argv[0]) == "fence_scsi_check_hardreboot":
 		sys.exit(scsi_check(True))
 
-	options = check_input(device_opt, process_input(device_opt), other_conditions=True)
+	options = check_input(device_opt, process_input(device_opt), validate_options)
 
 	# hack to remove list/list-status actions which are not supported
 	options["device_opt"] = [ o for o in options["device_opt"] if o != "separator" ]
@@ -471,7 +487,6 @@ longer be able to write to the device(s). A manual reboot is required."
 	options["store_path"] = STORE_PATH
 
 	# Input control BEGIN
-	stop_after_error = False if options["--action"] == "validate-all" else True
 
 	if options["--action"] == "monitor":
 		sys.exit(do_action_monitor(options))
@@ -481,18 +496,11 @@ longer be able to write to the device(s). A manual reboot is required."
 		options["--plug"] = options["--nodename"]
 		del options["--nodename"]
 
-	if not (("--plug" in options and options["--plug"])\
-	or ("--key" in options and options["--key"])):
-		fail_usage("Failed: nodename or key is required", stop_after_error)
-
 	if not ("--key" in options and options["--key"]):
 		options["--key"] = generate_key(options)
 
 	if options["--key"] == "0" or not options["--key"]:
-		fail_usage("Failed: key cannot be 0", stop_after_error)
-
-	if options["--action"] == "validate-all":
-		sys.exit(0)
+		fail_usage("Failed: key cannot be 0")
 
 	options["--key"] = options["--key"].lstrip('0')
 

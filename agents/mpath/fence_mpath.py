@@ -235,6 +235,27 @@ be removed from the device(s).",
 		"order": 200
 	}
 
+def validate_options(options):
+	errors = []
+
+	if not "--key" in options:
+		errors.append({
+			'fields': 'key',
+			'text': "You have to enter key",
+			'text_cli': "You have to enter key (-k)",
+			'error_type': 'REQUIRE-ONE'
+		})
+
+	if (not "--devices" in options) or not options["--devices"].split(","):
+		errors.append({
+			'fields': ['devices'],
+			'text': 'No devices found',
+			'texl_cli': 'No devices (--devices) found',
+			'error_type': 'INVALID-CONTENT'
+		})
+
+	return errors
+
 def main():
 	atexit.register(atexit_handler)
 
@@ -249,7 +270,7 @@ def main():
 	elif os.path.basename(sys.argv[0]) == "fence_mpath_check_hardreboot":
 		sys.exit(mpath_check(hardreboot=True))
 
-	options = check_input(device_opt, process_input(device_opt), other_conditions=True)
+	options = check_input(device_opt, process_input(device_opt), validate_options)
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for multipath persistent reservation"
@@ -269,18 +290,7 @@ longer be able to write to the device(s). A manual reboot is required."
 
 	run_delay(options)
 
-	# Input control BEGIN
-	if not "--key" in options:
-		fail_usage("Failed: key is required")
-
-	if options["--action"] == "validate-all":
-		sys.exit(0)
-
 	options["devices"] = options["--devices"].split(",")
-
-	if not options["devices"]:
-		fail_usage("Failed: No devices found")
-	# Input control END
 
 	result = fence_action(None, options, set_status, get_status)
 	sys.exit(result)

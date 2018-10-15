@@ -75,13 +75,42 @@ def soap_login(options):
 def remove_tmp_dir(tmp_dir):
 	shutil.rmtree(tmp_dir)
 
+def validate_options(options):
+	errors = []
+
+	if options["--action"] == "list":
+		errors.append({
+			'fields': 'action',
+			'text': "Action 'list' is not supported in this fence agent",
+			'text_cli': "Action 'list' is not supported in this fence agent",
+			'error_type': 'INVALID-CONTENT'
+		})
+
+	if options["--action"] == "list-status":
+		errors.append({
+			'fields': 'action',
+			'text': "Action 'list-status' is not supported in this fence agent",
+			'text_cli': "Action 'list-status' is not supported in this fence agent",
+			'error_type': 'INVALID-CONTENT'
+		})
+
+	if "--email" not in options:
+		errors.append({
+			'fields': ['email'],
+			'text': "You have to enter e-mail address which is notified by fence agent",
+			'text_cli': "You have to enter e-mail address (--email) which is notified by fence agent",
+			'error_type': 'REQUIRE-ONE'
+		})
+
+	return errors
+
 def main():
 	device_opt = ["login", "passwd", "port", "email", "no_status", "web"]
 
 	atexit.register(atexit_handler)
 
 	define_new_opts()
-	options = check_input(device_opt, process_input(device_opt), other_conditions=True)
+	options = check_input(device_opt, process_input(device_opt), validate_options)
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for OVH"
@@ -91,18 +120,6 @@ Poweroff is simulated with a reboot into rescue-pro mode."
 
 	docs["vendorurl"] = "http://www.ovh.net"
 	show_docs(options, docs)
-
-	if options["--action"] == "list":
-		fail_usage("Action 'list' is not supported in this fence agent")
-
-	if options["--action"] == "list-status":
-		fail_usage("Action 'list-status' is not supported in this fence agent")
-
-	if "--email" not in options:
-		fail_usage("You have to enter e-mail address which is notified by fence agent")
-
-	if options["--action"] == "validate-all":
-		sys.exit(0)
 
 	if options["--action"] != "monitor" and not options["--plug"].endswith(".ovh.net"):
 		options["--plug"] += ".ovh.net"

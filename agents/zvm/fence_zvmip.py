@@ -145,6 +145,19 @@ def get_list_of_images(options, command, data_as_plug):
 	conn.close()
 	return (return_code, reason_code, images)
 
+def validate_options(options):
+	errors = []
+
+	if len(options.get("--plug", "")) > 8:
+		errors.append({
+			'fields': ['managed'],
+			'text': 'Name of image can not be longer than 8 characters',
+			'texl_cli': 'Name of image (-n) can not be longer than 8 characters',
+			'error_type': 'INVALID-CONTENT'
+		})
+
+	return errors
+
 def main():
 	device_opt = ["ipaddr", "login", "passwd", "port", "method", "missing_as_off"]
 
@@ -153,13 +166,7 @@ def main():
 	all_opt["ipport"]["default"] = "44444"
 	all_opt["shell_timeout"]["default"] = "5"
 	all_opt["missing_as_off"]["default"] = "1"
-	options = check_input(device_opt, process_input(device_opt), other_conditions=True)
-
-	if len(options.get("--plug", "")) > 8:
-		fail_usage("Failed: Name of image can not be longer than 8 characters")
-
-	if options["--action"] == "validate-all":
-		sys.exit(0)
+	options = check_input(device_opt, process_input(device_opt), validate_options)
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for use with z/VM Virtual Machines"

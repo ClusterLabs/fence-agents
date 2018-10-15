@@ -137,6 +137,19 @@ def define_new_opts():
 		"choices" : ["3", "4", "ivm"],
 		"order" : 1}
 
+def validate_options(options):
+	errors = []
+
+	if "--managed" not in options:
+		errors.append({
+			'fields': ['managed'],
+			'text': 'You have to enter name of managed system',
+			'texl_cli': 'You have to enter name of managed system (-n)',
+			'error_type': 'REQUIRE-ONE'
+		})
+
+	return errors
+
 def main():
 	device_opt = ["ipaddr", "login", "passwd", "secure", "cmd_prompt", \
 	                "port", "managed", "hmc_version"]
@@ -149,19 +162,13 @@ def main():
 	all_opt["secure"]["default"] = "1"
 	all_opt["cmd_prompt"]["default"] = [r":~>", r"]\$", r"\$ "]
 
-	options = check_input(device_opt, process_input(device_opt), other_conditions = True)
+	options = check_input(device_opt, process_input(device_opt), validate_options)
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for IBM LPAR"
 	docs["longdesc"] = ""
 	docs["vendorurl"] = "http://www.ibm.com"
 	show_docs(options, docs)
-
-	if "--managed" not in options:
-		fail_usage("Failed: You have to enter name of managed system")
-
-	if options["--action"] == "validate-all":
-		sys.exit(0)
 
 	##
 	## Operate the fencing device
