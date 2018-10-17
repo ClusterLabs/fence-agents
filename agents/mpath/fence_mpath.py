@@ -240,7 +240,7 @@ def validate_options(options):
 
 	if not "--key" in options:
 		errors.append({
-			'fields': 'key',
+			'fields': ['key'],
 			'text': "You have to enter key",
 			'text_cli': "You have to enter key (-k)",
 			'error_type': 'REQUIRE-ONE'
