@@ -205,5 +205,6 @@ By default, virsh needs root account to do properly work. So you must allow ssh 
 	<action name="metadata" />
 	<action name="manpage" />
 	<action name="validate-all" />
+	<action name="validate-all-xml" />
 </actions>
 </resource-agent>

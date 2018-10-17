@@ -175,5 +175,6 @@ When using network fencing the reboot-action will cause a quick-return once the 
 	<action name="metadata" />
 	<action name="manpage" />
 	<action name="validate-all" />
+	<action name="validate-all-xml" />
 </actions>
 </resource-agent>

@@ -176,5 +176,6 @@ Name of virtual machine (-n / port) has to be used in inventory path format (e.g
 	<action name="metadata" />
 	<action name="manpage" />
 	<action name="validate-all" />
+	<action name="validate-all-xml" />
 </actions>
 </resource-agent>

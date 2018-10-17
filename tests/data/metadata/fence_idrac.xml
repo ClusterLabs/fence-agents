@@ -218,6 +218,7 @@
 	<action name="metadata" />
 	<action name="manpage" />
 	<action name="validate-all" />
+	<action name="validate-all-xml" />
 	<action name="diag" />
 </actions>
 </resource-agent>

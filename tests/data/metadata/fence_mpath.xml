@@ -110,5 +110,6 @@ The fence_mpath agent works by having a unique key for each node that has to be 
 	<action name="metadata" />
 	<action name="manpage" />
 	<action name="validate-all" />
+	<action name="validate-all-xml" />
 </actions>
 </resource-agent>

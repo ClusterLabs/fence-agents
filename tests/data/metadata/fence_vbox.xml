@@ -218,5 +218,6 @@ By default, vbox needs to log in as a user that is a member of the vboxusers gro
 	<action name="metadata" />
 	<action name="manpage" />
 	<action name="validate-all" />
+	<action name="validate-all-xml" />
 </actions>
 </resource-agent>
