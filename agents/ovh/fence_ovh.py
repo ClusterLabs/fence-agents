@@ -80,7 +80,7 @@ def validate_options(options):
 
 	if options["--action"] == "list":
 		errors.append({
-			'fields': 'action',
+			'fields': ['action'],
 			'text': "Action 'list' is not supported in this fence agent",
 			'text_cli': "Action 'list' is not supported in this fence agent",
 			'error_type': 'INVALID-CONTENT'
@@ -88,7 +88,7 @@ def validate_options(options):
 
 	if options["--action"] == "list-status":
 		errors.append({
-			'fields': 'action',
+			'fields': ['action'],
 			'text': "Action 'list-status' is not supported in this fence agent",
 			'text_cli': "Action 'list-status' is not supported in this fence agent",
 			'error_type': 'INVALID-CONTENT'
