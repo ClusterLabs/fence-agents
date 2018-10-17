@@ -717,7 +717,10 @@ def check_input(device_opt, opt, local_validation = None):
 			sys.exit(EC_GENERIC_ERROR)
 	else:
 		if not _validate_input(options, local_validation, 'text'):
-			fail_usage("validate-all failed")
+			if options["--action"] == "validate-all":
+				fail_usage("validate-all failed")
+			else:
+				fail_usage()
 
 		if options["--action"] == "validate-all":
 			sys.exit(EC_OK)
