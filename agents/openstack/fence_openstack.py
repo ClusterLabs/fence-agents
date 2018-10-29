@@ -11,12 +11,15 @@ from fencing import *
 from fencing import fail_usage, is_executable, run_command, run_delay
 
 try:
-        from keystoneclient.v3 import client as ksclient
+        from novaclient import client as novaclient
+        from keystoneauth1 import session as ksc_session
+        from keystoneauth1 import loading
+        legacy_import = False
+except ImportError:
         from novaclient import client as novaclient
         from keystoneclient import session as ksc_session
         from keystoneclient.auth.identity import v3
-except ImportError:
-        pass
+        legacy_import = True
 
 def get_name_or_uuid(options):
         return options["--uuid"] if "--uuid" in options else options["--plug"]
@@ -33,9 +36,22 @@ def set_power_status(_, options):
     return
 
 def nova_login(username,password,projectname,auth_url,user_domain_name,project_domain_name):
-        auth=v3.Password(username=username,password=password,project_name=projectname,user_domain_name=user_domain_name,project_domain_name=project_domain_name,auth_url=auth_url)
+        if not legacy_import:
+                loader = loading.get_plugin_loader('password')
+                auth = loader.load_from_options(auth_url=auth_url,
+                                        username=username,
+                                        password=password,
+                                        project_name=projectname,
+                                        user_domain_name=user_domain_name,
+                                        project_domain_name=project_domain_name)
+        else:
+                auth = v3.Password(username=username,
+                                   password=password,
+                                   project_name=projectname,
+                                   user_domain_name=user_domain_name,
+                                   project_domain_name=project_domain_name,
+                                   auth_url=auth_url)
         session = ksc_session.Session(auth=auth)
-        keystone = ksclient.Client(session=session)
         nova = novaclient.Client("2", session=session)
         return nova
 
