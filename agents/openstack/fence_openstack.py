@@ -16,10 +16,13 @@ try:
         from keystoneauth1 import loading
         legacy_import = False
 except ImportError:
-        from novaclient import client as novaclient
-        from keystoneclient import session as ksc_session
-        from keystoneclient.auth.identity import v3
-        legacy_import = True
+        try:
+                from novaclient import client as novaclient
+                from keystoneclient import session as ksc_session
+                from keystoneclient.auth.identity import v3
+                legacy_import = True
+        except ImportError:
+                pass
 
 def get_name_or_uuid(options):
         return options["--uuid"] if "--uuid" in options else options["--plug"]
