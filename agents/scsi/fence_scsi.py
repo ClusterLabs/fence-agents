@@ -191,7 +191,7 @@ def get_cluster_id(options):
 def get_node_id(options):
 	cmd = options["--corosync-cmap-path"] + " nodelist"
 
-	match = re.search(r".(\d).ring._addr \(str\) = " + options["--plug"] + "\n", run_cmd(options, cmd)["out"])
+	match = re.search(r".(\d+).ring._addr \(str\) = " + options["--plug"] + "\n", run_cmd(options, cmd)["out"])
 	return match.group(1) if match else fail_usage("Failed: unable to parse output of corosync-cmapctl or node does not exist")
 
 
