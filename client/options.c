@@ -904,6 +904,7 @@ args_get_stdin(const char *optstr, fence_virt_args_t *args)
 				"parse warning: "
 				"illegal variable '%s' on line %d\n", name,
 				line);
+			args->flags |= F_ERR;
 			continue;
 		}
 
