@@ -16,7 +16,7 @@ from fencing import fail, EC_STATUS
 
 def get_enclosure_type(conn, options):
 	conn.send_eol("show enclosure info")
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 	type_re=re.compile(r"^\s*Enclosure Type: (\w+)(.*?)\s*$")
 	enclosure="unknown"
@@ -39,7 +39,7 @@ def get_power_status(conn, options):
 		powrestr = "^\\s*Power: (.*?)\\s*$"
 
 	conn.send_eol(cmd_send)
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 	power_re = re.compile(powrestr)
 	status = "unknown"
@@ -72,7 +72,7 @@ def set_power_status(conn, options):
 		conn.send_eol("poweron " + dev + options["--plug"])
 	elif options["--action"] == "off":
 		conn.send_eol("poweroff " + dev + options["--plug"] + " force")
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 def get_instances_list(conn, options):
 	outlets = {}
@@ -84,7 +84,7 @@ def get_instances_list(conn, options):
 		listrestr = "^\\s*(\\d+)\\s+(.*?)\\s+(.*?)\\s+OK\\s+(.*?)\\s+(.*?)\\s*$"
 
 	conn.send_eol(cmd_send)
-	conn.log_expect(options, options["--command-prompt"], int(options["--shell-timeout"]))
+	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 	list_re = re.compile(listrestr)
 	for line in conn.before.splitlines():
