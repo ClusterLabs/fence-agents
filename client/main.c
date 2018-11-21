@@ -112,7 +112,7 @@ main(int argc, char **argv)
 		args.mode = MODE_VSOCK;
 
 	if (args.flags & F_ERR) {
-        if (args.op != FENCE_VALIDATEALL)
+		if (args.op != FENCE_VALIDATEALL)
 			args_usage(argv[0], my_options, (argc == 1));
 		exit(1);
 	}
