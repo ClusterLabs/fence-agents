@@ -37,6 +37,7 @@ def main():
 	## check if all options are defined
 	agent_file = open(agent)
 	option_use_re = re.compile(r"options\[\"(-[^\"]*)\"\]")
+	option_in_re = re.compile(r"\"(-[^\"]*)\" in options")
 	option_has_re = re.compile(r"options.has_key\(\"(-[^\"]*)\"\)")
 
 	counter = 0
@@ -49,10 +50,14 @@ def main():
 				print("ERROR on line %d in %s: option %s is not defined" % (counter, agent, option_use_re.search(line).group(1)))
 				without_errors = False
 
-		for option in option_has_re.findall(line):
+		for option in option_in_re.findall(line):
 			if option not in available:
 				print("ERROR on line %d in %s: option %s is not defined" % (counter, agent, option_has_re.search(line).group(1)))
 				without_errors = False
+
+		for option in option_has_re.findall(line):
+			print("ERROR on line %d in %s: option %s: has_key() not supported in Python 3" % (counter, agent, option_has_re.search(line).group(1)))
+			without_errors = False
 
 	if without_errors:
 		sys.exit(0)
