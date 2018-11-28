@@ -33,7 +33,7 @@ define gen_agent_from_py
 		-e 's#@''PING4_CMD@#${PING4_CMD}#g' \
 	> $@
 
-	if [ 0 -eq `echo "$(@)" | grep fence_ 2>&1 /dev/null; echo $$?` ]; then \
+	if [ 0 -eq `echo "$(@)" | grep fence_ > /dev/null 2>&1; echo $$?` ]; then \
 		PYTHONPATH=$(abs_top_srcdir)/lib:$(abs_top_builddir)/lib $(PYTHON) $(top_srcdir)/lib/check_used_options.py $@; \
 	else true ; fi
 
