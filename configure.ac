@@ -6,6 +6,8 @@ AC_INIT([fence-agents],
 	m4_esyscmd([make/git-version-gen .tarball-version]),
 	[linux-cluster@redhat.com])
 
+AC_CONFIG_AUX_DIR([.])
+
 AM_INIT_AUTOMAKE([-Wno-portability dist-bzip2 dist-xz subdir-objects])
 
 LT_PREREQ([2.2.6])
@@ -202,6 +204,9 @@ if test "x$XSLTPROC" = "x"; then
    exit 1
 fi
 AC_SUBST(XSLTPROC)
+
+dnl Ensure PYTHON is an absolute path
+AC_PATH_PROG([PYTHON], [$PYTHON])
 
 AM_PATH_PYTHON
 if test -z "$PYTHON"; then
