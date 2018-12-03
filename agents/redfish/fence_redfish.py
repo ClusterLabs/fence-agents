@@ -13,7 +13,7 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from fencing import *
-from fencing import fail_usage
+from fencing import fail_usage, run_delay
 
 def get_power_status(conn, options):
     uri = options["--systems-uri"]
@@ -127,6 +127,7 @@ Out-of-Band controllers that support Redfish APIs. These controllers provide rem
 access to control power on a server."
     docs["vendorurl"] = "http://www.dmtf.org"
     show_docs(options, docs)
+    run_delay(options)
 
     ##
     ## Operate the fencing device
