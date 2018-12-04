@@ -21,10 +21,10 @@ def get_power_status(conn, options):
     if response['ret'] is False:
         fail_usage("Couldn't get power information")
     data = response['data']
-    if data[u'PowerState'].strip() == "On":
-        return "on"
-    else:
+    if data[u'PowerState'].strip() == "Off":
         return "off"
+    else:
+        return "on"
 
 def set_power_status(conn, options):
     action = {
