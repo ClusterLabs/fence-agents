@@ -42,9 +42,9 @@ def set_power_status(conn, options):
     if response['ret'] is False:
         return {'ret': False}
     data = response['data']
-    uri = data["Actions"]["#ComputerSystem.Reset"]["target"]
+    action_uri = data["Actions"]["#ComputerSystem.Reset"]["target"]
 
-    response = send_post_request(options, uri, payload, headers)
+    response = send_post_request(options, action_uri, payload, headers)
     if response['ret'] is False:
         fail_usage("Error sending power command")
     return
