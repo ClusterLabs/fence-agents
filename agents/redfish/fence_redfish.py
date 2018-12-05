@@ -117,7 +117,7 @@ def main():
 
     opt = process_input(device_opt)
 
-    all_opt["ipport"]["default"] = "443"
+    all_opt["ssl"]["default"] = "1"
     options = check_input(device_opt, opt)
 
     docs = {}
