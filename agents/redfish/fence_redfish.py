@@ -30,7 +30,7 @@ def set_power_status(conn, options):
     action = {
         'on' : "On",
         'off': "ForceOff",
-        'reboot': "GracefulRestart"
+        'reboot': "ForceRestart"
     }[options["--action"]]
 
     payload = {'ResetType': action}
