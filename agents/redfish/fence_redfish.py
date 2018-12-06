@@ -16,8 +16,7 @@ from fencing import *
 from fencing import fail_usage, run_delay
 
 def get_power_status(conn, options):
-    uri = options["--systems-uri"]
-    response = send_get_request(options, uri)
+    response = send_get_request(options, options["--systems-uri"])
     if response['ret'] is False:
         fail_usage("Couldn't get power information")
     data = response['data']
@@ -37,8 +36,7 @@ def set_power_status(conn, options):
     headers = {'content-type': 'application/json'}
 
     # Search for 'Actions' key and extract URI from it
-    uri = options["--systems-uri"]
-    response = send_get_request(options, uri)
+    response = send_get_request(options, options["--systems-uri"])
     if response['ret'] is False:
         return {'ret': False}
     data = response['data']
@@ -70,8 +68,7 @@ def send_post_request(options, uri, payload, headers):
     return {'ret': True}
 
 def find_systems_resource(options):
-    uri = options["--redfish-uri"]
-    response = send_get_request(options, uri)
+    response = send_get_request(options, options["--redfish-uri"])
     if response['ret'] is False:
         return {'ret': False}
     data = response['data']
@@ -80,8 +77,7 @@ def find_systems_resource(options):
         # Systems resource not found"
         return {'ret': False}
     else:
-        uri = data["Systems"]["@odata.id"]
-        response = send_get_request(options, uri)
+        response = send_get_request(options, data["Systems"]["@odata.id"])
         if response['ret'] is False:
             return {'ret': False}
         data = response['data']
