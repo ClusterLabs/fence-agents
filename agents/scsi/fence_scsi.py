@@ -158,13 +158,15 @@ def get_reservation_key(options, dev):
 	return match.group(1) if match else None
 
 
-def get_registration_keys(options, dev):
+def get_registration_keys(options, dev, fail=True):
 	reset_dev(options,dev)
 	keys = []
 	cmd = options["--sg_persist-path"] + " -n -i -k -d " + dev
 	out = run_cmd(options, cmd)
 	if out["err"]:
-		fail_usage("Cannot get registration keys")
+		fail_usage("Cannot get registration keys", fail)
+		if not fail:
+			return []
 	for line in out["out"].split("\n"):
 		match = re.search(r"\s+0x(\S+)\s*", line)
 		if match:
@@ -218,9 +220,8 @@ def get_key(fail=True):
 	try:
 		f = open(file_path, "r")
 	except IOError:
-		if fail:
-			fail_usage("Failed: Cannot open file \""+ file_path + "\"")
-		else:
+		fail_usage("Failed: Cannot open file \""+ file_path + "\"", fail)
+		if not fail:
 			return None
 	return f.readline().strip().lower()
 
@@ -244,9 +245,8 @@ def dev_read(fail=True):
 	try:
 		f = open(file_path, "r")
 	except IOError:
-		if fail:
-			fail_usage("Failed: Cannot open file \"" + file_path + "\"")
-		else:
+		fail_usage("Failed: Cannot open file \"" + file_path + "\"", fail)
+		if not fail:
 			return None
 	# get not empty lines from file
 	devs = [line.strip() for line in f if line.strip()]
@@ -371,14 +371,20 @@ be removed from the device(s).",
 	}
 
 
-def scsi_check_get_verbose():
+def scsi_check_get_options(options):
 	try:
-		f = open("/etc/sysconfig/watchdog", "r")
+		f = open("/etc/sysconfig/stonith", "r")
 	except IOError:
-		return False
-	match = re.search(r"^\s*verbose=yes", "".join(f.readlines()), re.MULTILINE)
+		return options
+
+	match = re.findall(r"^\s*(\S*)\s*=\s*(\S*)\s*", "".join(f.readlines()), re.MULTILINE)
+
+	for m in match:
+		options[m[0].lower()] = m[1].lower()
+
 	f.close()
-	return bool(match)
+
+	return options
 
 
 def scsi_check(hardreboot=False):
@@ -388,7 +394,10 @@ def scsi_check(hardreboot=False):
 	options["--sg_turs-path"] = "@SG_TURS_PATH@"
 	options["--sg_persist-path"] = "@SG_PERSIST_PATH@"
 	options["--power-timeout"] = "5"
-	if scsi_check_get_verbose():
+	options["retry"] = "0"
+	options["retry-sleep"] = "1"
+	options = scsi_check_get_options(options)
+	if "verbose" in options and options["verbose"] == "yes":
 		logging.getLogger().setLevel(logging.DEBUG)
 	devs = dev_read(fail=False)
 	if not devs:
@@ -399,11 +408,18 @@ def scsi_check(hardreboot=False):
 		logging.error("Key not found")
 		return 0
 	for dev in devs:
-		if key in get_registration_keys(options, dev):
-			logging.debug("key " + key + " registered with device " + dev)
-			return 0
-		else:
-			logging.debug("key " + key + " not registered with device " + dev)
+		for n in range(int(options["retry"]) + 1):
+			if n > 0:
+				logging.debug("retry: " + str(n) + " of " + options["retry"])
+			if key in get_registration_keys(options, dev, fail=False):
+				logging.debug("key " + key + " registered with device " + dev)
+				return 0
+			else:
+				logging.debug("key " + key + " not registered with device " + dev)
+
+			if n < int(options["retry"]):
+				time.sleep(float(options["retry-sleep"]))
+
 	logging.debug("key " + key + " registered with any devices")
 
 	if hardreboot == True:
@@ -452,7 +468,11 @@ by creating a \"write exclusive, registrants only\" reservation on the \
 device(s). The result is that only registered nodes may write to the \
 device(s). When a node failure occurs, the fence_scsi agent will remove the \
 key belonging to the failed node from the device(s). The failed node will no \
-longer be able to write to the device(s). A manual reboot is required."
+longer be able to write to the device(s). A manual reboot is required.\
+\n.P\n\
+When used as a watchdog device you can define e.g. retry=1, retry-sleep=2 and \
+verbose=yes parameters in /etc/sysconfig/stonith if you have issues with it \
+failing."
 	docs["vendorurl"] = ""
 	show_docs(options, docs)
 
