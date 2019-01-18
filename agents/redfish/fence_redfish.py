@@ -6,6 +6,7 @@
 
 import sys
 import re
+import logging
 import json
 import requests
 import atexit
@@ -20,6 +21,9 @@ def get_power_status(conn, options):
     if response['ret'] is False:
         fail_usage("Couldn't get power information")
     data = response['data']
+
+    logging.debug("PowerState is: " + data[u'PowerState'])
+
     if data[u'PowerState'].strip() == "Off":
         return "off"
     else:
@@ -50,21 +54,21 @@ def set_power_status(conn, options):
 def send_get_request(options, uri):
     full_uri = "https://" + options["--ip"] + uri
     try:
-        resp = requests.get(full_uri, verify=False,
+        resp = requests.get(full_uri, verify=not "--ssl-insecure" in options,
                             auth=(options["--username"], options["--password"]))
         data = resp.json()
-    except:
-        return {'ret': False}
+    except Exception as e:
+        fail_usage("Failed: send_get_request: " + str(e))
     return {'ret': True, 'data': data}
 
 def send_post_request(options, uri, payload, headers):
     full_uri = "https://" + options["--ip"] + uri
     try:
         requests.post(full_uri, data=json.dumps(payload),
-                      headers=headers, verify=False,
+                      headers=headers, verify=not "--ssl-insecure" in options,
                       auth=(options["--username"], options["--password"]))
-    except:
-        return {'ret': False}
+    except Exception as e:
+        fail_usage("Failed: send_post_request: " + str(e))
     return {'ret': True}
 
 def find_systems_resource(options):
