@@ -88,7 +88,7 @@ def send_command(opt, command, method="GET"):
 	## send command through pycurl
 	conn = pycurl.Curl()
 	web_buffer = io.BytesIO()
-	conn.setopt(pycurl.URL, url.encode("ascii"))
+	conn.setopt(pycurl.URL, url.encode("UTF-8"))
 	conn.setopt(pycurl.HTTPHEADER, [
 		"Version: 3",
 		"Content-type: application/xml",
@@ -128,7 +128,7 @@ def send_command(opt, command, method="GET"):
 
 		opt["cookie"] = cookie
 
-	result = web_buffer.getvalue().decode()
+	result = web_buffer.getvalue().decode("UTF-8")
 
 	logging.debug("%s\n", command)
 	logging.debug("%s\n", result)
