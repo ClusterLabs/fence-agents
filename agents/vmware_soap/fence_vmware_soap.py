@@ -68,7 +68,8 @@ def soap_login(options):
 		conn.service.Login(mo_SessionManager, options["--username"], options["--password"])
 	except requests.exceptions.SSLError as ex:
 		fail_usage("Server side certificate verification failed: %s" % ex)
-	except Exception:
+	except Exception as e:
+		logging.error("Server side certificate verification failed: {}".format(str(e)))
 		fail(EC_LOGIN_DENIED)
 
 	options["ServiceContent"] = ServiceContent
@@ -126,7 +127,8 @@ def get_power_status(conn, options):
 
 	try:
 		raw_machines = conn.service.RetrievePropertiesEx(mo_PropertyCollector, propFilterSpec)
-	except Exception:
+	except Exception as e:
+		logging.error("Failed: {}".format(str(e)))
 		fail(EC_STATUS)
 
 	(machines, uuid, mappingToUUID) = process_results(raw_machines, {}, {}, {})
@@ -135,7 +137,8 @@ def get_power_status(conn, options):
 	while hasattr(raw_machines, 'token'):
 		try:
 			raw_machines = conn.service.ContinueRetrievePropertiesEx(mo_PropertyCollector, raw_machines.token)
-		except Exception:
+		except Exception as e:
+			logging.error("Failed: {}".format(str(e)))
 			fail(EC_STATUS)
 		(more_machines, more_uuid, more_mappingToUUID) = process_results(raw_machines, {}, {}, {})
 		machines.update(more_machines)
