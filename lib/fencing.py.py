@@ -1389,6 +1389,7 @@ def _parse_input_stdin(avail_opt):
 
 		(name, value) = (line + "=").split("=", 1)
 		value = value[:-1]
+		value = re.sub("^\"(.*)\"$", "\\1", value)
 
 		if name.replace("-", "_") in mapping_longopt_names:
 			name = mapping_longopt_names[name.replace("-", "_")]
