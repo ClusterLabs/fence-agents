@@ -22,7 +22,10 @@ def get_power_status(conn, options):
         fail_usage("Couldn't get power information")
     data = response['data']
 
-    logging.debug("PowerState is: " + data[u'PowerState'])
+    try:
+        logging.debug("PowerState is: " + data[u'PowerState'])
+    except Exception:
+        fail_usage("Unable to get PowerState: " + "https://" + options["--ip"] + ":" + str(options["--ipport"]) + options["--systems-uri"])
 
     if data[u'PowerState'].strip() == "Off":
         return "off"
@@ -52,7 +55,7 @@ def set_power_status(conn, options):
     return
 
 def send_get_request(options, uri):
-    full_uri = "https://" + options["--ip"] + uri
+    full_uri = "https://" + options["--ip"] + ":" + str(options["--ipport"]) + uri
     try:
         resp = requests.get(full_uri, verify=not "--ssl-insecure" in options,
                             auth=(options["--username"], options["--password"]))
@@ -62,7 +65,7 @@ def send_get_request(options, uri):
     return {'ret': True, 'data': data}
 
 def send_post_request(options, uri, payload, headers):
-    full_uri = "https://" + options["--ip"] + uri
+    full_uri = "https://" + options["--ip"] + ":" + str(options["--ipport"]) + uri
     try:
         requests.post(full_uri, data=json.dumps(payload),
                       headers=headers, verify=not "--ssl-insecure" in options,
