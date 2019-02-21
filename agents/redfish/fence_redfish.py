@@ -140,6 +140,10 @@ access to control power on a server."
     if "--ssl-insecure" in opt:
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
+    # backwards compatibility for <ip>:<port>
+    if options["--ip"].count(":") == 1:
+        (options["--ip"], options["--ipport"]) = options["--ip"].split(":")
+
     if "--systems-uri" not in opt:
         # Systems URI not provided, find it
         sysresult = find_systems_resource(options)
