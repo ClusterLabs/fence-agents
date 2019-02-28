@@ -54,6 +54,13 @@ def set_power_status(conn, options):
 	send_cmd(options, cmd, post={"skiplock":1})
 
 
+def reboot_cycle(conn, options):
+	del conn
+	cmd = "nodes/" + options["--nodename"] + "/" + options["--vmtype"] + "/" + options["--plug"] + "/status/reset"
+	result = send_cmd(options, cmd, post={"skiplock":1})
+	return type(result) is dict and "data" in result
+
+
 def get_outlet_list(conn, options):
 	del conn
 	nodes = send_cmd(options, "nodes")
@@ -154,7 +161,7 @@ def main():
 		"order": 2
 	}
 
-	device_opt = ["ipaddr", "login", "passwd", "web", "port", "node_name", "vmtype"]
+	device_opt = ["ipaddr", "login", "passwd", "web", "port", "node_name", "vmtype", "method"]
 
 	all_opt["login"]["required"] = "0"
 	all_opt["login"]["default"] = "root@pam"
@@ -177,6 +184,10 @@ machines acting as nodes in a virtualized cluster."
 	if "--nodename" not in options or not options["--nodename"]:
 		options["--nodename"] = None
 
+	if options["--vmtype"] != "qemu":
+		# For vmtypes other than qemu, only the onoff method is valid
+		options["--method"] = "onoff"
+
 	options["url"] = "https://" + options["--ip"] + ":" + str(options["--ipport"]) + "/api2/json/"
 
 	options["auth"] = get_ticket(options)
@@ -186,10 +197,10 @@ machines acting as nodes in a virtualized cluster."
 	# Workaround for unsupported API call on some Proxmox hosts
 	outlets = get_outlet_list(None, options)        # Unsupported API-Call will result in value: None
 	if outlets is None:
-		result = fence_action(None, options, set_power_status, get_power_status, None)
+		result = fence_action(None, options, set_power_status, get_power_status, None, reboot_cycle)
 		sys.exit(result)
 
-	result = fence_action(None, options, set_power_status, get_power_status, get_outlet_list)
+	result = fence_action(None, options, set_power_status, get_power_status, get_outlet_list, reboot_cycle)
 
 	sys.exit(result)
 

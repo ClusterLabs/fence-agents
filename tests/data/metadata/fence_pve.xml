@@ -38,6 +38,14 @@
 		<content type="string" default="root@pam"  />
 		<shortdesc lang="en">Login name</shortdesc>
 	</parameter>
+	<parameter name="method" unique="0" required="0">
+		<getopt mixed="-m, --method=[method]" />
+		<content type="select" default="onoff"  >
+			<option value="onoff" />
+			<option value="cycle" />
+		</content>
+		<shortdesc lang="en">Method to fence</shortdesc>
+	</parameter>
 	<parameter name="passwd" unique="0" required="0" deprecated="1">
 		<getopt mixed="-p, --password=[password]" />
 		<content type="string"  />
