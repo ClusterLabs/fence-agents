@@ -56,7 +56,7 @@ def set_power_status(conn, options):
 
 def reboot_cycle(conn, options):
 	del conn
-	cmd = "nodes/" + options["--nodename"] + "/qemu/" + options["--plug"] + "/status/reset"
+	cmd = "nodes/" + options["--nodename"] + "/" + options["--vmtype"] + "/" + options["--plug"] + "/status/reset"
 	result = send_cmd(options, cmd, post={"skiplock":1})
 	return type(result) is dict and "data" in result
 
@@ -183,6 +183,10 @@ machines acting as nodes in a virtualized cluster."
 
 	if "--nodename" not in options or not options["--nodename"]:
 		options["--nodename"] = None
+
+	if options["--vmtype"] != "qemu":
+		# For vmtypes other than qemu, only the onoff method is valid
+		options["--method"] = "onoff"
 
 	options["url"] = "https://" + options["--ip"] + ":" + str(options["--ipport"]) + "/api2/json/"
 
