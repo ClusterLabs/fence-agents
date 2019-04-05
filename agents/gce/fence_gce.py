@@ -146,7 +146,7 @@ def get_metadata(metadata_key, params=None, timeout=None):
 	url = '%s?%s' % (metadata_url, params)
 	request = urlrequest.Request(url, headers=METADATA_HEADERS)
 	request_opener = urlrequest.build_opener(urlrequest.ProxyHandler({}))
-	return request_opener.open(request, timeout=timeout * 1.1).read()
+	return request_opener.open(request, timeout=timeout * 1.1).read().decode("utf-8")
 
 
 def define_new_opts():
