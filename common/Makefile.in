@@ -24,6 +24,18 @@ all: ${TARGETS}
 libfence_virt.a: ${libfence_virt_a_SOURCE:.c=.o}
 	ar rc $@ $^
 
+fdops.o: fdops.c
+	$(CC) $(CFLAGS) -fPIC -c -o $@ $^ $(INCLUDES)
+
+ip_lookup.o: ip_lookup.c
+	$(CC) $(CFLAGS) -fPIC -c -o $@ $^ $(INCLUDES)
+
+mcast.o: mcast.c
+	$(CC) $(CFLAGS) -fPIC -c -o $@ $^ $(INCLUDES)
+
+tcp.o: tcp.c
+	$(CC) $(CFLAGS) -fPIC -c -o $@ $^ $(INCLUDES)
+
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $^ $(INCLUDES)
 

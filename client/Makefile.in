@@ -24,7 +24,7 @@ INCLUDES=-I../include `nss-config --cflags` `nspr-config --cflags` \
 	 `xml2-config --cflags`
 
 # nss sucks in way too much stuff
-LIBS+=-lnss3 `xml2-config --libs`
+LIBS+=-lnss3 `xml2-config --libs` -Wl,-z,now
 
 TARGETS=${TARGET}
 
@@ -40,7 +40,16 @@ fence_xvm: ${TARGET}
 	ln -snf $^ $@
 
 fence_virt: ${fence_virt_SOURCES:.c=.o}
-	$(CC) -o $@ $^ $(LIBS) -L../common -lfence_virt
+	$(CC) $(CFLAGS) -o $@ $^ -shared $(LIBS) -L../common -lfence_virt
+
+mcast.o: mcast.c
+	$(CC) $(CFLAGS) -fPIC -c -o $@ $^ $(INCLUDES)
+
+options.o: options.c
+	$(CC) $(CFLAGS) -fPIC -c -o $@ $^ $(INCLUDES)
+
+serial.o: serial.c
+	$(CC) $(CFLAGS) -fPIC -c -o $@ $^ $(INCLUDES)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $^ $(INCLUDES)

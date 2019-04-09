@@ -32,7 +32,7 @@ NSS_LIBS=-lnss3
 XML_LIBS=`xml2-config --libs`
 INCLUDES=-I../include `nss-config --cflags` `nspr-config --cflags` `xml2-config --cflags`
 
-LIBS+=-L../common -lfence_virt -Wl,-wrap,syslog,-wrap,closelog -lpthread -luuid
+LIBS+=-L../common -lfence_virt -Wl,-z,now,-wrap,syslog,-wrap,closelog -lpthread -luuid
 
 MODULE_PATH=${libdir}/${PACKAGE_NAME}
 
@@ -159,40 +159,49 @@ endif
 all: ${TARGETS} ${MODULES}
 
 fence_virtd: ${fence_virtd_SOURCES:.c=.o} ${fence_virtd_cxx_SOURCES:.cpp=.opp}
-	$(CXX) -o $@ $^ $(MAIN_LIBS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(MAIN_LIBS) $(LIBS)
 
 multicast.so: ${multicast_so_SOURCES:.c=.o}
-	$(CC) -o $@ $^ $(LIBS) -shared $(NSS_LIBS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) -shared $(NSS_LIBS)
 
 libvirt.so: ${libvirt_so_SOURCES:.c=.o}
-	$(CC) -o $@ $^ $(LIBS) -shared $(VIRT_LIBS) $(UUID_LIBS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) -shared $(VIRT_LIBS) $(UUID_LIBS)
 
 libvirt-qmf.so: ${libvirt_qmf_so_SOURCES:.c=.o} ${libvirt_qmf_cxx_so_SOURCES:.cpp=.opp}
-	$(CXX) -o $@ $^ $(LIBS) -shared $(VIRT_QPID)
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LIBS) -shared $(VIRT_QPID)
 
 pm-fence.so: ${pm_fence_so_SOURCES:.c=.o}
-	$(CC) -o $@ $^ $(LIBS) -shared $(PACEMAKER_LIBS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) -shared $(PACEMAKER_LIBS)
 
 cpg.so: ${cpg_so_SOURCES:.c=.o}
-	$(CC) -o $@ $^ $(LIBS) -shared $(VIRT_LIBS) $(UUID_LIBS) $(XML_LIBS) $(COROSYNC_LIBS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) -shared $(VIRT_LIBS) $(UUID_LIBS) $(XML_LIBS) $(COROSYNC_LIBS)
 
 null.so: ${null_so_SOURCES:.c=.o}
-	$(CC) -o $@ $^ $(LIBS) -shared
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) -shared
 
 serial.so: ${serial_so_SOURCES:.c=.o}
-	$(CC) -o $@ $^ $(LIBS) -shared $(VIRT_LIBS) $(UUID_LIBS) $(XML_LIBS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) -shared $(VIRT_LIBS) $(UUID_LIBS) $(XML_LIBS)
 
 tcp.so: ${tcp_so_SOURCES:.c=.o}
-	$(CC) -o $@ $^ $(LIBS) -shared $(NSS_LIBS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) -shared $(NSS_LIBS)
 
 vsock.so: ${vsock_so_SOURCES:.c=.o}
-	$(CC) -o $@ $^ $(LIBS) -shared $(NSS_LIBS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS) -shared $(NSS_LIBS)
+
+cpg-virt.o: cpg-virt.c
+	$(CC) $(CFLAGS) -fPIC -c -o $@ $^ $(INCLUDES)
+
+virt.o: virt.c
+	$(CC) $(CFLAGS) -fPIC -c -o $@ $^ $(INCLUDES)
+
+virt-serial.o: virt-serial.c
+	$(CC) $(CFLAGS) -fPIC -c -o $@ $^ $(INCLUDES)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $^ $(INCLUDES)
 
 %.opp: %.cpp
-	$(CXX) $(CFLAGS) -c -o $@ $^ $(INCLUDES)
+	$(CXX) $(CXXFLAGS) -c -o $@ $^ $(INCLUDES)
 
 install: all
 	if [ ! -d ${DESTDIR}/${sbindir} ]; then \
