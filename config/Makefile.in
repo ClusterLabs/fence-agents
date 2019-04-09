@@ -42,7 +42,7 @@ config.c: y.tab.h config.l
 	$(LEX) -oconfig.c config.l
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $^ $(INCLUDES)
+	$(CC) $(CFLAGS) -fPIE -c -o $@ $^ $(INCLUDES)
 
 clean:
 	rm -f ${TARGETS} *~ *.o testprog config.tab.c config.tab.h config.c
