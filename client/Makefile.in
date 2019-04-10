@@ -40,16 +40,7 @@ fence_xvm: ${TARGET}
 	ln -snf $^ $@
 
 fence_virt: ${fence_virt_SOURCES:.c=.o}
-	$(CC) $(CFLAGS) -o $@ $^ -shared $(LIBS) -L../common -lfence_virt
-
-mcast.o: mcast.c
-	$(CC) $(CFLAGS) -fPIC -c -o $@ $^ $(INCLUDES)
-
-options.o: options.c
-	$(CC) $(CFLAGS) -fPIC -c -o $@ $^ $(INCLUDES)
-
-serial.o: serial.c
-	$(CC) $(CFLAGS) -fPIC -c -o $@ $^ $(INCLUDES)
+	$(CC) $(CFLAGS) -pie -o $@ $^ $(LIBS) -L../common -lfence_virt
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $^ $(INCLUDES)
