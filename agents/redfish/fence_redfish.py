@@ -16,6 +16,11 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from fencing import *
 from fencing import fail_usage, run_delay
 
+GET_HEADERS = {'accept': 'application/json', 'OData-Version': '4.0'}
+POST_HEADERS = {'content-type': 'application/json', 'accept': 'application/json',
+                'OData-Version': '4.0'}
+
+
 def get_power_status(conn, options):
     response = send_get_request(options, options["--systems-uri"])
     if response['ret'] is False:
@@ -40,7 +45,6 @@ def set_power_status(conn, options):
     }[options["--action"]]
 
     payload = {'ResetType': action}
-    headers = {'content-type': 'application/json'}
 
     # Search for 'Actions' key and extract URI from it
     response = send_get_request(options, options["--systems-uri"])
@@ -49,7 +53,7 @@ def set_power_status(conn, options):
     data = response['data']
     action_uri = data["Actions"]["#ComputerSystem.Reset"]["target"]
 
-    response = send_post_request(options, action_uri, payload, headers)
+    response = send_post_request(options, action_uri, payload)
     if response['ret'] is False:
         fail_usage("Error sending power command")
     return
@@ -58,17 +62,18 @@ def send_get_request(options, uri):
     full_uri = "https://" + options["--ip"] + ":" + str(options["--ipport"]) + uri
     try:
         resp = requests.get(full_uri, verify=not "--ssl-insecure" in options,
+                            headers=GET_HEADERS,
                             auth=(options["--username"], options["--password"]))
         data = resp.json()
     except Exception as e:
         fail_usage("Failed: send_get_request: " + str(e))
     return {'ret': True, 'data': data}
 
-def send_post_request(options, uri, payload, headers):
+def send_post_request(options, uri, payload):
     full_uri = "https://" + options["--ip"] + ":" + str(options["--ipport"]) + uri
     try:
         requests.post(full_uri, data=json.dumps(payload),
-                      headers=headers, verify=not "--ssl-insecure" in options,
+                      headers=POST_HEADERS, verify=not "--ssl-insecure" in options,
                       auth=(options["--username"], options["--password"]))
     except Exception as e:
         fail_usage("Failed: send_post_request: " + str(e))
