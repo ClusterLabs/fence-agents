@@ -86,6 +86,9 @@ def create_command(options, action):
 	if "--hexadecimal-kg" in options:
 		Cmd.append(" -y " + options["--hexadecimal-kg"])
 
+	if "--ipmitool-timeout" in options:
+		Cmd.append(" -N " + options["--ipmitool-timeout"])
+
 	# --action / -o
 	Cmd.append(" chassis power " + action)
 
@@ -138,6 +141,15 @@ def define_new_opts():
 		"default" : "@IPMITOOL_PATH@",
 		"order": 200
 	}
+	all_opt["ipmitool_timeout"] = {
+		"getopt" : ":",
+		"longopt" : "ipmitool-timeout",
+		"help" : "--ipmitool-timeout=[timeout]         Timeout (sec) for IPMI operation",
+		"required" : "0",
+		"shortdesc" : "Timeout (sec) for IPMI operation",
+		"default" : "2",
+		"order": 201
+	}
 	all_opt["target"] = {
 		"getopt" : ":",
 		"longopt" : "target",
@@ -160,7 +172,7 @@ def main():
 
 	device_opt = ["ipaddr", "login", "no_login", "no_password", "passwd",
 		"diag", "lanplus", "auth", "cipher", "privlvl", "sudo",
-		"ipmitool_path", "method", "target", "hexadecimal_kg"]
+		"ipmitool_path", "ipmitool_timeout", "method", "target", "hexadecimal_kg"]
 	define_new_opts()
 
 	all_opt["power_wait"]["default"] = 2

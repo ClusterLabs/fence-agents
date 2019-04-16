@@ -189,6 +189,11 @@
 		<content type="second" default="3"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
 	</parameter>
+	<parameter name="ipmitool_timeout" unique="0" required="0">
+		<getopt mixed="--ipmitool-timeout=[timeout]" />
+		<content type="string" default="2"  />
+		<shortdesc lang="en">Timeout (sec) for IPMI operation</shortdesc>
+	</parameter>
 	<parameter name="retry_on" unique="0" required="0">
 		<getopt mixed="--retry-on=[attempts]" />
 		<content type="integer" default="1"  />
