@@ -9,7 +9,8 @@ from fencing import *
 from fencing import fail, EC_FETCH_VM_UUID, run_delay
 
 RE_GET_ID = re.compile("<vm( .*)? id=\"(.*?)\"", re.IGNORECASE)
-RE_STATUS = re.compile("<state>(.*?)</state>", re.IGNORECASE)
+RE_STATUS = re.compile("<status>(.*?)</status>", re.IGNORECASE)
+RE_STATE = re.compile("<state>(.*?)</state>", re.IGNORECASE)
 RE_GET_NAME = re.compile("<name>(.*?)</name>", re.IGNORECASE)
 
 def get_power_status(conn, options):
@@ -25,7 +26,10 @@ def get_power_status(conn, options):
 
 	options["id"] = result.group(2)
 
-	result = RE_STATUS.search(res)
+	if tuple(map(int, options["--api-version"].split(".")))[0] > 3:
+		result = RE_STATUS.search(res)
+	else:
+		result = RE_STATE.search(res)
 	if result == None:
 		# We were able to parse ID so output is correct
 		# in some cases it is possible that RHEV-M output does not
@@ -59,7 +63,10 @@ def get_list(conn, options):
 		lines = res.split("<vm ")
 		for i in range(1, len(lines)):
 			name = RE_GET_NAME.search(lines[i]).group(1)
-			status = RE_STATUS.search(lines[i]).group(1)
+			if tuple(map(int, options["--api-version"].split(".")))[0] > 3:
+				status = RE_STATUS.search(lines[i]).group(1)
+			else:
+				status = RE_STATE.search(lines[i]).group(1)
 			outlets[name] = ("", status)
 	except AttributeError:
 		return {}
@@ -69,6 +76,13 @@ def get_list(conn, options):
 	return outlets
 
 def send_command(opt, command, method="GET"):
+	if opt["--api-version"] == "auto":
+		opt["--api-version"] = "4"
+		res = send_command(opt, "")
+		if re.search("<title>Error</title>", res):
+			opt["--api-version"] = "3"
+		logging.debug("auto-detected API version: " + opt["--api-version"])
+
 	## setup correct URL
 	if "--ssl" in opt or "--ssl-secure" in opt or "--ssl-insecure" in opt:
 		url = "https:"
@@ -90,7 +104,7 @@ def send_command(opt, command, method="GET"):
 	web_buffer = io.BytesIO()
 	conn.setopt(pycurl.URL, url.encode("UTF-8"))
 	conn.setopt(pycurl.HTTPHEADER, [
-		"Version: 3",
+		"Version: {}".format(opt["--api-version"]),
 		"Content-type: application/xml",
 		"Accept: application/xml",
 		"Prefer: persistent-auth",
@@ -130,8 +144,9 @@ def send_command(opt, command, method="GET"):
 
 	result = web_buffer.getvalue().decode("UTF-8")
 
-	logging.debug("%s\n", command)
-	logging.debug("%s\n", result)
+	logging.debug("url: %s\n", url)
+	logging.debug("command: %s\n", command)
+	logging.debug("result: %s\n", result)
 
 	return result
 
@@ -151,6 +166,15 @@ def define_new_opts():
 		"required" : "0",
 		"shortdesc" : "Reuse cookies for authentication",
 		"order" : 1}
+	all_opt["api_version"] = {
+		"getopt" : ":",
+		"longopt" : "api-version",
+		"help" : "--api-version                  "
+			"Version of RHEV API (default: auto)",
+		"required" : "0",
+		"order" : 2,
+		"default" : "auto",
+	}
 	all_opt["api_path"] = {
 		"getopt" : ":",
 		"longopt" : "api-path",
@@ -158,20 +182,19 @@ def define_new_opts():
 		"default" : "/ovirt-engine/api",
 		"required" : "0",
 		"shortdesc" : "The path part of the API URL",
-		"order" : 2}
+		"order" : 3}
 	all_opt["disable_http_filter"] = {
 		"getopt" : "",
 		"longopt" : "disable-http-filter",
 		"help" : "--disable-http-filter          Set HTTP Filter header to false",
 		"required" : "0",
 		"shortdesc" : "Set HTTP Filter header to false",
-		"order" : 3}
+		"order" : 4}
 
 
 def main():
 	device_opt = [
 		"ipaddr",
-		"api_path",
 		"login",
 		"passwd",
 		"ssl",
@@ -179,6 +202,8 @@ def main():
 		"web",
 		"port",
 		"use_cookies",
+		"api_version",
+		"api_path",
 		"disable_http_filter",
 	]
 
@@ -186,6 +211,7 @@ def main():
 	define_new_opts()
 
 	all_opt["power_wait"]["default"] = "1"
+	all_opt["shell_timeout"]["default"] = "5"
 
 	options = check_input(device_opt, process_input(device_opt))
 
