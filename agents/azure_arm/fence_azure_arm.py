@@ -114,8 +114,8 @@ def set_power_status(clients, options):
                 azure_fence.set_network_state(compute_client, network_client, rgName, vmName, "unblock")
 
         if (options["--action"]=="off"):
-            logging.info("Deallocating " + vmName + " in resource group " + rgName)
-            compute_client.virtual_machines.deallocate(rgName, vmName)
+            logging.info("Poweroff " + vmName + " in resource group " + rgName)
+            compute_client.virtual_machines.power_off(rgName, vmName, skip_shutdown=True)
         elif (options["--action"]=="on"):
             logging.info("Starting " + vmName + " in resource group " + rgName)
             compute_client.virtual_machines.start(rgName, vmName)
@@ -199,7 +199,7 @@ def main():
 
     docs = {}
     docs["shortdesc"] = "Fence agent for Azure Resource Manager"
-    docs["longdesc"] = "Used to deallocate virtual machines and to report power state of virtual machines running in Azure. It uses Azure SDK for Python to connect to Azure.\
+    docs["longdesc"] = "fence_azure_arm is an I/O Fencing agent for Azure Resource Manager. It uses Azure SDK for Python to connect to Azure.\
 \n.P\n\
 For instructions to setup credentials see: https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal\
 \n.P\n\
