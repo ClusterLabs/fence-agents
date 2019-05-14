@@ -98,6 +98,11 @@
 		<content type="string"  />
 		<shortdesc lang="en">Login name</shortdesc>
 	</parameter>
+	<parameter name="api_version" unique="0" required="0">
+		<getopt mixed="--api-version" />
+		<content type="string" default="auto"  />
+		<shortdesc lang="en">Version of RHEV API (default: auto)</shortdesc>
+	</parameter>
 	<parameter name="api_path" unique="0" required="0">
 		<getopt mixed="--api-path=[path]" />
 		<shortdesc lang="en">The path part of the API URL</shortdesc>
@@ -164,7 +169,7 @@
 	</parameter>
 	<parameter name="shell_timeout" unique="0" required="0">
 		<getopt mixed="--shell-timeout=[seconds]" />
-		<content type="second" default="3"  />
+		<content type="second" default="5"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
 	</parameter>
 	<parameter name="retry_on" unique="0" required="0">
