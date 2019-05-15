@@ -6,6 +6,7 @@ import re
 import os
 import logging
 import atexit
+import ctypes
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import fail_usage, run_command, atexit_handler, check_input, process_input, show_docs
 from fencing import fence_action, all_opt, run_delay
