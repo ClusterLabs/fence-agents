@@ -144,9 +144,9 @@ def send_command(opt, command, method="GET"):
 
 	result = web_buffer.getvalue().decode("UTF-8")
 
-	logging.debug("url: %s\n", url)
-	logging.debug("command: %s\n", command)
-	logging.debug("result: %s\n", result)
+	logging.debug("url: %s\n", url.encode("UTF-8"))
+	logging.debug("command: %s\n", command.encode("UTF-8"))
+	logging.debug("result: %s\n", result.encode("UTF-8"))
 
 	return result
 
