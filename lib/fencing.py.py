@@ -530,7 +530,7 @@ def fail_usage(message="", stop=True):
 		logging.error("Please use '-h' for usage\n")
 		sys.exit(EC_GENERIC_ERROR)
 
-def fail(error_code):
+def fail(error_code, stop=True):
 	message = {
 		EC_LOGIN_DENIED : "Unable to connect/login to fencing device",
 		EC_CONNECTION_LOST : "Connection lost",
@@ -546,7 +546,8 @@ def fail(error_code):
 
 	}[error_code] + "\n"
 	logging.error("%s\n", message)
-	sys.exit(EC_GENERIC_ERROR)
+	if stop:
+		sys.exit(EC_GENERIC_ERROR)
 
 def usage(avail_opt):
 	print("Usage:")
@@ -1009,7 +1010,7 @@ def run_command(options, command, timeout=None, env=None, log_command=None):
 	thread.join(timeout)
 	if thread.is_alive():
 		process.kill()
-		fail(EC_TIMED_OUT)
+		fail(EC_TIMED_OUT, stop=(int(options.get("retry", 0)) < 1))
 
 	status = process.wait()
 
