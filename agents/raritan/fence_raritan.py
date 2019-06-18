@@ -59,7 +59,7 @@ block any necessary fencing actions."
 	## We can not use fence_login(), username and passwd are sent on one line
 	####
 	try:
-		conn = fspawn(options, options["--telnet-path"])
+		conn = fspawn(options, options["--telnet-path"], encoding="latin1")
 		conn.send("set binary\n")
 		conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
 		conn.read_nonblocking(size=100, timeout=int(options["--shell-timeout"]))
