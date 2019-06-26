@@ -8,7 +8,7 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, run_delay, EC_LOGIN_DENIED, EC_STATUS
 
-state = {"POWERED_ON": "on", 'POWERED_OFF': "off"}
+state = {"POWERED_ON": "on", 'POWERED_OFF': "off", 'SUSPENDED': "off"}
 
 def get_power_status(conn, options):
 	res = send_command(conn, "vcenter/vm?filter.names={}".format(options["--plug"]))["value"]
