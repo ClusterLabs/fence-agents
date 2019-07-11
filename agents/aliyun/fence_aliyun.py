@@ -10,7 +10,7 @@ from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay
 
 try:
 	from aliyunsdkcore import client
-
+	from aliyunsdkcore.auth.credentials import EcsRamRoleCredential
 	from aliyunsdkecs.request.v20140526.DescribeInstancesRequest import DescribeInstancesRequest
 	from aliyunsdkecs.request.v20140526.StartInstanceRequest import StartInstanceRequest
 	from aliyunsdkecs.request.v20140526.StopInstanceRequest import StopInstanceRequest
@@ -123,9 +123,9 @@ def define_new_opts():
 		"order" : 4
 	}
 	all_opt["ram_role"] = {
-		"getopt": "m:",
+		"getopt": ":",
 		"longopt": "ram-role",
-		"help": "-m, --ram-role=[name]        Ram Role",
+		"help": "--ram-role=[name]        Ram Role",
 		"shortdesc": "Ram Role.",
 		"required": "0",
 		"order": 5
