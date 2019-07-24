@@ -123,9 +123,9 @@ def define_new_opts():
 		"order" : 4
 	}
 	all_opt["ram_role"] = {
-		"getopt": "m:",
+		"getopt": ":",
 		"longopt": "ram-role",
-		"help": "-m, --ram-role=[name]        Ram Role",
+		"help": "--ram-role=[name]        Ram Role",
 		"shortdesc": "Ram Role.",
 		"required": "0",
 		"order": 5
