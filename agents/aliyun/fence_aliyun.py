@@ -15,6 +15,7 @@ try:
 	from aliyunsdkecs.request.v20140526.StartInstanceRequest import StartInstanceRequest
 	from aliyunsdkecs.request.v20140526.StopInstanceRequest import StopInstanceRequest
 	from aliyunsdkecs.request.v20140526.RebootInstanceRequest import RebootInstanceRequest
+	from aliyunsdkcore.profile import region_provider
 except ImportError:
 	pass
 
@@ -121,12 +122,20 @@ def define_new_opts():
 		"required" : "0",
 		"order" : 4
 	}
+	all_opt["ram_role"] = {
+		"getopt": ":",
+		"longopt": "ram-role",
+		"help": "--ram-role=[name]        Ram Role",
+		"shortdesc": "Ram Role.",
+		"required": "0",
+		"order": 5
+	}
 
 # Main agent method
 def main():
 	conn = None
 
-	device_opt = ["port", "no_password", "region", "access_key", "secret_key"]
+	device_opt = ["port", "no_password", "region", "access_key", "secret_key", "ram_role"]
 
 	atexit.register(atexit_handler)
 
@@ -144,13 +153,18 @@ def main():
 
 	run_delay(options)
 
-	if "--region" in options and "--access-key" in options and "--secret-key" in options:  
+	if "--region" in options:
 		region = options["--region"]
-		access_key = options["--access-key"]
-		secret_key = options["--secret-key"]
-		conn = client.AcsClient(access_key, secret_key, region)
-
-
+		if "--access-key" in options and "--secret-key" in options:
+			access_key = options["--access-key"]
+			secret_key = options["--secret-key"]
+			conn = client.AcsClient(access_key, secret_key, region)
+		elif "--ram-role" in options:
+			ram_role = options["--ram-role"]
+			role = EcsRamRoleCredential(ram_role)
+			conn = client.AcsClient(region_id=region, credential=role)
+		region_provider.modify_point('Ecs', region, 'ecs.%s.aliyuncs.com' % region)
+		
 	# Operate the fencing device
 	result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list)
 	sys.exit(result)
