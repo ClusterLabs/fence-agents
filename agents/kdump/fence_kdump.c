@@ -206,12 +206,12 @@ do_action_metadata (const char *self)
     fprintf (stdout, "<resource-agent name=\"%s\"", basename (self));
     fprintf (stdout, " shortdesc=\"fencing agent for use with kdump crash recovery service\">\n");
     fprintf (stdout, "<longdesc>");
-    fprintf (stdout, "\\fIfence_kdump\\fP is an I/O fencing agent to be used with the kdump\n"
-                     "crash recovery service. When the \\fIfence_kdump\\fP agent is invoked,\n"
+    fprintf (stdout, "fence_kdump is an I/O fencing agent to be used with the kdump\n"
+                     "crash recovery service. When the fence_kdump agent is invoked,\n"
                      "it will listen for a message from the failed node that acknowledges\n"
                      "that the failed node it executing the kdump crash kernel.\n"
-                     "Note that \\fIfence_kdump\\fP is not a replacement for traditional\n"
-                     "fencing methods. The \\fIfence_kdump\\fP agent can only detect that a\n"
+                     "Note that fence_kdump is not a replacement for traditional\n"
+                     "fencing methods. The fence_kdump agent can only detect that a\n"
                      "node has entered the kdump crash recovery service. This allows the\n"
                      "kdump crash recovery service complete without being preempted by\n"
                      "traditional power fencing methods.\n\n"
@@ -227,7 +227,7 @@ do_action_metadata (const char *self)
     fprintf (stdout, "<parameters>\n");
 
     fprintf (stdout, "\t<parameter name=\"nodename\" unique=\"0\" required=\"0\">\n");
-    fprintf (stdout, "\t\t<getopt mixed=\"-n, --nodename=\\fINODE\\fP\" />\n");
+    fprintf (stdout, "\t\t<getopt mixed=\"-n, --nodename=NODE\" />\n");
     fprintf (stdout, "\t\t<content type=\"string\" />\n");
     fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
              "Name or IP address of node to be fenced. This option is required for\n"
@@ -235,36 +235,36 @@ do_action_metadata (const char *self)
     fprintf (stdout, "\t</parameter>\n");
 
     fprintf (stdout, "\t<parameter name=\"ipport\" unique=\"0\" required=\"0\">\n");
-    fprintf (stdout, "\t\t<getopt mixed=\"-p, --ipport=\\fIPORT\\fP\" />\n");
+    fprintf (stdout, "\t\t<getopt mixed=\"-p, --ipport=PORT\" />\n");
     fprintf (stdout, "\t\t<content type=\"string\" default=\"7410\" />\n");
     fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
-             "IP port number that the \\fIfence_kdump\\fP agent will use to listen for\n"
+             "IP port number that the fence_kdump agent will use to listen for\n"
              "messages.");
     fprintf (stdout, "\t</parameter>\n");
 
     fprintf (stdout, "\t<parameter name=\"family\" unique=\"0\" required=\"0\">\n");
-    fprintf (stdout, "\t\t<getopt mixed=\"-f, --family=\\fIFAMILY\\fP\" />\n");
+    fprintf (stdout, "\t\t<getopt mixed=\"-f, --family=FAMILY\" />\n");
     fprintf (stdout, "\t\t<content type=\"string\" default=\"auto\" />\n");
     fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
-             "IP network family. Force the \\fIfence_kdump\\fP agent to use a specific\n"
-             "family. The value for \\fIFAMILY\\fP can be \"auto\", \"ipv4\", or\n"
+             "IP network family. Force the fence_kdump agent to use a specific\n"
+             "family. The value for FAMILY can be \"auto\", \"ipv4\", or\n"
              "\"ipv6\".");
     fprintf (stdout, "\t</parameter>\n");
 
     fprintf (stdout, "\t<parameter name=\"action\" unique=\"0\" required=\"0\">\n");
-    fprintf (stdout, "\t\t<getopt mixed=\"-o, --action=\\fIACTION\\fP\" />\n");
+    fprintf (stdout, "\t\t<getopt mixed=\"-o, --action=ACTION\" />\n");
     fprintf (stdout, "\t\t<content type=\"string\" default=\"off\" />\n");
     fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
-             "Fencing action to perform. The value for \\fIACTION\\fP can be either\n"
+             "Fencing action to perform. The value for ACTION can be either\n"
              "\"off\" or \"metadata\".");
     fprintf (stdout, "\t</parameter>\n");
 
     fprintf (stdout, "\t<parameter name=\"timeout\" unique=\"0\" required=\"0\">\n");
-    fprintf (stdout, "\t\t<getopt mixed=\"-t, --timeout=\\fITIMEOUT\\fP\" />\n");
+    fprintf (stdout, "\t\t<getopt mixed=\"-t, --timeout=TIMEOUT\" />\n");
     fprintf (stdout, "\t\t<content type=\"string\" default=\"60\" />\n");
     fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
              "Number of seconds to wait for message from failed node. If no message\n"
-             "is received within \\fITIMEOUT\\fP seconds, the \\fIfence_kdump\\fP agent\n"
+             "is received within TIMEOUT seconds, the fence_kdump agent\n"
              "returns failure.");
     fprintf (stdout, "\t</parameter>\n");
 

@@ -572,7 +572,7 @@ def metadata(options, avail_opt, docs):
 	sorted_list.sort(key=lambda x: (x[1]["order"], x[0]))
 
 	if options["--action"] == "metadata":
-		docs["longdesc"] = re.sub("\.P|\.TP|\.br\n", "", docs["longdesc"])
+               docs["longdesc"] = re.sub("\\\\f[BPIR]|\.P|\.TP|\.br\n", "", docs["longdesc"])
 
 	print("<?xml version=\"1.0\" ?>")
 	print("<resource-agent name=\"" + os.path.basename(sys.argv[0]) + \

@@ -1,37 +1,54 @@
 <?xml version="1.0" ?>
-<resource-agent name="fence_kdump" shortdesc="Fence agent for use with kdump">
-<longdesc>The fence_kdump agent is intended to be used with with kdump service.</longdesc>
+<resource-agent name="fence_kdump" shortdesc="fencing agent for use with kdump crash recovery service">
+<longdesc>fence_kdump is an I/O fencing agent to be used with the kdump
+crash recovery service. When the fence_kdump agent is invoked,
+it will listen for a message from the failed node that acknowledges
+that the failed node it executing the kdump crash kernel.
+Note that fence_kdump is not a replacement for traditional
+fencing methods. The fence_kdump agent can only detect that a
+node has entered the kdump crash recovery service. This allows the
+kdump crash recovery service complete without being preempted by
+traditional power fencing methods.
+
+Note: the "off" action listen for message from failed node that
+acknowledges node has entered kdump crash recovery service. If a valid
+message is received from the failed node, the node is considered to be
+fenced and the agent returns success. Failure to receive a valid
+message from the failed node in the given timeout period results in
+fencing failure.</longdesc>
 <vendor-url>http://www.kernel.org/pub/linux/utils/kernel/kexec/</vendor-url>
 <parameters>
 	<parameter name="nodename" unique="0" required="0">
-		<getopt mixed="-n, --nodename" />
+		<getopt mixed="-n, --nodename=NODE" />
 		<content type="string" />
-		<shortdesc lang="en">Name or IP address of node to be fenced</shortdesc>
+		<shortdesc lang="en">Name or IP address of node to be fenced. This option is required for
+the "off" action.</shortdesc>
 	</parameter>
 	<parameter name="ipport" unique="0" required="0">
-		<getopt mixed="-p, --ipport" />
+		<getopt mixed="-p, --ipport=PORT" />
 		<content type="string" default="7410" />
-		<shortdesc lang="en">Port number</shortdesc>
+		<shortdesc lang="en">IP port number that the fence_kdump agent will use to listen for
+messages.</shortdesc>
 	</parameter>
 	<parameter name="family" unique="0" required="0">
-		<getopt mixed="-f, --family" />
+		<getopt mixed="-f, --family=FAMILY" />
 		<content type="string" default="auto" />
-		<shortdesc lang="en">Network family</shortdesc>
+		<shortdesc lang="en">IP network family. Force the fence_kdump agent to use a specific
+family. The value for FAMILY can be "auto", "ipv4", or
+"ipv6".</shortdesc>
 	</parameter>
 	<parameter name="action" unique="0" required="0">
-		<getopt mixed="-o, --action" />
+		<getopt mixed="-o, --action=ACTION" />
 		<content type="string" default="off" />
-		<shortdesc lang="en">Fencing action</shortdesc>
+		<shortdesc lang="en">Fencing action to perform. The value for ACTION can be either
+"off" or "metadata".</shortdesc>
 	</parameter>
 	<parameter name="timeout" unique="0" required="0">
-		<getopt mixed="-t, --timeout" />
+		<getopt mixed="-t, --timeout=TIMEOUT" />
 		<content type="string" default="60" />
-		<shortdesc lang="en">Timeout in seconds</shortdesc>
-	</parameter>
-	<parameter name="quiet" unique="0" required="0">
-		<getopt mixed="-q, --quiet" />
-		<content type="boolean"  />
-		<shortdesc lang="en">Disable logging to stderr. Does not affect --verbose or --debug-file or logging to syslog.</shortdesc>
+		<shortdesc lang="en">Number of seconds to wait for message from failed node. If no message
+is received within TIMEOUT seconds, the fence_kdump agent
+returns failure.</shortdesc>
 	</parameter>
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
@@ -53,5 +70,6 @@
 	<action name="off" />
 	<action name="monitor" />
 	<action name="metadata" />
+	<action name="validate-all" />
 </actions>
 </resource-agent>
