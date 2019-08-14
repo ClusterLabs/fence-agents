@@ -55,7 +55,7 @@
 	</parameter>
 	<parameter name="region_name" unique="0" required="0">
 		<getopt mixed="--region-name=[region]" />
-		<content type="boolean" default=""  />
+		<content type="string" default=""  />
 		<shortdesc lang="en">Region Name</shortdesc>
 	</parameter>
 	<parameter name="tenant_name" unique="0" required="0">

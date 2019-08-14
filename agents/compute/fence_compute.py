@@ -381,7 +381,7 @@ def define_new_opts():
 		"order": 1,
 	}
 	all_opt["region_name"] = {
-		"getopt" : "",
+		"getopt" : ":",
 		"longopt" : "region-name",
 		"help" : "--region-name=[region]         Region Name",
 		"required" : "0",
