@@ -14,7 +14,8 @@ MAINTAINERCLEANFILES	= Makefile.in aclocal.m4 configure depcomp \
 SPEC			= $(PACKAGE_NAME).spec
 
 TARFILES		= $(PACKAGE_NAME)-$(VERSION).tar.bz2 \
-			  $(PACKAGE_NAME)-$(VERSION).tar.gz
+			  $(PACKAGE_NAME)-$(VERSION).tar.gz \
+			  $(PACKAGE_NAME)-$(VERSION).tar.xz
 
 ACLOCAL_AMFLAGS		= -I m4
 
@@ -123,4 +124,4 @@ rpm: clean
 	rpmbuild $(RPMBUILDOPTS) -ba $(SPEC)
 
 clean-generic:
-	rm -rf $(SPEC) $(TARFILES)
+	rm -rf $(SPEC) $(TARFILES) $(PACKAGE_NAME)-$(VERSION) *.rpm

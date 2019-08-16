@@ -1,7 +1,7 @@
 ###############################################################################
 ###############################################################################
 ##
-##  Copyright (C) 2018 Red Hat, Inc.  All rights reserved.
+##  Copyright (C) 2019 Red Hat, Inc.  All rights reserved.
 ##
 ##  This copyrighted material is made available to anyone wishing to use,
 ##  modify, copy, or redistribute it subject to the terms and conditions
@@ -16,7 +16,7 @@
 %global dirty @dirty@
 
 Name: fence-agents
-Summary: Fence Agents for Red Hat Cluster
+Summary: Set of unified programs capable of host isolation ("fencing")
 Version: @version@
 Release: @specver@%{?rcver:%{rcver}}%{?numcomm:.%{numcomm}}%{?alphatag:.%{alphatag}}%{?dirty:.%{dirty}}%{?dist}
 License: GPLv2+ and LGPLv2+
@@ -25,36 +25,101 @@ URL: https://github.com/ClusterLabs/fence-agents
 Source0: %{name}-%{version}%{?rcver:%{rcver}}%{?numcomm:.%{numcomm}}%{?alphatag:-%{alphatag}}%{?dirty:-%{dirty}}.tar.bz2
 
 %if 0%{?fedora} || 0%{?rhel} > 7
-%global testagents zvm virsh raritan rcd_serial
-%global allfenceagents fence-agents-alom fence-agents-amt fence-agents-amt-ws fence-agents-apc fence-agents-apc-snmp fence-agents-aws fence-agents-azure-arm fence-agents-bladecenter fence-agents-brocade fence-agents-cisco-mds fence-agents-cisco-ucs fence-agents-compute fence-agents-docker fence-agents-drac fence-agents-drac5 fence-agents-eaton-snmp fence-agents-emerson fence-agents-eps fence-agents-gce fence-agents-hds-cb fence-agents-heuristics-ping fence-agents-hpblade fence-agents-ibmblade fence-agents-ifmib fence-agents-ilo2 fence-agents-ilo-mp fence-agents-ilo-ssh fence-agents-ilo-moonshot fence-agents-mpath fence-agents-intelmodular fence-agents-ipdu fence-agents-ipmilan fence-agents-ironic fence-agents-kdump fence-agents-ldom fence-agents-lpar fence-agents-netio fence-agents-ovh fence-agents-rhevm fence-agents-rsa fence-agents-rsb fence-agents-sanbox2 fence-agents-sbd fence-agents-scsi fence-agents-vbox fence-agents-vmware fence-agents-vmware-rest fence-agents-vmware-soap fence-agents-vmware-vcloud fence-agents-wti fence-agents-xenapi fence-agents-zvm
+# skipped: pve, raritan, rcd-serial, virsh
+%global allfenceagents %(cat <<EOF
+fence-agents-alom \\
+fence-agents-amt \\
+fence-agents-amt-ws \\
+fence-agents-apc \\
+fence-agents-apc-snmp \\
+fence-agents-aws \\
+fence-agents-azure-arm \\
+fence-agents-bladecenter \\
+fence-agents-brocade \\
+fence-agents-cisco-mds \\
+fence-agents-cisco-ucs \\
+fence-agents-compute \\
+fence-agents-docker \\
+fence-agents-drac \\
+fence-agents-drac5 \\
+fence-agents-eaton-snmp \\
+fence-agents-emerson \\
+fence-agents-eps \\
+fence-agents-gce \\
+fence-agents-hds-cb \\
+fence-agents-heuristics-ping \\
+fence-agents-hpblade \\
+fence-agents-ibmblade \\
+fence-agents-ifmib \\
+fence-agents-ilo-moonshot \\
+fence-agents-ilo-mp \\
+fence-agents-ilo-ssh \\
+fence-agents-ilo2 \\
+fence-agents-intelmodular \\
+fence-agents-ipdu \\
+fence-agents-ipmilan \\
+fence-agents-ironic \\
+fence-agents-kdump \\
+fence-agents-ldom \\
+fence-agents-lpar \\
+fence-agents-mpath \\
+fence-agents-netio \\
+fence-agents-ovh \\
+fence-agents-redfish \\
+fence-agents-rhevm \\
+fence-agents-rsa \\
+fence-agents-rsb \\
+fence-agents-sanbox2 \\
+fence-agents-sbd \\
+fence-agents-scsi \\
+fence-agents-vbox \\
+fence-agents-vmware \\
+fence-agents-vmware-rest \\
+fence-agents-vmware-soap \\
+fence-agents-vmware-vcloud \\
+fence-agents-wti \\
+fence-agents-xenapi \\
+fence-agents-zvm \\
+
+EOF)
 %endif
-
-## Setup/build bits
-
 
 # Build dependencies
-BuildRequires: glibc-devel
-BuildRequires: gnutls-utils
-BuildRequires: libxslt
-BuildRequires: python3-pexpect python3-pycurl python3-suds python3-requests openwsman-python3 python3-boto3 python3-google-api-client
+## general
 BuildRequires: autoconf automake libtool
+## compiled code (-kdump)
+BuildRequires: gcc
+## man pages generating
+BuildRequires: libxslt
+## establishing proper paths to particular programs
+BuildRequires: gnutls-utils
+## Python dependencies
+BuildRequires: python3-devel
+BuildRequires: python3-pexpect python3-pycurl python3-requests
+BuildRequires: python3-suds openwsman-python3 python3-boto3
+BuildRequires: python3-google-api-client
+
+# turn off the brp-python-bytecompile script
+# (for F28+ or equivalent, the latter is the preferred form)
+%global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompilespace:.*$!!g')
+#undefine __brp_python_bytecompile
 
 %prep
-%if 0%{?suse_version} == 0 && 0%{?fedora} == 0 && 0%{?centos_ver} == 0 && 0%{?rhel} == 0
-%{error:Unable to determine the distribution/version. This is generally caused by missing /etc/rpm/macros.dist. Please install the correct build packages or define the required macros manually.}
-exit 1
-%endif
-%setup -q -n %{name}-%{version}%{?rcver:%{rcver}}%{?numcomm:.%{numcomm}}%{?alphatag:-%{alphatag}}%{?dirty:-%{dirty}}
+%setup -q -n %{name}-%{version}
 %autopatch -p1
+# prevent compilation of something that won't get used anyway
+sed -i.orig 's|FENCE_ZVM=1|FENCE_ZVM=0|' configure.ac
 
 %build
 ./autogen.sh
-export PYTHON="/usr/bin/python3" %{configure}
+%{configure} PYTHON="%{__python3}"
 CFLAGS="$(echo '%{optflags}')" make %{_smp_mflags}
 
 %install
-rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
+# bytecompile Python source code in a non-standard location
+%py_byte_compile %{__python3} %{buildroot}%{_datadir}/fence
+# XXX unsure if /usr/sbin/fence_* should be compiled as well
 
 ## tree fix up
 # fix libfence permissions
@@ -66,204 +131,202 @@ rm -rf %{buildroot}/usr/share/doc/fence-agents
 ccs_update_schema > /dev/null 2>&1 ||:
 
 %description
-Red Hat Fence Agents is a collection of scripts to handle remote
-power management for several devices.
+A collection of executables to handle isolation ("fencing") of possibly
+misbehaving hosts by the means of remote power management, blocking
+network, storage, or similar. They operate through a unified interface
+(calling conventions) devised for the original Red Hat clustering solution.
 
 %package common
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
-Summary: Common utilities for fence agents
+Summary: Common base for Fence Agents
 Requires: python3-pexpect python3-pycurl
+BuildArch: noarch
 %description common
-Red Hat Fence Agents is a collection of scripts and libraries to handle remote power management for various devices.
+A collection of executables to handle isolation ("fencing") of possibly
+misbehaving hosts by the means of remote power management, blocking
+network, storage, or similar.
+
+This package contains support files including the Python fencing library.
 %files common
-%defattr(-,root,root,-)
 %doc doc/COPYING.* doc/COPYRIGHT doc/README.licence
 %{_datadir}/fence
+%exclude %{_datadir}/fence/azure_fence.*
+%exclude %{_datadir}/fence/__pycache__/azure_fence.*
+%exclude %{_datadir}/fence/XenAPI.*
+%exclude %{_datadir}/fence/__pycache__/XenAPI.*
 %{_datadir}/cluster
-%{_datadir}/fence/fencing.py
-%{_datadir}/fence/fencing_snmp.py
 %exclude %{_datadir}/cluster/fence_scsi_check*
-%exclude %{_sbindir}/fence_ack_manual
-%exclude %{_mandir}/man8/fence_ack_manual.8*
-%exclude %{_sbindir}/fence_dummy
-%exclude %{_mandir}/man8/fence_dummy.8*
-%exclude %{_sbindir}/fence_powerman
-%exclude %{_mandir}/man8/fence_powerman.8*
-%exclude %{_sbindir}/fence_zvm
-%exclude %{_mandir}/man8/fence_zvm.8*
-
+%exclude %{_sbindir}/*
+%exclude %{_mandir}/man8/*
 
 %package all
 License: GPLv2+, LGPLv2+ and ASL 2.0
-Group: System Environment/Base
-Summary: Fence agents
+Summary: Set of unified programs capable of host isolation ("fencing")
 Requires: %{allfenceagents}
 Provides: fence-agents = %{version}-%{release}
 Obsoletes: fence-agents < 3.1.13
+BuildArch: noarch
 %description all
-Red Hat Fence Agents is a collection of all supported fence agents.
+A collection of executables to handle isolation ("fencing") of possibly
+misbehaving hosts by the means of remote power management, blocking
+network, storage, or similar.
+
+This package serves as a catch-all for all supported fence agents.
 %files all
 
 %if 0%{?fedora} || 0%{?rhel} > 7
 %package alom
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for SUN ALOM
 Requires: telnet openssh-clients
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description alom
-Red Hat Fence Agents
+Fence agent for SUN ALOM.
 %files alom
-%defattr(-,root,root,-)
 %{_sbindir}/fence_alom
 %{_mandir}/man8/fence_alom.8*
 %endif
 
-%package apc
-License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
-Summary: Fence agent for APC devices
-Requires: telnet openssh-clients
-Requires: fence-agents-common = %{version}-%{release}
-%description apc
-The fence-agents-apc package contains a fence agent for APC devices that are accessed via telnet or SSH.
-%files apc
-%defattr(-,root,root,-)
-%{_sbindir}/fence_apc
-%{_mandir}/man8/fence_apc.8*
-
-%package apc-snmp
-License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
-Summary: Fence agent for APC devices (SNMP)
-Requires: net-snmp-utils
-Requires: fence-agents-common = %{version}-%{release}
-%description apc-snmp
-The fence-agents-apc-snmp package contains a fence agent for APC devices that are accessed via the SNMP protocol.
-%files apc-snmp
-%defattr(-,root,root,-)
-%{_sbindir}/fence_apc_snmp
-%{_mandir}/man8/fence_apc_snmp.8*
-%{_sbindir}/fence_tripplite_snmp
-%{_mandir}/man8/fence_tripplite_snmp.8*
-
 %package amt
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for Intel AMT devices
 Requires: amtterm
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description amt
-The fence-agents-amt package contains a fence agent for AMT compatibile devices that are accessed via 3rd party software.
+Fence agent for AMT compatibile devices that are accessed via
+3rd party software.
 %files amt
-%defattr(-,root,root,-)
 %{_sbindir}/fence_amt
 %{_mandir}/man8/fence_amt.8*
 
 %package amt-ws
 License: ASL 2.0
-Group: System Environment/Base
 Summary: Fence agent for Intel AMT (WS-Man) devices
-Requires: fence-agents-common >= %{version}-%{release}
+Requires: fence-agents-common = %{version}-%{release}
 Requires: openwsman-python3
+BuildArch: noarch
 %description amt-ws
-The fence-agents-amt-ws package contains a fence agent for AMT (WS-Man) devices.
+Fence agent for AMT (WS-Man) devices.
 %files amt-ws
-%defattr(-,root,root,-)
 %{_sbindir}/fence_amt_ws
 %{_mandir}/man8/fence_amt_ws.8*
 
+%package apc
+License: GPLv2+ and LGPLv2+
+Summary: Fence agent for APC devices
+Requires: telnet openssh-clients
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description apc
+Fence agent for APC devices that are accessed via telnet or SSH.
+%files apc
+%{_sbindir}/fence_apc
+%{_mandir}/man8/fence_apc.8*
+
+%package apc-snmp
+License: GPLv2+ and LGPLv2+
+Summary: Fence agents for APC devices (SNMP)
+Requires: net-snmp-utils
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description apc-snmp
+Fence agents for APC devices that are accessed via the SNMP protocol.
+%files apc-snmp
+%{_sbindir}/fence_apc_snmp
+%{_mandir}/man8/fence_apc_snmp.8*
+%{_sbindir}/fence_tripplite_snmp
+%{_mandir}/man8/fence_tripplite_snmp.8*
+
 %package aws
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for Amazon AWS
-Requires: fence-agents-common >= %{version}-%{release}
+Requires: fence-agents-common = %{version}-%{release}
 Requires: python3-boto3
+BuildArch: noarch
 Obsoletes: fence-agents
 %description aws
-The fence-agents-aws package contains a fence agent for Amazon AWS instances.
+Fence agent for Amazon AWS instances.
 %files aws
-%defattr(-,root,root,-)
 %{_sbindir}/fence_aws
 %{_mandir}/man8/fence_aws.8*
 
 %package azure-arm
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for Azure Resource Manager
-Requires: fence-agents-common >= %{version}-%{release}
+Requires: fence-agents-common = %{version}-%{release}
 Requires: python3-azure-sdk
+BuildArch: noarch
 Obsoletes: fence-agents
 %description azure-arm
-The fence-agents-azure-arm package contains a fence agent for Azure Resource Manager instances.
+Fence agent for Azure Resource Manager instances.
 %files azure-arm
-%defattr(-,root,root,-)
 %{_sbindir}/fence_azure_arm
+%{_datadir}/fence/azure_fence.py*
+%{_datadir}/fence/__pycache__/azure_fence.*
 %{_mandir}/man8/fence_azure_arm.8*
 
 %package bladecenter
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for IBM BladeCenter
 Requires: telnet openssh-clients
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description bladecenter
-The fence-agents-bladecenter package contains a fence agent for IBM BladeCenter devices that are accessed via telnet or SSH.
+Fence agent for IBM BladeCenter devices that are accessed
+via telnet or SSH.
 %files bladecenter
-%defattr(-,root,root,-)
 %{_sbindir}/fence_bladecenter
 %{_mandir}/man8/fence_bladecenter.8*
 
 %package brocade
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for Brocade switches
 Requires: telnet openssh-clients
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description brocade
-The fence-agents-bladecenter package contains a fence agent for Brocade devices that are accessed via telnet or SSH.
+Fence agent for Brocade devices that are accessed via telnet or SSH.
 %files brocade
-%defattr(-,root,root,-)
 %{_sbindir}/fence_brocade
 %{_mandir}/man8/fence_brocade.8*
 
 %package cisco-mds
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for Cisco MDS 9000 series
 Requires: net-snmp-utils
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description cisco-mds
-The fence-agents-cisco-mds package contains a fence agent for Cisco MDS 9000 series devices that are accessed via the SNMP protocol.
+Fence agent for Cisco MDS 9000 series devices that are accessed
+via the SNMP protocol.
 %files cisco-mds
-%defattr(-,root,root,-)
 %{_sbindir}/fence_cisco_mds
 %{_mandir}/man8/fence_cisco_mds.8*
 
 %package cisco-ucs
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for Cisco UCS series
 Requires: python3-pycurl
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description cisco-ucs
-The fence-agents-cisco-ucs package contains a fence agent for Cisco UCS series devices that are accessed via the SNMP protocol.
+Fence agent for Cisco UCS series devices that are accessed
+via the SNMP protocol.
 %files cisco-ucs
-%defattr(-,root,root,-)
 %{_sbindir}/fence_cisco_ucs
 %{_mandir}/man8/fence_cisco_ucs.8*
 
 %package compute
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for Nova compute nodes
 Requires: python3-requests
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description compute
-The fence-agents-compute package contains a fence agent for Nova compute nodes.
+Fence agent for Nova compute nodes.
 %files compute
-%defattr(-,root,root,-)
 %{_sbindir}/fence_compute
 %{_sbindir}/fence_evacuate
 %{_mandir}/man8/fence_compute.8*
@@ -271,259 +334,255 @@ The fence-agents-compute package contains a fence agent for Nova compute nodes.
 
 %package docker
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for Docker
 Requires: python3-pycurl
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description docker
-The fence-agents-docker package contains a fence agent for Docker images that are accessed over HTTP.
+Fence agent for Docker images that are accessed over HTTP.
 %files docker
-%defattr(-,root,root,-)
 %{_sbindir}/fence_docker
 %{_mandir}/man8/fence_docker.8*
 
 %if 0%{?fedora} || 0%{?rhel} > 7
 %package drac
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for Dell DRAC
 Requires: telnet
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description drac
-The fence-agents-drac package contains a fence agent for Dell DRAC IV series devices that are accessed via telnet.
+Fence agent for Dell DRAC IV series devices that are accessed
+via telnet.
 %files drac
-%defattr(-,root,root,-)
 %{_sbindir}/fence_drac
 %{_mandir}/man8/fence_drac.8*
 %endif
 
 %package drac5
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for Dell DRAC 5
 Requires: telnet openssh-clients
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description drac5
-The fence-agents-drac5 package contains a fence agent for Dell DRAC 5 series devices that are accessed via telnet or SSH.
+Fence agent for Dell DRAC 5 series devices that are accessed
+via telnet or SSH.
 %files drac5
-%defattr(-,root,root,-)
 %{_sbindir}/fence_drac5
 %{_mandir}/man8/fence_drac5.8*
 
 %package eaton-snmp
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for Eaton network power switches
 Requires: net-snmp-utils
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description eaton-snmp
-The fence-agents-eaton-snmp package contains a fence agent for Eaton network power switches that are accessed via the SNMP protocol.
+Fence agent for Eaton network power switches that are accessed
+via the SNMP protocol.
 %files eaton-snmp
-%defattr(-,root,root,-)
 %{_sbindir}/fence_eaton_snmp
 %{_mandir}/man8/fence_eaton_snmp.8*
 
 %package emerson
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for Emerson devices (SNMP)
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description emerson
-The fence-agents-emerson package contains a fence agent for Emerson devices that are accessed via the SNMP protocol.
+Fence agent for Emerson devices that are accessed via
+the SNMP protocol.
 %files emerson
-%defattr(-,root,root,-)
 %{_sbindir}/fence_emerson
 %{_mandir}/man8/fence_emerson.8*
 
 %package eps
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for ePowerSwitch 8M+ power switches
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description eps
-The fence-agents-eps package contains a fence agent for ePowerSwitch 8M+ power switches that are accessed via the HTTP(s) protocol.
+Fence agent for ePowerSwitch 8M+ power switches that are accessed
+via the HTTP(s) protocol.
 %files eps
-%defattr(-,root,root,-)
 %{_sbindir}/fence_eps
 %{_mandir}/man8/fence_eps.8*
 
 %if 0%{?fedora} || 0%{?rhel} > 7
 %package gce
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for GCE (Google Cloud Engine)
-Requires: fence-agents-common >= %{version}-%{release}
+Requires: fence-agents-common = %{version}-%{release}
 Requires: python3-google-api-client
+BuildArch: noarch
 Obsoletes: fence-agents
 %description gce
-The fence-agents-gce package contains a fence agent for GCE (Google Cloud Engine) instances.
+Fence agent for GCE (Google Cloud Engine) instances.
 %files gce
-%defattr(-,root,root,-)
 %{_sbindir}/fence_gce
 %{_mandir}/man8/fence_gce.8*
 %endif
 
+%if 0%{?fedora} || 0%{?rhel} > 7
+%package hds-cb
+License: GPLv2+ and LGPLv2+
+Summary: Fence agent for Hitachi Compute Blade systems
+Requires: telnet
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description hds-cb
+Fence agent for Hitachi Compute Blades that are accessed via telnet.
+%files hds-cb
+%{_sbindir}/fence_hds_cb
+%{_mandir}/man8/fence_hds_cb.8*
+%endif
+
 %package heuristics-ping
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
-Summary: Fence agent used to control other fence agents based on ping-heuristics
-Requires: fence-agents-common >= %{version}-%{release}
+Summary: Pseudo fence agent to affect other agents based on ping-heuristics
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 Obsoletes: fence-agents
 %description heuristics-ping
-The fence-agents-heuristics-ping package contains fence agent used to control other fence agents based on ping-heuristics
+Fence pseudo agent used to affect other agents based on
+ping-heuristics.
 %files heuristics-ping
-%defattr(-,root,root,-)
 %{_sbindir}/fence_heuristics_ping
 %{_mandir}/man8/fence_heuristics_ping.8*
 
 %package hpblade
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for HP BladeSystem devices
 Requires: telnet openssh-clients
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description hpblade
-The fence-agents-hpblade package contains a fence agent for HP BladeSystem devices that are accessed via telnet or SSH.
+Fence agent for HP BladeSystem devices that are accessed via telnet
+or SSH.
 %files hpblade
-%defattr(-,root,root,-)
 %{_sbindir}/fence_hpblade
 %{_mandir}/man8/fence_hpblade.8*
 
-%if 0%{?fedora} || 0%{?rhel} > 7
-%package hds-cb
-License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
-Summary: Fence agent for Hitachi Compute Blade systems
-Requires: telnet
-Requires: fence-agents-common = %{version}-%{release}
-%description hds-cb
-The fence-agents-hds-cb package contains a fence agent for Hitachi Compute Blades that are accessed via telnet.
-%files hds-cb
-%defattr(-,root,root,-)
-%{_sbindir}/fence_hds_cb
-%{_mandir}/man8/fence_hds_cb.8*
-%endif
-
 %package ibmblade
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for IBM BladeCenter
 Requires: net-snmp-utils
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description ibmblade
-The fence-agents-ibmblade package contains a fence agent for IBM BladeCenter devices that are accessed via the SNMP protocol.
+Fence agent for IBM BladeCenter devices that are accessed
+via the SNMP protocol.
 %files ibmblade
-%defattr(-,root,root,-)
 %{_sbindir}/fence_ibmblade
 %{_mandir}/man8/fence_ibmblade.8*
 
 %package ifmib
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for devices with IF-MIB interfaces
 Requires: net-snmp-utils
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description ifmib
-The fence-agents-ifmib package contains a fence agent for IF-MIB interfaces that are accessed via the SNMP protocol.
+Fence agent for IF-MIB interfaces that are accessed via
+the SNMP protocol.
 %files ifmib
-%defattr(-,root,root,-)
 %{_sbindir}/fence_ifmib
 %{_mandir}/man8/fence_ifmib.8*
 
 %package ilo2
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
-Summary: Fence agent for HP iLO2 devices
+Summary: Fence agents for HP iLO2 devices
 Requires: gnutls-utils
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description ilo2
-The fence-agents-ilo2 package contains a fence agent for HP iLO2 devices that are accessed via the HTTP(s) protocol.
+Fence agents for HP iLO2 devices that are accessed via
+the HTTP(s) protocol.
 %files ilo2
-%defattr(-,root,root,-)
 %{_sbindir}/fence_ilo
 %{_sbindir}/fence_ilo2
 %{_mandir}/man8/fence_ilo.8*
 %{_mandir}/man8/fence_ilo2.8*
 
-%package ilo-mp
-License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
-Summary: Fence agent for HP iLO MP devices
-Requires: telnet openssh-clients
-Requires: fence-agents-common = %{version}-%{release}
-%description ilo-mp
-The fence-agents-ilo-mp package contains a fence agent for HP iLO MP devices that are accessed via telnet or SSH.
-%files ilo-mp
-%defattr(-,root,root,-)
-%{_sbindir}/fence_ilo_mp
-%{_mandir}/man8/fence_ilo_mp.8*
-
 %package ilo-moonshot
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for HP iLO Moonshot devices
 Requires: telnet openssh-clients
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description ilo-moonshot
-The fence-agents-ilo-moonshot package contains a fence agent for HP iLO Moonshot devices that are accessed via telnet or SSH.
+Fence agent for HP iLO Moonshot devices that are accessed
+via telnet or SSH.
 %files ilo-moonshot
-%defattr(-,root,root,-)
 %{_sbindir}/fence_ilo_moonshot
 %{_mandir}/man8/fence_ilo_moonshot.8*
 
+%package ilo-mp
+License: GPLv2+ and LGPLv2+
+Summary: Fence agent for HP iLO MP devices
+Requires: telnet openssh-clients
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description ilo-mp
+Fence agent for HP iLO MP devices that are accessed via telnet or SSH.
+%files ilo-mp
+%{_sbindir}/fence_ilo_mp
+%{_mandir}/man8/fence_ilo_mp.8*
+
 %package ilo-ssh
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
-Summary: Fence agent for HP iLO devices over SSH
+Summary: Fence agents for HP iLO devices over SSH
 Requires: openssh-clients
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description ilo-ssh
-The fence-agents-ilo-ssh package contains a fence agent for HP iLO devices that are accessed via telnet or SSH.
+Fence agents for HP iLO devices that are accessed via telnet or SSH.
 %files ilo-ssh
-%defattr(-,root,root,-)
 %{_sbindir}/fence_ilo_ssh
 %{_mandir}/man8/fence_ilo_ssh.8*
 %{_sbindir}/fence_ilo3_ssh
 %{_mandir}/man8/fence_ilo3_ssh.8*
 %{_sbindir}/fence_ilo4_ssh
 %{_mandir}/man8/fence_ilo4_ssh.8*
+%{_sbindir}/fence_ilo5_ssh
+%{_mandir}/man8/fence_ilo5_ssh.8*
 
 %package intelmodular
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for devices with Intel Modular interfaces
 Requires: net-snmp-utils
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description intelmodular
-The fence-agents-intelmodular package contains a fence agent for Intel Modular interfaces that are accessed via the SNMP protocol.
+Fence agent for Intel Modular interfaces that are accessed
+via the SNMP protocol.
 %files intelmodular
-%defattr(-,root,root,-)
 %{_sbindir}/fence_intelmodular
 %{_mandir}/man8/fence_intelmodular.8*
 
 %package ipdu
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for IBM iPDU network power switches
 Requires: net-snmp-utils
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description ipdu
-The fence-agents-ipdu package contains a fence agent for IBM iPDU network power switches that are accessed via the SNMP protocol.
+Fence agent for IBM iPDU network power switches that are accessed
+via the SNMP protocol.
 %files ipdu
-%defattr(-,root,root,-)
 %{_sbindir}/fence_ipdu
 %{_mandir}/man8/fence_ipdu.8*
 
 %package ipmilan
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
-Summary: Fence agent for devices with IPMI interface
+Summary: Fence agents for devices with IPMI interface
 Requires: /usr/bin/ipmitool
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description ipmilan
-The fence-agents-ipmilan package contains a fence agent for devices with IPMI interface.
+Fence agents for devices with IPMI interface.
 %files ipmilan
-%defattr(-,root,root,-)
 %{_sbindir}/fence_ipmilan
 %{_mandir}/man8/fence_ipmilan.8*
 %{_sbindir}/fence_idrac
@@ -532,33 +591,33 @@ The fence-agents-ipmilan package contains a fence agent for devices with IPMI in
 %{_mandir}/man8/fence_ilo3.8*
 %{_sbindir}/fence_ilo4
 %{_mandir}/man8/fence_ilo4.8*
+%{_sbindir}/fence_ilo5
+%{_mandir}/man8/fence_ilo5.8*
 %{_sbindir}/fence_imm
 %{_mandir}/man8/fence_imm.8*
 
 %if 0%{?fedora} || 0%{?rhel} > 7
 %package ironic
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for OpenStack's Ironic (Bare Metal as a service)
 Requires: /usr/bin/openstack
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description ironic
-The fence-agents-ironic package contains a fence agent for OpenStack's Ironic (Bare Metal as a service) service.
+Fence agent for OpenStack's Ironic (Bare Metal as a service) service.
 %files ironic
-%defattr(-,root,root,-)
 %{_sbindir}/fence_ironic
 %{_mandir}/man8/fence_ironic.8*
 %endif
 
 %package kdump
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for use with kdump crash recovery service
 Requires: fence-agents-common = %{version}-%{release}
+# this cannot be noarch since it's compiled
 %description kdump
-The fence-agents-kdump package contains a fence agent for use with kdump crash recovery service.
+Fence agent for use with kdump crash recovery service.
 %files kdump
-%defattr(-,root,root,-)
 %{_sbindir}/fence_kdump
 %{_libexecdir}/fence_kdump_send
 %{_mandir}/man8/fence_kdump.8*
@@ -567,14 +626,13 @@ The fence-agents-kdump package contains a fence agent for use with kdump crash r
 %if 0%{?fedora} || 0%{?rhel} > 7
 %package ldom
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for Sun LDom virtual machines
 Requires: telnet openssh-clients
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description ldom
-The fence-agents-ldom package contains a fence agent for APC devices that are accessed via telnet or SSH.
+Fence agent for APC devices that are accessed via telnet or SSH.
 %files ldom
-%defattr(-,root,root,-)
 %{_sbindir}/fence_ldom
 %{_mandir}/man8/fence_ldom.8*
 %endif
@@ -582,42 +640,41 @@ The fence-agents-ldom package contains a fence agent for APC devices that are ac
 %if 0%{?fedora} || 0%{?rhel} > 7
 %package lpar
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for IBM LPAR
 Requires: telnet openssh-clients
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description lpar
-The fence-agents-lpar package contains a fence agent for IBM LPAR devices that are accessed via telnet or SSH.
+Fence agent for IBM LPAR devices that are accessed via telnet or SSH.
 %files lpar
-%defattr(-,root,root,-)
 %{_sbindir}/fence_lpar
 %{_mandir}/man8/fence_lpar.8*
 %endif
 
 %package mpath
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for reservations over Device Mapper Multipath
 Requires: device-mapper-multipath
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description mpath
-The fence-agents-mpath package contains fence agent for SCSI persisent reservation over Device Mapper Multipath
+Fence agent for SCSI persistent reservation over
+Device Mapper Multipath.
 %files mpath
-%defattr(-,root,root,-)
 %{_sbindir}/fence_mpath
 %{_mandir}/man8/fence_mpath.8*
 
 %if 0%{?fedora} || 0%{?rhel} > 7
 %package netio
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for Koukaam NETIO devices
 Requires: telnet openssh-clients
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description netio
-The fence-agents-netio package contains a fence agent for Koukaam NETIO devices that are accessed via telnet or SSH.
+Fence agent for Koukaam NETIO devices that are accessed
+via telnet or SSH.
 %files netio
-%defattr(-,root,root,-)
 %{_sbindir}/fence_netio
 %{_mandir}/man8/fence_netio.8*
 %endif
@@ -625,108 +682,119 @@ The fence-agents-netio package contains a fence agent for Koukaam NETIO devices 
 %if 0%{?fedora} || 0%{?rhel} > 7
 %package ovh
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for OVH provider
-Requires: python2-suds
+Requires: python3-suds
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description ovh
-Red Hat Fence Agent for OVH hosting provider
+Fence agent for OVH hosting provider.
 %files ovh
-%defattr(-,root,root,-)
 %{_sbindir}/fence_ovh
 %{_mandir}/man8/fence_ovh.8*
 %endif
 
+# skipped from allfenceagents
 %if 0%{?fedora} || 0%{?rhel} > 7
 %package pve
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
-Summary: Fence agent for OVH provider
+Summary: Fence agent for PVE
 Requires: python3-pycurl
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description pve
-Red Hat Fence Agent for PVE
+Fence agent for PVE.
 %files pve
-%defattr(-,root,root,-)
 %{_sbindir}/fence_pve
 %{_mandir}/man8/fence_pve.8*
 %endif
 
+# skipped from allfenceagents
 %package raritan
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for Raritan Dominion PX
-Requires: fence-agents-common
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description raritan
-Red Hat Fence Agent for Raritan Dominion PX
+Fence agent for Raritan Dominion PX.
 %files raritan
-%defattr(-,root,root,-)
 %{_sbindir}/fence_raritan
 %{_mandir}/man8/fence_raritan.8*
 
+# skipped from allfenceagents
 %package rcd-serial
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for RCD serial
-Requires: fence-agents-common
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description rcd-serial
-Red Hat Fence Agent for RCD serial
+Fence agent for RCD serial.
 %files rcd-serial
-%defattr(-,root,root,-)
 %{_sbindir}/fence_rcd_serial
 %{_mandir}/man8/fence_rcd_serial.8*
 
-%package rhevm
+%package redfish
 License: GPLv2+ and LGPLv2+
 Group: System Environment/Base
+Summary: Fence agent for Redfish
+Requires: fence-agents-common >= %{version}-%{release}
+Requires: python3-requests
+Obsoletes: fence-agents
+%description redfish
+The fence-agents-redfish package contains a fence agent for Redfish
+%files redfish
+%defattr(-,root,root,-)
+%{_sbindir}/fence_redfish
+%{_mandir}/man8/fence_redfish.8*
+
+%package rhevm
+License: GPLv2+ and LGPLv2+
 Summary: Fence agent for RHEV-M
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description rhevm
-The fence-agents-rhevm package contains a fence agent for RHEV-M via REST API
+Fence agent for RHEV-M via REST API.
 %files rhevm
-%defattr(-,root,root,-)
 %{_sbindir}/fence_rhevm
 %{_mandir}/man8/fence_rhevm.8*
 
 %if 0%{?fedora} || 0%{?rhel} > 7
 %package rsa
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for IBM RSA II
 Requires: telnet openssh-clients
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description rsa
-The fence-agents-rsa package contains a fence agent for IBM RSA II devices that are accessed via telnet or SSH.
+Fence agent for IBM RSA II devices that are accessed
+via telnet or SSH.
 %files rsa
-%defattr(-,root,root,-)
 %{_sbindir}/fence_rsa
 %{_mandir}/man8/fence_rsa.8*
 %endif
 
 %package rsb
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for Fujitsu RSB
 Requires: telnet openssh-clients
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description rsb
-The fence-agents-rsb package contains a fence agent for Fujitsu RSB devices that are accessed via telnet or SSH.
+Fence agent for Fujitsu RSB devices that are accessed
+via telnet or SSH.
 %files rsb
-%defattr(-,root,root,-)
 %{_sbindir}/fence_rsb
 %{_mandir}/man8/fence_rsb.8*
 
 %if 0%{?fedora} || 0%{?rhel} > 7
 %package sanbox2
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for QLogic SANBox2 FC switches
 Requires: telnet
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description sanbox2
-The fence-agents-sanbox2 package contains a fence agent for QLogic SANBox2 switches that are accessed via telnet.
+Fence agent for QLogic SANBox2 switches that are accessed via telnet.
 %files sanbox2
-%defattr(-,root,root,-)
 %{_sbindir}/fence_sanbox2
 %{_mandir}/man8/fence_sanbox2.8*
 %endif
@@ -734,27 +802,26 @@ The fence-agents-sanbox2 package contains a fence agent for QLogic SANBox2 switc
 %if 0%{?fedora} || 0%{?rhel} > 7
 %package sbd
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for SBD (storage-based death)
 Requires: sbd
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description sbd
-The fence-agents-sbd package contains a fence agent for SBD (storage-based death).
+Fence agent for SBD (storage-based death).
 %files sbd
-%defattr(-,root,root,-)
 %{_sbindir}/fence_sbd
 %{_mandir}/man8/fence_sbd.8*
 %endif
 
 %package scsi
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
-Summary: Fence agent for SCSI persisent reservations
+Summary: Fence agent for SCSI persistent reservations
 Requires: sg3_utils
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description scsi
-The fence-agents-scsi package contains fence agent for SCSI persisent reservations
+Fence agent for SCSI persistent reservations.
 %files scsi
-%defattr(-,root,root,-)
 %{_sbindir}/fence_scsi
 %{_datadir}/cluster/fence_scsi_check
 %{_datadir}/cluster/fence_scsi_check_hardreboot
@@ -763,124 +830,119 @@ The fence-agents-scsi package contains fence agent for SCSI persisent reservatio
 %if 0%{?fedora} || 0%{?rhel} > 7
 %package vbox
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for VirtualBox
 Requires: openssh-clients
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description vbox
-The fence-agents-vbox package contains a fence agent for VirtualBox dom0 accessed via SSH.
+Fence agent for VirtualBox dom0 accessed via SSH.
 %files vbox
-%defattr(-,root,root,-)
 %{_sbindir}/fence_vbox
 %{_mandir}/man8/fence_vbox.8*
 %endif
 
+# skipped from allfenceagents
 %package virsh
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for virtual machines based on libvirt
 Requires: openssh-clients /usr/bin/virsh
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description virsh
-The fence-agents-virsh package contains a fence agent for virtual machines that are accessed via SSH.
+Fence agent for virtual machines that are accessed via SSH.
 %files virsh
-%defattr(-,root,root,-)
 %{_sbindir}/fence_virsh
 %{_mandir}/man8/fence_virsh.8*
 
 %if 0%{?fedora} || 0%{?rhel} > 7
 %package vmware
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for VMWare with VI Perl Toolkit or vmrun
 Requires: python3-pexpect
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description vmware
-The fence-agents-vmware package contains a fence agent for VMWare accessed with VI Perl Toolkit or vmrun.
+Fence agent for VMWare accessed with VI Perl Toolkit or vmrun.
 %files vmware
-%defattr(-,root,root,-)
 %{_sbindir}/fence_vmware
 %{_mandir}/man8/fence_vmware.8*
 %endif
 
 %package vmware-rest
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for VMWare with REST API
-Requires: fence-agents-common >= %{version}-%{release}
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 Obsoletes: fence-agents
 %description vmware-rest
-The fence-agents-vmware-rest package contains a fence agent for VMWare with REST API
+Fence agent for VMWare with REST API.
 %files vmware-rest
-%defattr(-,root,root,-)
 %{_sbindir}/fence_vmware_rest
 %{_mandir}/man8/fence_vmware_rest.8*
 
 %package vmware-soap
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for VMWare with SOAP API v4.1+
-Requires: python2-suds
+Requires: python3-suds
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description vmware-soap
-The fence-agents-vmware-soap package contains a fence agent for VMWare with SOAP API v4.1+
+Fence agent for VMWare with SOAP API v4.1+.
 %files vmware-soap
-%defattr(-,root,root,-)
 %{_sbindir}/fence_vmware_soap
 %{_mandir}/man8/fence_vmware_soap.8*
 
 %if 0%{?fedora} || 0%{?rhel} > 7
 %package vmware-vcloud
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for VMWare vCloud Director
-Requires: fence-agents-common >= %{version}-%{release}
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 Obsoletes: fence-agents
 %description vmware-vcloud
-The fence-agents-vmware-vcloud package contains a fence agent for VMWare vCloud Director
+Fence agent for VMWare vCloud Director.
 %files vmware-vcloud
-%defattr(-,root,root,-)
 %{_sbindir}/fence_vmware_vcloud
 %{_mandir}/man8/fence_vmware_vcloud.8*
 %endif
 
 %package wti
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for WTI Network power switches
 Requires: telnet openssh-clients
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description wti
-The fence-agents-wti package contains a fence agent for WTI network power switches that are accessed via telnet or SSH.
+Fence agent for WTI network power switches that are accessed
+via telnet or SSH.
 %files wti
-%defattr(-,root,root,-)
 %{_sbindir}/fence_wti
 %{_mandir}/man8/fence_wti.8*
 
 %if 0%{?fedora} || 0%{?rhel} > 7
 %package xenapi
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for Citrix XenServer over XenAPI
 Requires: python3-pexpect
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description xenapi
-The fence-agents-xenapi package contains a fence agent for Citrix XenServer accessed over XenAPI.
+Fence agent for Citrix XenServer accessed over XenAPI.
 %files xenapi
-%defattr(-,root,root,-)
 %{_sbindir}/fence_xenapi
+%{_datadir}/fence/XenAPI.py*
+%{_datadir}/fence/__pycache__/XenAPI.*
 %{_mandir}/man8/fence_xenapi.8*
 %endif
 
 %package zvm
 License: GPLv2+ and LGPLv2+
-Group: System Environment/Base
 Summary: Fence agent for IBM z/VM over IP
 Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
 %description zvm
-The fence-agents-zvm package contains a fence agent for IBM z/VM over IP.
+Fence agent for IBM z/VM over IP.
 %files zvm
-%defattr(-,root,root,-)
 %{_sbindir}/fence_zvmip
 %{_mandir}/man8/fence_zvmip.8*
 
