@@ -51,7 +51,10 @@ def main():
 	docs = {}
 	docs["shortdesc"] = "Fence agent for HP iLO over SSH"
 	docs["longdesc"] = "fence_ilo_ssh is a fence agent that connects to iLO device. It logs into \
-device via ssh and reboot a specified outlet. "
+device via ssh and reboot a specified outlet.\
+\n.P\n\
+WARNING: The monitor-action is prone to timeouts. Use the fence_ilo-equivalent \
+to avoid this issue."
 	docs["vendorurl"] = "http://www.hp.com"
 	docs["symlink"] = [("fence_ilo3_ssh", "Fence agent for HP iLO3 over SSH"),
 		("fence_ilo4_ssh", "Fence agent for HP iLO4 over SSH"),
