@@ -24,7 +24,6 @@ Group: System Environment/Base
 URL: https://github.com/ClusterLabs/fence-agents
 Source0: %{name}-%{version}%{?rcver:%{rcver}}%{?numcomm:.%{numcomm}}%{?alphatag:-%{alphatag}}%{?dirty:-%{dirty}}.tar.bz2
 
-%if 0%{?fedora} || 0%{?rhel} > 7
 # skipped: pve, raritan, rcd-serial, virsh
 %global allfenceagents %(cat <<EOF
 fence-agents-alom \\
@@ -82,7 +81,6 @@ fence-agents-xenapi \\
 fence-agents-zvm \\
 
 EOF)
-%endif
 
 # Build dependencies
 ## general
@@ -94,10 +92,17 @@ BuildRequires: libxslt
 ## establishing proper paths to particular programs
 BuildRequires: gnutls-utils
 ## Python dependencies
+%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 BuildRequires: python3-devel
 BuildRequires: python3-pexpect python3-pycurl python3-requests
 BuildRequires: python3-suds openwsman-python3 python3-boto3
 BuildRequires: python3-google-api-client
+%else
+BuildRequires: python-devel
+BuildRequires: pexpect python-pycurl python-requests
+BuildRequires: python-suds openwsman-python python-boto3
+BuildRequires: python-google-api-client
+%endif
 
 # turn off the brp-python-bytecompile script
 # (for F28+ or equivalent, the latter is the preferred form)
@@ -139,7 +144,11 @@ network, storage, or similar. They operate through a unified interface
 %package common
 License: GPLv2+ and LGPLv2+
 Summary: Common base for Fence Agents
+%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-pexpect python3-pycurl
+%else
+Requires: pexpect python-pycurl
+%endif
 BuildArch: noarch
 %description common
 A collection of executables to handle isolation ("fencing") of possibly
@@ -243,7 +252,11 @@ Fence agents for APC devices that are accessed via the SNMP protocol.
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Amazon AWS
 Requires: fence-agents-common = %{version}-%{release}
+%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-boto3
+%else
+Requires: python-boto3
+%endif
 BuildArch: noarch
 Obsoletes: fence-agents
 %description aws
@@ -256,7 +269,11 @@ Fence agent for Amazon AWS instances.
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Azure Resource Manager
 Requires: fence-agents-common = %{version}-%{release}
+%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-azure-sdk
+%else
+Requires: python-azure-sdk
+%endif
 BuildArch: noarch
 Obsoletes: fence-agents
 %description azure-arm
@@ -308,7 +325,11 @@ via the SNMP protocol.
 %package cisco-ucs
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Cisco UCS series
+%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-pycurl
+%else
+Requires: python-pycurl
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description cisco-ucs
@@ -321,7 +342,11 @@ via the SNMP protocol.
 %package compute
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Nova compute nodes
+%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-requests
+%else
+Requires: python-requests
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description compute
@@ -335,7 +360,11 @@ Fence agent for Nova compute nodes.
 %package docker
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Docker
+%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-pycurl
+%else
+Requires: python-pycurl
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description docker
@@ -414,7 +443,11 @@ via the HTTP(s) protocol.
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for GCE (Google Cloud Engine)
 Requires: fence-agents-common = %{version}-%{release}
+%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-google-api-client
+%else
+Requires: python-google-api-client
+%endif
 BuildArch: noarch
 Obsoletes: fence-agents
 %description gce
@@ -683,7 +716,11 @@ via telnet or SSH.
 %package ovh
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for OVH provider
+%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-suds
+%else
+Requires: python-suds
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description ovh
@@ -698,7 +735,11 @@ Fence agent for OVH hosting provider.
 %package pve
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for PVE
+%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-pycurl
+%else
+Requires: python-pycurl
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description pve
@@ -737,7 +778,11 @@ License: GPLv2+ and LGPLv2+
 Group: System Environment/Base
 Summary: Fence agent for Redfish
 Requires: fence-agents-common >= %{version}-%{release}
+%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-requests
+%else
+Requires: python-requests
+%endif
 Obsoletes: fence-agents
 %description redfish
 The fence-agents-redfish package contains a fence agent for Redfish
@@ -858,7 +903,11 @@ Fence agent for virtual machines that are accessed via SSH.
 %package vmware
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for VMWare with VI Perl Toolkit or vmrun
+%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-pexpect
+%else
+Requires: pexpect
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description vmware
@@ -883,7 +932,11 @@ Fence agent for VMWare with REST API.
 %package vmware-soap
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for VMWare with SOAP API v4.1+
+%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-suds
+%else
+Requires: python-suds
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description vmware-soap
@@ -923,7 +976,11 @@ via telnet or SSH.
 %package xenapi
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Citrix XenServer over XenAPI
+%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-pexpect
+%else
+Requires: pexpect
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description xenapi
