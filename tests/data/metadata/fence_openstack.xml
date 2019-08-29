@@ -43,8 +43,18 @@
 		<content type="string"  />
 		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
 	</parameter>
+	<parameter name="plug" unique="0" required="1" obsoletes="port">
+		<getopt mixed="-n, --plug=[UUID]" />
+		<content type="string"  />
+		<shortdesc lang="en">UUID of the node to be fenced.</shortdesc>
+	</parameter>
+	<parameter name="port" unique="0" required="1" deprecated="1">
+		<getopt mixed="-n, --plug=[UUID]" />
+		<content type="string"  />
+		<shortdesc lang="en">UUID of the node to be fenced.</shortdesc>
+	</parameter>
 	<parameter name="project-domain-name" unique="0" required="0" deprecated="1">
-		<getopt mixed="--project-domain-name=[project-domain]" />
+		<getopt mixed="--project-domain-name=[domain]" />
 		<content type="string" default="Default"  />
 		<shortdesc lang="en">Keystone Project Domain Name</shortdesc>
 	</parameter>
@@ -54,7 +64,7 @@
 		<shortdesc lang="en">Keystone Project</shortdesc>
 	</parameter>
 	<parameter name="project_domain_name" unique="0" required="0" obsoletes="project-domain-name">
-		<getopt mixed="--project-domain-name=[project-domain]" />
+		<getopt mixed="--project-domain-name=[domain]" />
 		<content type="string" default="Default"  />
 		<shortdesc lang="en">Keystone Project Domain Name</shortdesc>
 	</parameter>
@@ -64,12 +74,12 @@
 		<shortdesc lang="en">Keystone Project</shortdesc>
 	</parameter>
 	<parameter name="user-domain-name" unique="0" required="0" deprecated="1">
-		<getopt mixed="--user-domain-name=[user-domain]" />
+		<getopt mixed="--user-domain-name=[domain]" />
 		<content type="string" default="Default"  />
 		<shortdesc lang="en">Keystone User Domain Name</shortdesc>
 	</parameter>
 	<parameter name="user_domain_name" unique="0" required="0" obsoletes="user-domain-name">
-		<getopt mixed="--user-domain-name=[user-domain]" />
+		<getopt mixed="--user-domain-name=[domain]" />
 		<content type="string" default="Default"  />
 		<shortdesc lang="en">Keystone User Domain Name</shortdesc>
 	</parameter>
@@ -78,10 +88,10 @@
 		<content type="string"  />
 		<shortdesc lang="en">Login name</shortdesc>
 	</parameter>
-	<parameter name="uuid" unique="0" required="1">
+	<parameter name="uuid" unique="0" required="0">
 		<getopt mixed="--uuid=[uuid]" />
 		<content type="string"  />
-		<shortdesc lang="en">UUID of the nova instance</shortdesc>
+		<shortdesc lang="en">Replaced by port</shortdesc>
 	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
