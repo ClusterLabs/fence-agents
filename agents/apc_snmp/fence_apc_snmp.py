@@ -11,6 +11,7 @@
 #       (MB:v3.7.0 PF:v2.7.0 PN:apc_hw02_aos_270.bin AF1:v2.7.3
 #       AN1:apc_hw02_rpdu_273.bin MN:AP7951 HR:B2)
 # - Tripplite PDUMH20HVNET 12.04.0055 - SNMP v1, v2c, v3
+# - Tripplite PDU15NETLX 15.5.4 - SNMP v1, v2c, v3
 
 import sys
 import atexit
@@ -25,7 +26,7 @@ from fencing_snmp import FencingSnmp
 OID_SYS_OBJECT_ID = '.1.3.6.1.2.1.1.2.0'
 
 ### GLOBAL VARIABLES ###
-# Device - see ApcRPDU, ApcMSP, ApcMS, TripplitePDU
+# Device - see ApcRPDU, ApcMSP, ApcMS, TripplitePDU, TrippliteLXPDU
 device = None
 
 # Port ID
@@ -40,6 +41,18 @@ class TripplitePDU(object):
 	control_oid =      '.1.3.6.1.4.1.850.10.2.3.5.1.4.1.%d'
 	outlet_table_oid = '.1.3.6.1.4.1.850.10.2.3.5.1.5'
 	ident_str = "Tripplite"
+	state_on = 2
+	state_off = 1
+	turn_on = 2
+	turn_off = 1
+	has_switches = False
+
+class TrippliteLXPDU(object):
+	# WEBCARDLX-based PDU
+	status_oid =       '.1.3.6.1.4.1.850.1.1.3.2.3.3.1.1.4.1.%d'
+	control_oid =      '.1.3.6.1.4.1.850.1.1.3.2.3.3.1.1.6.1.%d'
+	outlet_table_oid = '.1.3.6.1.4.1.850.1.1.3.2.3.3.1.1.2.1'
+	ident_str = "Tripplite LX"
 	state_on = 2
 	state_off = 1
 	turn_on = 2
@@ -101,6 +114,7 @@ def apc_set_device(conn):
 	agents_dir = {'.1.3.6.1.4.1.318.1.3.4.5':ApcRPDU,
 		    '.1.3.6.1.4.1.318.1.3.4.4':ApcMSP,
                     '.1.3.6.1.4.1.850.1':TripplitePDU,
+                    '.1.3.6.1.4.1.850.1.1.1':TrippliteLXPDU,
 		    '.1.3.6.1.4.1.318.1.3.4.6':ApcMS6,
 		    None:ApcMS}
 
