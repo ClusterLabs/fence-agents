@@ -89,8 +89,6 @@ BuildRequires: autoconf automake libtool
 BuildRequires: gcc
 ## man pages generating
 BuildRequires: libxslt
-## establishing proper paths to particular programs
-BuildRequires: gnutls-utils
 ## Python dependencies
 %if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 BuildRequires: python3-devel
