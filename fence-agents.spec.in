@@ -121,7 +121,9 @@ CFLAGS="$(echo '%{optflags}')" make %{_smp_mflags}
 %install
 make install DESTDIR=%{buildroot}
 # bytecompile Python source code in a non-standard location
+%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7
 %py_byte_compile %{__python3} %{buildroot}%{_datadir}/fence
+%endif
 # XXX unsure if /usr/sbin/fence_* should be compiled as well
 
 ## tree fix up
@@ -279,7 +281,9 @@ Fence agent for Azure Resource Manager instances.
 %files azure-arm
 %{_sbindir}/fence_azure_arm
 %{_datadir}/fence/azure_fence.py*
+%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7
 %{_datadir}/fence/__pycache__/azure_fence.*
+%endif
 %{_mandir}/man8/fence_azure_arm.8*
 
 %package bladecenter
@@ -986,7 +990,9 @@ Fence agent for Citrix XenServer accessed over XenAPI.
 %files xenapi
 %{_sbindir}/fence_xenapi
 %{_datadir}/fence/XenAPI.py*
+%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7
 %{_datadir}/fence/__pycache__/XenAPI.*
+%endif
 %{_mandir}/man8/fence_xenapi.8*
 %endif
 
