@@ -24,6 +24,12 @@ Group: System Environment/Base
 URL: https://github.com/ClusterLabs/fence-agents
 Source0: %{name}-%{version}%{?rcver:%{rcver}}%{?numcomm:.%{numcomm}}%{?alphatag:-%{alphatag}}%{?dirty:-%{dirty}}.tar.bz2
 
+%if 0%{?rhel} == 7
+%ifarch s390x
+%define rhel7_s390x 1
+%endif
+%endif
+
 # skipped: pve, raritan, rcd-serial, virsh
 %global allfenceagents %(cat <<EOF
 fence-agents-alom \\
@@ -31,7 +37,6 @@ fence-agents-amt \\
 fence-agents-amt-ws \\
 fence-agents-apc \\
 fence-agents-apc-snmp \\
-fence-agents-aws \\
 fence-agents-azure-arm \\
 fence-agents-bladecenter \\
 fence-agents-brocade \\
@@ -44,7 +49,6 @@ fence-agents-drac5 \\
 fence-agents-eaton-snmp \\
 fence-agents-emerson \\
 fence-agents-eps \\
-fence-agents-gce \\
 fence-agents-hds-cb \\
 fence-agents-heuristics-ping \\
 fence-agents-hpblade \\
@@ -82,6 +86,15 @@ fence-agents-zvm \\
 
 EOF)
 
+%if ! %{defined rhel7_s390x}
+%global allfenceagents %(cat <<EOF
+%{allfenceagents} \\
+fence-agents-aws \\
+fence-agents-gce
+
+EOF)
+%endif
+
 # Build dependencies
 ## general
 BuildRequires: autoconf automake libtool
@@ -90,16 +103,23 @@ BuildRequires: gcc
 ## man pages generating
 BuildRequires: libxslt
 ## Python dependencies
-%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 BuildRequires: python3-devel
 BuildRequires: python3-pexpect python3-pycurl python3-requests
-BuildRequires: python3-suds openwsman-python3 python3-boto3
-BuildRequires: python3-google-api-client
+BuildRequires: python3-suds
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7
+BuildRequires: python3-google-api-client python3-boto3 openwsman-python3
+%endif
+%if 0%{?suse_version}
+BuildRequires: python3-google-api-python-client python3-openwsman python3-boto3
+%endif
 %else
 BuildRequires: python-devel
 BuildRequires: pexpect python-pycurl python-requests
-BuildRequires: python-suds openwsman-python python-boto3
-BuildRequires: python-google-api-client
+BuildRequires: python-suds openwsman-python
+%if ! %{defined rhel7_s390x}
+BuildRequires: python-google-api-client python-boto3
+%endif
 %endif
 
 # turn off the brp-python-bytecompile script
@@ -121,7 +141,7 @@ CFLAGS="$(echo '%{optflags}')" make %{_smp_mflags}
 %install
 make install DESTDIR=%{buildroot}
 # bytecompile Python source code in a non-standard location
-%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7
 %py_byte_compile %{__python3} %{buildroot}%{_datadir}/fence
 %endif
 # XXX unsure if /usr/sbin/fence_* should be compiled as well
@@ -144,7 +164,7 @@ network, storage, or similar. They operate through a unified interface
 %package common
 License: GPLv2+ and LGPLv2+
 Summary: Common base for Fence Agents
-%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-pexpect python3-pycurl
 %else
 Requires: pexpect python-pycurl
@@ -174,7 +194,9 @@ Summary: Set of unified programs capable of host isolation ("fencing")
 Requires: %{allfenceagents}
 Provides: fence-agents = %{version}-%{release}
 Obsoletes: fence-agents < 3.1.13
+%if 0%{?fedora} || 0%{?centos} || 0%{?rhel} > 7 || 0%{?suse_version}
 BuildArch: noarch
+%endif
 %description all
 A collection of executables to handle isolation ("fencing") of possibly
 misbehaving hosts by the means of remote power management, blocking
@@ -183,7 +205,6 @@ network, storage, or similar.
 This package serves as a catch-all for all supported fence agents.
 %files all
 
-%if 0%{?fedora} || 0%{?rhel} > 7
 %package alom
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for SUN ALOM
@@ -195,7 +216,6 @@ Fence agent for SUN ALOM.
 %files alom
 %{_sbindir}/fence_alom
 %{_mandir}/man8/fence_alom.8*
-%endif
 
 %package amt
 License: GPLv2+ and LGPLv2+
@@ -214,7 +234,16 @@ Fence agent for AMT compatibile devices that are accessed via
 License: ASL 2.0
 Summary: Fence agent for Intel AMT (WS-Man) devices
 Requires: fence-agents-common = %{version}-%{release}
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7
 Requires: openwsman-python3
+%endif
+%if 0%{?suse_version}
+Requires: python3-openwsman
+%endif
+%else
+Requires: openwsman-python
+%endif
 BuildArch: noarch
 %description amt-ws
 Fence agent for AMT (WS-Man) devices.
@@ -248,11 +277,12 @@ Fence agents for APC devices that are accessed via the SNMP protocol.
 %{_sbindir}/fence_tripplite_snmp
 %{_mandir}/man8/fence_tripplite_snmp.8*
 
+%if ! %{defined rhel7_s390x}
 %package aws
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Amazon AWS
 Requires: fence-agents-common = %{version}-%{release}
-%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-boto3
 %else
 Requires: python-boto3
@@ -264,12 +294,13 @@ Fence agent for Amazon AWS instances.
 %files aws
 %{_sbindir}/fence_aws
 %{_mandir}/man8/fence_aws.8*
+%endif
 
 %package azure-arm
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Azure Resource Manager
 Requires: fence-agents-common = %{version}-%{release}
-%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-azure-sdk
 %else
 Requires: python-azure-sdk
@@ -281,7 +312,7 @@ Fence agent for Azure Resource Manager instances.
 %files azure-arm
 %{_sbindir}/fence_azure_arm
 %{_datadir}/fence/azure_fence.py*
-%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7
 %{_datadir}/fence/__pycache__/azure_fence.*
 %endif
 %{_mandir}/man8/fence_azure_arm.8*
@@ -327,7 +358,7 @@ via the SNMP protocol.
 %package cisco-ucs
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Cisco UCS series
-%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-pycurl
 %else
 Requires: python-pycurl
@@ -344,7 +375,7 @@ via the SNMP protocol.
 %package compute
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Nova compute nodes
-%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-requests
 %else
 Requires: python-requests
@@ -362,7 +393,7 @@ Fence agent for Nova compute nodes.
 %package docker
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Docker
-%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-pycurl
 %else
 Requires: python-pycurl
@@ -375,7 +406,6 @@ Fence agent for Docker images that are accessed over HTTP.
 %{_sbindir}/fence_docker
 %{_mandir}/man8/fence_docker.8*
 
-%if 0%{?fedora} || 0%{?rhel} > 7
 %package drac
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Dell DRAC
@@ -388,7 +418,6 @@ via telnet.
 %files drac
 %{_sbindir}/fence_drac
 %{_mandir}/man8/fence_drac.8*
-%endif
 
 %package drac5
 License: GPLv2+ and LGPLv2+
@@ -440,13 +469,18 @@ via the HTTP(s) protocol.
 %{_sbindir}/fence_eps
 %{_mandir}/man8/fence_eps.8*
 
-%if 0%{?fedora} || 0%{?rhel} > 7
+%if ! %{defined rhel7_s390x}
 %package gce
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for GCE (Google Cloud Engine)
 Requires: fence-agents-common = %{version}-%{release}
-%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7
 Requires: python3-google-api-client
+%endif
+%if 0%{?suse_version}
+Requires: python3-google-api-python-client
+%endif
 %else
 Requires: python-google-api-client
 %endif
@@ -459,7 +493,6 @@ Fence agent for GCE (Google Cloud Engine) instances.
 %{_mandir}/man8/fence_gce.8*
 %endif
 
-%if 0%{?fedora} || 0%{?rhel} > 7
 %package hds-cb
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Hitachi Compute Blade systems
@@ -471,7 +504,6 @@ Fence agent for Hitachi Compute Blades that are accessed via telnet.
 %files hds-cb
 %{_sbindir}/fence_hds_cb
 %{_mandir}/man8/fence_hds_cb.8*
-%endif
 
 %package heuristics-ping
 License: GPLv2+ and LGPLv2+
@@ -631,7 +663,6 @@ Fence agents for devices with IPMI interface.
 %{_sbindir}/fence_imm
 %{_mandir}/man8/fence_imm.8*
 
-%if 0%{?fedora} || 0%{?rhel} > 7
 %package ironic
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for OpenStack's Ironic (Bare Metal as a service)
@@ -643,7 +674,6 @@ Fence agent for OpenStack's Ironic (Bare Metal as a service) service.
 %files ironic
 %{_sbindir}/fence_ironic
 %{_mandir}/man8/fence_ironic.8*
-%endif
 
 %package kdump
 License: GPLv2+ and LGPLv2+
@@ -658,7 +688,6 @@ Fence agent for use with kdump crash recovery service.
 %{_mandir}/man8/fence_kdump.8*
 %{_mandir}/man8/fence_kdump_send.8*
 
-%if 0%{?fedora} || 0%{?rhel} > 7
 %package ldom
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Sun LDom virtual machines
@@ -670,9 +699,7 @@ Fence agent for APC devices that are accessed via telnet or SSH.
 %files ldom
 %{_sbindir}/fence_ldom
 %{_mandir}/man8/fence_ldom.8*
-%endif
 
-%if 0%{?fedora} || 0%{?rhel} > 7
 %package lpar
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for IBM LPAR
@@ -684,7 +711,6 @@ Fence agent for IBM LPAR devices that are accessed via telnet or SSH.
 %files lpar
 %{_sbindir}/fence_lpar
 %{_mandir}/man8/fence_lpar.8*
-%endif
 
 %package mpath
 License: GPLv2+ and LGPLv2+
@@ -699,7 +725,6 @@ Device Mapper Multipath.
 %{_sbindir}/fence_mpath
 %{_mandir}/man8/fence_mpath.8*
 
-%if 0%{?fedora} || 0%{?rhel} > 7
 %package netio
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Koukaam NETIO devices
@@ -712,13 +737,11 @@ via telnet or SSH.
 %files netio
 %{_sbindir}/fence_netio
 %{_mandir}/man8/fence_netio.8*
-%endif
 
-%if 0%{?fedora} || 0%{?rhel} > 7
 %package ovh
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for OVH provider
-%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-suds
 %else
 Requires: python-suds
@@ -730,14 +753,12 @@ Fence agent for OVH hosting provider.
 %files ovh
 %{_sbindir}/fence_ovh
 %{_mandir}/man8/fence_ovh.8*
-%endif
 
 # skipped from allfenceagents
-%if 0%{?fedora} || 0%{?rhel} > 7
 %package pve
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for PVE
-%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-pycurl
 %else
 Requires: python-pycurl
@@ -749,7 +770,6 @@ Fence agent for PVE.
 %files pve
 %{_sbindir}/fence_pve
 %{_mandir}/man8/fence_pve.8*
-%endif
 
 # skipped from allfenceagents
 %package raritan
@@ -780,7 +800,7 @@ License: GPLv2+ and LGPLv2+
 Group: System Environment/Base
 Summary: Fence agent for Redfish
 Requires: fence-agents-common >= %{version}-%{release}
-%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-requests
 %else
 Requires: python-requests
@@ -804,7 +824,6 @@ Fence agent for RHEV-M via REST API.
 %{_sbindir}/fence_rhevm
 %{_mandir}/man8/fence_rhevm.8*
 
-%if 0%{?fedora} || 0%{?rhel} > 7
 %package rsa
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for IBM RSA II
@@ -817,7 +836,6 @@ via telnet or SSH.
 %files rsa
 %{_sbindir}/fence_rsa
 %{_mandir}/man8/fence_rsa.8*
-%endif
 
 %package rsb
 License: GPLv2+ and LGPLv2+
@@ -832,7 +850,6 @@ via telnet or SSH.
 %{_sbindir}/fence_rsb
 %{_mandir}/man8/fence_rsb.8*
 
-%if 0%{?fedora} || 0%{?rhel} > 7
 %package sanbox2
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for QLogic SANBox2 FC switches
@@ -844,9 +861,7 @@ Fence agent for QLogic SANBox2 switches that are accessed via telnet.
 %files sanbox2
 %{_sbindir}/fence_sanbox2
 %{_mandir}/man8/fence_sanbox2.8*
-%endif
 
-%if 0%{?fedora} || 0%{?rhel} > 7
 %package sbd
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for SBD (storage-based death)
@@ -858,7 +873,6 @@ Fence agent for SBD (storage-based death).
 %files sbd
 %{_sbindir}/fence_sbd
 %{_mandir}/man8/fence_sbd.8*
-%endif
 
 %package scsi
 License: GPLv2+ and LGPLv2+
@@ -874,7 +888,6 @@ Fence agent for SCSI persistent reservations.
 %{_datadir}/cluster/fence_scsi_check_hardreboot
 %{_mandir}/man8/fence_scsi.8*
 
-%if 0%{?fedora} || 0%{?rhel} > 7
 %package vbox
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for VirtualBox
@@ -886,7 +899,6 @@ Fence agent for VirtualBox dom0 accessed via SSH.
 %files vbox
 %{_sbindir}/fence_vbox
 %{_mandir}/man8/fence_vbox.8*
-%endif
 
 # skipped from allfenceagents
 %package virsh
@@ -901,11 +913,10 @@ Fence agent for virtual machines that are accessed via SSH.
 %{_sbindir}/fence_virsh
 %{_mandir}/man8/fence_virsh.8*
 
-%if 0%{?fedora} || 0%{?rhel} > 7
 %package vmware
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for VMWare with VI Perl Toolkit or vmrun
-%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-pexpect
 %else
 Requires: pexpect
@@ -917,7 +928,6 @@ Fence agent for VMWare accessed with VI Perl Toolkit or vmrun.
 %files vmware
 %{_sbindir}/fence_vmware
 %{_mandir}/man8/fence_vmware.8*
-%endif
 
 %package vmware-rest
 License: GPLv2+ and LGPLv2+
@@ -934,7 +944,7 @@ Fence agent for VMWare with REST API.
 %package vmware-soap
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for VMWare with SOAP API v4.1+
-%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-suds
 %else
 Requires: python-suds
@@ -947,7 +957,6 @@ Fence agent for VMWare with SOAP API v4.1+.
 %{_sbindir}/fence_vmware_soap
 %{_mandir}/man8/fence_vmware_soap.8*
 
-%if 0%{?fedora} || 0%{?rhel} > 7
 %package vmware-vcloud
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for VMWare vCloud Director
@@ -959,7 +968,6 @@ Fence agent for VMWare vCloud Director.
 %files vmware-vcloud
 %{_sbindir}/fence_vmware_vcloud
 %{_mandir}/man8/fence_vmware_vcloud.8*
-%endif
 
 %package wti
 License: GPLv2+ and LGPLv2+
@@ -974,11 +982,10 @@ via telnet or SSH.
 %{_sbindir}/fence_wti
 %{_mandir}/man8/fence_wti.8*
 
-%if 0%{?fedora} || 0%{?rhel} > 7
 %package xenapi
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Citrix XenServer over XenAPI
-%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 Requires: python3-pexpect
 %else
 Requires: pexpect
@@ -990,11 +997,10 @@ Fence agent for Citrix XenServer accessed over XenAPI.
 %files xenapi
 %{_sbindir}/fence_xenapi
 %{_datadir}/fence/XenAPI.py*
-%if 0%{?fedora} || 0%{?centos_version} > 7 || 0%{?rhel} > 7
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7
 %{_datadir}/fence/__pycache__/XenAPI.*
 %endif
 %{_mandir}/man8/fence_xenapi.8*
-%endif
 
 %package zvm
 License: GPLv2+ and LGPLv2+
