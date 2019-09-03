@@ -12,19 +12,19 @@ sbin_PROGRAMS			=
 sbin_SCRIPTS			= $(TARGET)
 libexec_PROGRAMS		=
 
-dist_man_MANS			=
-
 noinst_HEADERS			= kdump/list.h kdump/message.h kdump/options.h kdump/version.h zvm/fence_zvm.h
 
-EXTRA_SCRIPTS			=
-
 man_MANS			= $(sbin_SCRIPTS:=.8)
+dist_man_MANS			=
+
+EXTRA_SCRIPTS			=
 
 if BUILD_FENCE_KDUMP
 sbin_PROGRAMS			+= kdump/fence_kdump
 libexec_PROGRAMS		+= kdump/fence_kdump_send
 
-dist_man_MANS			+= kdump/fence_kdump.8 kdump/fence_kdump_send.8
+man_MANS			+= kdump/fence_kdump.8
+dist_man_MANS			+= kdump/fence_kdump_send.8
 
 kdump_fence_kdump_SOURCES	= kdump/fence_kdump.c
 kdump_fence_kdump_CFLAGS	= -D_GNU_SOURCE -Ikdump
@@ -44,7 +44,7 @@ EXTRA_DIST			+= zvm/fence_zvm_man_page
 
 sbin_PROGRAMS			+= zvm/fence_zvm
 
-dist_man_MANS			+= zvm/fence_zvm.8
+man_MANS			+= zvm/fence_zvm.8
 
 zvm_fence_zvm_SOURCES		= zvm/fence_zvm.c
 zvm_fence_zvm_CFLAGS		= -D_GNU_SOURCE -Izvm
