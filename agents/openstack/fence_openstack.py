@@ -24,9 +24,6 @@ except ImportError:
         except ImportError:
                 pass
 
-def get_name_or_uuid(options):
-        return options["--uuid"] if "--uuid" in options else options["--plug"]
-
 def get_power_status(_, options):
         output = nova_run_command(options, "status")
         if (output == 'ACTIVE'):
@@ -66,7 +63,7 @@ def nova_run_command(options,action,timeout=None):
         user_domain_name=options["--user-domain-name"]
         project_domain_name=options["--project-domain-name"]
         novaclient=nova_login(username,password,projectname,auth_url,user_domain_name,project_domain_name)
-        server = novaclient.servers.get(options["--uuid"])
+        server = novaclient.servers.get(options["--plug"])
         if action == "status":
                 return server.status
         if action == "on":
@@ -80,7 +77,7 @@ def define_new_opts():
     all_opt["auth-url"] = {
         "getopt" : ":",
         "longopt" : "auth-url",
-        "help" : "--auth-url=[authurl]            Keystone Auth URL",
+        "help" : "--auth-url=[authurl]           Keystone Auth URL",
         "required" : "1",
         "shortdesc" : "Keystone Auth URL",
         "order": 1
@@ -88,7 +85,7 @@ def define_new_opts():
     all_opt["project-name"] = {
         "getopt" : ":",
         "longopt" : "project-name",
-        "help" : "--project-name=[project]      Tenant Or Project Name",
+        "help" : "--project-name=[project]       Tenant Or Project Name",
         "required" : "1",
         "shortdesc" : "Keystone Project",
         "default": "admin",
@@ -97,7 +94,7 @@ def define_new_opts():
     all_opt["user-domain-name"] = {
         "getopt" : ":",
         "longopt" : "user-domain-name",
-        "help" : "--user-domain-name=[user-domain]      Keystone User Domain Name",
+        "help" : "--user-domain-name=[domain]    Keystone User Domain Name",
         "required" : "0",
         "shortdesc" : "Keystone User Domain Name",
         "default": "Default",
@@ -106,7 +103,7 @@ def define_new_opts():
     all_opt["project-domain-name"] = {
         "getopt" : ":",
         "longopt" : "project-domain-name",
-        "help" : "--project-domain-name=[project-domain]      Keystone Project Domain Name",
+        "help" : "--project-domain-name=[domain] Keystone Project Domain Name",
         "required" : "0",
         "shortdesc" : "Keystone Project Domain Name",
         "default": "Default",
@@ -115,19 +112,35 @@ def define_new_opts():
     all_opt["uuid"] = {
         "getopt" : ":",
         "longopt" : "uuid",
-        "help" : "--uuid=[uuid]      UUID of the nova instance",
-        "required" : "1",
-        "shortdesc" : "UUID of the nova instance",
+        "help" : "--uuid=[uuid]                  Replaced by -n, --plug",
+        "required" : "0",
+        "shortdesc" : "Replaced by port",
         "order": 1
     }
 
 def main():
     atexit.register(atexit_handler)
 
-    device_opt = ["login", "passwd", "auth-url", "project-name", "user-domain-name", "project-domain-name", "uuid"]
+    device_opt = [  "login", "passwd", "auth-url", "project-name",
+                    "user-domain-name", "project-domain-name",
+                    "port", "no_port", "uuid" ]
     define_new_opts()
 
+    all_opt["port"]["help"] = "-n, --plug=[UUID]              UUID of the node to be fenced"
+    all_opt["port"]["shortdesc"] = "UUID of the node to be fenced."
+
     options = check_input(device_opt, process_input(device_opt))
+
+    # hack to remove list/list-status actions which are not supported
+    options["device_opt"] = [ o for o in options["device_opt"] if o != "separator" ]
+
+    # workaround to avoid regressions
+    if "--uuid" in options:
+        options["--plug"] = options["--uuid"]
+        del options["--uuid"]
+    elif options["--action"] in ["off", "on", "reboot", "status"] \
+            and "--plug" not in options:
+        fail_usage("Failed: You have to enter plug number or machine identification", stop)
 
     docs = {}
     docs["shortdesc"] = "Fence agent for OpenStack's Nova service"
