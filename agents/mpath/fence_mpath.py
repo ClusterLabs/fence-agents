@@ -117,12 +117,14 @@ def get_reservation_key(options, dev):
 	match = re.search(r"\s+key\s*=\s*0x(\S+)\s+", out["out"], re.IGNORECASE)
 	return match.group(1) if match else None
 
-def get_registration_keys(options, dev):
+def get_registration_keys(options, dev, fail=True):
 	keys = []
 	cmd = options["--mpathpersist-path"] + " -i -k -d " + dev
 	out = run_cmd(options, cmd)
 	if out["err"]:
-		fail_usage("Cannot get registration keys")
+		fail_usage("Cannot get registration keys", fail)
+		if not fail:
+			return []
 	for line in out["out"].split("\n"):
 		match = re.search(r"\s+0x(\S+)\s*", line)
 		if match:
@@ -183,7 +185,7 @@ def mpath_check(hardreboot=False):
 		logging.error("No devices found")
 		return 0
 	for dev, key in list(devs.items()):
-		if key in get_registration_keys(options, dev):
+		if key in get_registration_keys(options, dev, fail=False):
 			logging.debug("key " + key + " registered with device " + dev)
 			return 0
 		else:
