@@ -28,6 +28,7 @@ define gen_agent_from_py
 		-e 's#@''SNMPGET_PATH@#${SNMPGET_PATH}#g' \
 		-e 's#@''NOVA_PATH@#${NOVA_PATH}#g' \
 		-e 's#@''POWERMAN_PATH@#${POWERMAN_PATH}#g' \
+		-e 's#@''CRM_RESOURCE_PATH@#${CRM_RESOURCE_PATH}#g' \
 		-e 's#@''PING_CMD@#${PING_CMD}#g' \
 		-e 's#@''PING6_CMD@#${PING6_CMD}#g' \
 		-e 's#@''PING4_CMD@#${PING4_CMD}#g' \

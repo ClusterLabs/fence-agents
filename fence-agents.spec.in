@@ -50,6 +50,7 @@ fence-agents-emerson \\
 fence-agents-eps \\
 fence-agents-hds-cb \\
 fence-agents-heuristics-ping \\
+fence-agents-heuristics-resource \\
 fence-agents-hpblade \\
 fence-agents-ibmblade \\
 fence-agents-ifmib \\
@@ -535,6 +536,19 @@ ping-heuristics.
 %files heuristics-ping
 %{_sbindir}/fence_heuristics_ping
 %{_mandir}/man8/fence_heuristics_ping.8*
+
+%package heuristics-resource
+License: GPLv2+ and LGPLv2+
+Summary: Pseudo fence agent to affect other agents based on resource-heuristics
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+Obsoletes: fence-agents
+%description heuristics-resource
+Fence pseudo agent used to affect other agents based on
+resource-heuristics.
+%files heuristics-resource
+%{_sbindir}/fence_heuristics_resource
+%{_mandir}/man8/fence_heuristics_resource.8*
 
 %package hpblade
 License: GPLv2+ and LGPLv2+

@@ -279,6 +279,7 @@ AC_PATH_PROG([SNMPSET_PATH], [snmpset], [/usr/bin/snmpset])
 AC_PATH_PROG([SNMPGET_PATH], [snmpget], [/usr/bin/snmpget])
 AC_PATH_PROG([NOVA_PATH], [nova], [/usr/bin/nova])
 AC_PATH_PROG([POWERMAN_PATH], [powerman], [/usr/bin/powerman])
+AC_PATH_PROG([CRM_RESOURCE_PATH], [crm_resource], [/usr/sbin/crm_resource])
 
 AC_PATH_PROG([PING_CMD], [ping])
 AC_PATH_PROG([PING6_CMD], [ping6])
