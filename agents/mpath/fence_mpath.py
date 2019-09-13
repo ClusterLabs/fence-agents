@@ -16,11 +16,11 @@ def get_status(conn, options):
 	status = "off"
 	for dev in options["devices"]:
 		is_block_device(dev)
-		if options["--key"] in get_registration_keys(options, dev):
+		if options["--plug"] in get_registration_keys(options, dev):
 			status = "on"
 		else:
 			logging.debug("No registration for key "\
-				+ options["--key"] + " on device " + dev + "\n")
+				+ options["--plug"] + " on device " + dev + "\n")
 
 	if options["--action"] == "monitor":
 		dev_read(options)
@@ -36,10 +36,10 @@ def set_status(conn, options):
 			is_block_device(dev)
 
 			register_dev(options, dev)
-			if options["--key"] not in get_registration_keys(options, dev):
+			if options["--plug"] not in get_registration_keys(options, dev):
 				count += 1
 				logging.debug("Failed to register key "\
-					+ options["--key"] + "on device " + dev + "\n")
+					+ options["--plug"] + "on device " + dev + "\n")
 				continue
 			dev_write(options, dev)
 
@@ -48,7 +48,7 @@ def set_status(conn, options):
 			and get_reservation_key(options, dev) is None:
 				count += 1
 				logging.debug("Failed to create reservation (key="\
-					+ options["--key"] + ", device=" + dev + ")\n")
+					+ options["--plug"] + ", device=" + dev + ")\n")
 
 	else:
 		dev_keys = dev_read(options)
@@ -56,14 +56,14 @@ def set_status(conn, options):
 		for dev in options["devices"]:
 			is_block_device(dev)
 
-			if options["--key"] in get_registration_keys(options, dev):
+			if options["--plug"] in get_registration_keys(options, dev):
 				preempt_abort(options, dev_keys[dev], dev)
 
 		for dev in options["devices"]:
-			if options["--key"] in get_registration_keys(options, dev):
+			if options["--plug"] in get_registration_keys(options, dev):
 				count += 1
 				logging.debug("Failed to remove key "\
-					+ options["--key"] + " on device " + dev + "\n")
+					+ options["--plug"] + " on device " + dev + "\n")
 				continue
 
 			if not get_reservation_key(options, dev):
@@ -97,16 +97,16 @@ def is_block_device(dev):
 
 # cancel registration
 def preempt_abort(options, host, dev):
-	cmd = options["--mpathpersist-path"] + " -o --preempt-abort --prout-type=5 --param-rk=" + host +" --param-sark=" + options["--key"] +" -d " + dev
+	cmd = options["--mpathpersist-path"] + " -o --preempt-abort --prout-type=5 --param-rk=" + host +" --param-sark=" + options["--plug"] +" -d " + dev
 	return not bool(run_cmd(options, cmd)["err"])
 
 def register_dev(options, dev):
-	cmd = options["--mpathpersist-path"] + " -o --register --param-sark=" + options["--key"] + " -d " + dev
+	cmd = options["--mpathpersist-path"] + " -o --register --param-sark=" + options["--plug"] + " -d " + dev
 	#cmd return code != 0 but registration can be successful
 	return not bool(run_cmd(options, cmd)["err"])
 
 def reserve_dev(options, dev):
-	cmd = options["--mpathpersist-path"] + " -o --reserv --prout-type=5 --param-rk=" + options["--key"] + " -d " + dev
+	cmd = options["--mpathpersist-path"] + " -o --reserv --prout-type=5 --param-rk=" + options["--plug"] + " -d " + dev
 	return not bool(run_cmd(options, cmd)["err"])
 
 def get_reservation_key(options, dev):
@@ -141,7 +141,7 @@ def dev_write(options, dev):
 		fail_usage("Failed: Cannot open file \""+ file_path + "\"")
 	out = store_fh.read()
 	if not re.search(r"^" + dev + r"\s+", out):
-		store_fh.write(dev + "\t" + options["--key"] + "\n")
+		store_fh.write(dev + "\t" + options["--plug"] + "\n")
 	store_fh.close()
 
 def dev_read(options, fail=True):
@@ -209,12 +209,9 @@ Each device must support SCSI-3 persistent reservations.",
 	all_opt["key"] = {
 		"getopt" : "k:",
 		"longopt" : "key",
-		"help" : "-k, --key=[key]                Key to use for the current operation",
-		"required" : "1",
-		"shortdesc" : "Key to use for the current operation. This key should be \
-unique to a node and have to be written in /etc/multipath.conf. For the \"on\" action, the key specifies the key use to \
-register the local node. For the \"off\" action, this key specifies the key to \
-be removed from the device(s).",
+		"help" : "-k, --key=[key]                Replaced by -n, --plug",
+		"required" : "0",
+		"shortdesc" : "Replaced by -n, --plug",
 		"order": 1
 	}
 	all_opt["mpathpersist_path"] = {
@@ -240,9 +237,17 @@ def main():
 	atexit.register(atexit_handler)
 
 	device_opt = ["no_login", "no_password", "devices", "key", "sudo", \
-	        "fabric_fencing", "on_target", "store_path", "mpathpersist_path", "force_on"]
+	        "fabric_fencing", "on_target", "store_path", \
+		"mpathpersist_path", "force_on", "port", "no_port"]
 
 	define_new_opts()
+
+	all_opt["port"]["help"] = "Key to use for the current operation"
+	all_opt["port"]["shortdesc"] = "Key to use for the current operation. \
+This key should be unique to a node and have to be written in \
+/etc/multipath.conf. For the \"on\" action, the key specifies the key use to \
+register the local node. For the \"off\" action, this key specifies the key to \
+be removed from the device(s)."
 
 	# fence_mpath_check
 	if os.path.basename(sys.argv[0]) == "fence_mpath_check":
@@ -251,6 +256,17 @@ def main():
 		sys.exit(mpath_check(hardreboot=True))
 
 	options = check_input(device_opt, process_input(device_opt), other_conditions=True)
+
+	# hack to remove list/list-status actions which are not supported
+	options["device_opt"] = [ o for o in options["device_opt"] if o != "separator" ]
+
+	# workaround to avoid regressions
+	if "--key" in options:
+		options["--plug"] = options["--key"]
+		del options["--key"]
+	elif options["--action"] in ["off", "on", "reboot", "status"] \
+	     and "--plug" not in options:
+		fail_usage("Failed: You have to enter plug number or machine identification", stop)
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for multipath persistent reservation"
@@ -271,16 +287,13 @@ longer be able to write to the device(s). A manual reboot is required."
 	run_delay(options)
 
 	# Input control BEGIN
-	if not "--key" in options:
-		fail_usage("Failed: key is required")
-
 	if options["--action"] == "validate-all":
 		sys.exit(0)
 
-	options["devices"] = options["--devices"].split(",")
-
-	if not options["devices"]:
+	if not ("--devices" in options and options["--devices"]):
 		fail_usage("Failed: No devices found")
+
+	options["devices"] = options["--devices"].split(",")
 	# Input control END
 
 	result = fence_action(None, options, set_status, get_status)
