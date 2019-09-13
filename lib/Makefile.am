@@ -24,4 +24,7 @@ rng_DATA		= $(XSL) $(FASRNG)
 
 include $(top_srcdir)/make/fencebuild.mk
 
+xml-check: all
+xml-upload: all
+
 clean-man:
