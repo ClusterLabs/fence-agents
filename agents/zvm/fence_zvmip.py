@@ -37,7 +37,7 @@ def open_socket(options):
 	return conn
 
 def smapi_pack_string(string):
-	return struct.pack("!i%ds" % (len(string)), len(string), string)
+	return struct.pack("!i%ds" % (len(string)), len(string), string.encode("UTF-8"))
 
 def prepare_smapi_command(options, smapi_function, additional_args):
 	packet_size = 3*INT4 + len(smapi_function) + len(options["--username"]) + len(options["--password"])
@@ -126,7 +126,7 @@ def get_list_of_images(options, command, data_as_plug):
 		data = ""
 
 		while True:
-			read_data = conn.recv(1024, socket.MSG_WAITALL)
+			read_data = conn.recv(1024, socket.MSG_WAITALL).decode("UTF-8")
 			data += read_data
 			if array_len == len(data):
 				break
@@ -136,9 +136,9 @@ def get_list_of_images(options, command, data_as_plug):
 
 		parsed_len = 0
 		while parsed_len < array_len:
-			string_len = struct.unpack("!i", data[parsed_len:parsed_len+INT4])[0]
+			string_len = struct.unpack("!i", data[parsed_len:parsed_len+INT4].encode("UTF-8"))[0]
 			parsed_len += INT4
-			image_name = struct.unpack("!%ds" % (string_len), data[parsed_len:parsed_len+string_len])[0]
+			image_name = struct.unpack("!%ds" % (string_len), data[parsed_len:parsed_len+string_len].encode("UTF-8"))[0].decode("UTF-8")
 			parsed_len += string_len
 			images.add(image_name)
 
