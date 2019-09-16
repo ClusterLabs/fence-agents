@@ -40,6 +40,7 @@ missing
 *.la
 *.lo
 lib/*.py*
+lib/__pycache__
 !lib/*.py.py
 !lib/check_used_options.py
 agents/*/fence_*

@@ -54,7 +54,7 @@ clean: clean-man
 	rm -f $(CLEAN_TARGET:%.8=%) $(CLEAN_TARGET_ADDITIONAL) $(mpathdata_SCRIPTS) $(scsidata_SCRIPTS) */*.pyc *.pyc */*.wiki
 
 	if [ "$(abs_builddir)" = "$(abs_top_builddir)/lib" ]; then \
-		rm -f $(TARGET); \
+		rm -rf $(TARGET) __pycache__; \
 	fi
 
 clean-local: clean

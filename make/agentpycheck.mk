@@ -7,7 +7,7 @@ check: $(TEST_TARGET:%=%.xml-check) $(SYMTARGET:%=%.xml-check) $(TEST_TARGET:%=%
 xml-check: $(TEST_TARGET:%=%.xml-check) $(SYMTARGET:%=%.xml-check)
 xml-upload: $(TEST_TARGET:%=%.xml-upload) $(SYMTARGET:%=%.xml-upload)
 
-%.xml-check: %
+%.xml-check: %.8
 	$(eval INPUT=$(subst .xml-check,,$(@F)))
 	for x in $(INPUT) `PYTHONPATH=$(abs_top_srcdir)/lib:$(abs_top_builddir)/lib $(PYTHON) $(@D)/$(INPUT) -o metadata | grep symlink | sed -e "s/.*\(fence.*\)\" .*/\1/g"`; do \
 		TEMPFILE=$$(mktemp); \
@@ -16,7 +16,7 @@ xml-upload: $(TEST_TARGET:%=%.xml-upload) $(SYMTARGET:%=%.xml-upload)
 		rm $$TEMPFILE; \
 	done
 
-%.xml-upload: %
+%.xml-upload: %.8
 	$(eval INPUT=$(subst .xml-upload,,$(@F)))
 	for x in $(INPUT) `PYTHONPATH=$(abs_top_srcdir)/lib:$(abs_top_builddir)/lib $(PYTHON) $(@D)/$(INPUT) -o metadata | grep symlink | sed -e "s/.*\(fence.*\)\" .*/\1/g"`; do \
 		PYTHONPATH=$(abs_top_srcdir)/lib:$(abs_top_builddir)/lib $(PYTHON) $(@D)/$$x -o metadata | $(AWK) $(AWK_VAL) > $(DATADIR)/$$x.xml; \
