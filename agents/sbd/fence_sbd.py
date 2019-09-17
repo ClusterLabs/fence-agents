@@ -8,6 +8,7 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import fail_usage, run_command, fence_action, all_opt
 from fencing import atexit_handler, check_input, process_input, show_docs
 from fencing import run_delay
+import itertools
 
 DEVICE_INIT = 1
 DEVICE_NOT_INIT = -3
@@ -82,7 +83,7 @@ def check_sbd_device(options, device_path):
 
     (return_code, out, err) = run_command(options, cmd)
 
-    for line in out.split("\n"):
+    for line in itertools.chain(out.split("\n"), err.split("\n")):
         if len(line) == 0:
             continue
 
@@ -148,7 +149,7 @@ def get_msg_timeout(options):
 
     (return_code, out, err) = run_command(options, cmd)
 
-    for line in out.split("\n"):
+    for line in itertools.chain(out.split("\n"), err.split("\n")):
         if len(line) == 0:
             continue
 
