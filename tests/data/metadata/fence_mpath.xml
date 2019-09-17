@@ -14,8 +14,18 @@ The fence_mpath agent works by having a unique key for each node that has to be 
 		<content type="string"  />
 		<shortdesc lang="en">List of devices to use for current operation. Devices can be comma-separated list of device-mapper multipath devices (eg. /dev/mapper/3600508b400105df70000e00000ac0000 or /dev/mapper/mpath1). Each device must support SCSI-3 persistent reservations.</shortdesc>
 	</parameter>
-	<parameter name="key" unique="0" required="1">
+	<parameter name="key" unique="0" required="0">
 		<getopt mixed="-k, --key=[key]" />
+		<content type="string"  />
+		<shortdesc lang="en">Replaced by -n, --plug</shortdesc>
+	</parameter>
+	<parameter name="plug" unique="0" required="1" obsoletes="port">
+		<getopt mixed="Key to use for the current operation" />
+		<content type="string"  />
+		<shortdesc lang="en">Key to use for the current operation. This key should be unique to a node and have to be written in /etc/multipath.conf. For the "on" action, the key specifies the key use to register the local node. For the "off" action, this key specifies the key to be removed from the device(s).</shortdesc>
+	</parameter>
+	<parameter name="port" unique="0" required="1" deprecated="1">
+		<getopt mixed="Key to use for the current operation" />
 		<content type="string"  />
 		<shortdesc lang="en">Key to use for the current operation. This key should be unique to a node and have to be written in /etc/multipath.conf. For the "on" action, the key specifies the key use to register the local node. For the "off" action, this key specifies the key to be removed from the device(s).</shortdesc>
 	</parameter>
