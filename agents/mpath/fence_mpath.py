@@ -213,7 +213,7 @@ Each device must support SCSI-3 persistent reservations.",
 		"longopt" : "key",
 		"help" : "-k, --key=[key]                Replaced by -n, --plug",
 		"required" : "0",
-		"shortdesc" : "Replaced by -n, --plug",
+		"shortdesc" : "Replaced by port/-n/--plug",
 		"order": 1
 	}
 	all_opt["mpathpersist_path"] = {
@@ -244,7 +244,8 @@ def main():
 
 	define_new_opts()
 
-	all_opt["port"]["help"] = "Key to use for the current operation"
+	all_opt["port"]["required"] = "0"
+	all_opt["port"]["help"] = "-n, --plug=[key]               Key to use for the current operation"
 	all_opt["port"]["shortdesc"] = "Key to use for the current operation. \
 This key should be unique to a node and have to be written in \
 /etc/multipath.conf. For the \"on\" action, the key specifies the key use to \
@@ -266,9 +267,10 @@ be removed from the device(s)."
 	if "--key" in options:
 		options["--plug"] = options["--key"]
 		del options["--key"]
-	elif options["--action"] in ["off", "on", "reboot", "status"] \
-	     and "--plug" not in options:
-		fail_usage("Failed: You have to enter plug number or machine identification", stop)
+	elif "--help" not in options and options["--action"] in ["off", "on", \
+	     "reboot", "status", "validate-all"] and "--plug" not in options:
+		stop_after_error = False if options["--action"] == "validate-all" else True
+		fail_usage("Failed: You have to enter plug number or machine identification", stop_after_error)
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for multipath persistent reservation"
