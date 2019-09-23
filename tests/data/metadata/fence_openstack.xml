@@ -43,12 +43,12 @@
 		<content type="string"  />
 		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
 	</parameter>
-	<parameter name="plug" unique="0" required="1" obsoletes="port">
+	<parameter name="plug" unique="0" required="0" obsoletes="port">
 		<getopt mixed="-n, --plug=[UUID]" />
 		<content type="string"  />
 		<shortdesc lang="en">UUID of the node to be fenced.</shortdesc>
 	</parameter>
-	<parameter name="port" unique="0" required="1" deprecated="1">
+	<parameter name="port" unique="0" required="0" deprecated="1">
 		<getopt mixed="-n, --plug=[UUID]" />
 		<content type="string"  />
 		<shortdesc lang="en">UUID of the node to be fenced.</shortdesc>
@@ -91,7 +91,7 @@
 	<parameter name="uuid" unique="0" required="0">
 		<getopt mixed="--uuid=[uuid]" />
 		<content type="string"  />
-		<shortdesc lang="en">Replaced by port</shortdesc>
+		<shortdesc lang="en">Replaced by port/-n/--plug</shortdesc>
 	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
