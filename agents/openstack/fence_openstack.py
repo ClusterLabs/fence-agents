@@ -114,7 +114,7 @@ def define_new_opts():
         "longopt" : "uuid",
         "help" : "--uuid=[uuid]                  Replaced by -n, --plug",
         "required" : "0",
-        "shortdesc" : "Replaced by port",
+        "shortdesc" : "Replaced by port/-n/--plug",
         "order": 1
     }
 
@@ -126,6 +126,7 @@ def main():
                     "port", "no_port", "uuid" ]
     define_new_opts()
 
+    all_opt["port"]["required"] = "0"
     all_opt["port"]["help"] = "-n, --plug=[UUID]              UUID of the node to be fenced"
     all_opt["port"]["shortdesc"] = "UUID of the node to be fenced."
 
@@ -138,9 +139,10 @@ def main():
     if "--uuid" in options:
         options["--plug"] = options["--uuid"]
         del options["--uuid"]
-    elif options["--action"] in ["off", "on", "reboot", "status"] \
-            and "--plug" not in options:
-        fail_usage("Failed: You have to enter plug number or machine identification", stop)
+    elif "--help" not in options and options["--action"] in ["off", "on", \
+         "reboot", "status", "validate-all"] and "--plug" not in options:
+        stop_after_error = False if options["--action"] == "validate-all" else True
+        fail_usage("Failed: You have to enter plug number or machine identification", stop_after_error)
 
     docs = {}
     docs["shortdesc"] = "Fence agent for OpenStack's Nova service"
