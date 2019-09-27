@@ -738,6 +738,22 @@ via telnet or SSH.
 %{_sbindir}/fence_netio
 %{_mandir}/man8/fence_netio.8*
 
+%package openstack
+License: GPLv2+ and LGPLv2+
+Summary: Fence agent for OpenStack's Nova service
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+Requires: python3-requests
+%else
+Requires: python-requests
+%endif
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description openstack
+Fence agent for OpenStack's Nova service.
+%files openstack
+%{_sbindir}/fence_openstack
+%{_mandir}/man8/fence_openstack.8*
+
 %package ovh
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for OVH provider
