@@ -42,7 +42,6 @@ fence-agents-bladecenter \\
 fence-agents-brocade \\
 fence-agents-cisco-mds \\
 fence-agents-cisco-ucs \\
-fence-agents-compute \\
 fence-agents-docker \\
 fence-agents-drac \\
 fence-agents-drac5 \\
@@ -61,7 +60,6 @@ fence-agents-ilo2 \\
 fence-agents-intelmodular \\
 fence-agents-ipdu \\
 fence-agents-ipmilan \\
-fence-agents-ironic \\
 fence-agents-kdump \\
 fence-agents-ldom \\
 fence-agents-lpar \\
@@ -85,6 +83,16 @@ fence-agents-xenapi \\
 fence-agents-zvm \\
 
 EOF)
+
+%ifarch x86_64 ppc64le
+%global allfenceagents %(cat <<EOF
+%{allfenceagents} \\
+fence-agents-compute \\
+fence-agents-ironic \\
+fence-agents-openstack
+
+EOF)
+%endif
 
 %if ! %{defined rhel7_s390x}
 %global allfenceagents %(cat <<EOF
@@ -372,6 +380,7 @@ via the SNMP protocol.
 %{_sbindir}/fence_cisco_ucs
 %{_mandir}/man8/fence_cisco_ucs.8*
 
+%ifarch x86_64 ppc64le
 %package compute
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Nova compute nodes
@@ -389,6 +398,7 @@ Fence agent for Nova compute nodes.
 %{_sbindir}/fence_evacuate
 %{_mandir}/man8/fence_compute.8*
 %{_mandir}/man8/fence_evacuate.8*
+%endif
 
 %package docker
 License: GPLv2+ and LGPLv2+
@@ -663,10 +673,10 @@ Fence agents for devices with IPMI interface.
 %{_sbindir}/fence_imm
 %{_mandir}/man8/fence_imm.8*
 
+%ifarch x86_64 ppc64le
 %package ironic
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for OpenStack's Ironic (Bare Metal as a service)
-Requires: /usr/bin/openstack
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description ironic
@@ -674,6 +684,7 @@ Fence agent for OpenStack's Ironic (Bare Metal as a service) service.
 %files ironic
 %{_sbindir}/fence_ironic
 %{_mandir}/man8/fence_ironic.8*
+%endif
 
 %package kdump
 License: GPLv2+ and LGPLv2+
@@ -737,6 +748,24 @@ via telnet or SSH.
 %files netio
 %{_sbindir}/fence_netio
 %{_mandir}/man8/fence_netio.8*
+
+%ifarch x86_64 ppc64le
+%package openstack
+License: GPLv2+ and LGPLv2+
+Summary: Fence agent for OpenStack's Nova service
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+Requires: python3-requests
+%else
+Requires: python-requests
+%endif
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description openstack
+Fence agent for OpenStack's Nova service.
+%files openstack
+%{_sbindir}/fence_openstack
+%{_mandir}/man8/fence_openstack.8*
+%endif
 
 %package ovh
 License: GPLv2+ and LGPLv2+
