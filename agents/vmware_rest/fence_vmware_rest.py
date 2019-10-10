@@ -11,7 +11,11 @@ from fencing import fail, run_delay, EC_LOGIN_DENIED, EC_STATUS
 state = {"POWERED_ON": "on", 'POWERED_OFF': "off", 'SUSPENDED': "off"}
 
 def get_power_status(conn, options):
-	res = send_command(conn, "vcenter/vm?filter.names={}".format(options["--plug"]))["value"]
+	try:
+		res = send_command(conn, "vcenter/vm?filter.names={}".format(options["--plug"]))["value"]
+	except Exception as e:
+		logging.debug("Failed: {}".format(e))
+		fail(EC_STATUS)
 
 	if len(res) == 0:
 		fail(EC_STATUS)
@@ -28,12 +32,20 @@ def set_power_status(conn, options):
 		"off" : "stop"
 	}[options["--action"]]
 
-	send_command(conn, "vcenter/vm/{}/power/{}".format(options["id"], action), "POST")
+	try:
+		send_command(conn, "vcenter/vm/{}/power/{}".format(options["id"], action), "POST")
+	except Exception as e:
+		logging.debug("Failed: {}".format(e))
+		fail(EC_STATUS)
 
 def get_list(conn, options):
 	outlets = {}
 
-	res = send_command(conn, "vcenter/vm")
+	try:
+		res = send_command(conn, "vcenter/vm")
+	except:
+		logging.debug("Failed: {}".format(e))
+		fail(EC_STATUS)
 
 	for r in res["value"]:
 		outlets[r["name"]] = ("", state[r["power_state"]])
@@ -87,7 +99,10 @@ def connect(opt):
 	return conn
 
 def disconnect(conn):
-	send_command(conn, "com/vmware/cis/session", "DELETE")
+	try:
+		send_command(conn, "com/vmware/cis/session", "DELETE")
+	except Exception as e:
+		logging.debug("Failed: {}".format(e))
 	conn.close()
 
 def send_command(conn, command, method="GET"):
