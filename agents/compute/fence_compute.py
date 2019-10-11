@@ -117,11 +117,11 @@ def set_power_status_off(connection, options):
 	if status in [ "off" ]:
 		return
 
-	connection.services.disable(options["--plug"], 'nova-compute')
 	try:
 		# Until 2.53
 		connection.services.force_down(
 			options["--plug"], "nova-compute", force_down=True)
+		connection.services.disable(options["--plug"], 'nova-compute')
 	except Exception as e:
 		# Something went wrong when we tried to force the host down.
 		# That could come from either an incompatible API version
