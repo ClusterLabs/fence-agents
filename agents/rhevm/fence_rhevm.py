@@ -4,6 +4,7 @@ import sys, re
 import pycurl, io
 import logging
 import atexit
+import tempfile
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, EC_FETCH_VM_UUID, run_delay
@@ -120,7 +121,7 @@ def send_command(opt, command, method="GET"):
 			if "--cookie-file" in opt:
 				cookie_file = opt["--cookie-file"]
 			else:
-				cookie_file = "/tmp/fence_rhevm_" + opt["--ip"] + "_" + opt["--username"] + "_cookie.dat"
+				cookie_file = tempfile.gettempdir() + "/fence_rhevm_" + opt["--ip"] + "_" + opt["--username"] + "_cookie.dat"
 			conn.setopt(pycurl.COOKIEFILE, cookie_file)
 			conn.setopt(pycurl.COOKIEJAR, cookie_file)
 
@@ -215,6 +216,7 @@ def main():
 		"web",
 		"port",
 		"use_cookies",
+		"cookie_file",
 		"api_version",
 		"api_path",
 		"disable_http_filter",
