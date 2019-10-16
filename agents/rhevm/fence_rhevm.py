@@ -117,7 +117,12 @@ def send_command(opt, command, method="GET"):
 		conn.setopt(pycurl.HTTPAUTH, pycurl.HTTPAUTH_BASIC)
 		conn.setopt(pycurl.USERPWD, opt["--username"] + ":" + opt["--password"])
 		if "--use-cookies" in opt:
-			conn.setopt(pycurl.COOKIEFILE, "")
+			if "--cookie-file" in opt:
+				cookie_file = opt["--cookie-file"]
+			else:
+				cookie_file = "/tmp/fence_rhevm_" + opt["--ip"] + "_" + opt["--username"] + "_cookie.dat"
+			conn.setopt(pycurl.COOKIEFILE, cookie_file)
+			conn.setopt(pycurl.COOKIEJAR, cookie_file)
 
 	conn.setopt(pycurl.TIMEOUT, int(opt["--shell-timeout"]))
 	if "--ssl" in opt or "--ssl-secure" in opt:
@@ -166,6 +171,14 @@ def define_new_opts():
 		"required" : "0",
 		"shortdesc" : "Reuse cookies for authentication",
 		"order" : 1}
+	all_opt["cookie_file"] = {
+		"getopt" : ":",
+		"longopt" : "cookie-file",
+		"help" : "--cookie-file                  Path to cookie file for authentication\n"
+                        "\t\t\t\t  (Default: /tmp/fence_rhevm_ip_username_cookie.dat)",
+		"required" : "0",
+		"shortdesc" : "Path to cookie file for authentication",
+		"order" : 2}
 	all_opt["api_version"] = {
 		"getopt" : ":",
 		"longopt" : "api-version",
