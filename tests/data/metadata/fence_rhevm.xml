@@ -103,6 +103,11 @@
 		<content type="string" default="auto"  />
 		<shortdesc lang="en">Version of RHEV API (default: auto)</shortdesc>
 	</parameter>
+	<parameter name="cookie_file" unique="0" required="0">
+		<getopt mixed="--cookie-file" />
+		<content type="string"  />
+		<shortdesc lang="en">Path to cookie file for authentication</shortdesc>
+	</parameter>
 	<parameter name="api_path" unique="0" required="0">
 		<getopt mixed="--api-path=[path]" />
 		<shortdesc lang="en">The path part of the API URL</shortdesc>
