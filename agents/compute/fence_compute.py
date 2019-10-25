@@ -365,7 +365,7 @@ def define_new_opts():
 	all_opt["project-domain"] = {
 		"getopt" : "P:",
 		"longopt" : "project-domain",
-		"help" : "-d, --project-domain=[name]    Keystone v3 Project Domain",
+		"help" : "-P, --project-domain=[name]    Keystone v3 Project Domain",
 		"required" : "0",
 		"shortdesc" : "Keystone v3 Project Domain",
 		"default" : "Default",
