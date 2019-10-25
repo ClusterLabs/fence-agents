@@ -74,12 +74,12 @@
 		<shortdesc lang="en">Allow Insecure TLS Requests</shortdesc>
 	</parameter>
 	<parameter name="project-domain" unique="0" required="0" deprecated="1">
-		<getopt mixed="-d, --project-domain=[name]" />
+		<getopt mixed="-P, --project-domain=[name]" />
 		<content type="string" default="Default"  />
 		<shortdesc lang="en">Keystone v3 Project Domain</shortdesc>
 	</parameter>
 	<parameter name="project_domain" unique="0" required="0" obsoletes="project-domain">
-		<getopt mixed="-d, --project-domain=[name]" />
+		<getopt mixed="-P, --project-domain=[name]" />
 		<content type="string" default="Default"  />
 		<shortdesc lang="en">Keystone v3 Project Domain</shortdesc>
 	</parameter>
