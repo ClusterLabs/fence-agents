@@ -118,6 +118,10 @@ BuildRequires: python3-suds
 %if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7
 BuildRequires: python3-google-api-client python3-boto3 openwsman-python3
 %endif
+# (-openstack)
+%ifarch x86_64 ppc64le
+BuildRequires: python3-novaclient python3-keystoneclient
+%endif
 %if 0%{?suse_version}
 BuildRequires: python3-google-api-python-client python3-openwsman python3-boto3
 %endif
@@ -127,6 +131,10 @@ BuildRequires: pexpect python-pycurl python-requests
 BuildRequires: python-suds openwsman-python
 %if ! %{defined rhel7_s390x}
 BuildRequires: python-google-api-client python-boto3
+%endif
+# (-openstack)
+%ifarch x86_64 ppc64le
+BuildRequires: python3-novaclient python3-keystoneclient
 %endif
 %endif
 
