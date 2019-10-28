@@ -12,12 +12,12 @@ By default, vbox needs to log in as a user that is a member of the vboxusers gro
 	</parameter>
 	<parameter name="cmd_prompt" unique="0" required="0" deprecated="1">
 		<getopt mixed="-c, --command-prompt=[prompt]" />
-		<content type="string" default="[&apos;\\[EXPECT\\]#\\ &apos;]"  />
+		<content type="string" default="[&apos;\\[EXPECT\\]#&apos;]"  />
 		<shortdesc lang="en">Force Python regex for command prompt</shortdesc>
 	</parameter>
 	<parameter name="command_prompt" unique="0" required="0" obsoletes="cmd_prompt">
 		<getopt mixed="-c, --command-prompt=[prompt]" />
-		<content type="string" default="[&apos;\\[EXPECT\\]#\\ &apos;]"  />
+		<content type="string" default="[&apos;\\[EXPECT\\]#&apos;]"  />
 		<shortdesc lang="en">Force Python regex for command prompt</shortdesc>
 	</parameter>
 	<parameter name="identity_file" unique="0" required="0">
@@ -97,7 +97,7 @@ By default, vbox needs to log in as a user that is a member of the vboxusers gro
 	</parameter>
 	<parameter name="ssh_options" unique="0" required="0">
 		<getopt mixed="--ssh-options=[options]" />
-		<content type="string" default="-t &apos;/bin/bash -c &quot;PS1=\\[EXPECT\\]#\  /bin/bash --noprofile --norc&quot;&apos;"  />
+		<content type="string" default="-t &apos;/bin/bash -c &quot;PS1=\\[EXPECT\\]# /bin/bash --noprofile --norc&quot;&apos;"  />
 		<shortdesc lang="en">SSH options to use</shortdesc>
 	</parameter>
 	<parameter name="username" unique="0" required="1" obsoletes="login">

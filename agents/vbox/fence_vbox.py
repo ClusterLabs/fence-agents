@@ -93,8 +93,8 @@ def main():
 
     all_opt["secure"]["default"] = "1"
 
-    all_opt["cmd_prompt"]["default"] = [r"\[EXPECT\]#\ "]
-    all_opt["ssh_options"]["default"] = "-t '/bin/bash -c \"" + r"PS1=\\[EXPECT\\]#\  " + "/bin/bash --noprofile --norc\"'"
+    all_opt["cmd_prompt"]["default"] = [r"\[EXPECT\]#"]
+    all_opt["ssh_options"]["default"] = "-t '/bin/bash -c \"" + r"PS1=\\[EXPECT\\]# " + "/bin/bash --noprofile --norc\"'"
 
     opt = process_input(device_opt)
 
