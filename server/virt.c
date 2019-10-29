@@ -128,6 +128,9 @@ virt_list_t *vl_get(virConnectPtr *vp, int vp_count, int my_id)
 
 		_free_dom_list(dom_list, ret);
 	}
+	/* No domains found */
+	if (!vl)
+		return NULL;
 
 	/* We have all the locally running domains & states now */
 	/* Sort */
