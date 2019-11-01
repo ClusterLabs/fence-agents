@@ -106,7 +106,7 @@ When used as a watchdog device you can define e.g. retry=1, retry-sleep=2 and ve
 		<shortdesc lang="en">Path to corosync-cmapctl binary</shortdesc>
 	</parameter>
 	<parameter name="key_value" unique="0" required="0">
-		<getopt mixed="--key_value=&lt;id|hash&gt;" />
+		<getopt mixed="--key-value=&lt;id|hash&gt;" />
 		<content type="string" default="id"  />
 		<shortdesc lang="en">Method used to generate the SCSI key. "id" (default) uses the positional ID from "corosync-cmactl nodelist" output which can get inconsistent when nodes are removed from cluster without full cluster restart. "hash" uses part of hash made out of node names which is not affected over time but there is theoretical chance that hashes can collide as size of SCSI key is quite limited.</shortdesc>
 	</parameter>

@@ -212,7 +212,7 @@ def get_node_hash(options):
 
 
 def generate_key(options):
-	if options["--key_value"] == "hash":
+	if options["--key-value"] == "hash":
 		return "%.4s%.4s" % (get_cluster_id(options), get_node_hash(options))
 	else:
 		return "%.4s%.4d" % (get_cluster_id(options), int(get_node_id(options)))
@@ -388,8 +388,8 @@ be removed from the device(s).",
 	}
 	all_opt["key_value"] = {
 		"getopt" : ":",
-		"longopt" : "key_value",
-		"help" : "--key_value=<id|hash>          SCSI key node generation method",
+		"longopt" : "key-value",
+		"help" : "--key-value=<id|hash>          SCSI key node generation method",
 		"required" : "0",
 		"shortdesc" : "Method used to generate the SCSI key. \"id\" (default) \
 uses the positional ID from \"corosync-cmactl nodelist\" output which can get inconsistent \
@@ -541,9 +541,9 @@ failing."
 	if options["--key"] == "0" or not options["--key"]:
 		fail_usage("Failed: key cannot be 0", stop_after_error)
 
-	if "--key_value" in options\
-	and (options["--key_value"] != "id" and options["--key_value"] != "hash"):
-		fail_usage("Failed: key_value has to be 'id' or 'hash'", stop_after_error)
+	if "--key-value" in options\
+	and (options["--key-value"] != "id" and options["--key-value"] != "hash"):
+		fail_usage("Failed: key-value has to be 'id' or 'hash'", stop_after_error)
 
 	if options["--action"] == "validate-all":
 		sys.exit(0)
