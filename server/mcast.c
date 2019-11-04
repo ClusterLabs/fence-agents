@@ -19,6 +19,9 @@
 /*
  * Author: Lon Hohberger <lhh at redhat.com>
  */
+
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,11 +45,6 @@
 #include <pthread.h>
 #include <nss.h>
 #include <libgen.h>
-#include <list.h>
-#include <simpleconfig.h>
-#include <static_map.h>
-#include <server_plugin.h>
-#include <history.h>
 
 /* Local includes */
 #include "xvm.h"
@@ -56,9 +54,14 @@
 #include "tcp.h"
 #include "debug.h"
 #include "fdops.h"
+#include "list.h"
+#include "simpleconfig.h"
+#include "static_map.h"
+#include "server_plugin.h"
+#include "history.h"
 
 #define NAME "multicast"
-#define VERSION "1.2"
+#define MCAST_VERSION "1.2"
 
 #define MCAST_MAGIC 0xabb911a3
 
@@ -195,8 +198,8 @@ mcast_hostlist(const char *vm_name, const char *vm_uuid,
 		return 0;
 	}
 
-	strncpy((char *)hinfo.domain, vm_name, sizeof(hinfo.domain));
-	strncpy((char *)hinfo.uuid, vm_uuid, sizeof(hinfo.uuid));
+	strncpy((char *)hinfo.domain, vm_name, sizeof(hinfo.domain) - 1);
+	strncpy((char *)hinfo.uuid, vm_uuid, sizeof(hinfo.uuid) - 1);
 	hinfo.state = state;
 
 	tv.tv_sec = 1;
@@ -602,7 +605,7 @@ mcast_shutdown(listener_context_t c)
 
 static listener_plugin_t mcast_plugin = {
 	.name = NAME,
-	.version = VERSION,
+	.version = MCAST_VERSION,
 	.init = mcast_init,
 	.dispatch = mcast_dispatch,
 	.cleanup = mcast_shutdown,

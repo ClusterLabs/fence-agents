@@ -1,14 +1,16 @@
+#include "config.h"
+
 #include <stdio.h>
-#include <simpleconfig.h>
-#include <static_map.h>
 #include <string.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
-#include <list.h>
-#include <debug.h>
 
+#include "simpleconfig.h"
+#include "static_map.h"
+#include "list.h"
+#include "debug.h"
 #include "serial.h"
 #include "uuid-test.h"
 

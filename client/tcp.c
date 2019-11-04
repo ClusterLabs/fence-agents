@@ -16,6 +16,9 @@
   Free Software Foundation, Inc.,  675 Mass Ave, Cambridge, 
   MA 02139, USA.
 */
+
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -118,7 +121,7 @@ tcp_fence_virt(fence_virt_args_t *args)
 	/* Same wire protocol as fence_xvm */
 	memset(&freq, 0, sizeof(freq));
 	if (args->domain && strlen((char *)args->domain))
-		strncpy((char *)freq.domain, args->domain, sizeof(freq.domain));
+		strncpy((char *)freq.domain, args->domain, sizeof(freq.domain) - 1);
 	freq.request = args->op;
 	freq.hashtype = args->net.hash;
 	freq.flags = 0;

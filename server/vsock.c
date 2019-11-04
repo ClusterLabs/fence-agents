@@ -16,6 +16,8 @@
   Free Software Foundation, Inc.,  675 Mass Ave, Cambridge, 
   MA 02139, USA.
 */
+#include "config.h"
+
 #include <unistd.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -28,12 +30,11 @@
 #include <linux/vm_sockets.h>
 
 /* Local includes */
-#include <list.h>
-#include <simpleconfig.h>
-#include <static_map.h>
-#include <server_plugin.h>
-#include <history.h>
-
+#include "list.h"
+#include "simpleconfig.h"
+#include "static_map.h"
+#include "server_plugin.h"
+#include "history.h"
 #include "xvm.h"
 #include "simple_auth.h"
 #include "options.h"
@@ -44,7 +45,7 @@
 #include "fdops.h"
 
 #define NAME "vsock"
-#define VERSION "0.1"
+#define VSOCK_VERSION "0.1"
 
 #define VSOCK_MAGIC 0xa32d27c1e
 
@@ -150,8 +151,8 @@ vsock_hostlist(const char *vm_name, const char *vm_uuid,
 		return 0;
 	}
 
-	strncpy((char *)hinfo.domain, vm_name, sizeof(hinfo.domain));
-	strncpy((char *)hinfo.uuid, vm_uuid, sizeof(hinfo.uuid));
+	strncpy((char *)hinfo.domain, vm_name, sizeof(hinfo.domain) - 1);
+	strncpy((char *)hinfo.uuid, vm_uuid, sizeof(hinfo.uuid) - 1);
 	hinfo.state = state;
 
 	tv.tv_sec = 1;
@@ -547,7 +548,7 @@ vsock_shutdown(listener_context_t c)
 
 static listener_plugin_t vsock_plugin = {
 	.name = NAME,
-	.version = VERSION,
+	.version = VSOCK_VERSION,
 	.init = vsock_init,
 	.dispatch = vsock_dispatch,
 	.cleanup = vsock_shutdown,

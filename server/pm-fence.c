@@ -16,14 +16,13 @@
   Free Software Foundation, Inc.,  675 Mass Ave, Cambridge, 
   MA 02139, USA.
 */
+
+#include "config.h"
+
 #include <stdio.h>
 #include <netdb.h>
 #include <errno.h>
 #include <syslog.h>
-#include <simpleconfig.h>
-#include <static_map.h>
-
-#include <server_plugin.h>
 
 #include <crm/cib.h>
 #include <crm/pengine/status.h>
@@ -31,7 +30,9 @@
 /* Local includes */
 #include "xvm.h"
 #include "debug.h"
-
+#include "simpleconfig.h"
+#include "static_map.h"
+#include "server_plugin.h"
 
 #define BACKEND_NAME "pm-fence"
 #define VERSION "0.1"

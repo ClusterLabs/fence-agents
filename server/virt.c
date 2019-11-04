@@ -17,6 +17,8 @@
   MA 02139, USA.
 */
 
+#include "config.h"
+
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>

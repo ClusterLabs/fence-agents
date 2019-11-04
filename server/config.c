@@ -1,8 +1,7 @@
+#include "config.h"
+
 #include <stdio.h>
 #include <string.h>
-#include <simpleconfig.h>
-#include <static_map.h>
-
 #include <stdint.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -13,11 +12,12 @@
 #include <net/if.h>
 #include <arpa/inet.h>
 
-#include <mcast.h>
-#include <xvm.h>
+#include "simpleconfig.h"
+#include "static_map.h"
+#include "mcast.h"
+#include "xvm.h"
 #include "server_plugin.h"
-
-#include <simple_auth.h>
+#include "simple_auth.h"
 
 
 static int

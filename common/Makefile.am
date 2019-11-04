@@ -1,7 +1,7 @@
 ###############################################################################
 ###############################################################################
 ##
-##  Copyright (C) 2009 Red Hat, Inc.
+##  Copyright (C) 2009-2019 Red Hat, Inc.
 ##  
 ##  This copyrighted material is made available to anyone wishing to use,
 ##  modify, copy, or redistribute it subject to the terms and conditions
@@ -10,22 +10,15 @@
 ###############################################################################
 ###############################################################################
 
-include ../Makefile.top
+MAINTAINERCLEANFILES	 = Makefile.in
 
-MAN8=fence_virt.8 fence_xvm.8 fence_virtd.8
-MAN5=fence_virt.conf.5
+noinst_LTLIBRARIES	 = libfence_virt.la
 
-all: $(MAN5) $(MAN8)
+libfence_virt_la_SOURCES = mcast.c ip_lookup.c simple_auth.c tcp.c \
+			   debug.c fdops.c log.c
 
-install: all
-	if [ ! -d ${DESTDIR}/${mandir}/man8 ]; then \
-		install -d ${DESTDIR}/${mandir}/man8 ; \
-	fi
-	install -m644 ${MAN8} ${DESTDIR}/${mandir}/man8
-	if [ ! -d ${DESTDIR}/${mandir}/man5 ]; then \
-		install -d ${DESTDIR}/${mandir}/man5 ; \
-	fi
-	install -m644 ${MAN5} ${DESTDIR}/${mandir}/man5
+libfence_virt_la_CFLAGS	 = $(AM_CFLAGS) $(nss_CFLAGS)
 
+libfence_virt_la_LDFLAGS = $(AM_LDFLAGS) $(COMMON_LDFLAGS)
 
-clean:
+libfence_virt_la_LIBADD	 = $(nss_LIBS)

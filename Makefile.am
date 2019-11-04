@@ -1,7 +1,7 @@
 ###############################################################################
 ###############################################################################
 ##
-##  Copyright (C) 2009 Red Hat, Inc.
+##  Copyright (C) 2009-2019 Red Hat, Inc.
 ##  
 ##  This copyrighted material is made available to anyone wishing to use,
 ##  modify, copy, or redistribute it subject to the terms and conditions
@@ -10,32 +10,30 @@
 ###############################################################################
 ###############################################################################
 
+MAINTAINERCLEANFILES	= Makefile.in aclocal.m4 configure depcomp \
+			  config.guess config.sub missing install-sh \
+			  ltmain.sh compile config.h.in config.h.in~ \
+			  autoscan.log configure.scan test-driver \
+			  m4/libtool.m4 m4/lt~obsolete.m4 m4/ltoptions.m4 \
+			  m4/ltsugar.m4 m4/ltversion.m4 include/config.in*
 
-all: fence_virtd.service
-	make -C config
-	make -C common
-	make -C client
-	make -C server
+AUTOMAKE_OPTIONS	= foreign
 
-install:
-	make -C config install
-	make -C client install
-	make -C server install
-	make -C man install
+ACLOCAL_AMFLAGS		= -I m4
 
-clean:
-	make -C config clean
-	make -C common clean
-	make -C client clean
-	make -C server clean
+EXTRA_DIST		= autogen.sh architecture.txt \
+			  fence_virtd.init.in fence_virtd.service.in \
+			  fence_virt.txt README README.md TODO \
+			  include build-aux
+
+SUBDIRS			= config common client server man
+
+all-local: fence_virtd.service
+
+clean-local:
 	rm -f fence_virtd.service
 
-maintainer-clean:
-	make clean
-	git clean -df
-
 fence_virtd.service: fence_virtd.service.in
-	# Expand macros and add to unit file
 	SBINDIR="@sbindir@"; \
 	SCDIR="@sysconfdir@"; \
 	cat $^ > $@ ; \

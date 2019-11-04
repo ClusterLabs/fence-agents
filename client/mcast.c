@@ -19,6 +19,8 @@
 /*
  * Author: Lon Hohberger <lhh at redhat.com>
  */
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -212,7 +214,7 @@ send_multicast_packets(ip_list_t *ipl, fence_virt_args_t *args,
 		memset(&freq, 0, sizeof(freq));
 		if (args->domain && strlen((char *)args->domain)) {
 			strncpy((char *)freq.domain, args->domain,
-				sizeof(freq.domain));
+				sizeof(freq.domain) - 1);
 		}
 		freq.request = args->op;
 		freq.hashtype = args->net.hash;

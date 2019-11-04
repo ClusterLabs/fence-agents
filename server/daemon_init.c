@@ -10,6 +10,9 @@
  *
  *       Also need to add file locking for the pid file.
  */
+
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -143,7 +146,7 @@ update_pidfile(const char *filename)
 {
 	FILE *fp = NULL;
 
-	strncpy(pid_filename, filename, PATH_MAX);
+	strncpy(pid_filename, filename, PATH_MAX - 1);
 
 	fp = fopen(pid_filename, "w");
 	if (fp == NULL) {

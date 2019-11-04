@@ -22,6 +22,9 @@
  * @author Lon H. Hohberger <lhh at redhat.com>
  * @author Jeff Moyer <jmoyer at redhat.com>
  */
+
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

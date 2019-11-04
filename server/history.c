@@ -1,12 +1,14 @@
+#include "config.h"
+
 #include <stdio.h>
 #include <malloc.h>
 #include <sys/types.h>
 #include <errno.h>
 #include <string.h>
 #include <list.h>
-#include <history.h>
 #include <time.h>
 
+#include "history.h"
 
 history_info_t *
 history_init(history_compare_fn func, time_t expiration, size_t element_size)

@@ -19,6 +19,9 @@
 /*
  * Author: Lon Hohberger <lhh at redhat.com>
  */
+
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,21 +45,20 @@
 #include <pthread.h>
 #include <nss.h>
 #include <libgen.h>
-#include <list.h>
-#include <simpleconfig.h>
-#include <static_map.h>
-#include <server_plugin.h>
-#include <history.h>
-#include <xvm.h>
-
 
 /* Local includes */
 #include "debug.h"
 #include "fdops.h"
 #include "serial.h"
+#include "list.h"
+#include "simpleconfig.h"
+#include "static_map.h"
+#include "server_plugin.h"
+#include "history.h"
+#include "xvm.h"
 
 #define NAME "serial"
-#define VERSION "0.4"
+#define SERIAL_VERSION "0.4"
 
 #define SERIAL_PLUG_MAGIC 0x1227a000
 
@@ -122,8 +124,8 @@ serial_hostlist(const char *vm_name, const char *vm_uuid,
 		return 0;
 	}
 
-	strncpy((char *)hinfo.domain, vm_name, sizeof(hinfo.domain));
-	strncpy((char *)hinfo.uuid, vm_uuid, sizeof(hinfo.uuid));
+	strncpy((char *)hinfo.domain, vm_name, sizeof(hinfo.domain) - 1);
+	strncpy((char *)hinfo.uuid, vm_uuid, sizeof(hinfo.uuid) - 1);
 	hinfo.state = state;
 
 	tv.tv_sec = 1;
@@ -440,7 +442,7 @@ serial_shutdown(listener_context_t c)
 
 static listener_plugin_t serial_plugin = {
 	.name = NAME,
-	.version = VERSION,
+	.version = SERIAL_VERSION,
 	.init = serial_init,
 	.dispatch = serial_dispatch,
 	.cleanup = serial_shutdown,

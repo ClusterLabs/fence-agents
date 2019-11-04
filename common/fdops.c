@@ -20,6 +20,9 @@
  * Wrapper functions around read/write/select to retry in the event
  * of interrupts.
  */
+
+#include "config.h"
+
 #include <unistd.h>
 #include <sys/types.h>
 #include <fcntl.h>

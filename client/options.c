@@ -16,6 +16,9 @@
   Free Software Foundation, Inc.,  675 Mass Ave, Cambridge, 
   MA 02139, USA.
 */
+
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,6 +38,7 @@
 #include <sys/time.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <libgen.h>
 
 /* Local includes */
 #include "xvm.h"
@@ -689,7 +693,7 @@ output_help_text(int arg_width, int help_width, const char *arg, const char *des
 	int len;
 
 	memset(out_buf, 0, sizeof(out_buf));
-	strncpy(out_buf, desc, sizeof(out_buf));
+	strncpy(out_buf, desc, sizeof(out_buf) - 1);
 	start = out_buf;
 
 	do {
