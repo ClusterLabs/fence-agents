@@ -134,7 +134,7 @@ BuildRequires: python-google-api-client python-boto3
 %endif
 # (-openstack)
 %ifarch x86_64 ppc64le
-BuildRequires: python3-novaclient python3-keystoneclient
+BuildRequires: python-novaclient python-keystoneclient
 %endif
 %endif
 
