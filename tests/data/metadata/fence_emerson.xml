@@ -13,16 +13,6 @@
 		<content type="string"  />
 		<shortdesc lang="en">Set the community string</shortdesc>
 	</parameter>
-	<parameter name="inet4_only" unique="0" required="0">
-		<getopt mixed="-4, --inet4-only" />
-		<content type="boolean"  />
-		<shortdesc lang="en">Forces agent to use IPv4 addresses only</shortdesc>
-	</parameter>
-	<parameter name="inet6_only" unique="0" required="0">
-		<getopt mixed="-6, --inet6-only" />
-		<content type="boolean"  />
-		<shortdesc lang="en">Forces agent to use IPv6 addresses only</shortdesc>
-	</parameter>
 	<parameter name="ip" unique="0" required="1" obsoletes="ipaddr">
 		<getopt mixed="-a, --ip=[ip]" />
 		<content type="string"  />
