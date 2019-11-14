@@ -9,11 +9,11 @@
 # to build official release tarballs, handle tagging and publish.
 
 # example:
-# make -f build-aux/release.mk all version=0.9 release=yes publish
+# make -f build-aux/release.mk all version=0.4.0 release=yes publish
 
-gpgsignkey = 1F22889A
+gpgsignkey =
 
-project = kronosnet
+project = fence-virt
 
 deliverables = $(project)-$(version).sha256 \
                $(project)-$(version).tar.bz2 \
@@ -100,8 +100,6 @@ ifeq (,$(release))
 else
 	@echo : pushing tags
 	@git push --follow-tags origin
-	@echo : publishing files
-	@scp $(deliverables) $(deliverables:=.asc) www.kronosnet.org:kronosnet/releases/.
 endif
 
 

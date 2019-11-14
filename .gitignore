@@ -9,6 +9,7 @@ y.tab.*
 *.la
 .deps
 .libs
+.*version
 Makefile.in
 *.swp
 aclocal.m4

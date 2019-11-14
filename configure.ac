@@ -4,7 +4,7 @@
 AC_PREREQ([2.63])
 AC_INIT([fence-virt],
 	[m4_esyscmd([build-aux/git-version-gen .tarball-version .gitarchivever])],
-	[rmccabe@redhat.com])
+	[developers@clusterlabs.org])
 
 # Don't let AC_PROC_CC (invoked by AC_USE_SYSTEM_EXTENSIONS) replace
 # undefined CFLAGS with -g -O2, overriding our special OPT_CFLAGS.

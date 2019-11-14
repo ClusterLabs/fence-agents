@@ -21,7 +21,7 @@ AUTOMAKE_OPTIONS	= foreign
 
 ACLOCAL_AMFLAGS		= -I m4
 
-EXTRA_DIST		= autogen.sh architecture.txt \
+EXTRA_DIST		= autogen.sh .version architecture.txt \
 			  fence_virtd.init.in fence_virtd.service.in \
 			  fence_virt.txt README README.md TODO \
 			  include build-aux
@@ -40,3 +40,11 @@ fence_virtd.service: fence_virtd.service.in
 	echo "EnvironmentFile=-$$SCDIR/sysconfig/fence_virtd" >> $@ ;\
 	echo "ExecStart=$$SBINDIR/fence_virtd \$$FENCE_VIRTD_ARGS" >> $@
 
+# release/versioning
+BUILT_SOURCES	= .version
+.version:
+	echo $(VERSION) > $@-t && mv $@-t $@
+
+dist-hook:
+	echo $(VERSION) > $(distdir)/.tarball-version
+	echo $(SOURCE_EPOCH) > $(distdir)/source_epoch
