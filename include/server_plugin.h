@@ -1,4 +1,10 @@
 /*  */
+
+#ifndef _SERVER_PLUGIN_H
+#define _SERVER_PLUGIN_H
+
+#include "config.h"
+
 #define PLUGIN_VERSION_LISTENER ((double)0.3)
 #define PLUGIN_VERSION_BACKEND  ((double)0.2)
 
@@ -121,4 +127,5 @@ int plugin_search(const char *pathname);
 
 #ifdef __cplusplus
 }
+#endif
 #endif

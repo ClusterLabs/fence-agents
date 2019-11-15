@@ -18,21 +18,19 @@
 //
 //  Author: Lon Hohberger <lhh at redhat.com>
 //
+
+#include "config.h"
+
 #include <stdio.h>
-#include <simpleconfig.h>
-#include <static_map.h>
 #include <sys/types.h>
 #include <stdint.h>
 #include <time.h>
-#include <server_plugin.h>
 #include <string.h>
 #include <malloc.h>
 #include <errno.h>
 #include <string>
 #include <sstream>
 #include <iostream>
-#include "uuid-test.h"
-#include <xvm.h>
 
 #include <qpid/types/Variant.h>
 #include <qpid/messaging/Connection.h>
@@ -40,6 +38,11 @@
 #include <qmf/ConsoleSession.h>
 #include <qmf/ConsoleEvent.h>
 
+#include "uuid-test.h"
+#include "xvm.h"
+#include "simpleconfig.h"
+#include "static_map.h"
+#include "server_plugin.h"
 
 #define NAME "libvirt-qmf"
 #define VERSION "0.2"

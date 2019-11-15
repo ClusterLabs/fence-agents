@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include <uuid/uuid.h>
 #include <errno.h>
 #include <string.h>

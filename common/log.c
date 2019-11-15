@@ -3,6 +3,9 @@
  *
  * Lon Hohberger, 2009
  */
+
+#include "config.h"
+
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/syslog.h>
@@ -15,6 +18,7 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <errno.h>
+
 #include "list.h"
 
 struct log_entry {
@@ -155,9 +159,11 @@ __wrap_closelog(void)
 	struct log_entry *lent;
 	int lost = 0;
 
-	pthread_cancel(thread_id);
-	pthread_join(thread_id, NULL);
-	thread_id = 0;
+	if (thread_id != 0) {
+		pthread_cancel(thread_id);
+		pthread_join(thread_id, NULL);
+		thread_id = 0;
+	}
 	__real_closelog();
 	while (_log_entries) {
 		++lost;

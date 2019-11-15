@@ -12,6 +12,8 @@
  * Ubersimpledumbterminal "ser" version 1.0.3
  */
 
+#include "config.h"
+
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
@@ -224,7 +226,7 @@ serial_fence_virt(fence_virt_args_t *args)
 	serial_resp_t resp;
 
 	if (args->serial.device) {
-		strncpy(speed, args->serial.speed, sizeof(speed));
+		strncpy(speed, args->serial.speed, sizeof(speed) - 1);
 
 		//printf("Port: %s Speed: %s\n", args->serial.device, speed);
 
@@ -264,7 +266,7 @@ serial_fence_virt(fence_virt_args_t *args)
 	req.seqno = (int)tv.tv_usec;
 
 	if (args->domain) 
-		strncpy((char *)req.domain, args->domain, sizeof(req.domain));
+		strncpy((char *)req.domain, args->domain, sizeof(req.domain) - 1);
 	
 	tv.tv_sec = 3;
 	tv.tv_usec = 0;

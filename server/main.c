@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,15 +7,15 @@
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/param.h>
+#include <libgen.h>
+#include <stdint.h>
+#include <syslog.h>
 
 /* Local includes */
-#include <stdint.h>
-#include <fence_virt.h>
-#include <simpleconfig.h>
-#include <static_map.h>
-#include <server_plugin.h>
-#include <debug.h>
-#include <syslog.h>
+#include "simpleconfig.h"
+#include "static_map.h"
+#include "server_plugin.h"
+#include "debug.h"
 
 /* configure.c */
 int do_configure(config_object_t *config, const char *filename);
@@ -49,7 +51,7 @@ main(int argc, char **argv)
 	char val[4096];
 	char listener_name[80];
 	char backend_name[80];
-	const char *config_file = DEFAULT_CONFIG_FILE;
+	const char *config_file = SYSCONFDIR "/fence_virt.conf";
 	char *pid_file = NULL;
 	config_object_t *config = NULL;
 	map_object_t *map = NULL;

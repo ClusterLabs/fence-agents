@@ -16,6 +16,9 @@
   Free Software Foundation, Inc.,  675 Mass Ave, Cambridge, 
   MA 02139, USA.
 */
+
+#include "config.h"
+
 #include <unistd.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -24,11 +27,6 @@
 #include <signal.h>
 #include <errno.h>
 #include <nss.h>
-#include <list.h>
-#include <simpleconfig.h>
-#include <static_map.h>
-#include <server_plugin.h>
-#include <history.h>
 
 /* Local includes */
 #include "xvm.h"
@@ -39,9 +37,14 @@
 #include "tcp_listener.h"
 #include "debug.h"
 #include "fdops.h"
+#include "list.h"
+#include "simpleconfig.h"
+#include "static_map.h"
+#include "server_plugin.h"
+#include "history.h"
 
 #define NAME "tcp"
-#define VERSION "0.1"
+#define TCP_VERSION "0.1"
 
 #define TCP_MAGIC 0xc3dff7a9
 
@@ -116,8 +119,8 @@ tcp_hostlist(const char *vm_name, const char *vm_uuid,
 		return 0;
 	}
 
-	strncpy((char *)hinfo.domain, vm_name, sizeof(hinfo.domain));
-	strncpy((char *)hinfo.uuid, vm_uuid, sizeof(hinfo.uuid));
+	strncpy((char *)hinfo.domain, vm_name, sizeof(hinfo.domain) - 1);
+	strncpy((char *)hinfo.uuid, vm_uuid, sizeof(hinfo.uuid) - 1);
 	hinfo.state = state;
 
 	tv.tv_sec = 1;
@@ -532,7 +535,7 @@ tcp_shutdown(listener_context_t c)
 
 static listener_plugin_t tcp_plugin = {
 	.name = NAME,
-	.version = VERSION,
+	.version = TCP_VERSION,
 	.init = tcp_init,
 	.dispatch = tcp_dispatch,
 	.cleanup = tcp_shutdown,

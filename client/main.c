@@ -19,6 +19,9 @@
 /*
  * Author: Lon Hohberger <lhh at redhat.com>
  */
+
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,7 +44,7 @@
 #include "xvm.h"
 #include "options.h"
 #include "debug.h"
-#include <client.h>
+#include "client.h"
 
 
 int
@@ -82,8 +85,8 @@ main(int argc, char **argv)
 
 	if (args.flags & F_VERSION) {
 		printf("%s %s\n", basename(argv[0]), XVM_VERSION);
-#ifdef FENCE_RELEASE_NAME
-		printf("fence release %s\n", FENCE_RELEASE_NAME);
+#ifdef VERSION
+		printf("fence release %s\n", VERSION);
 #endif
 		exit(0);
 	}

@@ -16,6 +16,9 @@
   Free Software Foundation, Inc.,  675 Mass Ave, Cambridge, 
   MA 02139, USA.
 */
+
+#include "config.h"
+
 #include <sys/types.h>
 #include <string.h>
 #include <stdlib.h>
@@ -33,7 +36,7 @@
 #include "debug.h"
 
 
-void
+static void
 print_hash(unsigned char *hash, size_t hashlen)
 {
 	int x; 

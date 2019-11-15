@@ -19,6 +19,9 @@
 /** @file
  * Plugin loading routines
  */
+
+#include "config.h"
+
 #include <dlfcn.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -26,16 +29,16 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-
 #include <stdint.h>
-#include <list.h>
-#include <simpleconfig.h>
-#include <static_map.h>
-#include <server_plugin.h>
 #include <malloc.h>
 #include <string.h>
 #include <dirent.h>
-#include <debug.h>
+
+#include "list.h"
+#include "simpleconfig.h"
+#include "static_map.h"
+#include "server_plugin.h"
+#include "debug.h"
 
 typedef struct _plugin_list {
 	list_head();

@@ -19,21 +19,23 @@
 /*
  * Author: Lon Hohberger <lhh at redhat.com>
  */
-#include <stdio.h>
-#include <simpleconfig.h>
-#include <static_map.h>
 
+#include "config.h"
+
+#include <stdio.h>
 #include <sys/types.h>
 #include <stdint.h>
 #include <time.h>
-#include <server_plugin.h>
 #include <string.h>
 #include <malloc.h>
 #include <errno.h>
 
+#include "simpleconfig.h"
+#include "static_map.h"
+#include "server_plugin.h"
 
 #define NAME "null"
-#define VERSION "0.8"
+#define NULL_VERSION "0.8"
 
 #define MAGIC 0x1e00017a
 
@@ -182,7 +184,7 @@ static fence_callbacks_t null_callbacks = {
 
 static backend_plugin_t null_plugin = {
 	.name = NAME,
-	.version = VERSION,
+	.version = NULL_VERSION,
 	.callbacks = &null_callbacks,
 	.init = null_init,
 	.cleanup = null_shutdown,

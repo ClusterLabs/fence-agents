@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include <pthread.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -6,12 +8,12 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <stdlib.h>
-#include <debug.h>
-#include <simpleconfig.h>
 #include <errno.h>
 #include <fcntl.h>
 
 #include "serial.h"
+#include "debug.h"
+#include "simpleconfig.h"
 
 struct socket_list {
 	list_head();
@@ -96,7 +98,7 @@ domain_sock_setup(const char *domain, const char *socket_path)
 
 	memset((char *)sun, 0, sun_len);
 	sun->sun_family = PF_LOCAL;
-	strncpy(sun->sun_path, socket_path, sun_len - sizeof(*sun));
+	strncpy(sun->sun_path, socket_path, sizeof(sun->sun_path) - 1);
 
 	sock = socket(PF_LOCAL, SOCK_STREAM, 0);
 	if (sock < 0)

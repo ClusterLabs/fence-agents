@@ -1,5 +1,7 @@
 // #include <config.h>
 
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,7 +17,7 @@
 
 #include <libxml/xmlreader.h>
 
-#include <simpleconfig.h>
+#include "simpleconfig.h"
 #include "debug.h"
 
 #define DEBUG0(fmt) dbg_printf(5,"%s:%d :: " fmt "\n", \
@@ -307,7 +309,9 @@ myDomainEventCallback1(virConnectPtr conn,
 		if (event == VIR_DOMAIN_EVENT_STARTED) {
 			domainStarted(dom, args->path, args->mode);
 			virDomainFree(dom);
-			write(args->wake_fd, "x", 1);
+			if (write(args->wake_fd, "x", 1) != 1) {
+				dbg_printf(3, "Unable to wake up thread\n");
+			}
 		} else if (event == VIR_DOMAIN_EVENT_STOPPED) {
 			domainStopped(dom);
 			virDomainFree(dom);

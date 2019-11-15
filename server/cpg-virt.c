@@ -19,14 +19,12 @@
 /*
  * Author: Ryan McCabe <rmccabe@redhat.com>
  */
-#include <config.h>
+#include "config.h"
+
 #include <stdio.h>
-#include <simpleconfig.h>
-#include <static_map.h>
 #include <sys/types.h>
 #include <stdint.h>
 #include <time.h>
-#include <server_plugin.h>
 #include <string.h>
 #include <syslog.h>
 #include <errno.h>
@@ -34,13 +32,16 @@
 #include <pthread.h>
 #include <corosync/cpg.h>
 
-#include <debug.h>
+#include "debug.h"
 #include "virt.h"
 #include "xvm.h"
 #include "cpg.h"
+#include "simpleconfig.h"
+#include "static_map.h"
+#include "server_plugin.h"
 
 #define NAME "cpg"
-#define VERSION "0.1"
+#define CPG_VERSION "0.1"
 
 #define MAGIC 0x38e93fc2
 
@@ -625,7 +626,7 @@ static fence_callbacks_t cpg_callbacks = {
 
 static backend_plugin_t cpg_virt_plugin = {
 	.name = NAME,
-	.version = VERSION,
+	.version = CPG_VERSION,
 	.callbacks = &cpg_callbacks,
 	.init = cpg_virt_init,
 	.cleanup = cpg_virt_shutdown,

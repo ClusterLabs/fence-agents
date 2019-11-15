@@ -19,6 +19,9 @@
 /*
  * Author: Lon Hohberger <lhh at redhat.com>
  */
+
+#include "config.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -44,10 +47,6 @@
 #include <nss.h>
 #include <libgen.h>
 #include <syslog.h>
-#include <simpleconfig.h>
-#include <static_map.h>
-
-#include <server_plugin.h>
 
 /* Local includes */
 #include "xvm.h"
@@ -58,10 +57,12 @@
 #include "virt.h"
 #include "debug.h"
 #include "uuid-test.h"
-
+#include "simpleconfig.h"
+#include "static_map.h"
+#include "server_plugin.h"
 
 #define NAME "libvirt"
-#define VERSION "0.3"
+#define LIBVIRT_VERSION "0.3"
 
 #define MAGIC 0x1e19317a
 
@@ -341,7 +342,7 @@ static fence_callbacks_t libvirt_callbacks = {
 
 static backend_plugin_t libvirt_plugin = {
 	.name = NAME,
-	.version = VERSION,
+	.version = LIBVIRT_VERSION,
 	.callbacks = &libvirt_callbacks,
 	.init = libvirt_init,
 	.cleanup = libvirt_shutdown,

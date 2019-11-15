@@ -1,12 +1,15 @@
+#include "config.h"
+
 #include <stdio.h>
 #include <pthread.h>
 #include <string.h>
 #include <malloc.h>
 #include <stdlib.h>
 #include <assert.h>
+
 #include "simpleconfig.h"
 #include "config-stack.h"
-#include <static_map.h>
+#include "static_map.h"
 
 
 static pthread_mutex_t parser_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -245,7 +248,7 @@ top:
 
 	if (ptr[0] != '@') {
 
-		strncpy(buf, ptr, sizeof(buf));
+		strncpy(buf, ptr, sizeof(buf) - 1);
 		id = NULL;
 		bracket = strchr(buf, '[');
 		if (bracket) {
@@ -299,7 +302,7 @@ top:
 	found = 0;
 	id = NULL;
 
-	strncpy(buf, ptr, sizeof(buf));
+	strncpy(buf, ptr, sizeof(buf) - 1);
 	bracket = strchr(buf, '[');
 
 	req_index = 0;
