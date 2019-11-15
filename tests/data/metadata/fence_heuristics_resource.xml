@@ -10,13 +10,13 @@ This is not a fence agent by itself! Its only purpose is to delay execution of a
 		<content type="string" default="reboot"  />
 		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
+	<parameter name="crm_mon_path" unique="0" required="0">
+		<getopt mixed="--crm-mon-path=[path]" />
+		<shortdesc lang="en">Path to crm_mon command</shortdesc>
+	</parameter>
 	<parameter name="crm_node_path" unique="0" required="0">
 		<getopt mixed="--crm-node-path=[path]" />
 		<shortdesc lang="en">Path to crm_node command</shortdesc>
-	</parameter>
-	<parameter name="crm_resource_path" unique="0" required="0">
-		<getopt mixed="--crm-resource-path=[path]" />
-		<shortdesc lang="en">Path to crm_resource command</shortdesc>
 	</parameter>
 	<parameter name="method" unique="0" required="0">
 		<getopt mixed="-m, --method=[method]" />
@@ -31,20 +31,15 @@ This is not a fence agent by itself! Its only purpose is to delay execution of a
 		<content type="string" default=""  />
 		<shortdesc lang="en">Name of node to be fenced</shortdesc>
 	</parameter>
-	<parameter name="promotable" unique="0" required="0">
-		<getopt mixed="-p, --promotable" />
-		<content type="boolean" default="False"  />
-		<shortdesc lang="en">Handle the promotable resource. The node on which the master resource is running is considered as ACT.</shortdesc>
-	</parameter>
 	<parameter name="resource" unique="0" required="1">
 		<getopt mixed="-r, --resource=[resource-id]" />
 		<content type="string" default=""  />
-		<shortdesc lang="en">Resource ID</shortdesc>
+		<shortdesc lang="en">Resource ID. It does not make sense to specify a cloned or bundled resource unless it is promotable and has only a single master instance.</shortdesc>
 	</parameter>
 	<parameter name="standby_wait" unique="0" required="0">
 		<getopt mixed="-w, --standby-wait=[seconds]" />
-		<content type="string" default="0"  />
-		<shortdesc lang="en">Wait X seconds on SBY node. If a positive number is specified, fencing action of this agent will always succeed after waits.</shortdesc>
+		<content type="string" default="5"  />
+		<shortdesc lang="en">Wait X seconds on SBY node. The agent will delay but not succeed.</shortdesc>
 	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />

@@ -1,4 +1,4 @@
-#!/usr/libexec/platform-python -tt
+#!@PYTHON@ -tt
 
 import io
 import re
@@ -8,6 +8,8 @@ import sys, stat
 import logging
 import atexit
 import time
+import xml.etree.ElementTree as ET
+import distutils.util as dist
 sys.path.append("/usr/share/fence")
 from fencing import fail_usage, run_command, fence_action, all_opt
 from fencing import atexit_handler, check_input, process_input, show_docs
@@ -27,45 +29,85 @@ def heuristics_resource(con, options):
 		return False
 
 	target = options["--nodename"]
-	resource = options["--resource"]
-	promotable = options["--promotable"] in ["", "1"]
-	standby_wait = int(options["--standby-wait"])
-	crm_resource_path = options["--crm-resource-path"]
+	resource_id = options["--resource"]
+	wait_time = int(options["--standby-wait"])
 	crm_node_path = options["--crm-node-path"]
+	crm_mon_path = options["--crm-mon-path"]
 
 	(rc, out, err) = run_command(options, "%s --name" % crm_node_path)
-	if rc != 0 or out == None:
+	if not rc == 0 or out is None:
 		logging.error("Can not get my nodename. rc=%s, stderr=%s" % (rc, err))
 		return False
 
-	mynodename = out.strip()
+	node = out.strip()
 
-	if mynodename == target:
+	if node == target:
 		logging.info("Skip standby wait due to self-fencing.")
 		return False
 
-	(rc, out, err) = run_command(options, "%s -r %s -W" % (crm_resource_path, resource))
-	if rc != 0 or out == None:
-		logging.error("Command failed. rc=%s, stderr=%s" % (rc, err))
+	(rc, out, err) = run_command(options, "%s --as-xml" % crm_mon_path)
+	if not rc == 0 or out is None:
+		logging.error("crm_mon command failed. rc=%s, stderr=%s" % (rc, err))
 		return False
 
-	search_str = re.compile(r"\s%s%s$" % (mynodename, '\sMaster' if promotable else ''))
-	for line in out.splitlines():
-		searchres = search_str.search(line.strip())
-		if searchres:
-			logging.info("This node is ACT! Skip standby wait.")
-			return False
+	tree = ET.fromstring(out)
+	resources = tree.findall('./resources//*[@id="%s"]' % resource_id)
+	if len(resources) == 0:
+		logging.error("Resource '%s' not found." % resource_id)
+	elif len(resources) == 1:
+		resource = resources[0]
+		type = resource.tag
+		if type == "resource":
+			# primitive resource
+			standby_node = check_standby_node(resource, node)
+			failed = check_failed_attrib(resource)
+			if standby_node and not failed:
+				return standby_wait(wait_time)
+		elif type == "group":
+			# resource group
+			standby_node = True
+			failed = False
+			for child in resource:
+				failed |= check_failed_attrib(child)
+				standby_node &= check_standby_node(child, node)
+			if standby_node and not failed:
+				return standby_wait(wait_time)
+		elif type == "clone" and dist.strtobool(resource.get("multi_state")):
+			# promotable resource
+			master_nodes = 0
+			standby_node = True
+			failed = False
+			for native in resource:
+				failed |= check_failed_attrib(native)
+				if native.get("role") in ["Master"]:
+					master_nodes += 1
+					standby_node &= check_standby_node(native, node)
+			if master_nodes == 1 and standby_node and not failed:
+				return standby_wait(wait_time)
+		else:
+			# clone or bundle resource
+			logging.error("Unsupported resource type: '%s'" % type)
+	else:
+		logging.error("Multiple active resources found.")
 
-	logging.info("Resource %s NOT found on this node" % resource)
-
-	if standby_wait > 0:
-		# The SBY node waits for fencing from the ACT node, and tries to fence
-		# the ACT node on next fencing level waking up from sleep.
-		logging.info("Standby wait %s sec" % standby_wait)
-		time.sleep(standby_wait)
-		
+	logging.info("Skip standby wait.")
 	return False
 
+def standby_wait(wait_time):
+	logging.info("Standby wait %s sec" % wait_time)
+	time.sleep(wait_time)
+	return False
+
+def check_failed_attrib(resource):
+	failed = dist.strtobool(resource.get("failed"))
+	ignored = dist.strtobool(resource.get("failure_ignored"))
+	return failed and not ignored
+
+def check_standby_node(resource, nodename):
+	running_nodes = []
+	for node in resource:
+		running_nodes.append(node.get("name"))
+	return len(set(running_nodes)) == 1 and not running_nodes[0] == nodename
 
 def define_new_opts():
 	all_opt["nodename"] = {
@@ -81,36 +123,27 @@ def define_new_opts():
 		"getopt" : "r:",
 		"longopt" : "resource",
 		"required" : "1",
-		"help" : "-r, --resource=[resource-id]   ID of the resource that should be running in the ACT node",
-		"shortdesc" : "Resource ID",
+		"help" : "-r, --resource=[resource-id]   ID of the resource that should be running on the ACT node. It does not make sense to specify a cloned or bundled resource unless it is promotable and has only a single master instance.",
+		"shortdesc" : "Resource ID. It does not make sense to specify a cloned or bundled resource unless it is promotable and has only a single master instance.",
 		"default" : "",
-		"order" : 1
-		}
-	all_opt["promotable"] = {
-		"getopt" : "p",
-		"longopt" : "promotable",
-		"required" : "0",
-		"help" : "-p, --promotable               Specify if resource parameter is promotable (master/slave) resource",
-		"shortdesc" : "Handle the promotable resource. The node on which the master resource is running is considered as ACT.",
-		"default" : "False",
 		"order" : 1
 		}
 	all_opt["standby_wait"] = {
 		"getopt" : "w:",
 		"longopt" : "standby-wait",
 		"required" : "0",
-		"help" : "-w, --standby-wait=[seconds]   Wait X seconds on SBY node. If a positive number is specified, fencing action of this agent will always succeed after waits.",
-		"shortdesc" : "Wait X seconds on SBY node. If a positive number is specified, fencing action of this agent will always succeed after waits.",
-		"default" : "0",
+		"help" : "-w, --standby-wait=[seconds]   Wait X seconds on SBY node. The agent will delay but not succeed.",
+		"shortdesc" : "Wait X seconds on SBY node. The agent will delay but not succeed.",
+		"default" : "5",
 		"order" : 1
 		}
-	all_opt["crm_resource_path"] = {
+	all_opt["crm_mon_path"] = {
 		"getopt" : ":",
-		"longopt" : "crm-resource-path",
+		"longopt" : "crm-mon-path",
 		"required" : "0",
-		"help" : "--crm-resource-path=[path]     Path to crm_resource",
-		"shortdesc" : "Path to crm_resource command",
-		"default" : "@CRM_RESOURCE_PATH@",
+		"help" : "--crm-mon-path=[path]          Path to crm_mon",
+		"shortdesc" : "Path to crm_mon command",
+		"default" : "@CRM_MON_PATH@",
 		"order" : 1
 		}
 	all_opt["crm_node_path"] = {
@@ -125,7 +158,7 @@ def define_new_opts():
 
 
 def main():
-	device_opt = ["no_status", "no_password", "nodename", "resource", "promotable", "standby_wait", "crm_resource_path", "crm_node_path", "method"]
+	device_opt = ["no_status", "no_password", "nodename", "resource", "standby_wait", "crm_mon_path", "crm_node_path", "method"]
 	define_new_opts()
 	atexit.register(atexit_handler)
 
