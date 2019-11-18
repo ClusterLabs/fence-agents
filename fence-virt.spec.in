@@ -26,7 +26,7 @@ Source0: %{name}-%{version}%{?rcver:%{rcver}}%{?numcomm:.%{numcomm}}%{?alphatag:
 ExclusiveArch: i686 x86_64
 %endif
 
-BuildRequires:  gcc gcc-c++
+BuildRequires:  gcc
 BuildRequires:	corosynclib-devel libvirt-devel
 BuildRequires:	automake autoconf libtool libxml2-devel nss-devel nspr-devel
 BuildRequires:	flex bison libuuid-devel
