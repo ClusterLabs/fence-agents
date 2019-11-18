@@ -22,10 +22,6 @@ License: GPLv2+
 URL:     https://github.com/ClusterLabs/fence-virt
 Source0: %{name}-%{version}%{?rcver:%{rcver}}%{?numcomm:.%{numcomm}}%{?alphatag:-%{alphatag}}%{?dirty:-%{dirty}}.tar.bz2
 
-%if 0%{?rhel}
-ExclusiveArch: i686 x86_64
-%endif
-
 BuildRequires:  gcc
 BuildRequires:	corosynclib-devel libvirt-devel
 BuildRequires:	automake autoconf libtool libxml2-devel nss-devel nspr-devel
