@@ -1,3 +1,4 @@
+/*/
 autom4te.cache
 config.log
 configure
@@ -25,6 +26,7 @@ config/libsimpleconfig.a
 depcomp
 fence_virtd.init
 fence_virtd.service
+fence-virt.spec
 include/stamp-h1
 install-sh
 libtool
