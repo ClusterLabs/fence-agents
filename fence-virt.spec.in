@@ -22,15 +22,25 @@ License: GPLv2+
 URL:     https://github.com/ClusterLabs/fence-virt
 Source0: %{name}-%{version}%{?rcver:%{rcver}}%{?numcomm:.%{numcomm}}%{?alphatag:-%{alphatag}}%{?dirty:-%{dirty}}.tar.bz2
 
+%if 0%{?suse_version}
+%define nss_devel mozilla-nss-devel
+%define nspr_devel mozilla-nspr-devel
+%define systemd_units systemd
+%else
+%define nss_devel nss-devel
+%define nspr_devel nspr-devel
+%define systemd_units systemd-units
+%endif
+
 BuildRequires:  gcc
 BuildRequires:	corosynclib-devel libvirt-devel
-BuildRequires:	automake autoconf libtool libxml2-devel nss-devel nspr-devel
+BuildRequires:	automake autoconf libtool libxml2-devel %{nss_devel} %{nspr_devel}
 BuildRequires:	flex bison libuuid-devel
 
-BuildRequires: systemd-units
-Requires(post):	systemd-sysv systemd-units
-Requires(preun):	systemd-units
-Requires(postun):	systemd-units
+BuildRequires: %{systemd_units}
+Requires(post):	systemd-sysv %{systemd_units}
+Requires(preun):	%{systemd_units}
+Requires(postun):	%{systemd_units}
 
 Conflicts:	fence-agents < 3.0.5-2
 
