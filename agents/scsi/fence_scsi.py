@@ -202,9 +202,20 @@ def get_node_id(options):
 
 	return match.group(1) if match else fail_usage("Failed: unable to parse output of corosync-cmapctl or node does not exist")
 
+def get_node_hash(options):
+	try:
+		return hashlib.md5(options["--plug"].encode('ascii')).hexdigest()
+	except ValueError:
+		# FIPS requires usedforsecurity=False and might not be
+		# available on all distros: https://bugs.python.org/issue9216
+		return hashlib.md5(options["--plug"].encode('ascii'), usedforsecurity=False).hexdigest()
+
 
 def generate_key(options):
-	return "%.4s%.4d" % (get_cluster_id(options), int(get_node_id(options)))
+	if options["--key-value"] == "hash":
+		return "%.4s%.4s" % (get_cluster_id(options), get_node_hash(options))
+	else:
+		return "%.4s%.4d" % (get_cluster_id(options), int(get_node_id(options)))
 
 
 # save node key to file
@@ -375,6 +386,19 @@ be removed from the device(s).",
 		"default" : "@VGS_PATH@",
 		"order": 300
 	}
+	all_opt["key_value"] = {
+		"getopt" : ":",
+		"longopt" : "key-value",
+		"help" : "--key-value=<id|hash>          SCSI key node generation method",
+		"required" : "0",
+		"shortdesc" : "Method used to generate the SCSI key. \"id\" (default) \
+uses the positional ID from \"corosync-cmactl nodelist\" output which can get inconsistent \
+when nodes are removed from cluster without full cluster restart. \"hash\" uses part of hash \
+made out of node names which is not affected over time but there is theoretical chance that \
+hashes can collide as size of SCSI key is quite limited.",
+		"default" : "id",
+		"order": 300
+	}
 
 
 def scsi_check_get_options(options):
@@ -440,7 +464,7 @@ def main():
 
 	device_opt = ["no_login", "no_password", "devices", "nodename", "port",\
 	"no_port", "key", "aptpl", "fabric_fencing", "on_target", "corosync_cmap_path",\
-	"sg_persist_path", "sg_turs_path", "logfile", "vgs_path", "force_on"]
+	"sg_persist_path", "sg_turs_path", "logfile", "vgs_path", "force_on", "key_value"]
 
 	define_new_opts()
 
@@ -469,7 +493,11 @@ persistent reservations to control access to shared storage devices. These \
 devices must support SCSI-3 persistent reservations (SPC-3 or greater) as \
 well as the \"preempt-and-abort\" subcommand.\nThe fence_scsi agent works by \
 having each node in the cluster register a unique key with the SCSI \
-device(s). Once registered, a single node will become the reservation holder \
+device(s). Reservation key is generated from \"node id\" (default) or from \
+\"node name hash\" (RECOMMENDED) by adjusting \"key_value\" option. \
+Using hash is recommended to prevent issues when removing nodes \
+from cluster without full cluster restart. \
+Once registered, a single node will become the reservation holder \
 by creating a \"write exclusive, registrants only\" reservation on the \
 device(s). The result is that only registered nodes may write to the \
 device(s). When a node failure occurs, the fence_scsi agent will remove the \
@@ -516,6 +544,10 @@ failing."
 
 	if options["--key"] == "0" or not options["--key"]:
 		fail_usage("Failed: key cannot be 0", stop_after_error)
+
+	if "--key-value" in options\
+	and (options["--key-value"] != "id" and options["--key-value"] != "hash"):
+		fail_usage("Failed: key-value has to be 'id' or 'hash'", stop_after_error)
 
 	if options["--action"] == "validate-all":
 		sys.exit(0)
