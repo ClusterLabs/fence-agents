@@ -218,7 +218,7 @@ main(int argc, char **argv)
 		listener_name, backend_name);
 
 	while (p->init(&backend_ctx, config) < 0) {
-		if (!wait_for_init) {
+		if (!wait_for_init || !run) {
 			if (foreground) {
 				printf("Backend plugin %s failed to initialize\n",
 				       backend_name);
@@ -238,7 +238,7 @@ main(int argc, char **argv)
 	/* only client we have now is mcast (fence_xvm behavior) */
 	while (lp->init(&listener_ctx, p->callbacks, config, map,
 			backend_ctx) != 0) {
-		if (!wait_for_init) {
+		if (!wait_for_init || !run) {
 			if (foreground) {
 				printf("Listener plugin %s failed to initialize\n",
 				       listener_name);
