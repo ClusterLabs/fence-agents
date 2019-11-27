@@ -30,8 +30,9 @@ prog="fence_virtd"
 prefix="@prefix@"
 exec_prefix="@exec_prefix@"
 exec="@sbindir@/$prog"
+initconfdir="@initconfdir@"
 
-[ -e /etc/sysconfig/$prog ] && . /etc/sysconfig/$prog
+[ -e $initconfdir/$prog ] && . $initconfdir/$prog
 [ -z "$FENCE_VIRTD_ARGS" ] && FENCE_VIRTD_ARGS="-w"
 
 lockfile=/var/lock/subsys/$prog
