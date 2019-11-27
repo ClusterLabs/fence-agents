@@ -44,9 +44,9 @@ distclean-local:
 
 fence_virtd.service: fence_virtd.service.in
 	SBINDIR="@sbindir@"; \
-	SCDIR="@sysconfdir@"; \
+	INITCONFDIR="@initconfdir@"; \
 	cat $^ > $@ ; \
-	echo "EnvironmentFile=-$$SCDIR/sysconfig/fence_virtd" >> $@ ;\
+	echo "EnvironmentFile=-$$INITCONFDIR/fence_virtd" >> $@ ;\
 	echo "ExecStart=$$SBINDIR/fence_virtd \$$FENCE_VIRTD_ARGS" >> $@
 
 ## make rpm/srpm section.

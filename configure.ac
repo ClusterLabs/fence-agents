@@ -244,6 +244,16 @@ AS_IF([test "$ax_cv_prog_date_gnu_date:$ax_cv_prog_date_gnu_utc" = yes:yes],
 		[AC_MSG_ERROR([date utility unable to convert epoch to UTC])])])
 AC_SUBST([UTC_DATE_AT])
 
+# Try to detect the appropriate conf dir. Several systems have both /etc/default
+# and /etc/sysconfig but latter is always primary.
+AC_ARG_VAR(initconfdir, [directory for initscripts configuration])
+if test "x$initconfdir" = x; then
+	AC_CHECK_FILE(/etc/conf.d, [initconfdir='$(sysconfdir)/conf.d}'], [# Gentoo/Arch
+	AC_CHECK_FILE(/etc/sysconfig, [initconfdir='$(sysconfdir)/sysconfig'], [# RedHat/Fedora/Slax/Mandriva/S
+	AC_CHECK_FILE(/etc/default, [initconfdir='$(sysconfdir)/default'], [# Debian/Ubuntu
+	AC_MSG_ERROR([could not determine system initscripts config dir; please set initconfdir manually.])])])])
+fi
+
 AC_ARG_VAR([SOURCE_EPOCH],[last modification date of the source])
 AC_MSG_NOTICE([trying to determine source epoch])
 AC_MSG_CHECKING([for source epoch in \$SOURCE_EPOCH])
