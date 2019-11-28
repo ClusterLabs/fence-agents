@@ -12,7 +12,6 @@ import requests
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from fencing import *
 from fencing import fail_usage, run_delay
 
@@ -143,7 +142,8 @@ access to control power on a server."
 
     # Disable insecure-certificate-warning message
     if "--ssl-insecure" in opt:
-        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     # backwards compatibility for <ip>:<port>
     if options["--ip"].count(":") == 1:
