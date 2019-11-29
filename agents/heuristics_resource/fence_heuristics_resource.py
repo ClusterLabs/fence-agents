@@ -51,6 +51,11 @@ def heuristics_resource(con, options):
 		return False
 
 	tree = ET.fromstring(out)
+	nodes = tree.findall('./nodes//*[@type="member"]')
+	nodelist = []
+	for member in nodes:
+		nodelist.append(member.get("name"))
+
 	resources = tree.findall('./resources//*[@id="%s"]' % resource_id)
 	if len(resources) == 0:
 		logging.error("Resource '%s' not found." % resource_id)
@@ -59,7 +64,7 @@ def heuristics_resource(con, options):
 		type = resource.tag
 		if type == "resource":
 			# primitive resource
-			standby_node = check_standby_node(resource, node)
+			standby_node = check_standby_node(resource, node, nodelist)
 			failed = check_failed_attrib(resource)
 			if standby_node and not failed:
 				return standby_wait(wait_time)
@@ -69,7 +74,7 @@ def heuristics_resource(con, options):
 			failed = False
 			for child in resource:
 				failed |= check_failed_attrib(child)
-				standby_node &= check_standby_node(child, node)
+				standby_node &= check_standby_node(child, node, nodelist)
 			if standby_node and not failed:
 				return standby_wait(wait_time)
 		elif type == "clone" and dist.strtobool(resource.get("multi_state")):
@@ -81,7 +86,7 @@ def heuristics_resource(con, options):
 				failed |= check_failed_attrib(native)
 				if native.get("role") in ["Master"]:
 					master_nodes += 1
-					standby_node &= check_standby_node(native, node)
+					standby_node &= check_standby_node(native, node, nodelist)
 			if master_nodes == 1 and standby_node and not failed:
 				return standby_wait(wait_time)
 		else:
@@ -103,11 +108,11 @@ def check_failed_attrib(resource):
 	ignored = dist.strtobool(resource.get("failure_ignored"))
 	return failed and not ignored
 
-def check_standby_node(resource, nodename):
+def check_standby_node(resource, nodename, nodelist):
 	running_nodes = []
 	for node in resource:
 		running_nodes.append(node.get("name"))
-	return len(set(running_nodes)) == 1 and not running_nodes[0] == nodename
+	return len(set(running_nodes)) == 1 and running_nodes[0] in nodelist and not running_nodes[0] == nodename
 
 def define_new_opts():
 	all_opt["nodename"] = {
