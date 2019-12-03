@@ -424,12 +424,12 @@ def define_new_opts():
 		"default" : "True",
 		"order": 5,
 	}
-	all_opt["no_shared_storage"] = {
+	all_opt["on_shared_storage"] = {
 		"getopt" : "",
-		"longopt" : "no-shared-storage",
-		"help" : "--no-shared-storage            Disable functionality for shared storage",
+		"longopt" : "on-shared-storage",
+		"help" : "--on-shared-storage            Enable functionality for shared storage",
 		"required" : "0",
-		"shortdesc" : "Disable functionality for dealing with shared storage",
+		"shortdesc" : "Enable functionality for dealing with shared storage",
 		"default" : "False",
 		"order": 5,
 	}
@@ -460,7 +460,7 @@ def main():
 
 	device_opt = ["login", "passwd", "tenant_name", "auth_url", "fabric_fencing", "no_login",
 			"no_password", "port", "domain", "compute-domain", "project-domain",
-			"user-domain", "no_shared_storage", "endpoint_type", "record_only",
+			"user-domain", "on_shared_storage", "endpoint_type", "record_only",
 			"instance_filtering", "insecure", "region_name"]
 	define_new_opts()
 	all_opt["shell_timeout"]["default"] = "180"
