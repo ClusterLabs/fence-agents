@@ -66,7 +66,7 @@ def get_nodes_list(conn, options):
 		instance_list = response.get('Instances').get('Instance')
 		for item in instance_list:
 			instance_id = item.get('InstanceId')
-			instance_name = item.get('InstanceName')
+			instance_name = item.get('HostName')
 			result[instance_id] = (instance_name, None)
 	return result
 
