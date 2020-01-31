@@ -22,17 +22,17 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
 	</parameter>
 	<parameter name="region" unique="0" required="0">
-		<getopt mixed="-r, --region=[name]" />
+		<getopt mixed="-r, --region=[region]" />
 		<content type="string"  />
 		<shortdesc lang="en">Region.</shortdesc>
 	</parameter>
 	<parameter name="access_key" unique="0" required="0">
-		<getopt mixed="-a, --access-key=[name]" />
+		<getopt mixed="-a, --access-key=[key]" />
 		<content type="string"  />
 		<shortdesc lang="en">Access Key.</shortdesc>
 	</parameter>
 	<parameter name="secret_key" unique="0" required="0">
-		<getopt mixed="-s, --secret-key=[name]" />
+		<getopt mixed="-s, --secret-key=[key]" />
 		<content type="string"  />
 		<shortdesc lang="en">Secret Key.</shortdesc>
 	</parameter>
