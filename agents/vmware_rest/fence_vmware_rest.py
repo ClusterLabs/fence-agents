@@ -127,7 +127,7 @@ def send_command(conn, command, method="GET"):
 		raise Exception(e[1])
 
 	rc = conn.getinfo(pycurl.HTTP_CODE)
-	result = web_buffer.getvalue().decode()
+	result = web_buffer.getvalue().decode("UTF-8")
 
 	web_buffer.close()
 
