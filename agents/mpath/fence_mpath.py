@@ -106,7 +106,7 @@ def register_dev(options, dev):
 	return not bool(run_cmd(options, cmd)["err"])
 
 def reserve_dev(options, dev):
-	cmd = options["--mpathpersist-path"] + " -o --reserv --prout-type=5 --param-rk=" + options["--plug"] + " -d " + dev
+	cmd = options["--mpathpersist-path"] + " -o --reserve --prout-type=5 --param-rk=" + options["--plug"] + " -d " + dev
 	return not bool(run_cmd(options, cmd)["err"])
 
 def get_reservation_key(options, dev):
