@@ -175,7 +175,7 @@ if test "x$AGENTS_LIST" != xall; then
 fi
 
 if test "x$AGENTS_LIST" = xall; then
-	AGENTS_LIST=`find $srcdir/agents -mindepth 2 -maxdepth 2 -name 'fence_*.py' -print0 | xargs -0 | sed -e 's#[^ ]*/agents/##g' -e 's#lib/[A-Za-z_.]* ##g' -e 's#nss_wrapper/[A-Za-z_.]* ##g' -e 's#autodetect/[A-Za-z_.]* ##g'`
+	AGENTS_LIST=`find $srcdir/agents -mindepth 2 -maxdepth 2 -name 'fence_*.py' -print0 | xargs -0 | sed -E -e 's#[^ ]*/agents/##g' -e 's#lib/[A-Za-z_.]*( |$)##g' -e 's#nss_wrapper/[A-Za-z_.]*( |$)##g' -e 's#autodetect/[A-Za-z_.]*( |$)##g'`
 fi
 
 XENAPILIB=0
