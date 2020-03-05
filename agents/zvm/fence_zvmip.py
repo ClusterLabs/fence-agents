@@ -146,7 +146,7 @@ def get_list_of_images(options, command, data_as_plug):
 	return (return_code, reason_code, images)
 
 def main():
-	device_opt = ["ipaddr", "login", "passwd", "port", "method", "missing_as_off"]
+	device_opt = ["ipaddr", "login", "passwd", "port", "method", "missing_as_off", "inet4_only", "inet6_only"]
 
 	atexit.register(atexit_handler)
 

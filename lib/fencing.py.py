@@ -459,9 +459,9 @@ DEPENDENCY_OPT = {
 			"delay", "quiet"],
 		"passwd" : ["passwd_script"],
 		"sudo" : ["sudo_path"],
-		"secure" : ["identity_file", "ssh_options", "ssh_path"],
+		"secure" : ["identity_file", "ssh_options", "ssh_path", "inet4_only", "inet6_only"],
 		"telnet" : ["telnet_path"],
-		"ipaddr" : ["ipport", "inet4_only", "inet6_only"],
+		"ipaddr" : ["ipport"],
 		"port" : ["separator"],
 		"ssl" : ["ssl_secure", "ssl_insecure", "gnutlscli_path"],
 		"snmp" : ["snmp_auth_prot", "snmp_sec_level", "snmp_priv_prot", \
