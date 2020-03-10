@@ -107,24 +107,15 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 
 	run_delay(options)
 
-	if "--region" in options and "--access-key" in options and "--secret-key" in options:  
-		region = options["--region"]
-		access_key = options["--access-key"]
-		secret_key = options["--secret-key"]
-		try:
-			conn = boto3.resource('ec2', region_name=region,
-					      aws_access_key_id=access_key,
-					      aws_secret_access_key=secret_key)
-		except Exception as e:
-			fail_usage("Failed: Unable to connect to AWS: " + str(e))
-	else:
-		# If setup with "aws configure" or manually in
-		# ~/.aws/credentials
-		try:
-			conn = boto3.resource('ec2')
-		except Exception as e:
-			# If any of region/access/secret are missing
-			fail_usage("Failed: Unable to connect to AWS: " + str(e))
+	region = options.get("--region")
+	access_key = options.get("--access-key")
+	secret_key = options.get("--secret-key")
+	try:
+		conn = boto3.resource('ec2', region_name=region,
+				      aws_access_key_id=access_key,
+				      aws_secret_access_key=secret_key)
+	except Exception as e:
+		fail_usage("Failed: Unable to connect to AWS: " + str(e))
 
 	# Operate the fencing device
 	result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list)
