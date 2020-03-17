@@ -3,12 +3,24 @@
 import sys, re
 import logging
 import atexit
+import requests
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, fail_usage, run_delay, EC_STATUS
 
 import boto3
 from botocore.exceptions import ClientError, EndpointConnectionError, NoRegionError
+
+def get_instance_id():
+	try:
+		r = requests.get('http://169.254.169.254/latest/meta-data/instance-id')
+		return r.content
+	except HTTPError as http_err:
+		logging.error('HTTP error occurred while trying to access EC2 metadata server: %s', http_err)
+	except Exception as err:
+		logging.error('A fatal error occurred while trying to access EC2 metadata server: %s', err)
+	return None
+	
 
 def get_nodes_list(conn, options):
 	result = {}
@@ -45,10 +57,33 @@ def get_power_status(conn, options):
 		logging.error("Failed to get power status: %s", e)
 		fail(EC_STATUS)
 
+def get_self_power_status(conn, options):
+	try:
+		instance = conn.instances.filter(Filters=[{"Name": "instance-id", "Values": [instance_id]}])
+		state = list(instance)[0].state["Name"]
+		if state == "running":
+			logging.debug("Captured my (%s) state and it %s - returning OK - Proceeding with fencing",instance_id,state.upper())
+			return "ok"
+		else:
+			logging.debug("Captured my (%s) state it is %s - returning Alert - Unable to fence other nodes",instance_id,state.upper())
+			return "alert"
+	
+	except ClientError:
+		fail_usage("Failed: Incorrect Access Key or Secret Key.")
+	except EndpointConnectionError:
+		fail_usage("Failed: Incorrect Region.")
+	except IndexError:
+		return "fail"
+
 def set_power_status(conn, options):
+	my_instance = get_instance_id()
 	try:
 		if (options["--action"]=="off"):
-			conn.instances.filter(InstanceIds=[options["--plug"]]).stop(Force=True)
+			if (get_self_power_status(conn,myinstance) == "ok"):
+				logging.info("Called StopInstance API call for %s", options["--plug"])
+				conn.instances.filter(InstanceIds=[options["--plug"]]).stop(Force=True)
+			else:
+				logging.info("Skipping fencing as instance is not in running status")
 		elif (options["--action"]=="on"):
 			conn.instances.filter(InstanceIds=[options["--plug"]]).start()
 	except Exception as e:
