@@ -118,18 +118,27 @@ def define_new_opts():
 		"required" : "0",
 		"order" : 4
 	}
+	all_opt["boto3_debug"] = {
+		"getopt" : "b:",
+		"longopt" : "boto3_debug",
+		"help" : "-b, --boto3_debug=on|off      Boto3 and Botocore library debug logging",
+		"shortdesc": "Boto Lib debug",
+		"required": "0",
+		"order": 5
+	}
 
 # Main agent method
 def main():
 	conn = None
 
-	device_opt = ["port", "no_password", "region", "access_key", "secret_key"]
+	device_opt = ["port", "no_password", "region", "access_key", "secret_key", "boto3_debug"]
 
 	atexit.register(atexit_handler)
 
 	define_new_opts()
 
 	all_opt["power_timeout"]["default"] = "60"
+	all_opt["boto3_debug"]["default"] = "off"
 
 	options = check_input(device_opt, process_input(device_opt))
 
@@ -151,6 +160,21 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 		lhf = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 		lh.setFormatter(lhf)
 		logger.setLevel(logging.DEBUG)
+	
+	if options["--boto3_debug"] != "on":
+		boto3.set_stream_logger('boto3',logging.INFO)
+		boto3.set_stream_logger('botocore',logging.INFO)
+		logging.getLogger('botocore').propagate = False
+		logging.getLogger('boto3').propagate = False
+	else:
+		log_format = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+		logging.getLogger('botocore').propagate = False
+		logging.getLogger('boto3').propagate = False
+		fdh = logging.FileHandler('/var/log/fence_aws_boto3.log')
+		fdh.setFormatter(log_format)
+		logging.getLogger('boto3').addHandler(fdh)
+		logging.getLogger('botocore').addHandler(fdh)
+		logging.debug("Boto debug level is %s and sending debug info to /var/log/fence_aws_boto3.log", options["--boto3_debug"])
 
 	region = options.get("--region")
 	access_key = options.get("--access-key")
