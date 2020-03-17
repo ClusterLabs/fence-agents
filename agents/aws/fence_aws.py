@@ -6,7 +6,7 @@ import atexit
 import requests
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, fail_usage, run_delay, EC_STATUS
+from fencing import fail, fail_usage, run_delay, EC_STATUS, SyslogLibHandler
 
 import boto3
 from botocore.exceptions import ClientError, EndpointConnectionError, NoRegionError
@@ -16,13 +16,14 @@ def get_instance_id():
 		r = requests.get('http://169.254.169.254/latest/meta-data/instance-id')
 		return r.content
 	except HTTPError as http_err:
-		logging.error('HTTP error occurred while trying to access EC2 metadata server: %s', http_err)
+		logger.error('HTTP error occurred while trying to access EC2 metadata server: %s', http_err)
 	except Exception as err:
-		logging.error('A fatal error occurred while trying to access EC2 metadata server: %s', err)
+		logger.error('A fatal error occurred while trying to access EC2 metadata server: %s', err)
 	return None
 	
 
 def get_nodes_list(conn, options):
+	logger.info("Starting monitor operation")
 	result = {}
 	try:
 		for instance in conn.instances.all():
@@ -32,14 +33,16 @@ def get_nodes_list(conn, options):
 	except EndpointConnectionError:
 		fail_usage("Failed: Incorrect Region.")
 	except Exception as e:
-		logging.error("Failed to get node list: %s", e)
-
+		logger.error("Failed to get node list: %s", e)
+	logger.debug("Monitor operation OK: %s",result)
 	return result
 
 def get_power_status(conn, options):
+	logger.debug("Starting status operation")
 	try:
 		instance = conn.instances.filter(Filters=[{"Name": "instance-id", "Values": [options["--plug"]]}])
 		state = list(instance)[0].state["Name"]
+		logger.info("Status operation for EC2 instance %s returned state: %s",options["--plug"],state.upper())
 		if state == "running":
 			return "on"
 		elif state == "stopped":
@@ -80,14 +83,14 @@ def set_power_status(conn, options):
 	try:
 		if (options["--action"]=="off"):
 			if (get_self_power_status(conn,myinstance) == "ok"):
-				logging.info("Called StopInstance API call for %s", options["--plug"])
 				conn.instances.filter(InstanceIds=[options["--plug"]]).stop(Force=True)
+				logger.info("Called StopInstance API call for %s", options["--plug"])
 			else:
-				logging.info("Skipping fencing as instance is not in running status")
+				logger.info("Skipping fencing as instance is not in running status")
 		elif (options["--action"]=="on"):
 			conn.instances.filter(InstanceIds=[options["--plug"]]).start()
 	except Exception as e:
-		logging.error("Failed to power %s %s: %s", \
+		logger.error("Failed to power %s %s: %s", \
 				options["--action"], options["--plug"], e)
 
 def define_new_opts():
@@ -142,6 +145,13 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 
 	run_delay(options)
 
+	if options.get("--verbose") is not None:
+		lh = logging.FileHandler('/var/log/fence_aws_debug.log')
+		logger.addHandler(lh)
+		lhf = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+		lh.setFormatter(lhf)
+		logger.setLevel(logging.DEBUG)
+
 	region = options.get("--region")
 	access_key = options.get("--access-key")
 	secret_key = options.get("--secret-key")
@@ -157,4 +167,12 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 	sys.exit(result)
 
 if __name__ == "__main__":
+
+	logger = logging.getLogger("fence_aws")
+	logger.propagate = False
+	logger.setLevel(logging.INFO)
+	logger.addHandler(SyslogLibHandler())
+	logger.getLogger('botocore.vendored').propagate = False
+	
+
 	main()
