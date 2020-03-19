@@ -121,7 +121,7 @@ def define_new_opts():
 	all_opt["boto3_debug"] = {
 		"getopt" : "b:",
 		"longopt" : "boto3_debug",
-		"help" : "-b, --boto3_debug=on|off      Boto3 and Botocore library debug logging",
+		"help" : "-b, --boto3_debug=[on|off]      Boto3 and Botocore library debug logging",
 		"shortdesc": "Boto Lib debug",
 		"required": "0",
 		"order": 5
