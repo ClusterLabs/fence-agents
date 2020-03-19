@@ -60,7 +60,7 @@ def get_power_status(conn, options):
 		logging.error("Failed to get power status: %s", e)
 		fail(EC_STATUS)
 
-def get_self_power_status(conn, options):
+def get_self_power_status(conn, instance_id):
 	try:
 		instance = conn.instances.filter(Filters=[{"Name": "instance-id", "Values": [instance_id]}])
 		state = list(instance)[0].state["Name"]
@@ -82,7 +82,7 @@ def set_power_status(conn, options):
 	my_instance = get_instance_id()
 	try:
 		if (options["--action"]=="off"):
-			if (get_self_power_status(conn,myinstance) == "ok"):
+			if (get_self_power_status(conn,my_instance) == "ok"):
 				conn.instances.filter(InstanceIds=[options["--plug"]]).stop(Force=True)
 				logger.info("Called StopInstance API call for %s", options["--plug"])
 			else:
@@ -196,7 +196,7 @@ if __name__ == "__main__":
 	logger.propagate = False
 	logger.setLevel(logging.INFO)
 	logger.addHandler(SyslogLibHandler())
-	logger.getLogger('botocore.vendored').propagate = False
+	logging.getLogger('botocore.vendored').propagate = False
 	
 
 	main()
