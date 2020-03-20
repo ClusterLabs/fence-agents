@@ -11,6 +11,12 @@ from fencing import fail, fail_usage, run_delay, EC_STATUS, SyslogLibHandler
 import boto3
 from botocore.exceptions import ClientError, EndpointConnectionError, NoRegionError
 
+logger = logging.getLogger("fence_aws")
+logger.propagate = False
+logger.setLevel(logging.INFO)
+logger.addHandler(SyslogLibHandler())
+logging.getLogger('botocore.vendored').propagate = False
+	
 def get_instance_id():
 	try:
 		r = requests.get('http://169.254.169.254/latest/meta-data/instance-id')
@@ -191,12 +197,5 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 	sys.exit(result)
 
 if __name__ == "__main__":
-
-	logger = logging.getLogger("fence_aws")
-	logger.propagate = False
-	logger.setLevel(logging.INFO)
-	logger.addHandler(SyslogLibHandler())
-	logging.getLogger('botocore.vendored').propagate = False
-	
 
 	main()
