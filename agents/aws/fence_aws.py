@@ -197,5 +197,4 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 	sys.exit(result)
 
 if __name__ == "__main__":
-
 	main()
