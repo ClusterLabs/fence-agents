@@ -20,7 +20,7 @@ logging.getLogger('botocore.vendored').propagate = False
 def get_instance_id():
 	try:
 		r = requests.get('http://169.254.169.254/latest/meta-data/instance-id')
-		return r.content
+		return r.content.decode("UTF-8")
 	except HTTPError as http_err:
 		logger.error('HTTP error occurred while trying to access EC2 metadata server: %s', http_err)
 	except Exception as err:
