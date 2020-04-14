@@ -230,7 +230,8 @@ def main():
 		if tuple(googleapiclient.__version__) < tuple("1.6.0"):
 			import oauth2client.client
 			credentials = oauth2client.client.GoogleCredentials.get_application_default()
-		conn = googleapiclient.discovery.build('compute', 'v1', credentials=credentials)
+		conn = googleapiclient.discovery.build(
+			'compute', 'v1', credentials=credentials, cache_discovery=False)
 	except Exception as err:
 		fail_usage("Failed: Create GCE compute v1 connection: {}".format(str(err)))
 
