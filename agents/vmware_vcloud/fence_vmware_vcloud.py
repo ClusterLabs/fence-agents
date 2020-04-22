@@ -137,7 +137,7 @@ def send_command(conn, command, method="GET", headers={}):
         try:
                 conn.perform()
         except Exception as e:
-                raise Exception(e[1])
+                raise(e)
 
         rc = conn.getinfo(pycurl.HTTP_CODE)
         result = web_buffer.getvalue().decode()
@@ -150,7 +150,10 @@ def send_command(conn, command, method="GET", headers={}):
                 result = etree.fromstring(result)
 
         if rc != 200 and rc != 202 and rc != 204:
-                raise Exception("{}: {}".format(rc, result["value"]["messages"][0]["default_message"]))
+                if len(result) > 0:
+                        raise Exception("{}: {}".format(rc, result["value"]["messages"][0]["default_message"]))
+                else:
+                        raise Exception("Remote returned {} for request to {}".format(rc, url))
 
         logging.debug("url: {}".format(url))
         logging.debug("method: {}".format(method))
