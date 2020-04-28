@@ -1,6 +1,8 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_vmware_rest" shortdesc="Fence agent for VMware REST API" >
-<longdesc>fence_vmware_rest is an I/O Fencing agent which can be used with VMware API to fence virtual machines.</longdesc>
+<longdesc>fence_vmware_rest is an I/O Fencing agent which can be used with VMware API to fence virtual machines.
+
+NOTE: If there's more than 1000 VMs there is a filter parameter to work around the API limit. See https://code.vmware.com/apis/62/vcenter-management#/VM%20/get_vcenter_vm for full list of filters.</longdesc>
 <vendor-url>https://www.vmware.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
@@ -86,6 +88,11 @@
 	<parameter name="api_path" unique="0" required="0">
 		<getopt mixed="--api-path=[path]" />
 		<shortdesc lang="en">The path part of the API URL</shortdesc>
+	</parameter>
+	<parameter name="filter" unique="0" required="0">
+		<getopt mixed="--filter=[filter]" />
+		<content type="string" default=""  />
+		<shortdesc lang="en">Filter to only return relevant VMs. It can be used to avoid the agent failing when more than 1000 VMs should be returned.</shortdesc>
 	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />

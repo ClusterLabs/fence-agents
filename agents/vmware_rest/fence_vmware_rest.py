@@ -42,7 +42,10 @@ def get_list(conn, options):
 	outlets = {}
 
 	try:
-		res = send_command(conn, "vcenter/vm")
+		command = "vcenter/vm"
+		if "--filter" in options:
+			command = command + "?" + options["--filter"]
+		res = send_command(conn, command)
 	except:
 		logging.debug("Failed: {}".format(e))
 		fail(EC_STATUS)
@@ -157,6 +160,16 @@ def define_new_opts():
 		"required" : "0",
 		"shortdesc" : "The path part of the API URL",
 		"order" : 2}
+	all_opt["filter"] = {
+		"getopt" : ":",
+		"longopt" : "filter",
+		"help" : "--filter=[filter]              Filter to only return relevant VMs"
+			 " (e.g. \"filter.names=node1&filter.names=node2\").",
+		"default" : "",
+		"required" : "0",
+		"shortdesc" : "Filter to only return relevant VMs. It can be used to avoid "
+			      "the agent failing when more than 1000 VMs should be returned.",
+		"order" : 2}
 
 
 def main():
@@ -169,6 +182,7 @@ def main():
 		"notls",
 		"web",
 		"port",
+		"filter",
 	]
 
 	atexit.register(atexit_handler)
@@ -181,8 +195,12 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for VMware REST API"
-	docs["longdesc"] = "fence_vmware_rest is an I/O Fencing agent which can be \
-used with VMware API to fence virtual machines."
+	docs["longdesc"] = """fence_vmware_rest is an I/O Fencing agent which can be \
+used with VMware API to fence virtual machines.
+
+NOTE: If there's more than 1000 VMs there is a filter parameter to work around \
+the API limit. See https://code.vmware.com/apis/62/vcenter-management#/VM%20/get_vcenter_vm \
+for full list of filters."""
 	docs["vendorurl"] = "https://www.vmware.com"
 	show_docs(options, docs)
 
