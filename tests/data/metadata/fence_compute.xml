@@ -70,7 +70,7 @@
 	</parameter>
 	<parameter name="insecure" unique="0" required="0">
 		<getopt mixed="--insecure" />
-		<content type="boolean" default="False"  />
+		<content type="boolean"  />
 		<shortdesc lang="en">Allow Insecure TLS Requests</shortdesc>
 	</parameter>
 	<parameter name="project-domain" unique="0" required="0" deprecated="1">
