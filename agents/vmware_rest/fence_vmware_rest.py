@@ -48,7 +48,14 @@ def get_list(conn, options):
 		res = send_command(conn, command)
 	except Exception as e:
 		logging.debug("Failed: {}".format(e))
-		fail(EC_STATUS)
+		if str(e).startswith("400"):
+			if options.get("--original-action") == "monitor":
+				return outlets
+			else:
+				logging.error("More than 1000 VMs returned. Use --filter parameter to limit which VMs to list.")
+				fail(EC_STATUS)
+		else:
+			fail(EC_STATUS)
 
 	for r in res["value"]:
 		outlets[r["name"]] = ("", state[r["power_state"]])
