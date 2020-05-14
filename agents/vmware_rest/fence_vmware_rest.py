@@ -46,7 +46,7 @@ def get_list(conn, options):
 		if "--filter" in options:
 			command = command + "?" + options["--filter"]
 		res = send_command(conn, command)
-	except:
+	except Exception as e:
 		logging.debug("Failed: {}".format(e))
 		fail(EC_STATUS)
 
@@ -165,7 +165,6 @@ def define_new_opts():
 		"longopt" : "filter",
 		"help" : "--filter=[filter]              Filter to only return relevant VMs"
 			 " (e.g. \"filter.names=node1&filter.names=node2\").",
-		"default" : "",
 		"required" : "0",
 		"shortdesc" : "Filter to only return relevant VMs. It can be used to avoid "
 			      "the agent failing when more than 1000 VMs should be returned.",
