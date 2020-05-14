@@ -36,6 +36,11 @@ When used as a watchdog device you can define e.g. retry=1, retry-sleep=2 and ve
 		<content type="string"  />
 		<shortdesc lang="en">Name of the node to be fenced. The node name is used to generate the key value used for the current operation. This option will be ignored when used with the -k option.</shortdesc>
 	</parameter>
+	<parameter name="readonly" unique="0" required="0">
+		<getopt mixed="--readonly" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Open DEVICE read-only.</shortdesc>
+	</parameter>
 	<parameter name="logfile" unique="0" required="0">
 		<getopt mixed="-f, --logfile" />
 		<content type="string"  />
