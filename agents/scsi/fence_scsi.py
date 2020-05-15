@@ -150,7 +150,10 @@ def reserve_dev(options, dev):
 
 def get_reservation_key(options, dev):
 	reset_dev(options,dev)
-	cmd = options["--sg_persist-path"] + " -n -i -r -d " + dev
+	opts = ""
+	if "--readonly" in options:
+		opts = "-y "
+	cmd = options["--sg_persist-path"] + " -n -i " + opts + "-r -d " + dev
 	out = run_cmd(options, cmd)
 	if out["err"]:
 		fail_usage("Cannot get reservation key")
@@ -161,7 +164,10 @@ def get_reservation_key(options, dev):
 def get_registration_keys(options, dev, fail=True):
 	reset_dev(options,dev)
 	keys = []
-	cmd = options["--sg_persist-path"] + " -n -i -k -d " + dev
+	opts = ""
+	if "--readonly" in options:
+		opts = "-y "
+	cmd = options["--sg_persist-path"] + " -n -i " + opts + "-k -d " + dev
 	out = run_cmd(options, cmd)
 	if out["err"]:
 		fail_usage("Cannot get registration keys", fail)
@@ -342,6 +348,14 @@ be removed from the device(s).",
 		"shortdesc" : "Use the APTPL flag for registrations. This option is only used for the 'on' action.",
 		"order": 1
 	}
+	all_opt["readonly"] = {
+		"getopt" : "",
+		"longopt" : "readonly",
+		"help" : "--readonly                     Open DEVICE read-only. May be useful with PRIN commands if there are unwanted side effects with the default read-write open.",
+		"required" : "0",
+		"shortdesc" : "Open DEVICE read-only.",
+		"order": 4
+	}
 	all_opt["logfile"] = {
 		"getopt" : ":",
 		"longopt" : "logfile",
@@ -464,7 +478,8 @@ def main():
 
 	device_opt = ["no_login", "no_password", "devices", "nodename", "port",\
 	"no_port", "key", "aptpl", "fabric_fencing", "on_target", "corosync_cmap_path",\
-	"sg_persist_path", "sg_turs_path", "logfile", "vgs_path", "force_on", "key_value"]
+	"sg_persist_path", "sg_turs_path", "readonly", "logfile", "vgs_path",\
+	"force_on", "key_value"]
 
 	define_new_opts()
 
