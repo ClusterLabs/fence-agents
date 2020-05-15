@@ -217,7 +217,7 @@ def create_nova_connection(options):
 
 	loader = loading.get_plugin_loader('password')
 	keystone_auth = loader.load_from_options(**kwargs)
-	keystone_session = session.Session(auth=keystone_auth, verify=(not options["--insecure"]))
+	keystone_session = session.Session(auth=keystone_auth, verify=not "--insecure" in options)
 
 	versions = [ "2.11", "2" ]
 	for version in versions:
@@ -244,7 +244,7 @@ def create_nova_connection(options):
 					     None, # Password
 					     None, # Tenant
 					     None, # Auth URL
-					     insecure=options["--insecure"],
+					     insecure="--insecure" in options,
 					     region_name=options["--region-name"],
 					     endpoint_type=options["--endpoint-type"],
 					     session=keystone_session, auth=keystone_auth,
@@ -332,7 +332,6 @@ def define_new_opts():
 		"help" : "--insecure                                     Explicitly allow agent to perform \"insecure\" TLS (https) requests",
 		"required" : "0",
 		"shortdesc" : "Allow Insecure TLS Requests",
-		"default" : "False",
 		"order": 2,
 	}
 	all_opt["domain"] = {
@@ -396,6 +395,11 @@ def main():
 		options["--domain"] = options["--compute-domain"]
 		del options["--domain"]
 
+
+	# Disable insecure-certificate-warning message
+	if "--insecure" in options:
+		import urllib3
+		urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 	connection = create_nova_connection(options)
 
