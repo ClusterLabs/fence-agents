@@ -21,6 +21,10 @@ ACLOCAL_AMFLAGS		= -I m4
 
 SUBDIRS			= lib agents doc
 
+agents: lib
+
+doc: agents
+
 install-exec-local:
 			$(INSTALL) -d $(DESTDIR)/$(LOGDIR)
 			$(INSTALL) -d $(DESTDIR)/$(CLUSTERVARRUN)
