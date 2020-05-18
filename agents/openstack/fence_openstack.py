@@ -10,20 +10,6 @@ sys.path.append("/usr/share/fence")
 from fencing import *
 from fencing import fail_usage, is_executable, run_command, run_delay
 
-try:
-        from novaclient import client as novaclient
-        from keystoneauth1 import session as ksc_session
-        from keystoneauth1 import loading
-        legacy_import = False
-except ImportError:
-        try:
-                from novaclient import client as novaclient
-                from keystoneclient import session as ksc_session
-                from keystoneclient.auth.identity import v3
-                legacy_import = True
-        except ImportError:
-                pass
-
 def get_power_status(_, options):
         output = nova_run_command(options, "status")
         if (output == 'ACTIVE'):
@@ -36,6 +22,20 @@ def set_power_status(_, options):
     return
 
 def nova_login(username,password,projectname,auth_url,user_domain_name,project_domain_name):
+        try:
+                from novaclient import client as novaclient
+                from keystoneauth1 import session as ksc_session
+                from keystoneauth1 import loading
+                legacy_import = False
+        except ImportError:
+                try:
+                        from novaclient import client as novaclient
+                        from keystoneclient import session as ksc_session
+                        from keystoneclient.auth.identity import v3
+                        legacy_import = True
+                except ImportError:
+                        fail_usage("Failed: Nova not found or not accessible")
+
         if not legacy_import:
                 loader = loading.get_plugin_loader('password')
                 auth = loader.load_from_options(auth_url=auth_url,
