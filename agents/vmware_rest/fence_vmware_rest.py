@@ -8,11 +8,14 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, run_delay, EC_LOGIN_DENIED, EC_STATUS
 
+if sys.version_info[0] > 2: import urllib.parse as urllib
+else: import urllib
+
 state = {"POWERED_ON": "on", 'POWERED_OFF': "off", 'SUSPENDED': "off"}
 
 def get_power_status(conn, options):
 	try:
-		res = send_command(conn, "vcenter/vm?filter.names={}".format(options["--plug"]))["value"]
+		res = send_command(conn, "vcenter/vm?filter.names={}".format(urllib.quote(options["--plug"])))["value"]
 	except Exception as e:
 		logging.debug("Failed: {}".format(e))
 		fail(EC_STATUS)
@@ -58,7 +61,7 @@ def get_list(conn, options):
 			fail(EC_STATUS)
 
 	for r in res["value"]:
-		outlets[r["name"]] = ("", state[r["power_state"]])
+		outlets[r["name"].encode("UTF-8")] = ("", state[r["power_state"]])
 
 	return outlets
 
