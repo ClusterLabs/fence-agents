@@ -9,14 +9,14 @@ from fencing import *
 from fencing import fail, fail_usage, run_delay, EC_STATUS, SyslogLibHandler
 
 import boto3
-from botocore.exceptions import ClientError, EndpointConnectionError, NoRegionError
+from botocore.exceptions import ConnectionError, ClientError, EndpointConnectionError, NoRegionError
 
 logger = logging.getLogger("fence_aws")
 logger.propagate = False
 logger.setLevel(logging.INFO)
 logger.addHandler(SyslogLibHandler())
 logging.getLogger('botocore.vendored').propagate = False
-	
+
 def get_instance_id():
 	try:
 		r = requests.get('http://169.254.169.254/latest/meta-data/instance-id')
@@ -38,6 +38,8 @@ def get_nodes_list(conn, options):
 		fail_usage("Failed: Incorrect Access Key or Secret Key.")
 	except EndpointConnectionError:
 		fail_usage("Failed: Incorrect Region.")
+	except ConnectionError as e:
+		fail_usage("Failed: Unable to connect to AWS: " + str(e))
 	except Exception as e:
 		logger.error("Failed to get node list: %s", e)
 	logger.debug("Monitor operation OK: %s",result)
@@ -169,7 +171,7 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 	
 	if options["--boto3_debug"] != "on":
 		boto3.set_stream_logger('boto3',logging.INFO)
-		boto3.set_stream_logger('botocore',logging.INFO)
+		boto3.set_stream_logger('botocore',logging.CRITICAL)
 		logging.getLogger('botocore').propagate = False
 		logging.getLogger('boto3').propagate = False
 	else:
