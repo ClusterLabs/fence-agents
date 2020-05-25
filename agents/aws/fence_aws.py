@@ -132,6 +132,7 @@ def define_new_opts():
 		"help" : "-b, --boto3_debug=[option]      Boto3 and Botocore library debug logging",
 		"shortdesc": "Boto Lib debug",
 		"required": "0",
+		"default": "False",
 		"order": 5
 	}
 
@@ -146,7 +147,6 @@ def main():
 	define_new_opts()
 
 	all_opt["power_timeout"]["default"] = "60"
-	all_opt["boto3_debug"]["default"] = "off"
 
 	options = check_input(device_opt, process_input(device_opt))
 
@@ -169,7 +169,7 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 		lh.setFormatter(lhf)
 		logger.setLevel(logging.DEBUG)
 	
-	if options["--boto3_debug"] != "on":
+	if options["--boto3_debug"].lower() not in ["1", "yes", "on", "true"]:
 		boto3.set_stream_logger('boto3',logging.INFO)
 		boto3.set_stream_logger('botocore',logging.CRITICAL)
 		logging.getLogger('botocore').propagate = False
