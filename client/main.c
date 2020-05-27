@@ -56,10 +56,10 @@ main(int argc, char **argv)
 
 	args_init(&args);
 	if (!strcmp(basename(argv[0]), "fence_xvm")) {
-       		my_options = "di:a:p:r:C:c:k:M:H:uo:t:?hVw:";
+		my_options = "di:a:p:r:C:c:k:M:n:H:uo:t:?hVw:";
 		args.mode = MODE_MULTICAST;
 	} else {
-		my_options = "dD:P:A:p:M:H:o:t:?hVT:S::C:c:k:w:";
+		my_options = "dD:P:A:p:M:n:H:o:t:?hVT:S::C:c:k:w:";
 		args.mode = MODE_SERIAL;
 	}
 

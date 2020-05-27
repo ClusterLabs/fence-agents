@@ -74,6 +74,8 @@ struct arg_info {
 	char opt;
 	char *opt_desc;
 	char *stdin_opt;
+	char *obsoletes;
+	int deprecated;
 	int eh;
 	char *content_type;
 	char *default_value;
