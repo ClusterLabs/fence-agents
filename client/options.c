@@ -419,143 +419,148 @@ print_desc_xml(const char *desc)
 /** ALL valid command line and stdin arguments for this fencing agent */
 static struct arg_info _arg_info[] = {
 	{ '\xff', NULL, "agent",
-	  0, "string", NULL,
+	  NULL, 0, 0, "string", NULL,
 	  "Not user serviceable",
 	  NULL },
 
 	{ '\xff', NULL, "self",
-	  0, "string", NULL,
+	  NULL, 0, 0, "string", NULL,
 	  "Not user serviceable", 
 	  NULL },
 
 	{ '\xff', NULL, "nodename",
-	  0, "string", NULL,
+	  NULL, 0, 0, "string", NULL,
 	  "Not user serviceable", 
 	  NULL },
 
 	{ 'd', "-d", "debug",
-	  0, "boolean", NULL,
+	  NULL, 0, 0, "boolean", NULL,
 	  "Specify (stdin) or increment (command line) debug level",
 	  assign_debug },
 
 	{ 'i', "-i <family>", "ip_family",
-	  0, "string", "auto",
+	  NULL, 0, 0, "string", "auto",
 	  "IP Family ([auto], ipv4, ipv6)",
 	  assign_family },
 
 	{ 'a', "-a <address>", "multicast_address",
-	  0, "string", NULL,
+	  NULL, 0, 0, "string", NULL,
 	  "Multicast address (default=" IPV4_MCAST_DEFAULT " / " IPV6_MCAST_DEFAULT ")",
 	  assign_address },
 
 	{ 'T', "-T <address>", "ipaddr",
-          0, "string", "127.0.0.1",
+          NULL, 0, 0, "string", "127.0.0.1",
 	  "IP address to connect to in TCP mode (default=" IPV4_TCP_ADDR_DEFAULT " / " IPV6_TCP_ADDR_DEFAULT ")",
 	  assign_ip_address },
 
 	{ 'S', "-S <cid>", "vsock",
-          0, "int", "2",
+          NULL, 0, 0, "int", "2",
 	  "vm socket CID to connect to in vsock mode",
 	  assign_cid },
 
 	{ 'A', "-A <address>", "channel_address",
-          0, "string", "10.0.2.179",
+          NULL, 0, 0, "string", "10.0.2.179",
 	  "VM Channel IP address (default=" DEFAULT_CHANNEL_IP ")",
 	  assign_channel_address },
 
 	{ 'p', "-p <port>", "ipport",
-          0, "string", "1229",
+          NULL, 0, 0, "string", "1229",
 	  "TCP, Multicast, VMChannel, or VM socket port (default=1229)",
 	  assign_port },
 
 	{ 'I', "-I <interface>", "interface",
-	  0, "string", NULL,
+	  NULL, 0, 0, "string", NULL,
 	  "Network interface name to listen on",
 	  assign_interface },
 
 	{ 'r', "-r <retrans>", "retrans", 
-	  0, "string", "20",
+	  NULL, 0, 0, "string", "20",
 	  "Multicast retransmit time (in 1/10sec; default=20)",
 	  assign_retrans },
 
 	{ 'c', "-c <hash>", "hash",
-	  0, "string", "sha256",
+	  NULL, 0, 0, "string", "sha256",
 	  "Packet hash strength (none, sha1, [sha256], sha512)",
 	  assign_hash },
 
 	{ 'C', "-C <auth>", "auth",
-	  0, "string", "sha256",
+	  NULL, 0, 0, "string", "sha256",
 	  "Authentication (none, sha1, [sha256], sha512)",
 	  assign_auth },
 
 	{ 'k', "-k <file>", "key_file",
-	  0, "string", DEFAULT_KEY_FILE, 
+	  NULL, 0, 0, "string", DEFAULT_KEY_FILE, 
 	  "Shared key file (default=" DEFAULT_KEY_FILE ")",
 	  assign_key },
 
 	{ 'D', "-D <device>", "serial_device",
-	  0, "string", NULL,
+	  NULL, 0, 0, "string", NULL,
 	  "Serial device (default=" DEFAULT_SERIAL_DEVICE  ")",
 	  assign_device },
 
 	{ 'P', "-P <param>", "serial_params",
-	  0, "string", DEFAULT_SERIAL_SPEED,
+	  NULL, 0, 0, "string", DEFAULT_SERIAL_SPEED,
 	  "Serial Parameters (default=" DEFAULT_SERIAL_SPEED ")",
 	  assign_params },
 
 	{ '\xff', NULL, "option",
 	  /* Deprecated */
-	  0, "string", "reboot",
+	  NULL, 0, 0, "string", "reboot",
 	  "Fencing option (null, off, on, [reboot], status, list, list-status, monitor, validate-all, metadata)",
 	  assign_op },
 
 	{ 'o', "-o <operation>", "action",
-	  0, "string", "reboot",
+	  NULL, 0, 0, "string", "reboot",
 	  "Fencing action (null, off, on, [reboot], status, list, list-status, monitor, validate-all, metadata)",
 	  assign_op },
 
+	{ 'n', "-n <domain>", "plug",
+	  "port", 0, 0, "string", NULL,
+	  "Virtual Machine (domain name) to fence",
+	  assign_domain },
+
 	{ 'H', "-H <domain>", "port",
-	  0, "string", NULL,
+	  NULL, 1, 0, "string", NULL,
 	  "Virtual Machine (domain name) to fence",
 	  assign_domain },
 
 	{ SCHEMA_COMPAT, NULL, "domain",
-	  0, "string", NULL,
+	  NULL, 0, 0, "string", NULL,
 	  "Virtual Machine (domain name) to fence (deprecated; use port)",
 	  assign_domain },
 
 	{ 'u', "-u", "use_uuid",
-	  0, "string", "0",
+	  NULL, 0, 0, "string", "0",
 	  "Treat [domain] as UUID instead of domain name. This is provided for compatibility with older fence_xvmd installations.",
 	  assign_uuid_lookup },
 
 	{ 't', "-t <timeout>", "timeout",
-	  0, "string", "30",
+	  NULL, 0, 0, "string", "30",
 	  "Fencing timeout (in seconds; default=30)",
 	  assign_timeout },
 
 	{ 'h', "-h", NULL,
-	  0, "boolean", "0",
+	  NULL, 0, 0, "boolean", "0",
  	  "Help",
 	  assign_help },
 
 	{ '?', "-?", NULL,
-	  0, "boolean", "0",
+	  NULL, 0, 0, "boolean", "0",
  	  "Help (alternate)", 
 	  assign_help },
 
 	{ 'w', "-w <delay>", "delay",
-	  0, "string", "0",
+	  NULL, 0, 0, "string", "0",
 	  "Fencing delay (in seconds; default=0)",
 	  assign_delay },
 
 	{ 'V', "-V", NULL,
-	  0, "boolean", "0",
+	  NULL, 0, 0, "boolean", "0",
  	  "Display version and exit", 
 	  assign_version },
 
 	/* Terminator */
-	{ 0, NULL, NULL, 0, NULL, NULL, NULL, NULL }
+	{ 0, NULL, NULL, NULL, 0, 0, NULL, NULL, NULL, NULL }
 };
 
 
@@ -737,7 +742,7 @@ args_usage(char *progname, const char *optstr, int print_stdin)
 
 	for (x = 0; x < strlen(optstr); x++) {
 		arg = find_arg_by_char(optstr[x]);
-		if (!arg)
+		if (!arg || arg->deprecated)
 			continue;
 
 		if (print_stdin) {
@@ -771,7 +776,13 @@ args_metadata(char *progname, const char *optstr)
 		if (!arg->stdin_opt)
 			continue;
 
-		printf("\t<parameter name=\"%s\">\n",arg->stdin_opt);
+		if (arg->obsoletes)
+			printf("\t<parameter name=\"%s\" obsoletes=\"%s\">\n", arg->stdin_opt, arg->obsoletes);
+		else if (arg->deprecated)
+			printf("\t<parameter name=\"%s\" deprecated=\"%d\">\n", arg->stdin_opt, arg->deprecated);
+		else
+			printf("\t<parameter name=\"%s\">\n", arg->stdin_opt);
+
                 printf("\t\t<getopt mixed=\"-%c\" />\n",arg->opt);
                 if (arg->default_value) {
                   printf("\t\t<content type=\"%s\" default=\"%s\" />\n", arg->content_type, arg->default_value);
