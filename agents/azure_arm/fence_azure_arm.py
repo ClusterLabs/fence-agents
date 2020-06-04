@@ -184,7 +184,7 @@ def main():
     compute_client = None
     network_client = None
 
-    device_opt = ["login", "passwd", "port", "resourceGroup", "tenantId", "subscriptionId", "network-fencing", "msi", "cloud"]
+    device_opt = ["login", "no_login", "no_password", "passwd", "port", "resourceGroup", "tenantId", "subscriptionId", "network-fencing", "msi", "cloud"]
 
     atexit.register(atexit_handler)
 
@@ -222,6 +222,7 @@ When using network fencing the reboot-action will cause a quick-return once the 
 
     try:
         config = azure_fence.get_azure_config(options)
+        options["--resourceGroup"] = config.RGName
         compute_client = azure_fence.get_azure_compute_client(config)
         if "--network-fencing" in options:
             network_client = azure_fence.get_azure_network_client(config)
