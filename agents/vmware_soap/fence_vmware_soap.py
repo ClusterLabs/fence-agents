@@ -67,7 +67,7 @@ def soap_login(options):
 
 		conn.service.Login(mo_SessionManager, options["--username"], options["--password"])
 	except requests.exceptions.SSLError as ex:
-		fail_usage("Server side certificate verification failed")
+		fail_usage("Server side certificate verification failed: %s" % ex)
 	except Exception:
 		fail(EC_LOGIN_DENIED)
 
