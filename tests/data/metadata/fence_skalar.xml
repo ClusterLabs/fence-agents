@@ -18,6 +18,16 @@
 		<content type="string"  />
 		<shortdesc lang="en">IP address or hostname of fencing device</shortdesc>
 	</parameter>
+	<parameter name="force" unique="0" required="0">
+		<getopt mixed="--force" />
+		<content type="boolean"  />
+		<shortdesc lang="en">- vm_stop command parameter, force stop or not, default false</shortdesc>
+	</parameter>
+	<parameter name="graceful" unique="0" required="0">
+		<getopt mixed="--graceful" />
+		<content type="boolean"  />
+		<shortdesc lang="en"> - vm_stop command parameter, graceful stop or not, default false</shortdesc>
+	</parameter>
 	<parameter name="ipport" unique="0" required="0">
 		<getopt mixed="-u, --ipport=[port]" />
 		<content type="integer" default="80"  />
