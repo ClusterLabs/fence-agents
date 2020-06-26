@@ -21,12 +21,12 @@
 	<parameter name="force" unique="0" required="0">
 		<getopt mixed="--force" />
 		<content type="boolean"  />
-		<shortdesc lang="en"> - vm_stop command parameter, graceful stop or not, default false</shortdesc>
+		<shortdesc lang="en">- vm_stop command parameter, force stop or not, default false</shortdesc>
 	</parameter>
 	<parameter name="graceful" unique="0" required="0">
 		<getopt mixed="--graceful" />
 		<content type="boolean"  />
-		<shortdesc lang="en">- vm_stop command parameter, force stop or not, default false</shortdesc>
+		<shortdesc lang="en"> - vm_stop command parameter, graceful stop or not, default false</shortdesc>
 	</parameter>
 	<parameter name="ipport" unique="0" required="0">
 		<getopt mixed="-u, --ipport=[port]" />
@@ -52,6 +52,11 @@
 		<getopt mixed="-p, --password=[password]" />
 		<content type="string"  />
 		<shortdesc lang="en">Login password or passphrase</shortdesc>
+	</parameter>
+	<parameter name="password_script" unique="0" required="0" obsoletes="passwd_script">
+		<getopt mixed="-S, --password-script=[script]" />
+		<content type="string"  />
+		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
 	</parameter>
 	<parameter name="plug" unique="0" required="1" obsoletes="port">
 		<getopt mixed="-n, --plug=[id]" />
