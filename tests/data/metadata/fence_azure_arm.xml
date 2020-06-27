@@ -23,7 +23,7 @@ When using network fencing the reboot-action will cause a quick-return once the 
 		<content type="string" default="reboot"  />
 		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
-	<parameter name="login" unique="0" required="1" deprecated="1">
+	<parameter name="login" unique="0" required="0" deprecated="1">
 		<getopt mixed="-l, --username=[appid]" />
 		<content type="string"  />
 		<shortdesc lang="en">Application ID</shortdesc>
@@ -58,7 +58,7 @@ When using network fencing the reboot-action will cause a quick-return once the 
 		<content type="string"  />
 		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
 	</parameter>
-	<parameter name="username" unique="0" required="1" obsoletes="login">
+	<parameter name="username" unique="0" required="0" obsoletes="login">
 		<getopt mixed="-l, --username=[appid]" />
 		<content type="string"  />
 		<shortdesc lang="en">Application ID</shortdesc>

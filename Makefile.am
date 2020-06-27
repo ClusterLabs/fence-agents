@@ -21,6 +21,8 @@ ACLOCAL_AMFLAGS		= -I m4
 
 SUBDIRS			= lib agents doc
 
+.PHONY: $(SUBDIRS)
+
 agents: lib
 
 doc: agents

@@ -41,6 +41,7 @@ def get_from_metadata(parameter):
     import requests
     try:
         r = requests.get('http://169.254.169.254/metadata/instance?api-version=2017-08-01', headers = {"Metadata":"true"})
+        logging.debug("metadata: " + str(r.json()))
         return str(r.json()["compute"][parameter])
     except:
         logging.warning("Not able to use metadata service. Am I running in Azure?")
