@@ -1,15 +1,16 @@
-#!/usr/bin/python -tt
+#!@PYTHON@ -tt
 # -*- coding: utf-8 -*-
 
 import sys
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, EC_STATUS, EC_LOGIN_DENIED, EC_INVALID_PRIVILEGES
+from fencing import fail, EC_STATUS, EC_LOGIN_DENIED, EC_INVALID_PRIVILEGES, run_delay
 import requests
 import ast
 import urllib3
 import json
+import logging
 
 from requests.exceptions import ConnectionError
 
@@ -17,8 +18,8 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 cookie = None
 
-RELEASE_VERSION="1.0"
-BUILD_DATE="20200611"
+RELEASE_VERSION="1.1"
+BUILD_DATE="20200627"
 REDHAT_COPYRIGHT=""
 
 ###################################################################################
@@ -37,8 +38,7 @@ def authorize_and_get_cookie(skala_ip, login, password, options):
             session.post(url=URL0, data=cred, verify=False)
             cookie = session.cookies.get_dict()
     except:
-        if "-v" in options or "--verbose" in options:
-            print("ERROR: " + str(sys.exc_info()))
+        logging.exception('Exception occured.')
         fail(EC_LOGIN_DENIED)
     if 'api_token' in cookie:
         return cookie
@@ -67,8 +67,7 @@ def get_vm_id(skala_ip, uuid, options, cookie):
     jvm_info = vm_info.json()
     if jvm_info["vm_list"]["items"] == []:
         raise NameError('Can not find VM by uuid.')
-    if "-v" in options or "--verbose" in options:
-        print("VM_INFO:\n{}".format(json.dumps(vm_info.json(), indent=4, sort_keys=True)))
+    logging.debug("VM_INFO:\n{}".format(json.dumps(vm_info.json(), indent=4, sort_keys=True)))
     return jvm_info["vm_list"]["items"][0]["vm_id"]
 
 
@@ -93,11 +92,10 @@ def vm_task(skala_ip, vm_id, command, options, cookie):
 
     URL3 = 'https://' + str(skala_ip) + '/api/0/vm/' + str(vm_id) + '/task'
 
-    if "-v" in options or "--verbose" in options:
-        print("vm_task skala_ip: " + str(skala_ip))
-        print("vm_task vm_id: " + str(vm_id))
-        print("vm_task command: " + str(command))
-        print("vm_task cookie: " + str(cookie))
+    logging.debug("vm_task skala_ip: " + str(skala_ip))
+    logging.debug("vm_task vm_id: " + str(vm_id))
+    logging.debug("vm_task command: " + str(command))
+    logging.debug("vm_task cookie: " + str(cookie))
 
 
     def checking(vm_id, command, graceful, force):
@@ -142,8 +140,7 @@ def get_power_status(conn, options):
     jvm_info = vm_info.json()
     if jvm_info["vm_list"]["items"] == []:
         raise NameError('Can not find VM by uuid.')
-    if "-v" in options or "--verbose" in options:
-        print("VM_INFO:\n{}".format(json.dumps(vm_info.json(), indent=4, sort_keys=True)))
+    logging.debug("VM_INFO:\n{}".format(json.dumps(vm_info.json(), indent=4, sort_keys=True)))
     status_v = jvm_info["vm_list"]["items"][0]["status"]
     if status_v not in state:
         raise Exception('Unknown VM state: {}.'.format(status_v))
@@ -206,19 +203,19 @@ def main():
     docs["vendorurl"] = "https://www.skala-r.ru/"
     show_docs(options, docs)
     options["eol"] = "\r"
+    
+    run_delay(options)
 
     cookie = authorize_and_get_cookie(options["--ip"], options["--username"], options["--password"], options)
     atexit.register(logout, options["--ip"])
     
-    if "-v" in options or "--verbose" in options:
-        print("OPTIONS: " + str(options) + "\n")
+    logging.debug("OPTIONS: " + str(options) + "\n")
     
     try:
         result = fence_action(None, options, set_power_status, get_power_status, get_list)
         sys.exit(result)
     except Exception:
-        if "-v" in options or "--verbose" in options:
-            print("ERROR: " + str(sys.exc_info()))
+        logging.exception('Exception occured.')
         fail(EC_STATUS)
 
 if __name__ == "__main__":
