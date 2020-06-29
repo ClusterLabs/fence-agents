@@ -193,15 +193,6 @@ def main():
     define_new_opts()
     device_opt = ["ipaddr", "login", "passwd", "port", "web", "ssl", "verbose", "graceful", "force"]
     
-    ## setup URL proto
-    if "--ssl" in options or "--ssl-secure" in options or "--ssl-insecure" in options:
-        proto = "https://"
-    else:
-        proto = "http://"
-    
-    if "--ssl-insecure" in options:
-        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-    
     atexit.register(atexit_handler)
     options = check_input(device_opt, process_input(device_opt))
 
@@ -213,6 +204,15 @@ def main():
     options["eol"] = "\r"
     
     run_delay(options)
+    
+    ## setup URL proto
+    if "--ssl" in options or "--ssl-secure" in options or "--ssl-insecure" in options:
+        proto = "https://"
+    else:
+        proto = "http://"
+    
+    if "--ssl-insecure" in options:
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     cookie = authorize_and_get_cookie(options["--ip"], options["--username"], options["--password"], options)
     atexit.register(logout, options["--ip"])
