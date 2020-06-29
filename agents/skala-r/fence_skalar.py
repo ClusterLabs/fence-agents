@@ -34,7 +34,7 @@ def authorize_and_get_cookie(skala_ip, login, password, options):
     
     try:
         with requests.Session() as session:
-            session.post(url=URL0, data=cred, verify=False)
+            session.post(url=URL0, data=cred, verify=True)
             cookie = session.cookies.get_dict()
     except:
         logging.exception('Exception occured.')
@@ -50,7 +50,7 @@ def logout(skala_ip):
     
     try:
         with requests.Session() as session:
-            session.post(url=URL1, verify=False, cookies=cookie)
+            session.post(url=URL1, verify=True, cookies=cookie)
     except:
         ## Logout; we do not care about result as we will end in any case
         pass
@@ -62,7 +62,7 @@ def get_vm_id(skala_ip, uuid, options, cookie):
         "uuid": str(uuid)
     }
     
-    vm_info = requests.get(url=URL2, verify=False, params=parameters, cookies=cookie)
+    vm_info = requests.get(url=URL2, verify=True, params=parameters, cookies=cookie)
     jvm_info = vm_info.json()
     if jvm_info["vm_list"]["items"] == []:
         raise NameError('Can not find VM by uuid.')
@@ -119,7 +119,7 @@ def vm_task(skala_ip, vm_id, command, options, cookie):
         }
 
     with requests.Session() as session:
-        response = session.post(url=URL3, params=parameters, verify=False, cookies=cookie)
+        response = session.post(url=URL3, params=parameters, verify=True, cookies=cookie)
     if response.status_code != 200:
         raise Exception('Invalid response code from server: {}.'.format(response.status_code))
     return
@@ -135,7 +135,7 @@ def get_power_status(conn, options):
         "uuid": str(options["--plug"])
     }
 
-    vm_info = requests.get(url=URL4, params=parameters, verify=False, cookies=cookie)
+    vm_info = requests.get(url=URL4, params=parameters, verify=True, cookies=cookie)
     jvm_info = vm_info.json()
     if jvm_info["vm_list"]["items"] == []:
         raise NameError('Can not find VM by uuid.')
@@ -162,7 +162,7 @@ def get_list(conn, options):
     outlets = {}
     URL5 = proto + options["--ip"] + '/api/0/vm'
     
-    vm_info = requests.get(url=URL5, verify=False, cookies=cookie)
+    vm_info = requests.get(url=URL5, verify=True, cookies=cookie)
     jvm_info = vm_info.json()
     list_jvm = jvm_info["vm_list"]["items"]
     for elem in list_jvm:
@@ -174,7 +174,7 @@ def define_new_opts():
     all_opt["graceful"] = {
             "getopt" : "",
             "longopt" : "graceful",
-            "help" : "--graceful                vm_stop command parameter, graceful stop or not, default false", 
+            "help" : "--graceful                     vm_stop command parameter, graceful stop or not, default false", 
             "required" : "0",
             "shortdesc" : "vm_stop command parameter, graceful stop or not, default false",
             "order" : 1}
@@ -182,7 +182,7 @@ def define_new_opts():
     all_opt["force"] = {
             "getopt" : "",
             "longopt" : "force",
-            "help" : "--force                vm_stop command parameter, force stop or not, default false",
+            "help" : "--force                        vm_stop command parameter, force stop or not, default false",
             "required" : "0",
             "shortdesc" : "vm_stop command parameter, force stop or not, default false", 
             "order" : 1}
