@@ -205,7 +205,6 @@ def main():
     
     run_delay(options)
     
-    ## setup URL proto
     if "--ssl" in options or "--ssl-secure" in options or "--ssl-insecure" in options:
         proto = "https://"
     else:
