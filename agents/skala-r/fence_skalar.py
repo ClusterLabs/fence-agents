@@ -14,9 +14,8 @@ import logging
 
 from requests.exceptions import ConnectionError
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 cookie = None
+proto = ''
 
 RELEASE_VERSION="1.1"
 BUILD_DATE="20200627"
@@ -27,7 +26,7 @@ REDHAT_COPYRIGHT=""
 
 
 def authorize_and_get_cookie(skala_ip, login, password, options):
-    URL0 = 'https://' + str(skala_ip) + '/api/0/auth'
+    URL0 = proto + str(skala_ip) + '/api/0/auth'
     cred = {
         "login" : str(login),
         "password" : str(password)
@@ -47,7 +46,7 @@ def authorize_and_get_cookie(skala_ip, login, password, options):
 
 
 def logout(skala_ip):
-    URL1 = 'https://' + str(skala_ip) + '/api/0/logout'
+    URL1 = proto + str(skala_ip) + '/api/0/logout'
     
     try:
         with requests.Session() as session:
@@ -58,7 +57,7 @@ def logout(skala_ip):
 
 
 def get_vm_id(skala_ip, uuid, options, cookie):
-    URL2 = 'https://' + str(skala_ip) + '/api/0/vm'
+    URL2 = proto + str(skala_ip) + '/api/0/vm'
     parameters = {
         "uuid": str(uuid)
     }
@@ -90,7 +89,7 @@ def vm_task(skala_ip, vm_id, command, options, cookie):
     else:
         force = False
 
-    URL3 = 'https://' + str(skala_ip) + '/api/0/vm/' + str(vm_id) + '/task'
+    URL3 = proto + str(skala_ip) + '/api/0/vm/' + str(vm_id) + '/task'
 
     logging.debug("vm_task skala_ip: " + str(skala_ip))
     logging.debug("vm_task vm_id: " + str(vm_id))
@@ -131,7 +130,7 @@ def get_power_status(conn, options):
     state = {"RUNNING": "on", "PAUSED": "on", "STOPPED": "off", "SUSPENDED": "off", "ERROR": "off", "DELETED": "off",
              "CREATING": "off", "FAILED_TO_CREATE": "off", "NODE_OFFLINE": "off", "STARTING": "off", "STOPPING": "on"}
 
-    URL4 = 'https://' + options["--ip"] + '/api/0/vm/'
+    URL4 = proto + options["--ip"] + '/api/0/vm/'
     parameters = {
         "uuid": str(options["--plug"])
     }
@@ -161,7 +160,7 @@ def set_power_status(conn, options):
 
 def get_list(conn, options):
     outlets = {}
-    URL5 = 'https://' + options["--ip"] + '/api/0/vm'
+    URL5 = proto + options["--ip"] + '/api/0/vm'
     
     vm_info = requests.get(url=URL5, verify=False, cookies=cookie)
     jvm_info = vm_info.json()
@@ -175,24 +174,33 @@ def define_new_opts():
     all_opt["graceful"] = {
             "getopt" : "",
             "longopt" : "graceful",
-            "help" : "--graceful - vm_stop command parameter, graceful stop or not, default false", 
+            "help" : "--graceful                vm_stop command parameter, graceful stop or not, default false", 
             "required" : "0",
-            "shortdesc" : " - vm_stop command parameter, graceful stop or not, default false",
+            "shortdesc" : "vm_stop command parameter, graceful stop or not, default false",
             "order" : 1}
 
     all_opt["force"] = {
             "getopt" : "",
             "longopt" : "force",
-            "help" : "--force - vm_stop command parameter, force stop or not, default false",
+            "help" : "--force                vm_stop command parameter, force stop or not, default false",
             "required" : "0",
-            "shortdesc" : "- vm_stop command parameter, force stop or not, default false", 
+            "shortdesc" : "vm_stop command parameter, force stop or not, default false", 
             "order" : 1}
 
 
 def main():
-    global cookie
+    global cookie, proto
     define_new_opts()
     device_opt = ["ipaddr", "login", "passwd", "port", "web", "ssl", "verbose", "graceful", "force"]
+    
+    ## setup URL proto
+    if "--ssl" in opt or "--ssl-secure" in opt or "--ssl-insecure" in opt:
+        proto = "https://"
+    else:
+        proto = "http://"
+    
+    if "--ssl-insecure" in opt:
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     
     atexit.register(atexit_handler)
     options = check_input(device_opt, process_input(device_opt))
