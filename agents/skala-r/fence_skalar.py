@@ -210,6 +210,8 @@ def main():
         proto = "https://"
     else:
         proto = "http://"
+        ssl_verify = False
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     
     if "--ssl-insecure" in options:
         ssl_verify = False
