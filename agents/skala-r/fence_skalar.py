@@ -17,9 +17,6 @@ from requests.exceptions import ConnectionError
 proto = ''
 ssl_verify = True
 
-BUILD_DATE="20200629"
-REDHAT_COPYRIGHT=""
-
 ###################################################################################
 # Inner functions
 
