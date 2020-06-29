@@ -15,8 +15,6 @@ import logging
 from requests.exceptions import ConnectionError
 
 cookie = None
-proto = ''
-ssl_verify = True
 
 RELEASE_VERSION="1.2"
 BUILD_DATE="20200629"
@@ -27,7 +25,7 @@ REDHAT_COPYRIGHT=""
 
 
 def authorize_and_get_cookie(skala_ip, login, password, options):
-    URL0 = proto + str(skala_ip) + '/api/0/auth'
+    URL0 = options["proto"] + str(skala_ip) + '/api/0/auth'
     cred = {
         "login" : str(login),
         "password" : str(password)
@@ -35,7 +33,7 @@ def authorize_and_get_cookie(skala_ip, login, password, options):
     
     try:
         with requests.Session() as session:
-            session.post(url=URL0, data=cred, verify=ssl_verify)
+            session.post(url=URL0, data=cred, verify=options["ssl_verify"])
             cookie = session.cookies.get_dict()
     except:
         logging.exception('Exception occured.')
@@ -47,23 +45,23 @@ def authorize_and_get_cookie(skala_ip, login, password, options):
 
 
 def logout(skala_ip):
-    URL1 = proto + str(skala_ip) + '/api/0/logout'
+    URL1 = options["proto"] + str(skala_ip) + '/api/0/logout'
     
     try:
         with requests.Session() as session:
-            session.post(url=URL1, verify=ssl_verify, cookies=cookie)
+            session.post(url=URL1, verify=options["ssl_verify"], cookies=cookie)
     except:
         ## Logout; we do not care about result as we will end in any case
         pass
 
 
 def get_vm_id(skala_ip, uuid, options, cookie):
-    URL2 = proto + str(skala_ip) + '/api/0/vm'
+    URL2 = options["proto"] + str(skala_ip) + '/api/0/vm'
     parameters = {
         "uuid": str(uuid)
     }
     
-    vm_info = requests.get(url=URL2, verify=ssl_verify, params=parameters, cookies=cookie)
+    vm_info = requests.get(url=URL2, verify=options["ssl_verify"], params=parameters, cookies=cookie)
     jvm_info = vm_info.json()
     if jvm_info["vm_list"]["items"] == []:
         raise NameError('Can not find VM by uuid.')
@@ -90,7 +88,7 @@ def vm_task(skala_ip, vm_id, command, options, cookie):
     else:
         force = False
 
-    URL3 = proto + str(skala_ip) + '/api/0/vm/' + str(vm_id) + '/task'
+    URL3 = options["proto"] + str(skala_ip) + '/api/0/vm/' + str(vm_id) + '/task'
 
     logging.debug("vm_task skala_ip: " + str(skala_ip))
     logging.debug("vm_task vm_id: " + str(vm_id))
@@ -120,7 +118,7 @@ def vm_task(skala_ip, vm_id, command, options, cookie):
         }
 
     with requests.Session() as session:
-        response = session.post(url=URL3, params=parameters, verify=ssl_verify, cookies=cookie)
+        response = session.post(url=URL3, params=parameters, verify=options["ssl_verify"], cookies=cookie)
     if response.status_code != 200:
         raise Exception('Invalid response code from server: {}.'.format(response.status_code))
     return
@@ -131,12 +129,12 @@ def get_power_status(conn, options):
     state = {"RUNNING": "on", "PAUSED": "on", "STOPPED": "off", "SUSPENDED": "off", "ERROR": "off", "DELETED": "off",
              "CREATING": "off", "FAILED_TO_CREATE": "off", "NODE_OFFLINE": "off", "STARTING": "off", "STOPPING": "on"}
 
-    URL4 = proto + options["--ip"] + '/api/0/vm/'
+    URL4 = options["proto"] + options["--ip"] + '/api/0/vm/'
     parameters = {
         "uuid": str(options["--plug"])
     }
 
-    vm_info = requests.get(url=URL4, params=parameters, verify=ssl_verify, cookies=cookie)
+    vm_info = requests.get(url=URL4, params=parameters, verify=options["ssl_verify"], cookies=cookie)
     jvm_info = vm_info.json()
     if jvm_info["vm_list"]["items"] == []:
         raise NameError('Can not find VM by uuid.')
@@ -161,9 +159,9 @@ def set_power_status(conn, options):
 
 def get_list(conn, options):
     outlets = {}
-    URL5 = proto + options["--ip"] + '/api/0/vm'
+    URL5 = options["proto"] + options["--ip"] + '/api/0/vm'
     
-    vm_info = requests.get(url=URL5, verify=ssl_verify, cookies=cookie)
+    vm_info = requests.get(url=URL5, verify=options["ssl_verify"], cookies=cookie)
     jvm_info = vm_info.json()
     list_jvm = jvm_info["vm_list"]["items"]
     for elem in list_jvm:
@@ -190,7 +188,7 @@ def define_new_opts():
 
 
 def main():
-    global cookie, proto
+    global cookie
     define_new_opts()
     device_opt = ["ipaddr", "login", "passwd", "port", "web", "ssl", "verbose", "graceful", "force"]
     
@@ -207,13 +205,15 @@ def main():
     run_delay(options)
     
     if "--ssl" in options or "--ssl-secure" in options or "--ssl-insecure" in options:
-        proto = "https://"
+        options["proto"] = "https://"
     else:
-        proto = "http://"
+        options["proto"] = "http://"
     
     if "--ssl-insecure" in options:
-        ssl_verify = False
+        options["ssl_verify"] = False
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+    else:
+        options["ssl_verify"] = True
 
     cookie = authorize_and_get_cookie(options["--ip"], options["--username"], options["--password"], options)
     atexit.register(logout, options["--ip"])
