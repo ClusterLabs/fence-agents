@@ -199,15 +199,14 @@ def main():
     
     run_delay(options)
     
-    if "--ssl" in options or "--ssl-secure" in options or "--ssl-insecure" in options:
-        proto = "https://"
+    proto = "https://"
+    if "--ssl" in options or "--ssl-secure" in options:
         ssl_verify = True
-    else:
-        proto = "http://"
+    elif "--ssl-insecure" in options:
         ssl_verify = False
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-    
-    if "--ssl-insecure" in options:
+    else:
+        proto = "http://"
         ssl_verify = False
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
