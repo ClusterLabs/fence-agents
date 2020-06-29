@@ -16,6 +16,7 @@ from requests.exceptions import ConnectionError
 
 cookie = None
 proto = ''
+ssl_verify = True
 
 RELEASE_VERSION="1.2"
 BUILD_DATE="20200629"
@@ -34,7 +35,7 @@ def authorize_and_get_cookie(skala_ip, login, password, options):
     
     try:
         with requests.Session() as session:
-            session.post(url=URL0, data=cred, verify=True)
+            session.post(url=URL0, data=cred, verify=ssl_verify)
             cookie = session.cookies.get_dict()
     except:
         logging.exception('Exception occured.')
@@ -50,7 +51,7 @@ def logout(skala_ip):
     
     try:
         with requests.Session() as session:
-            session.post(url=URL1, verify=True, cookies=cookie)
+            session.post(url=URL1, verify=ssl_verify, cookies=cookie)
     except:
         ## Logout; we do not care about result as we will end in any case
         pass
@@ -62,7 +63,7 @@ def get_vm_id(skala_ip, uuid, options, cookie):
         "uuid": str(uuid)
     }
     
-    vm_info = requests.get(url=URL2, verify=True, params=parameters, cookies=cookie)
+    vm_info = requests.get(url=URL2, verify=ssl_verify, params=parameters, cookies=cookie)
     jvm_info = vm_info.json()
     if jvm_info["vm_list"]["items"] == []:
         raise NameError('Can not find VM by uuid.')
@@ -119,7 +120,7 @@ def vm_task(skala_ip, vm_id, command, options, cookie):
         }
 
     with requests.Session() as session:
-        response = session.post(url=URL3, params=parameters, verify=True, cookies=cookie)
+        response = session.post(url=URL3, params=parameters, verify=ssl_verify, cookies=cookie)
     if response.status_code != 200:
         raise Exception('Invalid response code from server: {}.'.format(response.status_code))
     return
@@ -135,7 +136,7 @@ def get_power_status(conn, options):
         "uuid": str(options["--plug"])
     }
 
-    vm_info = requests.get(url=URL4, params=parameters, verify=True, cookies=cookie)
+    vm_info = requests.get(url=URL4, params=parameters, verify=ssl_verify, cookies=cookie)
     jvm_info = vm_info.json()
     if jvm_info["vm_list"]["items"] == []:
         raise NameError('Can not find VM by uuid.')
@@ -162,7 +163,7 @@ def get_list(conn, options):
     outlets = {}
     URL5 = proto + options["--ip"] + '/api/0/vm'
     
-    vm_info = requests.get(url=URL5, verify=True, cookies=cookie)
+    vm_info = requests.get(url=URL5, verify=ssl_verify, cookies=cookie)
     jvm_info = vm_info.json()
     list_jvm = jvm_info["vm_list"]["items"]
     for elem in list_jvm:
@@ -211,6 +212,7 @@ def main():
         proto = "http://"
     
     if "--ssl-insecure" in options:
+        ssl_verify = False
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     cookie = authorize_and_get_cookie(options["--ip"], options["--username"], options["--password"], options)
