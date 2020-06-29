@@ -190,7 +190,7 @@ def define_new_opts():
 
 
 def main():
-    global cookie, proto
+    global cookie, proto, ssl_verify
     define_new_opts()
     device_opt = ["ipaddr", "login", "passwd", "port", "web", "ssl", "verbose", "graceful", "force"]
     
