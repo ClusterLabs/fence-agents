@@ -17,8 +17,8 @@ from requests.exceptions import ConnectionError
 cookie = None
 proto = ''
 
-RELEASE_VERSION="1.1"
-BUILD_DATE="20200627"
+RELEASE_VERSION="1.2"
+BUILD_DATE="20200629"
 REDHAT_COPYRIGHT=""
 
 ###################################################################################
@@ -194,12 +194,12 @@ def main():
     device_opt = ["ipaddr", "login", "passwd", "port", "web", "ssl", "verbose", "graceful", "force"]
     
     ## setup URL proto
-    if "--ssl" in opt or "--ssl-secure" in opt or "--ssl-insecure" in opt:
+    if "--ssl" in options or "--ssl-secure" in options or "--ssl-insecure" in options:
         proto = "https://"
     else:
         proto = "http://"
     
-    if "--ssl-insecure" in opt:
+    if "--ssl-insecure" in options:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     
     atexit.register(atexit_handler)
