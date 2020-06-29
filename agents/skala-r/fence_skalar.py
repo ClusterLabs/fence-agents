@@ -14,11 +14,9 @@ import logging
 
 from requests.exceptions import ConnectionError
 
-cookie = None
 proto = ''
 ssl_verify = True
 
-RELEASE_VERSION="1.2"
 BUILD_DATE="20200629"
 REDHAT_COPYRIGHT=""
 
