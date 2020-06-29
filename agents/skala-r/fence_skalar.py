@@ -14,11 +14,6 @@ import logging
 
 from requests.exceptions import ConnectionError
 
-proto = ''
-ssl_verify = True
-
-BUILD_DATE="20200629"
-REDHAT_COPYRIGHT=""
 
 ###################################################################################
 # Inner functions
@@ -206,6 +201,7 @@ def main():
     
     if "--ssl" in options or "--ssl-secure" in options or "--ssl-insecure" in options:
         proto = "https://"
+        ssl_verify = True
     else:
         proto = "http://"
         ssl_verify = False
