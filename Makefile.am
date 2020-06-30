@@ -127,7 +127,7 @@ srpm: clean
 
 rpm: clean
 	$(MAKE) $(SPEC) $(TARFILES)
-	rpmbuild $(RPMBUILDOPTS) -ba $(SPEC)
+	PYTHON="$(PYTHON)" rpmbuild $(RPMBUILDOPTS) -ba $(SPEC)
 
 clean-generic:
 	rm -rf $(SPEC) $(TARFILES) $(PACKAGE_NAME)-$(VERSION) *.rpm

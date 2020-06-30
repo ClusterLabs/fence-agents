@@ -150,8 +150,12 @@ BuildRequires: python-novaclient python-keystoneclient
 sed -i.orig 's|FENCE_ZVM=1|FENCE_ZVM=0|' configure.ac
 
 %build
+if [ -z "$PYTHON " ]; then
+	PYTHON="%{__python3}"
+fi
+
 ./autogen.sh
-%{configure} PYTHON="%{__python3}"
+%{configure}
 CFLAGS="$(echo '%{optflags}')" make %{_smp_mflags}
 
 %install
