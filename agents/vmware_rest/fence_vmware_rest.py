@@ -61,7 +61,7 @@ def get_list(conn, options):
 			fail(EC_STATUS)
 
 	for r in res["value"]:
-		outlets[r["name"].encode("UTF-8")] = ("", state[r["power_state"]])
+		outlets[r["name"]] = ("", state[r["power_state"]])
 
 	return outlets
 
