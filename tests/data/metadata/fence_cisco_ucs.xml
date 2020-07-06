@@ -96,7 +96,12 @@
 	<parameter name="verbose" unique="0" required="0">
 		<getopt mixed="-v, --verbose" />
 		<content type="boolean"  />
-		<shortdesc lang="en">Verbose mode</shortdesc>
+		<shortdesc lang="en">Verbose mode. Multiple -v flags can be stacked on the command line (e.g., -vvv) to increase verbosity.</shortdesc>
+	</parameter>
+	<parameter name="verbose_level" unique="0" required="0">
+		<getopt mixed="--verbose-level" />
+		<content type="integer"  />
+		<shortdesc lang="en">Level of debugging detail in output. Defaults to the number of --verbose flags specified on the command line, or to 1 if verbose=1 in a stonith device configuration (i.e., on stdin).</shortdesc>
 	</parameter>
 	<parameter name="debug" unique="0" required="0" deprecated="1">
 		<getopt mixed="-D, --debug-file=[debugfile]" />
