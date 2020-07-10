@@ -92,6 +92,10 @@ def create_command(options, action):
 	# --action / -o
 	Cmd.append(" chassis power " + action)
 
+	# --verbose-level
+	if options["--verbose-level"] > 1:
+		Cmd.append(" -" + "v" * (options["--verbose-level"] - 1))
+
 	return (Cmd.cmd, Cmd.log)
 
 def define_new_opts():
