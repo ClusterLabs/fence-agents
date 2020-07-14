@@ -38,27 +38,40 @@ all_opt = {
 		"help" : "-h, --help                     Display this help and exit",
 		"required" : "0",
 		"shortdesc" : "Display help and exit",
-		"order" : 54},
+		"order" : 55},
 	"version" : {
 		"getopt" : "V",
 		"longopt" : "version",
 		"help" : "-V, --version                  Display version information and exit",
 		"required" : "0",
 		"shortdesc" : "Display version information and exit",
-		"order" : 53},
+		"order" : 54},
 	"verbose" : {
 		"getopt" : "v",
 		"longopt" : "verbose",
-		"help" : "-v, --verbose                  Verbose mode",
+		"help" : "-v, --verbose                  Verbose mode. "
+			"Multiple -v flags can be stacked on the command line "
+			"(e.g., -vvv) to increase verbosity.",
 		"required" : "0",
 		"order" : 51},
+	"verbose_level" : {
+		"getopt" : ":",
+		"longopt" : "verbose-level",
+		"type" : "integer",
+		"help" : "--verbose-level                "
+			"Level of debugging detail in output. Defaults to the "
+			"number of --verbose flags specified on the command "
+			"line, or to 1 if verbose=1 in a stonith device "
+			"configuration (i.e., on stdin).",
+                "required" : "0",
+		"order" : 52},
 	"debug" : {
 		"getopt" : "D:",
 		"longopt" : "debug-file",
 		"help" : "-D, --debug-file=[debugfile]   Debugging to output file",
 		"required" : "0",
 		"shortdesc" : "Write debug information to given file",
-		"order" : 52},
+		"order" : 53},
 	"delay" : {
 		"getopt" : ":",
 		"longopt" : "delay",
@@ -454,9 +467,10 @@ all_opt = {
 
 # options which are added automatically if 'key' is encountered ("default" is always added)
 DEPENDENCY_OPT = {
-		"default" : ["help", "debug", "verbose", "version", "action", "agent", \
-			"power_timeout", "shell_timeout", "login_timeout", "power_wait", "retry_on", \
-			"delay", "quiet"],
+		"default" : ["help", "debug", "verbose", "verbose_level",
+			 "version", "action", "agent", "power_timeout",
+			 "shell_timeout", "login_timeout", "power_wait",
+			 "retry_on", "delay", "quiet"],
 		"passwd" : ["passwd_script"],
 		"sudo" : ["sudo_path"],
 		"secure" : ["identity_file", "ssh_options", "ssh_path", "inet4_only", "inet6_only"],
@@ -683,6 +697,26 @@ def check_input(device_opt, opt, other_conditions = False):
 	if options["--action"] in ["metadata", "manpage"] or any(k in options for k in ("--help", "--version")):
 		return options
 
+	try:
+		options["--verbose-level"] = int(options["--verbose-level"])
+	except ValueError:
+		options["--verbose-level"] = -1
+
+	if options["--verbose-level"] < 0:
+		logging.warning("Parse error: Option 'verbose_level' must "
+				"be an integer greater than or equal to 0. "
+				"Setting verbose_level to 0.")
+		options["--verbose-level"] = 0
+
+	if options["--verbose-level"] == 0 and "--verbose" in options:
+		logging.warning("Parse error: Ignoring option 'verbose' "
+				"because it conflicts with verbose_level=0")
+		del options["--verbose"]
+
+	if options["--verbose-level"] > 0:
+		# Ensure verbose key exists
+		options["--verbose"] = 1
+	
 	if "--verbose" in options:
 		logging.getLogger().setLevel(logging.DEBUG)
 
@@ -1409,6 +1443,9 @@ def _parse_input_stdin(avail_opt):
 			opt["--"+all_opt[name]["longopt"]] = "1"
 		else:
 			logging.warning("Parse error: Ignoring option '%s' because it does not have value\n", name)
+
+	opt.setdefault("--verbose-level", opt.get("--verbose", 0))
+
 	return opt
 
 def _parse_input_cmdline(avail_opt):
@@ -1428,10 +1465,15 @@ def _parse_input_cmdline(avail_opt):
 
 	# Short and long getopt names are changed to consistent "--" + long name (e.g. --username)
 	long_opts = {}
-	for arg_name in list(dict(entered_opt).keys()):
+	verbose_count = 0
+	for arg_name in [k for (k, v) in entered_opt]:
 		all_key = [key for (key, value) in list(filtered_opts.items()) \
 			if "--" + value.get("longopt", "") == arg_name or "-" + value.get("getopt", "").rstrip(":") == arg_name][0]
 		long_opts["--" + filtered_opts[all_key]["longopt"]] = dict(entered_opt)[arg_name]
+		if all_key == "verbose":
+			verbose_count += 1
+
+	long_opts.setdefault("--verbose-level", verbose_count)
 
 	# This test is specific because it does not apply to input on stdin
 	if "port_as_ip" in avail_opt and not "--port-as-ip" in long_opts and "--plug" in long_opts:
