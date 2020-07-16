@@ -5,6 +5,10 @@ Copyright (C) 2004-2011 Red Hat, Inc.  All rights reserved.
 
 Exceptions:
 
+agents/ibmz/*:
+ Copyright (c) 2020 IBM Corp.
+ Contributed by Paulo de Rezende Pinatti <ppinatti at linux.ibm.com>
+
 agents/hds_cb/*:
  Copyright (C) 2012 Matthew Clark.
  Author: Matthew Clark <mattjclark0407 at hotmail.com>

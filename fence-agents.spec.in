@@ -52,6 +52,7 @@ fence-agents-hds-cb \\
 fence-agents-heuristics-ping \\
 fence-agents-hpblade \\
 fence-agents-ibmblade \\
+fence-agents-ibmz \\
 fence-agents-ifmib \\
 fence-agents-ilo-moonshot \\
 fence-agents-ilo-mp \\
@@ -567,6 +568,23 @@ via the SNMP protocol.
 %files ibmblade
 %{_sbindir}/fence_ibmblade
 %{_mandir}/man8/fence_ibmblade.8*
+
+%package ibmz
+License: GPLv2+ and LGPLv2+
+Summary: Fence agent for IBM z LPARs
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+Requires: python3-requests
+%else
+Requires: python-requests
+%endif
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description ibmz
+Fence agent for IBM z LPARs that are accessed via the HMC
+Web Services REST API.
+%files ibmz
+%{_sbindir}/fence_z
+%{_mandir}/man8/fence_z.8*
 
 %package ifmib
 License: GPLv2+ and LGPLv2+
