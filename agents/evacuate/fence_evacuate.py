@@ -87,7 +87,7 @@ def _is_server_evacuable(server, evac_flavors, evac_images):
 
 def _get_evacuable_flavors(connection):
 	result = []
-	flavors = connection.flavors.list()
+	flavors = connection.flavors.list(is_public=None)
 	# Since the detailed view for all flavors doesn't provide the extra specs,
 	# we need to call each of the flavor to get them.
 	for flavor in flavors:
