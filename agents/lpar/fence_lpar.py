@@ -96,9 +96,11 @@ def get_lpar_list(conn, options):
 		lines = res.group(2).split("\n")
 		for outlet_line in lines:
 			outlets[outlet_line.rstrip()] = ("", "")
-	elif options["--hmc-version"] == "4":
+	elif options["--hmc-version"] in ["4", "IVM"]:
+		sep = ":" if options["--hmc-version"] == "4" else ","
+
 		conn.send("lssyscfg -r lpar -m " + options["--managed"] +
-			" -F name:state\n")
+			" -F name" + sep + "state\n")
 
 		## We have to remove first line (command)
 		conn.readline()
@@ -114,29 +116,7 @@ def get_lpar_list(conn, options):
 		lines = res.group(1).split("\n")
 		for outlet_line in lines:
 			try:
-				(port, status) = outlet_line.rstrip().split(":")
-			except ValueError:
-				fail_usage('Output does not match expected HMC version, try different one');
-			outlets[port] = ("", _normalize_status(status))
-	elif options["--hmc-version"] == "IVM":
-		conn.send("lssyscfg -r lpar -m " + options["--managed"] +
-			" -F name,state\n")
-
-		## We have to remove first line (command)
-		conn.readline()
-		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
-
-		## We have to remove last line (part of new prompt)
-		####
-		res = re.search("^(.*)\n.*$", conn.before, re.S)
-
-		if res == None:
-			fail_usage("Unable to parse output of list command")
-
-		lines = res.group(1).split("\n")
-		for outlet_line in lines:
-			try:
-				(port, status) = outlet_line.rstrip().split(",")
+				(port, status) = outlet_line.rstrip().split(sep)
 			except ValueError:
 				fail_usage('Output does not match expected HMC version, try different one');
 			outlets[port] = ("", _normalize_status(status))
