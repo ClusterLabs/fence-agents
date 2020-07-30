@@ -140,21 +140,33 @@ class APIClient(object):
             return self.LABEL_BY_OP_MODE['dpm']
         return self.LABEL_BY_OP_MODE['classic']
 
+    def _get_partition(self, cpc, partition):
+        """
+        Return the properties of the specified partition. Raises ValueError if
+        it cannot be found.
+        """
+        # HMC API's documentation says it'll return an empty array when no
+        # matches are found but for a CPC in classic mode it returns in fact
+        # 404, so we handle this accordingly. Remove the extra handling below
+        # once this behavior has been fixed on the API's side.
+        label_map = self._get_mode_labels(cpc)
+        resp = self._request('get', '{}/{}?name={}'.format(
+            self._cpc_cache[cpc]['object-uri'], label_map['nodes'], partition),
+                             valid_codes=[200, 404])
+
+        if label_map['nodes'] not in resp or not resp[label_map['nodes']]:
+            raise ValueError(ERROR_NOT_FOUND.format(
+                obj_type='LPAR/Partition', obj_name=partition))
+        return resp[label_map['nodes']][0]
+
     def _partition_switch_power(self, cpc, partition, action):
         """
         Perform the API request to start (power on) or stop (power off) the
         target partition and wait for the job to finish.
         """
         # retrieve partition's uri
+        part_uri = self._get_partition(cpc, partition)['object-uri']
         label_map = self._get_mode_labels(cpc)
-        resp = self._request('get', '{}/{}?name={}'.format(
-            self._cpc_cache[cpc]['object-uri'], label_map['nodes'], partition))
-
-        if not resp[label_map['nodes']]:
-            raise ValueError(ERROR_NOT_FOUND.format(
-                obj_type='LPAR/Partition', obj_name=partition))
-
-        part_uri = resp[label_map['nodes']][0]['object-uri']
 
         # in dpm mode the request must have empty body
         if self.is_dpm_enabled(cpc):
@@ -318,8 +330,10 @@ class APIClient(object):
         'status': 'on'}
         """
         label_map = self._get_mode_labels(cpc)
-        list_resp = self._request('get', '{}/{}'.format(
-            self._cpc_cache[cpc]['object-uri'], label_map['nodes']))
+        list_resp = self._request(
+            'get', '{}/{}'.format(
+                self._cpc_cache[cpc]['object-uri'], label_map['nodes']),
+            valid_codes=[200])
         status_map = {label_map['state-on']: 'on'}
         return [{'name': part['name'],
                  'status': status_map.get(part['status'].lower(), 'off')}
@@ -337,12 +351,7 @@ class APIClient(object):
         """
         label_map = self._get_mode_labels(cpc)
 
-        resp = self._request('get', '{}/{}?name={}'.format(
-            self._cpc_cache[cpc]['object-uri'], label_map['nodes'], partition))
-        if not resp[label_map['nodes']]:
-            raise ValueError(ERROR_NOT_FOUND.format(
-                obj_type='LPAR/Partition', obj_name=partition))
-        part_props = resp[label_map['nodes']][0]
+        part_props = self._get_partition(cpc, partition)
         if part_props['status'].lower() == label_map['state-on']:
             return 'on'
         return 'off'
