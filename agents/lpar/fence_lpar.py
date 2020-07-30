@@ -19,6 +19,9 @@ from fencing import fail, fail_usage, EC_STATUS_HMC
 def get_power_status(conn, options):
 	if options["--hmc-version"] == "3":
 		conn.send("lssyscfg -r lpar -m " + options["--managed"] + " -n " + options["--plug"] + " -F name,state\n")
+
+		# First line (command) may cause parsing issues if long
+		conn.readline()
 		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 
 		try:
@@ -29,6 +32,9 @@ def get_power_status(conn, options):
 	elif options["--hmc-version"] in ["4", "IVM"]:
 		conn.send("lssyscfg -r lpar -m "+ options["--managed"] +
 				" --filter 'lpar_names=" + options["--plug"] + "'\n")
+
+		# First line (command) may cause parsing issues if long
+		conn.readline()
 		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 
 		try:
@@ -49,6 +55,9 @@ def set_power_status(conn, options):
 	if options["--hmc-version"] == "3":
 		conn.send("chsysstate -o " + options["--action"] + " -r lpar -m " + options["--managed"]
 			+ " -n " + options["--plug"] + "\n")
+
+		# First line (command) may cause parsing issues if long
+		conn.readline()
 		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 	elif options["--hmc-version"] in ["4", "IVM"]:
 		if options["--action"] == "on":
@@ -60,17 +69,23 @@ def set_power_status(conn, options):
 		else:
 			conn.send("chsysstate -o shutdown -r lpar --immed" +
 				" -m " + options["--managed"] + " -n " + options["--plug"] + "\n")
+
+		# First line (command) may cause parsing issues if long
+		conn.readline()
 		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 
 def get_lpar_list(conn, options):
 	outlets = {}
 	if options["--hmc-version"] == "3":
 		conn.send("query_partition_names -m " + options["--managed"] + "\n")
+
+		## We have to remove first line (command)
+		conn.readline()
 		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 
-		## We have to remove first 3 lines (command + header) and last line (part of new prompt)
+		## We have to remove next 2 lines (header) and last line (part of new prompt)
 		####
-		res = re.search("^.+?\n(.+?\n){2}(.*)\n.*$", conn.before, re.S)
+		res = re.search("^(.+?\n){2}(.*)\n.*$", conn.before, re.S)
 
 		if res == None:
 			fail_usage("Unable to parse output of list command")
@@ -81,11 +96,14 @@ def get_lpar_list(conn, options):
 	elif options["--hmc-version"] == "4":
 		conn.send("lssyscfg -r lpar -m " + options["--managed"] +
 			" -F name:state\n")
+
+		## We have to remove first line (command)
+		conn.readline()
 		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 
-		## We have to remove first line (command) and last line (part of new prompt)
+		## We have to remove last line (part of new prompt)
 		####
-		res = re.search("^.+?\n(.*)\n.*$", conn.before, re.S)
+		res = re.search("^(.*)\n.*$", conn.before, re.S)
 
 		if res == None:
 			fail_usage("Unable to parse output of list command")
@@ -100,11 +118,14 @@ def get_lpar_list(conn, options):
 	elif options["--hmc-version"] == "IVM":
 		conn.send("lssyscfg -r lpar -m " + options["--managed"] +
 			" -F name,state\n")
+
+		## We have to remove first line (command)
+		conn.readline()
 		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 
-		## We have to remove first line (command) and last line (part of new prompt)
+		## We have to remove last line (part of new prompt)
 		####
-		res = re.search("^.+?\n(.*)\n.*$", conn.before, re.S)
+		res = re.search("^(.*)\n.*$", conn.before, re.S)
 
 		if res == None:
 			fail_usage("Unable to parse output of list command")
