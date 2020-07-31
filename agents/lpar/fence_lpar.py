@@ -16,6 +16,16 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, fail_usage, EC_STATUS_HMC
 
+##
+## Transformation to standard ON/OFF status if possible
+def _normalize_status(status):
+	if status in ["Running", "Open Firmware", "Shutting Down", "Starting"]:
+		status = "on"
+	else:
+		status = "off"
+
+	return status
+
 def get_power_status(conn, options):
 	if options["--hmc-version"] == "3":
 		conn.send("lssyscfg -r lpar -m " + options["--managed"] + " -n " + options["--plug"] + " -F name,state\n")
@@ -42,14 +52,7 @@ def get_power_status(conn, options):
 		except AttributeError:
 			fail(EC_STATUS_HMC)
 
-	##
-	## Transformation to standard ON/OFF status if possible
-	if status in ["Running", "Open Firmware", "Shutting Down", "Starting"]:
-		status = "on"
-	else:
-		status = "off"
-
-	return status
+	return _normalize_status(status)
 
 def set_power_status(conn, options):
 	if options["--hmc-version"] == "3":
@@ -93,9 +96,11 @@ def get_lpar_list(conn, options):
 		lines = res.group(2).split("\n")
 		for outlet_line in lines:
 			outlets[outlet_line.rstrip()] = ("", "")
-	elif options["--hmc-version"] == "4":
+	elif options["--hmc-version"] in ["4", "IVM"]:
+		sep = ":" if options["--hmc-version"] == "4" else ","
+
 		conn.send("lssyscfg -r lpar -m " + options["--managed"] +
-			" -F name:state\n")
+			" -F name" + sep + "state\n")
 
 		## We have to remove first line (command)
 		conn.readline()
@@ -111,32 +116,10 @@ def get_lpar_list(conn, options):
 		lines = res.group(1).split("\n")
 		for outlet_line in lines:
 			try:
-				(port, status) = outlet_line.split(":")
+				(port, status) = outlet_line.rstrip().split(sep)
 			except ValueError:
 				fail_usage('Output does not match expected HMC version, try different one');
-			outlets[port] = ("", status)
-	elif options["--hmc-version"] == "IVM":
-		conn.send("lssyscfg -r lpar -m " + options["--managed"] +
-			" -F name,state\n")
-
-		## We have to remove first line (command)
-		conn.readline()
-		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
-
-		## We have to remove last line (part of new prompt)
-		####
-		res = re.search("^(.*)\n.*$", conn.before, re.S)
-
-		if res == None:
-			fail_usage("Unable to parse output of list command")
-
-		lines = res.group(1).split("\n")
-		for outlet_line in lines:
-			try:
-				(port, status) = outlet_line.split(",")
-			except ValueError:
-				fail_usage('Output does not match expected HMC version, try different one');
-			outlets[port] = ("", status)
+			outlets[port] = ("", _normalize_status(status))
 
 	return outlets
 
