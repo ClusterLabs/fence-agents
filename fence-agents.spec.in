@@ -583,8 +583,8 @@ BuildArch: noarch
 Fence agent for IBM z LPARs that are accessed via the HMC
 Web Services REST API.
 %files ibmz
-%{_sbindir}/fence_z
-%{_mandir}/man8/fence_z.8*
+%{_sbindir}/fence_ibmz
+%{_mandir}/man8/fence_ibmz.8*
 
 %package ifmib
 License: GPLv2+ and LGPLv2+
