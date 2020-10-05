@@ -2,7 +2,10 @@
 
 import atexit
 import logging
+import json
+import re
 import os
+import socket
 import sys
 import time
 if sys.version_info >= (3, 0):
@@ -22,6 +25,69 @@ from fencing import fail_usage, run_delay, all_opt, atexit_handler, check_input,
 METADATA_SERVER = 'http://metadata.google.internal/computeMetadata/v1/'
 METADATA_HEADERS = {'Metadata-Flavor': 'Google'}
 
+#
+# Will use baremetalsolution setting or the environment variable
+# FENCE_GCE_URI_REPLACEMENTS to replace the uri for calls to *.googleapis.com.
+#
+def replace_api_uri(options, http_request):
+	uri_replacements = []
+	# put any env var replacements first, then baremetalsolution if in options
+	if "FENCE_GCE_URI_REPLACEMENTS" in os.environ:
+		env_uri_replacements = os.environ["FENCE_GCE_URI_REPLACEMENTS"]
+		try:
+			uri_replacements_json = json.loads(env_uri_replacements)
+			if isinstance(uri_replacements_json, list):
+				uri_replacements = uri_replacements_json
+		except ValueError as e:
+			logging.warning("FENCE_GCE_URI_REPLACEMENTS exists but is not valid JSON")
+	if options.get('--baremetalsolution') is not None:
+		uri_replacements.append(
+			{
+				"matchlength": 4,
+				"match": "https://compute.googleapis.com/compute/v1/projects/(.*)/zones/(.*)/instances/(.*)/reset(.*)",
+				"replace": "https://baremetalsolution.googleapis.com/v1alpha1/projects/\\1/locations/\\2/instances/\\3/resetInstance\\4"
+			})
+	for uri_replacement in uri_replacements:
+		# each uri_replacement should have matchlength, match, and replace
+		if "matchlength" not in uri_replacement or "match" not in uri_replacement or "replace" not in uri_replacement:
+			logging.warning("FENCE_GCE_URI_REPLACEMENTS missing matchlength, match, or replace in %s" % uri_replacement)
+			continue
+		match = re.match(uri_replacement["match"], http_request.uri)
+		if match is None or len(match.groups()) != uri_replacement["matchlength"]:
+			continue
+		replaced_uri = re.sub(uri_replacement["match"], uri_replacement["replace"], http_request.uri)
+		match = re.match("https:\/\/.*.googleapis.com", replaced_uri)
+		if match is None or match.start() != 0:
+			logging.warning("FENCE_GCE_URI_REPLACEMENTS replace is not "
+				"targeting googleapis.com, ignoring it: %s" % replaced_uri)
+			continue
+		logging.debug("Replacing googleapis uri %s with %s" % (http_request.uri, replaced_uri))
+		http_request.uri = replaced_uri
+		break
+	return http_request
+
+def retry_api_execute(options, http_request):
+	replaced_http_request = replace_api_uri(options, http_request)
+	retries = 3
+	if options.get("--retries"):
+		retries = int(options.get("--retries"))
+	retry_sleep = 5
+	if options.get("--retrysleep"):
+		retry_sleep = int(options.get("--retrysleep"))
+	retry = 0
+	current_err = None
+	while retry <= retries:
+		if retry > 0:
+			time.sleep(retry_sleep)
+		try:
+			return replaced_http_request.execute()
+		except Exception as err:
+			current_err = err
+			logging.warning("Could not execute api call to: %s, retry: %s, "
+				"err: %s" % (replaced_http_request.uri, retry, str(err)))
+		retry += 1
+	raise current_err
+
 
 def translate_status(instance_status):
 	"Returns on | off | unknown."
@@ -35,7 +101,9 @@ def translate_status(instance_status):
 def get_nodes_list(conn, options):
 	result = {}
 	try:
-		instanceList = conn.instances().list(project=options["--project"], zone=options["--zone"]).execute()
+		instanceList = retry_api_execute(options, conn.instances().list(
+			project=options["--project"],
+			zone=options["--zone"]))
 		for instance in instanceList["items"]:
 			result[instance["id"]] = (instance["name"], translate_status(instance["status"]))
 	except Exception as err:
@@ -45,22 +113,25 @@ def get_nodes_list(conn, options):
 
 
 def get_power_status(conn, options):
+	logging.info("get_power_status");
 	try:
-		instance = conn.instances().get(
+		instance = retry_api_execute(options, conn.instances().get(
 				project=options["--project"],
 				zone=options["--zone"],
-				instance=options["--plug"]).execute()
+				instance=options["--plug"]))
 		return translate_status(instance["status"])
 	except Exception as err:
 		fail_usage("Failed: get_power_status: {}".format(str(err)))
 
 
-def wait_for_operation(conn, project, zone, operation):
+def wait_for_operation(conn, options, operation):
+	project = options["--project"]
+	zone = options["--zone"]
 	while True:
-		result = conn.zoneOperations().get(
+		result = retry_api_execute(options, conn.zoneOperations().get(
 			project=project,
 			zone=zone,
-			operation=operation['name']).execute()
+			operation=operation['name']))
 		if result['status'] == 'DONE':
 			if 'error' in result:
 				raise Exception(result['error'])
@@ -72,19 +143,19 @@ def set_power_status(conn, options):
 	try:
 		if options["--action"] == "off":
 			logging.info("Issuing poweroff of %s in zone %s" % (options["--plug"], options["--zone"]))
-			operation = conn.instances().stop(
+			operation = retry_api_execute(options, conn.instances().stop(
 					project=options["--project"],
 					zone=options["--zone"],
-					instance=options["--plug"]).execute()
-			wait_for_operation(conn, options["--project"], options["--zone"], operation)
+					instance=options["--plug"]))
+			wait_for_operation(conn, options, operation)
 			logging.info("Poweroff of %s in zone %s complete" % (options["--plug"], options["--zone"]))
 		elif options["--action"] == "on":
 			logging.info("Issuing poweron of %s in zone %s" % (options["--plug"], options["--zone"]))
-			operation = conn.instances().start(
+			operation = retry_api_execute(options, conn.instances().start(
 					project=options["--project"],
 					zone=options["--zone"],
-					instance=options["--plug"]).execute()
-			wait_for_operation(conn, options["--project"], options["--zone"], operation)
+					instance=options["--plug"]))
+			wait_for_operation(conn, options, operation)
 			logging.info("Poweron of %s in zone %s complete" % (options["--plug"], options["--zone"]))
 	except Exception as err:
 		fail_usage("Failed: set_power_status: {}".format(str(err)))
@@ -93,11 +164,11 @@ def set_power_status(conn, options):
 def power_cycle(conn, options):
 	try:
 		logging.info('Issuing reset of %s in zone %s' % (options["--plug"], options["--zone"]))
-		operation = conn.instances().reset(
+		operation = retry_api_execute(options, conn.instances().reset(
 				project=options["--project"],
 				zone=options["--zone"],
-				instance=options["--plug"]).execute()
-		wait_for_operation(conn, options["--project"], options["--zone"], operation)
+				instance=options["--plug"]))
+		wait_for_operation(conn, options, operation)
 		logging.info('Reset of %s in zone %s complete' % (options["--plug"], options["--zone"]))
 		return True
 	except Exception as err:
@@ -105,15 +176,11 @@ def power_cycle(conn, options):
 		return False
 
 
-def get_instance(conn, project, zone, instance):
-	request = conn.instances().get(
-			project=project, zone=zone, instance=instance)
-	return request.execute()
-
-
-def get_zone(conn, project, instance):
+def get_zone(conn, options, instance):
+	project = options['--project']
+	instance = options['--plug']
 	fl = 'name="%s"' % instance
-	request = conn.instances().aggregatedList(project=project, filter=fl)
+	request = replace_api_uri(options, conn.instances().aggregatedList(project=project, filter=fl))
 	while request is not None:
 		response = request.execute()
 		zones = response.get('items', {})
@@ -121,8 +188,8 @@ def get_zone(conn, project, instance):
 			for inst in zone.get('instances', []):
 				if inst['name'] == instance:
 					return inst['zone'].split("/")[-1]
-		request = conn.instances().aggregatedList_next(
-				previous_request=request, previous_response=response)
+		request = replace_api_uri(options, conn.instances().aggregatedList_next(
+				previous_request=request, previous_response=response))
 	raise Exception("Unable to find instance %s" % (instance))
 
 
@@ -169,18 +236,57 @@ def define_new_opts():
 	all_opt["stackdriver-logging"] = {
 		"getopt" : "",
 		"longopt" : "stackdriver-logging",
-		"help" : "--stackdriver-logging		Enable Logging to Stackdriver",
+		"help" : "--stackdriver-logging          Enable Logging to Stackdriver",
 		"shortdesc" : "Stackdriver-logging support.",
 		"longdesc" : "If enabled IP failover logs will be posted to stackdriver logging.",
 		"required" : "0",
 		"order" : 4
+	}
+	all_opt["baremetalsolution"] = {
+		"getopt" : "",
+		"longopt" : "baremetalsolution",
+		"help" : "--baremetalsolution            Enable on bare metal",
+		"shortdesc" : "If enabled this is a bare metal offering from google.",
+		"required" : "0",
+		"order" : 5
+	}
+	all_opt["apitimeout"] = {
+		"getopt" : ":",
+		"type" : "second",
+		"longopt" : "apitimeout",
+		"help" : "--apitimeout=[seconds]         Timeout to use for API calls",
+		"shortdesc" : "Timeout in seconds to use for API calls, default is 60.",
+		"required" : "0",
+		"default" : 60,
+		"order" : 6
+	}
+	all_opt["retries"] = {
+		"getopt" : ":",
+		"type" : "integer",
+		"longopt" : "retries",
+		"help" : "--retries=[retries]            Number of retries on failure for API calls",
+		"shortdesc" : "Number of retries on failure for API calls, default is 3.",
+		"required" : "0",
+		"default" : 3,
+		"order" : 7
+	}
+	all_opt["retrysleep"] = {
+		"getopt" : ":",
+		"type" : "second",
+		"longopt" : "retrysleep",
+		"help" : "--retrysleep=[seconds]         Time to sleep between API retries",
+		"shortdesc" : "Time to sleep in seconds between API retries, default is 5.",
+		"required" : "0",
+		"default" : 5,
+		"order" : 8
 	}
 
 
 def main():
 	conn = None
 
-	device_opt = ["port", "no_password", "zone", "project", "stackdriver-logging", "method"]
+	device_opt = ["port", "no_password", "zone", "project", "stackdriver-logging",
+		"method", "baremetalsolution", "apitimeout", "retries", "retrysleep"]
 
 	atexit.register(atexit_handler)
 
@@ -224,6 +330,11 @@ def main():
 			logging.error('Couldn\'t import google.cloud.logging, '
 				'disabling Stackdriver-logging support')
 
+  # if apitimeout is defined we set the socket timeout, if not we keep the
+  # socket default which is 60s
+	if options.get("--apitimeout"):
+		socket.setdefaulttimeout(options["--apitimeout"])
+
 	# Prepare cli
 	try:
 		credentials = None
@@ -244,7 +355,7 @@ def main():
 
 	if not options.get("--zone"):
 		try:
-			options["--zone"] = get_zone(conn, options['--project'], options['--plug'])
+			options["--zone"] = get_zone(conn, options)
 		except Exception as err:
 			fail_usage("Failed retrieving GCE zone. Please provide --zone option: {}".format(str(err)))
 
