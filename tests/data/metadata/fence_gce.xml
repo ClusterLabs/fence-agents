@@ -51,21 +51,21 @@ For instructions see: https://cloud.google.com/compute/docs/tutorials/python-gui
 	<parameter name="baremetalsolution" unique="0" required="0">
 		<getopt mixed="--baremetalsolution" />
 		<content type="boolean"  />
-		<shortdesc lang="en">Bare metal solution.</shortdesc>
+		<shortdesc lang="en">If enabled this is a bare metal offering from google.</shortdesc>
 	</parameter>
 	<parameter name="apitimeout" unique="0" required="0">
-		<getopt mixed="--apitimeout=[seconds]"  />
+		<getopt mixed="--apitimeout=[seconds]" />
 		<content type="second" default="60"  />
 		<shortdesc lang="en">Timeout in seconds to use for API calls, default is 60.</shortdesc>
 	</parameter>
 	<parameter name="retries" unique="0" required="0">
-		<getopt mixed="--retries"  />
+		<getopt mixed="--retries=[retries]" />
 		<content type="integer" default="3"  />
 		<shortdesc lang="en">Number of retries on failure for API calls, default is 3.</shortdesc>
 	</parameter>
 	<parameter name="retrysleep" unique="0" required="0">
-		<getopt mixed="--retrysleep=[seconds]"  />
-		<content type="second" default="0"  />
+		<getopt mixed="--retrysleep=[seconds]" />
+		<content type="second" default="5"  />
 		<shortdesc lang="en">Time to sleep in seconds between API retries, default is 5.</shortdesc>
 	</parameter>
 	<parameter name="quiet" unique="0" required="0">
