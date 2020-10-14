@@ -155,6 +155,11 @@
 		<content type="second" default="0"  />
 		<shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
 	</parameter>
+	<parameter name="disable_timeout" unique="0" required="0">
+		<getopt mixed="--disable-timeout=[true/false]" />
+		<content type="string"  />
+		<shortdesc lang="en"> Disable timeout (true/false) (default: true when run from Pacemaker 2.0+)</shortdesc>
+	</parameter>
 	<parameter name="ipmitool_path" unique="0" required="0">
 		<getopt mixed="--ipmitool-path=[path]" />
 		<shortdesc lang="en">Path to ipmitool binary</shortdesc>

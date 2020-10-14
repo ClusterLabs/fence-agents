@@ -351,6 +351,12 @@ all_opt = {
 		"default" : "20",
 		"required" : "0",
 		"order" : 200},
+	"disable_timeout" : {
+		"getopt" : ":",
+		"longopt" : "disable-timeout",
+		"help" : "--disable-timeout=[true/false]     Disable timeout (true/false) (default: true when run from Pacemaker 2.0+)",
+		"required" : "0",
+		"order" : 200},
 	"power_wait" : {
 		"getopt" : ":",
 		"longopt" : "power-wait",
@@ -469,8 +475,8 @@ all_opt = {
 DEPENDENCY_OPT = {
 		"default" : ["help", "debug", "verbose", "verbose_level",
 			 "version", "action", "agent", "power_timeout",
-			 "shell_timeout", "login_timeout", "power_wait",
-			 "retry_on", "delay", "quiet"],
+			 "shell_timeout", "login_timeout", "disable_timeout",
+			 "power_wait", "retry_on", "delay", "quiet"],
 		"passwd" : ["passwd_script"],
 		"sudo" : ["sudo_path"],
 		"secure" : ["identity_file", "ssh_options", "ssh_path", "inet4_only", "inet6_only"],
@@ -768,6 +774,12 @@ def check_input(device_opt, opt, other_conditions = False):
 
 	if "--password-script" in options:
 		options["--password"] = os.popen(options["--password-script"]).read().rstrip()
+
+	if os.environ.get("PCMK_service") == "pacemaker-fenced" and "--disable-timeout" not in options:
+		options["--disable-timeout"] = "1"
+
+	if options.get("--disable-timeout", "").lower() in ["1", "yes", "on", "true"]:
+		options["--power-timeout"] = options["--shell-timeout"] = options["--login-timeout"] = 0
 
 	return options
 
