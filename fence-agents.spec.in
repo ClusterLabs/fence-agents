@@ -231,7 +231,14 @@ This package serves as a catch-all for all supported fence agents.
 %package alom
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for SUN ALOM
-Requires: telnet openssh-clients
+Requires: openssh-clients
+%if 0%{?fedora} < 33 || (0%{?rhel} && 0%{?rhel} < 9) || (0%{?centos} && 0%{?centos} < 9) || 0%{?suse_version}
+%if (0%{?rhel} && 0%{?rhel} < 8) || (0%{?centos} && 0%{?centos} < 8)
+Requires: telnet
+%else
+Recommends: telnet
+%endif
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description alom
@@ -277,7 +284,14 @@ Fence agent for AMT (WS-Man) devices.
 %package apc
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for APC devices
-Requires: telnet openssh-clients
+Requires: openssh-clients
+%if 0%{?fedora} < 33 || (0%{?rhel} && 0%{?rhel} < 9) || (0%{?centos} && 0%{?centos} < 9) || 0%{?suse_version}
+%if (0%{?rhel} && 0%{?rhel} < 8) || (0%{?centos} && 0%{?centos} < 8)
+Requires: telnet
+%else
+Recommends: telnet
+%endif
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description apc
@@ -343,7 +357,14 @@ Fence agent for Azure Resource Manager instances.
 %package bladecenter
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for IBM BladeCenter
-Requires: telnet openssh-clients
+Requires: openssh-clients
+%if 0%{?fedora} < 33 || (0%{?rhel} && 0%{?rhel} < 9) || (0%{?centos} && 0%{?centos} < 9) || 0%{?suse_version}
+%if (0%{?rhel} && 0%{?rhel} < 8) || (0%{?centos} && 0%{?centos} < 8)
+Requires: telnet
+%else
+Recommends: telnet
+%endif
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description bladecenter
@@ -356,7 +377,14 @@ via telnet or SSH.
 %package brocade
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Brocade switches
-Requires: telnet openssh-clients
+Requires: openssh-clients
+%if 0%{?fedora} < 33 || (0%{?rhel} && 0%{?rhel} < 9) || (0%{?centos} && 0%{?centos} < 9) || 0%{?suse_version}
+%if (0%{?rhel} && 0%{?rhel} < 8) || (0%{?centos} && 0%{?centos} < 8)
+Requires: telnet
+%else
+Recommends: telnet
+%endif
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description brocade
@@ -449,7 +477,14 @@ via telnet.
 %package drac5
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Dell DRAC 5
-Requires: telnet openssh-clients
+Requires: openssh-clients
+%if 0%{?fedora} < 33 || (0%{?rhel} && 0%{?rhel} < 9) || (0%{?centos} && 0%{?centos} < 9) || 0%{?suse_version}
+%if (0%{?rhel} && 0%{?rhel} < 8) || (0%{?centos} && 0%{?centos} < 8)
+Requires: telnet
+%else
+Recommends: telnet
+%endif
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description drac5
@@ -548,7 +583,14 @@ ping-heuristics.
 %package hpblade
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for HP BladeSystem devices
-Requires: telnet openssh-clients
+Requires: openssh-clients
+%if 0%{?fedora} < 33 || (0%{?rhel} && 0%{?rhel} < 9) || (0%{?centos} && 0%{?centos} < 9) || 0%{?suse_version}
+%if (0%{?rhel} && 0%{?rhel} < 8) || (0%{?centos} && 0%{?centos} < 8)
+Requires: telnet
+%else
+Recommends: telnet
+%endif
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description hpblade
@@ -619,7 +661,14 @@ the HTTP(s) protocol.
 %package ilo-moonshot
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for HP iLO Moonshot devices
-Requires: telnet openssh-clients
+Requires: openssh-clients
+%if 0%{?fedora} < 33 || (0%{?rhel} && 0%{?rhel} < 9) || (0%{?centos} && 0%{?centos} < 9) || 0%{?suse_version}
+%if (0%{?rhel} && 0%{?rhel} < 8) || (0%{?centos} && 0%{?centos} < 8)
+Requires: telnet
+%else
+Recommends: telnet
+%endif
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description ilo-moonshot
@@ -632,7 +681,14 @@ via telnet or SSH.
 %package ilo-mp
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for HP iLO MP devices
-Requires: telnet openssh-clients
+Requires: openssh-clients
+%if 0%{?fedora} < 33 || (0%{?rhel} && 0%{?rhel} < 9) || (0%{?centos} && 0%{?centos} < 9) || 0%{?suse_version}
+%if (0%{?rhel} && 0%{?rhel} < 8) || (0%{?centos} && 0%{?centos} < 8)
+Requires: telnet
+%else
+Recommends: telnet
+%endif
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description ilo-mp
@@ -736,7 +792,14 @@ Fence agent for use with kdump crash recovery service.
 %package ldom
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Sun LDom virtual machines
-Requires: telnet openssh-clients
+Requires: openssh-clients
+%if 0%{?fedora} < 33 || (0%{?rhel} && 0%{?rhel} < 9) || (0%{?centos} && 0%{?centos} < 9) || 0%{?suse_version}
+%if (0%{?rhel} && 0%{?rhel} < 8) || (0%{?centos} && 0%{?centos} < 8)
+Requires: telnet
+%else
+Recommends: telnet
+%endif
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description ldom
@@ -748,7 +811,14 @@ Fence agent for APC devices that are accessed via telnet or SSH.
 %package lpar
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for IBM LPAR
-Requires: telnet openssh-clients
+Requires: openssh-clients
+%if 0%{?fedora} < 33 || (0%{?rhel} && 0%{?rhel} < 9) || (0%{?centos} && 0%{?centos} < 9) || 0%{?suse_version}
+%if (0%{?rhel} && 0%{?rhel} < 8) || (0%{?centos} && 0%{?centos} < 8)
+Requires: telnet
+%else
+Recommends: telnet
+%endif
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description lpar
@@ -773,7 +843,14 @@ Device Mapper Multipath.
 %package netio
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Koukaam NETIO devices
-Requires: telnet openssh-clients
+Requires: openssh-clients
+%if 0%{?fedora} < 33 || (0%{?rhel} && 0%{?rhel} < 9) || (0%{?centos} && 0%{?centos} < 9) || 0%{?suse_version}
+%if (0%{?rhel} && 0%{?rhel} < 8) || (0%{?centos} && 0%{?centos} < 8)
+Requires: telnet
+%else
+Recommends: telnet
+%endif
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description netio
@@ -890,7 +967,14 @@ Fence agent for RHEV-M via REST API.
 %package rsa
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for IBM RSA II
-Requires: telnet openssh-clients
+Requires: openssh-clients
+%if 0%{?fedora} < 33 || (0%{?rhel} && 0%{?rhel} < 9) || (0%{?centos} && 0%{?centos} < 9) || 0%{?suse_version}
+%if (0%{?rhel} && 0%{?rhel} < 8) || (0%{?centos} && 0%{?centos} < 8)
+Requires: telnet
+%else
+Recommends: telnet
+%endif
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description rsa
@@ -903,7 +987,14 @@ via telnet or SSH.
 %package rsb
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Fujitsu RSB
-Requires: telnet openssh-clients
+Requires: openssh-clients
+%if 0%{?fedora} < 33 || (0%{?rhel} && 0%{?rhel} < 9) || (0%{?centos} && 0%{?centos} < 9) || 0%{?suse_version}
+%if (0%{?rhel} && 0%{?rhel} < 8) || (0%{?centos} && 0%{?centos} < 8)
+Requires: telnet
+%else
+Recommends: telnet
+%endif
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description rsb
@@ -1035,7 +1126,14 @@ Fence agent for VMWare vCloud Director.
 %package wti
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for WTI Network power switches
-Requires: telnet openssh-clients
+Requires: openssh-clients
+%if 0%{?fedora} < 33 || (0%{?rhel} && 0%{?rhel} < 9) || (0%{?centos} && 0%{?centos} < 9) || 0%{?suse_version}
+%if (0%{?rhel} && 0%{?rhel} < 8) || (0%{?centos} && 0%{?centos} < 8)
+Requires: telnet
+%else
+Recommends: telnet
+%endif
+%endif
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
 %description wti
