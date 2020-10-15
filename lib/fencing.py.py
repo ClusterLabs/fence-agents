@@ -10,6 +10,8 @@ import socket
 import textwrap
 import __main__
 
+import itertools
+
 RELEASE_VERSION = "@RELEASE_VERSION@"
 
 __all__ = ['atexit_handler', 'check_input', 'process_input', 'all_opt', 'show_docs',
@@ -821,11 +823,15 @@ def async_set_multi_power_fn(connection, options, set_power_fn, get_power_fn, re
 			set_power_fn(connection, options)
 			time.sleep(int(options["--power-wait"]))
 
-		for _ in range(int(options["--power-timeout"])):
+		for _ in itertools.count(1):
 			if get_multi_power_fn(connection, options, get_power_fn) != options["--action"]:
 				time.sleep(1)
 			else:
 				return True
+
+			if int(options["--power-timeout"]) > 0 and _ >= int(options["--power-timeout"]):
+				break
+
 	return False
 
 def sync_set_multi_power_fn(connection, options, sync_set_power_fn, retry_attempts):
