@@ -500,9 +500,12 @@ class fspawn(pexpect.spawn):
 		self.opt = options
 
 	def log_expect(self, pattern, timeout):
-		result = self.expect(pattern, timeout)
+		result = self.expect(pattern, timeout if timeout != 0 else None)
 		logging.debug("Received: %s", self.before + self.after)
 		return result
+
+	def read_nonblocking(self, size, timeout):
+		return pexpect.spawn.read_nonblocking(self, size=100, timeout=timeout if timeout != 0 else None)
 
 	def send(self, message):
 		logging.debug("Sent: %s", message)
@@ -516,7 +519,7 @@ def frun(command, timeout=30, withexitstatus=False, events=None,
 	 extra_args=None, logfile=None, cwd=None, env=None, **kwargs):
 	if sys.version_info[0] > 2:
 		kwargs.setdefault('encoding', 'utf-8')
-	return pexpect.run(command, timeout=timeout,
+	return pexpect.run(command, timeout=timeout if timeout != 0 else None,
 			   withexitstatus=withexitstatus, events=events,
 			   extra_args=extra_args, logfile=logfile, cwd=cwd,
 			   env=env, **kwargs)
