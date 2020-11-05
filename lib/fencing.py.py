@@ -1062,7 +1062,7 @@ def run_command(options, command, timeout=None, env=None, log_command=None):
 
 	thread = threading.Thread(target=process.wait)
 	thread.start()
-	thread.join(timeout)
+	thread.join(timeout if timeout else None)
 	if thread.is_alive():
 		process.kill()
 		fail(EC_TIMED_OUT, stop=(int(options.get("retry", 0)) < 1))
