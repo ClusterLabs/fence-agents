@@ -135,6 +135,8 @@ def register_dev(options, dev):
 		for slave in get_mpath_slaves(dev):
 			register_dev(options, slave)
 		return True
+	if get_reservation_key(options, dev, False) == options["--key"]:
+		return True
 	reset_dev(options, dev)
 	cmd = options["--sg_persist-path"] + " -n -o -I -S " + options["--key"] + " -d " + dev
 	cmd += " -Z" if "--aptpl" in options else ""
@@ -148,14 +150,14 @@ def reserve_dev(options, dev):
 	return not bool(run_cmd(options, cmd)["err"])
 
 
-def get_reservation_key(options, dev):
+def get_reservation_key(options, dev, fail=True):
 	reset_dev(options,dev)
 	opts = ""
 	if "--readonly" in options:
 		opts = "-y "
 	cmd = options["--sg_persist-path"] + " -n -i " + opts + "-r -d " + dev
 	out = run_cmd(options, cmd)
-	if out["err"]:
+	if out["err"] and fail:
 		fail_usage("Cannot get reservation key")
 	match = re.search(r"\s+key=0x(\S+)\s+", out["out"], re.IGNORECASE)
 	return match.group(1) if match else None
@@ -257,6 +259,7 @@ def dev_write(dev, options):
 		f = open(file_path, "a+")
 	except IOError:
 		fail_usage("Failed: Cannot open file \""+ file_path + "\"")
+	f.seek(0)
 	out = f.read()
 	if not re.search(r"^" + dev + "\s+", out, flags=re.MULTILINE):
 		f.write(dev + "\n")
@@ -275,11 +278,6 @@ def dev_read(fail=True):
 	devs = [line.strip() for line in f if line.strip()]
 	f.close()
 	return devs
-
-
-def dev_delete(options):
-	file_path = options["store_path"] + ".dev"
-	os.remove(file_path) if os.path.exists(file_path) else None
 
 
 def get_clvm_devices(options):
