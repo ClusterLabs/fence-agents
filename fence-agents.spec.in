@@ -208,6 +208,7 @@ This package contains support files including the Python fencing library.
 %exclude %{_datadir}/fence/__pycache__/XenAPI.*
 %{_datadir}/cluster
 %exclude %{_datadir}/cluster/fence_scsi_check*
+%{_datadir}/pkgconfig/%{name}.pc
 %exclude %{_sbindir}/*
 %exclude %{_mandir}/man8/*
 
@@ -325,7 +326,7 @@ Requires: python3-boto3
 Requires: python-boto3
 %endif
 BuildArch: noarch
-Obsoletes: fence-agents
+Obsoletes: fence-agents < 3.1.13
 %description aws
 Fence agent for Amazon AWS instances.
 %files aws
@@ -343,7 +344,7 @@ Requires: python3-azure-sdk
 Requires: python-azure-sdk
 %endif
 BuildArch: noarch
-Obsoletes: fence-agents
+Obsoletes: fence-agents < 3.1.13
 %description azure-arm
 Fence agent for Azure Resource Manager instances.
 %files azure-arm
@@ -547,7 +548,7 @@ Requires: python3-google-api-python-client
 Requires: python-google-api-client
 %endif
 BuildArch: noarch
-Obsoletes: fence-agents
+Obsoletes: fence-agents < 3.1.13
 %description gce
 Fence agent for GCE (Google Cloud Engine) instances.
 %files gce
@@ -572,7 +573,7 @@ License: GPLv2+ and LGPLv2+
 Summary: Pseudo fence agent to affect other agents based on ping-heuristics
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
-Obsoletes: fence-agents
+Obsoletes: fence-agents < 3.1.13
 %description heuristics-ping
 Fence pseudo agent used to affect other agents based on
 ping-heuristics.
@@ -945,7 +946,7 @@ Requires: python3-requests
 %else
 Requires: python-requests
 %endif
-Obsoletes: fence-agents
+Obsoletes: fence-agents < 3.1.13
 %description redfish
 The fence-agents-redfish package contains a fence agent for Redfish
 %files redfish
@@ -1088,7 +1089,7 @@ License: GPLv2+ and LGPLv2+
 Summary: Fence agent for VMWare with REST API
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
-Obsoletes: fence-agents
+Obsoletes: fence-agents < 3.1.13
 %description vmware-rest
 Fence agent for VMWare with REST API.
 %files vmware-rest
@@ -1116,7 +1117,7 @@ License: GPLv2+ and LGPLv2+
 Summary: Fence agent for VMWare vCloud Director
 Requires: fence-agents-common = %{version}-%{release}
 BuildArch: noarch
-Obsoletes: fence-agents
+Obsoletes: fence-agents < 3.1.13
 %description vmware-vcloud
 Fence agent for VMWare vCloud Director.
 %files vmware-vcloud

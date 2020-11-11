@@ -134,4 +134,4 @@ rpm: clean
 	PYTHON="$(PYTHON)" rpmbuild $(RPMBUILDOPTS) -ba $(SPEC)
 
 clean-generic:
-	rm -rf $(pkgconfig_DATA) $(SPEC) $(TARFILES) $(PACKAGE_NAME)-$(VERSION) *.rpm
+	rm -rf $(SPEC) $(TARFILES) $(PACKAGE_NAME)-$(VERSION) *.rpm
