@@ -1,6 +1,12 @@
+pkgconfigdir		= $(datadir)/pkgconfig
+pkgconfig_DATA		= $(PACKAGE_NAME).pc
+
+SPEC			= $(PACKAGE_NAME).spec
+
 EXTRA_DIST		= autogen.sh make/fencebuild.mk \
 			  .version make/release.mk \
-			  make/git-version-gen make/gitlog-to-changelog tests
+			  make/git-version-gen make/gitlog-to-changelog tests \
+			  $(pkgconfig_DATA).in $(SPEC).in
 
 AUTOMAKE_OPTIONS	= foreign
 
@@ -10,8 +16,6 @@ MAINTAINERCLEANFILES	= Makefile.in aclocal.m4 configure depcomp \
 			  ltmain.sh compile make/clusterautoconfig.h.in \
 			  make/clusterautoconfig.h.in~ autoscan.log \
 			  configure.scan
-
-SPEC			= $(PACKAGE_NAME).spec
 
 TARFILES		= $(PACKAGE_NAME)-$(VERSION).tar.bz2 \
 			  $(PACKAGE_NAME)-$(VERSION).tar.gz \
@@ -130,4 +134,4 @@ rpm: clean
 	PYTHON="$(PYTHON)" rpmbuild $(RPMBUILDOPTS) -ba $(SPEC)
 
 clean-generic:
-	rm -rf $(SPEC) $(TARFILES) $(PACKAGE_NAME)-$(VERSION) *.rpm
+	rm -rf $(pkgconfig_DATA) $(SPEC) $(TARFILES) $(PACKAGE_NAME)-$(VERSION) *.rpm

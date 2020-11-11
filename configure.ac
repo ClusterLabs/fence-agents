@@ -387,6 +387,7 @@ LDFLAGS="$ENV_LDFLAGS"
 
 AM_EXTRA_RECURSIVE_TARGETS([xml-check xml-upload])
 AC_CONFIG_FILES([Makefile
+		 fence-agents.pc
 		 agents/Makefile
 		 lib/Makefile
 		 doc/Makefile])
