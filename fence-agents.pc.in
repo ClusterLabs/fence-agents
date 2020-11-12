@@ -1,0 +1,7 @@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+Name: @PACKAGE_NAME@
+Description: fence agents for use with Pacemaker
+URL: https://github.com/ClusterLabs/fence-agents/
+Version: @PACKAGE_VERSION@
