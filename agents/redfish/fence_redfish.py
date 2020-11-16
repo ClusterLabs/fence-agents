@@ -102,7 +102,7 @@ def define_new_opts():
     all_opt["redfish-uri"] = {
         "getopt" : ":",
         "longopt" : "redfish-uri",
-        "help" : "--redfish-uri=[uri]            Base or starting Redifsh URI",
+        "help" : "--redfish-uri=[uri]            Base or starting Redfish URI",
         "required" : "0",
         "default" : "/redfish/v1",
         "shortdesc" : "Base or starting Redfish URI",
