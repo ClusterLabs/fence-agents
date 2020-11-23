@@ -3,12 +3,13 @@
 import sys, re
 import logging
 import atexit
-import requests
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, fail_usage, run_delay, EC_STATUS, SyslogLibHandler
 
+import requests
 import boto3
+from requests import HTTPError
 from botocore.exceptions import ConnectionError, ClientError, EndpointConnectionError, NoRegionError
 
 logger = logging.getLogger("fence_aws")
@@ -19,8 +20,9 @@ logging.getLogger('botocore.vendored').propagate = False
 
 def get_instance_id():
 	try:
-		r = requests.get('http://169.254.169.254/latest/meta-data/instance-id')
-		return r.content.decode("UTF-8")
+		token = requests.put('http://169.254.169.254/latest/api/token', headers={"X-aws-ec2-metadata-token-ttl-seconds" : "21600"}).content.decode("UTF-8")
+		r = requests.get('http://169.254.169.254/latest/meta-data/instance-id', headers={"X-aws-ec2-metadata-token" : token}).content.decode("UTF-8")
+		return r
 	except HTTPError as http_err:
 		logger.error('HTTP error occurred while trying to access EC2 metadata server: %s', http_err)
 	except Exception as err:
