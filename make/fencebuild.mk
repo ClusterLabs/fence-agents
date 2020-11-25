@@ -47,7 +47,7 @@ endef
 $(foreach t,$(TARGET),$(eval $(t) : $(t:=.py)))
 
 # rule
-$(TARGET):
+$(TARGET): $(abs_top_builddir)/config.status
 	$(call gen_agent_from_py)
 
 clean: clean-man
