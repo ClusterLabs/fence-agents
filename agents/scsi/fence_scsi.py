@@ -160,7 +160,8 @@ def get_reservation_key(options, dev, fail=True):
 	cmd = options["--sg_persist-path"] + " -n -i " + opts + "-r -d " + dev
 	out = run_cmd(options, cmd)
 	if out["rc"] and fail:
-		fail_usage("Cannot get reservation key")
+		fail_usage('Cannot get reservation key on device "' + dev
+                        + '": ' + out["err"])
 	match = re.search(r"\s+key=0x(\S+)\s+", out["out"], re.IGNORECASE)
 	return match.group(1) if match else None
 
@@ -174,7 +175,8 @@ def get_registration_keys(options, dev, fail=True):
 	cmd = options["--sg_persist-path"] + " -n -i " + opts + "-k -d " + dev
 	out = run_cmd(options, cmd)
 	if out["rc"]:
-		fail_usage("Cannot get registration keys", fail)
+		fail_usage('Cannot get registration keys on device "' + dev
+                        + '": ' + out["err"], fail)
 		if not fail:
 			return []
 	for line in out["out"].split("\n"):
