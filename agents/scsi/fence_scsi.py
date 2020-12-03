@@ -84,14 +84,14 @@ def set_status(conn, options):
 # check if host is ready to execute actions
 def do_action_monitor(options):
 	# Check if required binaries are installed
-	if bool(run_cmd(options, options["--sg_persist-path"] + " -V")["err"]):
+	if bool(run_cmd(options, options["--sg_persist-path"] + " -V")["rc"]):
 		logging.error("Unable to run " + options["--sg_persist-path"])
 		return 1
-	elif bool(run_cmd(options, options["--sg_turs-path"] + " -V")["err"]):
+	elif bool(run_cmd(options, options["--sg_turs-path"] + " -V")["rc"]):
 		logging.error("Unable to run " + options["--sg_turs-path"])
 		return 1
 	elif ("--devices" not in options and 
-			bool(run_cmd(options,	options["--vgs-path"] + " --version")["err"])):
+			bool(run_cmd(options, options["--vgs-path"] + " --version")["rc"])):
 		logging.error("Unable to run " + options["--vgs-path"])
 		return 1
 
@@ -102,11 +102,13 @@ def do_action_monitor(options):
 	return 0
 
 
-#run command, returns dict, ret["err"] = exit code; ret["out"] = output
+# run command, returns dict, ret["rc"] = exit code; ret["out"] = output;
+# ret["err"] = error
 def run_cmd(options, cmd):
 	ret = {}
-	(ret["err"], ret["out"], _) = run_command(options, cmd)
+	(ret["rc"], ret["out"], ret["err"]) = run_command(options, cmd)
 	ret["out"] = "".join([i for i in ret["out"] if i is not None])
+	ret["err"] = "".join([i for i in ret["err"] if i is not None])
 	return ret
 
 
@@ -122,11 +124,11 @@ def is_block_device(dev):
 def preempt_abort(options, host, dev):
 	reset_dev(options,dev)
 	cmd = options["--sg_persist-path"] + " -n -o -A -T 5 -K " + host + " -S " + options["--key"] + " -d " + dev
-	return not bool(run_cmd(options, cmd)["err"])
+	return not bool(run_cmd(options, cmd)["rc"])
 
 
 def reset_dev(options, dev):
-	return run_cmd(options, options["--sg_turs-path"] + " " + dev)["err"]
+	return run_cmd(options, options["--sg_turs-path"] + " " + dev)["rc"]
 
 
 def register_dev(options, dev):
@@ -141,13 +143,13 @@ def register_dev(options, dev):
 	cmd = options["--sg_persist-path"] + " -n -o -I -S " + options["--key"] + " -d " + dev
 	cmd += " -Z" if "--aptpl" in options else ""
 	#cmd return code != 0 but registration can be successful
-	return not bool(run_cmd(options, cmd)["err"])
+	return not bool(run_cmd(options, cmd)["rc"])
 
 
 def reserve_dev(options, dev):
 	reset_dev(options,dev)
 	cmd = options["--sg_persist-path"] + " -n -o -R -T 5 -K " + options["--key"] + " -d " + dev
-	return not bool(run_cmd(options, cmd)["err"])
+	return not bool(run_cmd(options, cmd)["rc"])
 
 
 def get_reservation_key(options, dev, fail=True):
@@ -157,7 +159,7 @@ def get_reservation_key(options, dev, fail=True):
 		opts = "-y "
 	cmd = options["--sg_persist-path"] + " -n -i " + opts + "-r -d " + dev
 	out = run_cmd(options, cmd)
-	if out["err"] and fail:
+	if out["rc"] and fail:
 		fail_usage("Cannot get reservation key")
 	match = re.search(r"\s+key=0x(\S+)\s+", out["out"], re.IGNORECASE)
 	return match.group(1) if match else None
@@ -171,7 +173,7 @@ def get_registration_keys(options, dev, fail=True):
 		opts = "-y "
 	cmd = options["--sg_persist-path"] + " -n -i " + opts + "-k -d " + dev
 	out = run_cmd(options, cmd)
-	if out["err"]:
+	if out["rc"]:
 		fail_usage("Cannot get registration keys", fail)
 		if not fail:
 			return []
@@ -289,7 +291,7 @@ def get_clvm_devices(options):
 	"--options vg_attr,pv_name "+\
 	"--config 'global { locking_type = 0 } devices { preferred_names = [ \"^/dev/dm\" ] }'"
 	out = run_cmd(options, cmd)
-	if out["err"]:
+	if out["rc"]:
 		fail_usage("Failed: Cannot get clvm devices")
 	for line in out["out"].split("\n"):
 		if 'c' in line.split(":")[0]:
