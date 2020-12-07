@@ -1,5 +1,13 @@
 #!@PYTHON@ -tt
 
+#
+# Requires the googleapiclient and oauth2client
+# RHEL 7.x: google-api-python-client==1.6.7 python-gflags==2.0 pyasn1==0.4.8 rsa==3.4.2
+# RHEL 8.x: nothing additional needed
+# SLES 12.x: python-google-api-python-client python-oauth2client python-oauth2client-gce
+# SLES 15.x: python3-google-api-python-client python3-oauth2client
+#
+
 import atexit
 import logging
 import json
@@ -20,7 +28,11 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 
 import googleapiclient.discovery
 from fencing import fail_usage, run_delay, all_opt, atexit_handler, check_input, process_input, show_docs, fence_action
-
+try:
+  from oauth2client.client import GoogleCredentials
+  from oauth2client.service_account import ServiceAccountCredentials
+except:
+  pass
 
 METADATA_SERVER = 'http://metadata.google.internal/computeMetadata/v1/'
 METADATA_HEADERS = {'Metadata-Flavor': 'Google'}
@@ -33,19 +45,22 @@ def replace_api_uri(options, http_request):
 	uri_replacements = []
 	# put any env var replacements first, then baremetalsolution if in options
 	if "FENCE_GCE_URI_REPLACEMENTS" in os.environ:
+		logging.debug("FENCE_GCE_URI_REPLACEMENTS environment variable exists")
 		env_uri_replacements = os.environ["FENCE_GCE_URI_REPLACEMENTS"]
 		try:
 			uri_replacements_json = json.loads(env_uri_replacements)
 			if isinstance(uri_replacements_json, list):
 				uri_replacements = uri_replacements_json
+			else:
+				logging.warning("FENCE_GCE_URI_REPLACEMENTS exists, but is not a JSON List")
 		except ValueError as e:
 			logging.warning("FENCE_GCE_URI_REPLACEMENTS exists but is not valid JSON")
-	if options.get('--baremetalsolution') is not None:
+	if "--baremetalsolution" in options:
 		uri_replacements.append(
 			{
 				"matchlength": 4,
 				"match": "https://compute.googleapis.com/compute/v1/projects/(.*)/zones/(.*)/instances/(.*)/reset(.*)",
-				"replace": "https://baremetalsolution.googleapis.com/v1alpha1/projects/\\1/locations/\\2/instances/\\3/resetInstance\\4"
+				"replace": "https://baremetalsolution.googleapis.com/v1alpha1/projects/\\1/locations/\\2/instances/\\3:resetInstance\\4"
 			})
 	for uri_replacement in uri_replacements:
 		# each uri_replacement should have matchlength, match, and replace
@@ -113,7 +128,14 @@ def get_nodes_list(conn, options):
 
 
 def get_power_status(conn, options):
-	logging.info("get_power_status");
+	logging.debug("get_power_status")
+	# if this is bare metal we need to just send back the opposite of the
+	# requested action: if on send off, if off send on
+	if "--baremetalsolution" in options:
+		if options.get("--action") == "on":
+			return "off"
+		else:
+			return "on"
 	try:
 		instance = retry_api_execute(options, conn.instances().get(
 				project=options["--project"],
@@ -125,6 +147,10 @@ def get_power_status(conn, options):
 
 
 def wait_for_operation(conn, options, operation):
+	if 'name' not in operation:
+		logging.warning('Cannot wait for operation to complete, the'
+		' requested operation will continue asynchronously')
+		return
 	project = options["--project"]
 	zone = options["--zone"]
 	while True:
@@ -140,6 +166,7 @@ def wait_for_operation(conn, options, operation):
 
 
 def set_power_status(conn, options):
+	logging.debug("set_power_status");
 	try:
 		if options["--action"] == "off":
 			logging.info("Issuing poweroff of %s in zone %s" % (options["--plug"], options["--zone"]))
@@ -147,6 +174,7 @@ def set_power_status(conn, options):
 					project=options["--project"],
 					zone=options["--zone"],
 					instance=options["--plug"]))
+			logging.info("Poweroff command completed, waiting for the operation to complete")
 			wait_for_operation(conn, options, operation)
 			logging.info("Poweroff of %s in zone %s complete" % (options["--plug"], options["--zone"]))
 		elif options["--action"] == "on":
@@ -162,12 +190,14 @@ def set_power_status(conn, options):
 
 
 def power_cycle(conn, options):
+	logging.debug("power_cycle");
 	try:
 		logging.info('Issuing reset of %s in zone %s' % (options["--plug"], options["--zone"]))
 		operation = retry_api_execute(options, conn.instances().reset(
 				project=options["--project"],
 				zone=options["--zone"],
 				instance=options["--plug"]))
+		logging.info("Reset command completed, waiting for the operation to complete")
 		wait_for_operation(conn, options, operation)
 		logging.info('Reset of %s in zone %s complete' % (options["--plug"], options["--zone"]))
 		return True
@@ -176,7 +206,8 @@ def power_cycle(conn, options):
 		return False
 
 
-def get_zone(conn, options, instance):
+def get_zone(conn, options):
+	logging.debug("get_zone");
 	project = options['--project']
 	instance = options['--plug']
 	fl = 'name="%s"' % instance
@@ -207,6 +238,7 @@ def get_metadata(metadata_key, params=None, timeout=None):
 	Raises:
 		urlerror.HTTPError: raises when the GET request fails.
 	"""
+	logging.debug("get_metadata");
 	timeout = timeout or 60
 	metadata_url = os.path.join(METADATA_SERVER, metadata_key)
 	params = urlparse.urlencode(params or {})
@@ -280,13 +312,22 @@ def define_new_opts():
 		"default" : 5,
 		"order" : 8
 	}
+	all_opt["serviceaccount"] = {
+		"getopt" : ":",
+		"longopt" : "serviceaccount",
+		"help" : "--serviceaccount=[filename]    Service account json file location e.g. serviceaccount=/somedir/service_account.json",
+		"shortdesc" : "Service Account to use for authentication to the google cloud APIs.",
+		"required" : "0",
+		"order" : 9
+	}
 
 
 def main():
 	conn = None
 
 	device_opt = ["port", "no_password", "zone", "project", "stackdriver-logging",
-		"method", "baremetalsolution", "apitimeout", "retries", "retrysleep"]
+		"method", "baremetalsolution", "apitimeout", "retries", "retrysleep",
+		"serviceaccount"]
 
 	atexit.register(atexit_handler)
 
@@ -337,10 +378,12 @@ def main():
 
 	# Prepare cli
 	try:
-		credentials = None
-		if tuple(googleapiclient.__version__) < tuple("1.6.0"):
-			import oauth2client.client
-			credentials = oauth2client.client.GoogleCredentials.get_application_default()
+		if options.get("--serviceaccount"):
+			credentials = ServiceAccountCredentials.from_json_keyfile_name(options.get("--serviceaccount"))
+			logging.debug("using credentials from service account")
+		else:
+			credentials = GoogleCredentials.get_application_default()
+			logging.debug("using application default credentials")
 		conn = googleapiclient.discovery.build(
 			'compute', 'v1', credentials=credentials, cache_discovery=False)
 	except Exception as err:
@@ -353,6 +396,8 @@ def main():
 		except Exception as err:
 			fail_usage("Failed retrieving GCE project. Please provide --project option: {}".format(str(err)))
 
+	if "--baremetalsolution" in options:
+		options["--zone"] = "none"
 	if not options.get("--zone"):
 		try:
 			options["--zone"] = get_zone(conn, options)

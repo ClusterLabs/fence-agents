@@ -241,6 +241,7 @@ if echo "$AGENTS_LIST" | grep -q -E "ovh|vmware_soap"; then
 fi
 if echo "$AGENTS_LIST" | grep -q gce; then
 	AC_PYTHON_MODULE(googleapiclient)
+	AC_PYTHON_MODULE(oauth2client)
 	if test "x${HAVE_PYMOD_GOOGLEAPICLIENT}" != xyes; then
 		AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s#gce/fence_gce.py( |$)##")
 		AC_MSG_WARN("Not building fence_ovh and fence_gce")
