@@ -74,7 +74,8 @@ def set_status(conn, options):
 		sys.exit(1)
 
 
-#run command, returns dict, ret["err"] = exit code; ret["out"] = output
+# run command, returns dict, ret["rc"] = exit code; ret["out"] = output;
+# ret["err"] = error
 def run_cmd(options, cmd):
 	ret = {}
 
@@ -83,8 +84,10 @@ def run_cmd(options, cmd):
 	else:
 		prefix = ""
 
-	(ret["err"], ret["out"], _) = run_command(options, prefix + cmd)
+	(ret["rc"], ret["out"], ret["err"]) = run_command(options,
+							    prefix + cmd)
 	ret["out"] = "".join([i for i in ret["out"] if i is not None])
+	ret["err"] = "".join([i for i in ret["err"] if i is not None])
 	return ret
 
 
@@ -98,22 +101,23 @@ def is_block_device(dev):
 # cancel registration
 def preempt_abort(options, host, dev):
 	cmd = options["--mpathpersist-path"] + " -o --preempt-abort --prout-type=5 --param-rk=" + host +" --param-sark=" + options["--plug"] +" -d " + dev
-	return not bool(run_cmd(options, cmd)["err"])
+	return not bool(run_cmd(options, cmd)["rc"])
 
 def register_dev(options, dev):
 	cmd = options["--mpathpersist-path"] + " -o --register --param-sark=" + options["--plug"] + " -d " + dev
 	#cmd return code != 0 but registration can be successful
-	return not bool(run_cmd(options, cmd)["err"])
+	return not bool(run_cmd(options, cmd)["rc"])
 
 def reserve_dev(options, dev):
 	cmd = options["--mpathpersist-path"] + " -o --reserve --prout-type=5 --param-rk=" + options["--plug"] + " -d " + dev
-	return not bool(run_cmd(options, cmd)["err"])
+	return not bool(run_cmd(options, cmd)["rc"])
 
 def get_reservation_key(options, dev):
 	cmd = options["--mpathpersist-path"] + " -i -r -d " + dev
 	out = run_cmd(options, cmd)
-	if out["err"]:
-		fail_usage("Cannot get reservation key")
+	if out["rc"]:
+		fail_usage('Cannot get reservation key on device "' + dev
+                        + '": ' + out["err"])
 	match = re.search(r"\s+key\s*=\s*0x(\S+)\s+", out["out"], re.IGNORECASE)
 	return match.group(1) if match else None
 
@@ -121,8 +125,9 @@ def get_registration_keys(options, dev, fail=True):
 	keys = []
 	cmd = options["--mpathpersist-path"] + " -i -k -d " + dev
 	out = run_cmd(options, cmd)
-	if out["err"]:
-		fail_usage("Cannot get registration keys", fail)
+	if out["rc"]:
+		fail_usage('Cannot get registration keys on device "' + dev
+                        + '": ' + out["err"], fail)
 		if not fail:
 			return []
 	for line in out["out"].split("\n"):
