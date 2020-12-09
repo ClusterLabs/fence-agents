@@ -218,9 +218,6 @@ Summary: Set of unified programs capable of host isolation ("fencing")
 Requires: %{allfenceagents}
 Provides: fence-agents = %{version}-%{release}
 Obsoletes: fence-agents < 3.1.13
-%if 0%{?fedora} || 0%{?centos} || 0%{?rhel} > 7 || 0%{?suse_version}
-BuildArch: noarch
-%endif
 %description all
 A collection of executables to handle isolation ("fencing") of possibly
 misbehaving hosts by the means of remote power management, blocking
