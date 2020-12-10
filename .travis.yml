@@ -24,6 +24,7 @@ before_install:
   - pip install pexpect
   - pip install boto3
   - pip install google-api-python-client
+  - pip install oauth2client
   - pip install python-novaclient
   - pip install python-keystoneclient
 
