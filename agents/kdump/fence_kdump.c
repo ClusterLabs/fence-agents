@@ -82,39 +82,6 @@ trim (char *str)
 }
 
 static int
-read_message (const fence_kdump_node_t *node, void *msg, int len)
-{
-    int error;
-    char addr[NI_MAXHOST];
-    char port[NI_MAXSERV];
-    struct sockaddr_storage ss;
-    socklen_t size = sizeof (ss);
-
-    error = recvfrom (node->socket, msg, len, 0, (struct sockaddr *) &ss, &size);
-    if (error < 0) {
-        log_error (2, "recvfrom (%s)\n", strerror (errno));
-        goto out;
-    }
-
-    error = getnameinfo ((struct sockaddr *) &ss, size,
-                         addr, sizeof (addr),
-                         port, sizeof (port),
-                         NI_NUMERICHOST | NI_NUMERICSERV);
-    if (error != 0) {
-        log_error (2, "getnameinfo (%s)\n", gai_strerror (error));
-        goto out;
-    }
-
-    error = strcasecmp (node->addr, addr);
-    if (error != 0) {
-        log_debug (1, "discard message from '%s'\n", addr);
-    }
-
-out:
-    return (error);
-}
-
-static int
 do_action_monitor (void)
 {
     const char cmdline_path[] = "/proc/cmdline";
@@ -151,6 +118,12 @@ do_action_off (const fence_kdump_opts_t *opts)
     fence_kdump_msg_t msg;
     fence_kdump_node_t *node;
     struct timeval timeout;
+    struct addrinfo hints;
+    fence_kdump_node_t *check_node;
+    char addr[NI_MAXHOST];
+    char port[NI_MAXSERV];
+    struct sockaddr_storage ss;
+    socklen_t size = sizeof (ss);
 
     if (list_empty (&opts->nodes)) {
         return (1);
@@ -164,7 +137,37 @@ do_action_off (const fence_kdump_opts_t *opts)
     FD_ZERO (&rfds);
     FD_SET (node->socket, &rfds);
 
-    log_debug (0, "waiting for message from '%s'\n", node->addr);
+    // create listening socket
+    memset (&hints, 0, sizeof (hints));
+
+    hints.ai_family = opts->family;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_protocol = IPPROTO_UDP;
+    hints.ai_flags = AI_NUMERICSERV;
+
+    hints.ai_family = node->info->ai_family;
+    hints.ai_flags |= AI_PASSIVE;
+
+    freeaddrinfo (node->info);
+
+    node->info = NULL;
+    error = getaddrinfo (NULL, node->port, &hints, &node->info);
+    if (error != 0) {
+        log_error (2, "getaddrinfo (%s)\n", gai_strerror (error));
+        free_node (node);
+        return (1);
+    }
+
+    error = bind (node->socket, node->info->ai_addr, node->info->ai_addrlen);
+    if (error != 0) {
+        log_error (2, "bind (%s)\n", strerror (errno));
+        free_node (node);
+        return (1);
+    }
+
+    list_for_each_entry (check_node, &opts->nodes, list) {
+        log_debug (0, "waiting for message from '%s'\n", check_node->addr);
+    }
 
     for (;;) {
         error = select (node->socket + 1, &rfds, NULL, NULL, &timeout);
@@ -177,7 +180,18 @@ do_action_off (const fence_kdump_opts_t *opts)
             break;
         }
 
-        if (read_message (node, &msg, sizeof (msg)) != 0) {
+        error = recvfrom (node->socket, &msg, sizeof (msg), 0, (struct sockaddr *) &ss, &size);
+        if (error < 0) {
+            log_error (2, "recvfrom (%s)\n", strerror (errno));
+            continue;
+        }
+
+        error = getnameinfo ((struct sockaddr *) &ss, size,
+                             addr, sizeof (addr),
+                             port, sizeof (port),
+                             NI_NUMERICHOST | NI_NUMERICSERV);
+        if (error != 0) {
+            log_error (2, "getnameinfo (%s)\n", gai_strerror (error));
             continue;
         }
 
@@ -186,14 +200,22 @@ do_action_off (const fence_kdump_opts_t *opts)
             continue;
         }
 
-        switch (msg.version) {
-        case FENCE_KDUMP_MSGV1:
-            log_debug (0, "received valid message from '%s'\n", node->addr);
-            return (0);
-        default:
-            log_debug (1, "invalid message version '0x%X'\n", msg.version);
-            continue;
+        // check if we have matched messages from any known node
+        list_for_each_entry (check_node, &opts->nodes, list) {
+            error = strcasecmp (check_node->addr, addr);
+            if (error == 0 ) {
+                switch (msg.version) {
+                case FENCE_KDUMP_MSGV1:
+                    log_debug (0, "received valid message from '%s'\n", addr);
+                    return (0);
+                default:
+                    log_debug (1, "invalid message version '0x%X'\n", msg.version);
+                    continue;
+                }
+            }
         }
+    log_debug (0, "message from '%s' didn't match any expected nodes\n", addr);
+
     }
 
     return (1);
@@ -220,18 +242,21 @@ do_action_metadata (const char *self)
                      "message is received from the failed node, the node is considered to be\n"
                      "fenced and the agent returns success. Failure to receive a valid\n"
                      "message from the failed node in the given timeout period results in\n"
-                     "fencing failure.");
+                     "fencing failure. When multiple node names/IP addresses are specified\n"
+                     "a single valid message is sufficient for success. This is useful when\n"
+                     "single node can send message via several different IP addresses.\n");
     fprintf (stdout, "</longdesc>\n");
     fprintf (stdout, "<vendor-url>http://www.kernel.org/pub/linux/utils/kernel/kexec/</vendor-url>\n");
 
     fprintf (stdout, "<parameters>\n");
 
     fprintf (stdout, "\t<parameter name=\"nodename\" unique=\"0\" required=\"0\">\n");
-    fprintf (stdout, "\t\t<getopt mixed=\"-n, --nodename=NODE\" />\n");
+    fprintf (stdout, "\t\t<getopt mixed=\"-n, --nodename=NODE[,NODE...]\" />\n");
     fprintf (stdout, "\t\t<content type=\"string\" />\n");
     fprintf (stdout, "\t\t<shortdesc lang=\"en\">%s</shortdesc>\n",
-             "Name or IP address of node to be fenced. This option is required for\n"
-             "the \"off\" action.");
+             "List of names or IP addresses of node to be fenced. This option is\n"
+	     "required for the \"off\" action. Multiple values separated by commas\n"
+	     "can be specified. All values must be of same IP network family." );
     fprintf (stdout, "\t</parameter>\n");
 
     fprintf (stdout, "\t<parameter name=\"ipport\" unique=\"0\" required=\"0\">\n");
@@ -311,7 +336,7 @@ print_usage (const char *self)
     fprintf (stdout, "Options:\n");
     fprintf (stdout, "\n");
     fprintf (stdout, "%s\n",
-             "  -n, --nodename=NODE          Name or IP address of node to be fenced");
+             "  -n, --nodename=NODE[,NODE...]List of names or IP addresses of node to be fenced");
     fprintf (stdout, "%s\n",
              "  -p, --ipport=PORT            IP port number (default: 7410)");
     fprintf (stdout, "%s\n",
@@ -373,31 +398,11 @@ get_options_node (fence_kdump_opts_t *opts)
         return (1);
     }
 
-    hints.ai_family = node->info->ai_family;
-    hints.ai_flags |= AI_PASSIVE;
-
-    freeaddrinfo (node->info);
-
-    node->info = NULL;
-    error = getaddrinfo (NULL, node->port, &hints, &node->info);
-    if (error != 0) {
-        log_error (2, "getaddrinfo (%s)\n", gai_strerror (error));
-        free_node (node);
-        return (1);
-    }
-
     node->socket = socket (node->info->ai_family,
                            node->info->ai_socktype,
                            node->info->ai_protocol);
     if (node->socket < 0) {
         log_error (2, "socket (%s)\n", strerror (errno));
-        free_node (node);
-        return (1);
-    }
-
-    error = bind (node->socket, node->info->ai_addr, node->info->ai_addrlen);
-    if (error != 0) {
-        log_error (2, "bind (%s)\n", strerror (errno));
         free_node (node);
         return (1);
     }
@@ -521,6 +526,11 @@ main (int argc, char **argv)
 {
     int error = 1;
     fence_kdump_opts_t opts;
+    char *ptr;
+    char node_list[2049];
+    char node_list_tmp[2049];
+    memset(node_list, '\0', 2049);
+    memset(node_list_tmp, '\0', 2049);
 
     init_options (&opts);
 
@@ -537,10 +547,23 @@ main (int argc, char **argv)
             log_error (0, "action 'off' requires nodename\n");
             exit (1);
         }
+
+    strncpy(node_list, opts.nodename, 2048); //make local copy of nodename on which we can safely iterate
+    strncpy(node_list_tmp, opts.nodename, 2048); //store for later use
+    // iterate through node_list
+    ptr = strtok(node_list, ",");
+    while (ptr != NULL) {
+        //
+	set_option_nodename (&opts, ptr); //overwrite nodename for next function
         if (get_options_node (&opts) != 0) {
             log_error (0, "failed to get node '%s'\n", opts.nodename);
             exit (1);
         }
+        //
+        ptr = strtok(NULL, ",");
+    }
+    //
+    set_option_nodename (&opts, node_list_tmp); //restore original node_list into nodename
     }
 
     if (verbose != 0) {
