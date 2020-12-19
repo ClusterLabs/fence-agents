@@ -168,7 +168,7 @@ do_action_off (const fence_kdump_opts_t *opts)
     list_for_each_entry (check_node, &opts->nodes, list) {
         log_debug (0, "waiting for message from '%s'\n", check_node->addr);
 	if (node->info->ai_family != check_node->info->ai_family) {
-            log_error (1, "mixing IPv4 and IPv6 nodes is not supported\n");
+            log_error (0, "mixing IPv4 and IPv6 nodes is not supported\n");
             return (1);
 	}
     }
@@ -218,7 +218,7 @@ do_action_off (const fence_kdump_opts_t *opts)
                 }
             }
         }
-    log_debug (0, "discard message from '%s'\n", addr);
+    log_debug (1, "discard message from '%s'\n", addr);
 
     }
 
