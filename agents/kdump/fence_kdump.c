@@ -214,7 +214,7 @@ do_action_off (const fence_kdump_opts_t *opts)
                 }
             }
         }
-    log_debug (0, "message from '%s' didn't match any expected nodes\n", addr);
+    log_debug (0, "discard message from '%s'\n", addr);
 
     }
 
@@ -528,9 +528,7 @@ main (int argc, char **argv)
     fence_kdump_opts_t opts;
     char *ptr;
     char node_list[2049];
-    char node_list_tmp[2049];
     memset(node_list, '\0', 2049);
-    memset(node_list_tmp, '\0', 2049);
 
     init_options (&opts);
 
@@ -548,25 +546,23 @@ main (int argc, char **argv)
             exit (1);
         }
 
-    strncpy(node_list, opts.nodename, 2048); //make local copy of nodename on which we can safely iterate
-    strncpy(node_list_tmp, opts.nodename, 2048); //store for later use
-    // iterate through node_list
-    ptr = strtok(node_list, ",");
-    while (ptr != NULL) {
-        //
-	set_option_nodename (&opts, ptr); //overwrite nodename for next function
-        if (get_options_node (&opts) != 0) {
-            log_error (0, "failed to get node '%s'\n", opts.nodename);
-            exit (1);
+        strncpy(node_list, opts.nodename, 2048); //make local copy of nodename on which we can safely iterate
+        // iterate through node_list
+        ptr = strtok(node_list, ",");
+        while (ptr != NULL) {
+            set_option_nodename (&opts, ptr); //overwrite nodename for next function
+            if (get_options_node (&opts) != 0) {
+                log_error (0, "failed to get node '%s'\n", opts.nodename);
+                exit (1);
+            }
+            ptr = strtok(NULL, ",");
         }
-        //
-        ptr = strtok(NULL, ",");
-    }
-    //
-    set_option_nodename (&opts, node_list_tmp); //restore original node_list into nodename
     }
 
     if (verbose != 0) {
+        //clear nodename to avoid showing just last nodename here
+        free(opts.nodename);
+        opts.nodename = NULL;
         print_options (&opts);
     }
 
