@@ -28,7 +28,7 @@ def open_socket(options):
 
 	conn = socket.socket()
 	conn.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-	conn.settimeout(float(options["--shell-timeout"]))
+	conn.settimeout(float(options["--shell-timeout"]) or None)
 	try:
 		conn.connect(addr)
 	except socket.error:
