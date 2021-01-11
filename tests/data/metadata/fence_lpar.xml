@@ -62,7 +62,7 @@
 		<content type="string"  />
 		<shortdesc lang="en">Login name</shortdesc>
 	</parameter>
-	<parameter name="managed" unique="0" required="0">
+	<parameter name="managed" unique="0" required="1">
 		<getopt mixed="-s, --managed=[id]" />
 		<content type="string"  />
 		<shortdesc lang="en">Managed system name</shortdesc>
