@@ -12,7 +12,7 @@ For instructions see: https://cloud.google.com/compute/docs/tutorials/python-gui
 	</parameter>
 	<parameter name="method" unique="0" required="0">
 		<getopt mixed="-m, --method=[method]" />
-		<content type="select" default="cycle"  >
+		<content type="select" default="onoff"  >
 			<option value="onoff" />
 			<option value="cycle" />
 		</content>
