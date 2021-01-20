@@ -26,9 +26,9 @@ else:
   import urllib2 as urlrequest
 sys.path.append("@FENCEAGENTSLIBDIR@")
 
-import googleapiclient.discovery
 from fencing import fail_usage, run_delay, all_opt, atexit_handler, check_input, process_input, show_docs, fence_action
 try:
+  import googleapiclient.discovery
   from oauth2client.client import GoogleCredentials
   from oauth2client.service_account import ServiceAccountCredentials
 except:
