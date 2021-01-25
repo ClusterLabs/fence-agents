@@ -97,7 +97,7 @@ By default, vbox needs to log in as a user that is a member of the vboxusers gro
 	</parameter>
 	<parameter name="ssh_options" unique="0" required="0">
 		<getopt mixed="--ssh-options=[options]" />
-		<content type="string" default="-t &apos;/bin/bash -c &quot;PS1=\\[EXPECT\\]# /bin/bash --noprofile --norc&quot;&apos;"  />
+		<content type="string" default="-t &apos;/bin/bash -c &quot;PS1=\\[EXPECT\\]# HISTFILE=/dev/null /bin/bash --noprofile --norc&quot;&apos;"  />
 		<shortdesc lang="en">SSH options to use</shortdesc>
 	</parameter>
 	<parameter name="username" unique="0" required="1" obsoletes="login">
