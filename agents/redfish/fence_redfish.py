@@ -40,7 +40,8 @@ def set_power_status(conn, options):
     action = {
         'on' : "On",
         'off': "ForceOff",
-        'reboot': "ForceRestart"
+        'reboot': "ForceRestart",
+        'diag': "Nmi"
     }[options["--action"]]
 
     payload = {'ResetType': action}
@@ -119,7 +120,8 @@ def define_new_opts():
 
 def main():
     atexit.register(atexit_handler)
-    device_opt = ["ipaddr", "login", "passwd", "redfish-uri", "systems-uri", "ssl"]
+    device_opt = ["ipaddr", "login", "passwd", "redfish-uri", "systems-uri",
+                  "ssl", "diag"]
     define_new_opts()
 
     opt = process_input(device_opt)
