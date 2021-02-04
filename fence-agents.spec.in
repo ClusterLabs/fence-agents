@@ -758,6 +758,8 @@ Fence agents for devices with IPMI interface.
 %{_mandir}/man8/fence_ilo4.8*
 %{_sbindir}/fence_ilo5
 %{_mandir}/man8/fence_ilo5.8*
+%{_sbindir}/fence_ipmilanplus
+%{_mandir}/man8/fence_ipmilanplus.8*
 %{_sbindir}/fence_imm
 %{_mandir}/man8/fence_imm.8*
 
