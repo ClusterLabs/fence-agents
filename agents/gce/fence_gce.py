@@ -9,13 +9,16 @@
 #
 
 import atexit
+import httplib2
 import logging
 import json
 import re
 import os
 import socket
+import socks
 import sys
 import time
+
 if sys.version_info >= (3, 0):
   # Python 3 imports.
   import urllib.parse as urlparse
@@ -320,6 +323,23 @@ def define_new_opts():
 		"required" : "0",
 		"order" : 9
 	}
+	all_opt["proxyhost"] = {
+		"getopt" : ":",
+		"longopt" : "proxyhost",
+		"help" : "--proxyhost=[proxy_host]       The proxy host to use, if one is needed to access the internet (Example: 10.122.0.33)",
+		"shortdesc" : "If a proxy is used for internet access, the proxy host should be specified.",
+		"required" : "0",
+		"order" : 10
+	}
+	all_opt["proxyport"] = {
+		"getopt" : ":",
+		"type" : "integer",
+		"longopt" : "proxyport",
+		"help" : "--proxyport=[proxy_port]       The proxy port to use, if one is needed to access the internet (Example: 3127)",
+		"shortdesc" : "If a proxy is used for internet access, the proxy port should be specified.",
+		"required" : "0",
+		"order" : 11
+	}
 
 
 def main():
@@ -327,7 +347,7 @@ def main():
 
 	device_opt = ["port", "no_password", "zone", "project", "stackdriver-logging",
 		"method", "baremetalsolution", "apitimeout", "retries", "retrysleep",
-		"serviceaccount"]
+		"serviceaccount", "proxyhost", "proxyport"]
 
 	atexit.register(atexit_handler)
 
@@ -377,13 +397,24 @@ def main():
 	# Prepare cli
 	try:
 		if options.get("--serviceaccount"):
-			credentials = ServiceAccountCredentials.from_json_keyfile_name(options.get("--serviceaccount"))
+			scope = ['https://www.googleapis.com/auth/cloud-platform']
+			credentials = ServiceAccountCredentials.from_json_keyfile_name(options.get("--serviceaccount"), scope)
 			logging.debug("using credentials from service account")
 		else:
 			credentials = GoogleCredentials.get_application_default()
 			logging.debug("using application default credentials")
-		conn = googleapiclient.discovery.build(
-			'compute', 'v1', credentials=credentials, cache_discovery=False)
+
+		if options.get("--proxyhost") and options.get("--proxyport"):
+			proxy_info = httplib2.ProxyInfo(
+				proxy_type=socks.PROXY_TYPE_HTTP,
+				proxy_host=options.get("--proxyhost"),
+				proxy_port=int(options.get("--proxyport")))
+			http = credentials.authorize(httplib2.Http(proxy_info=proxy_info))
+			conn = googleapiclient.discovery.build(
+				'compute', 'v1', http=http, cache_discovery=False)
+		else:
+			conn = googleapiclient.discovery.build(
+				'compute', 'v1', credentials=credentials, cache_discovery=False)
 	except Exception as err:
 		fail_usage("Failed: Create GCE compute v1 connection: {}".format(str(err)))
 

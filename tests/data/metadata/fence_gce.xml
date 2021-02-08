@@ -73,6 +73,16 @@ For instructions see: https://cloud.google.com/compute/docs/tutorials/python-gui
 		<content type="string"  />
 		<shortdesc lang="en">Service Account to use for authentication to the google cloud APIs.</shortdesc>
 	</parameter>
+	<parameter name="proxyhost" unique="0" required="0">
+		<getopt mixed="--proxyhost=[proxy_host]" />
+		<content type="string"  />
+		<shortdesc lang="en">If a proxy is used for internet access, the proxy host should be specified.</shortdesc>
+	</parameter>
+	<parameter name="proxyport" unique="0" required="0">
+		<getopt mixed="--proxyport=[proxy_port]" />
+		<content type="integer"  />
+		<shortdesc lang="en">If a proxy is used for internet access, the proxy port should be specified.</shortdesc>
+	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
 		<content type="boolean"  />
