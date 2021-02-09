@@ -5,7 +5,7 @@
 # RHEL 7.x: google-api-python-client==1.6.7 python-gflags==2.0 pyasn1==0.4.8 rsa==3.4.2
 # RHEL 8.x: nothing additional needed
 # SLES 12.x: python-google-api-python-client python-oauth2client python-oauth2client-gce
-# SLES 15.x: python3-google-api-python-client python3-oauth2client
+# SLES 15.x: python3-google-api-python-client python3-oauth2client python3-oauth2client-gce
 #
 
 import atexit
