@@ -27,7 +27,6 @@ before_install:
   - pip install oauth2client
   - pip install python-novaclient
   - pip install python-keystoneclient
-  - pip install PySocks
 
 before_script:
   - wget https://github.com/Openwsman/openwsman/archive/v2.6.3.tar.gz
