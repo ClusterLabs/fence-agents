@@ -15,7 +15,6 @@ import json
 import re
 import os
 import socket
-import socks
 import sys
 import time
 
@@ -34,6 +33,7 @@ try:
   import googleapiclient.discovery
   from oauth2client.client import GoogleCredentials
   from oauth2client.service_account import ServiceAccountCredentials
+  import socks
 except:
   pass
 
