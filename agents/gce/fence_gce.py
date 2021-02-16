@@ -31,9 +31,13 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import fail_usage, run_delay, all_opt, atexit_handler, check_input, process_input, show_docs, fence_action
 try:
   import googleapiclient.discovery
-  from oauth2client.client import GoogleCredentials
-  from oauth2client.service_account import ServiceAccountCredentials
   import socks
+  try:
+    from google.oauth2.credentials import Credentials as GoogleCredentials
+    from google.oauth2.service_account import Credentials as ServiceAccountCredentials
+  except:
+    from oauth2client.client import GoogleCredentials
+    from oauth2client.service_account import ServiceAccountCredentials
 except:
   pass
 
@@ -401,7 +405,11 @@ def main():
 			credentials = ServiceAccountCredentials.from_json_keyfile_name(options.get("--serviceaccount"), scope)
 			logging.debug("using credentials from service account")
 		else:
-			credentials = GoogleCredentials.get_application_default()
+			try:
+				from googleapiclient import _auth
+				credentials = _auth.default_credentials();
+			except:
+				credentials = GoogleCredentials.get_application_default()
 			logging.debug("using application default credentials")
 
 		if options.get("--proxyhost") and options.get("--proxyport"):
