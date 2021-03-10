@@ -892,12 +892,10 @@ void
 args_get_stdin(const char *optstr, fence_virt_args_t *args)
 {
 	char in[256];
-	int line = 0;
 	char *name, *val;
 	struct arg_info *arg;
 
 	while (fgets(in, sizeof(in), stdin)) {
-		++line;
 
 		if (in[0] == '#')
 			continue;
@@ -916,10 +914,8 @@ args_get_stdin(const char *optstr, fence_virt_args_t *args)
 			     arg->opt != SCHEMA_COMPAT &&
 			     !strchr(optstr, arg->opt))) {
 			fprintf(stderr,
-				"parse warning: "
-				"illegal variable '%s' on line %d\n", name,
-				line);
-			args->flags |= F_ERR;
+			        "Parse error: Ignoring unknown option '%s'\n",
+			        name);
 			continue;
 		}
 
