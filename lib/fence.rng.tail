@@ -1,0 +1,13 @@
+       <!-- end auto-generated device definitions -->
+
+       <group>
+        <optional>
+         <empty/>
+        </optional>
+       </group>
+
+       <!-- end specific fence devices -->
+      </choice>
+     </optional>
+  </define>
+<!-- end fence attribute group definitions -->

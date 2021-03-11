@@ -1,0 +1,168 @@
+<?xml version="1.0" ?>
+<resource-agent name="fence_ironic" shortdesc="Fence agent for OpenStack's Ironic (Bare Metal as a service) service" >
+<longdesc>fence_ironic is a Fencing agent which can be used with machines controlled by the Ironic service. This agent calls the openstack CLI. WARNING! This fence agent is not intended for production use. Relying on a functional ironic service for fencing is not a good design choice.</longdesc>
+<vendor-url>https://wiki.openstack.org/wiki/Ironic</vendor-url>
+<parameters>
+	<parameter name="action" unique="0" required="1">
+		<getopt mixed="-o, --action=[action]" />
+		<content type="string" default="reboot"  />
+		<shortdesc lang="en">Fencing action</shortdesc>
+	</parameter>
+	<parameter name="auth-url" unique="0" required="1" deprecated="1">
+		<getopt mixed="--auth-url=[authurl]" />
+		<content type="string"  />
+		<shortdesc lang="en">Keystone Admin Auth URL</shortdesc>
+	</parameter>
+	<parameter name="auth_url" unique="0" required="1" obsoletes="auth-url">
+		<getopt mixed="--auth-url=[authurl]" />
+		<content type="string"  />
+		<shortdesc lang="en">Keystone Admin Auth URL</shortdesc>
+	</parameter>
+	<parameter name="login" unique="0" required="1" deprecated="1">
+		<getopt mixed="-l, --username=[name]" />
+		<content type="string"  />
+		<shortdesc lang="en">Login name</shortdesc>
+	</parameter>
+	<parameter name="passwd" unique="0" required="0" deprecated="1">
+		<getopt mixed="-p, --password=[password]" />
+		<content type="string"  />
+		<shortdesc lang="en">Login password or passphrase</shortdesc>
+	</parameter>
+	<parameter name="passwd_script" unique="0" required="0" deprecated="1">
+		<getopt mixed="-S, --password-script=[script]" />
+		<content type="string"  />
+		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
+	</parameter>
+	<parameter name="password" unique="0" required="0" obsoletes="passwd">
+		<getopt mixed="-p, --password=[password]" />
+		<content type="string"  />
+		<shortdesc lang="en">Login password or passphrase</shortdesc>
+	</parameter>
+	<parameter name="password_script" unique="0" required="0" obsoletes="passwd_script">
+		<getopt mixed="-S, --password-script=[script]" />
+		<content type="string"  />
+		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
+	</parameter>
+	<parameter name="plug" unique="0" required="1" obsoletes="port">
+		<getopt mixed="-n, --plug=[id]" />
+		<content type="string"  />
+		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
+	</parameter>
+	<parameter name="port" unique="0" required="1" deprecated="1">
+		<getopt mixed="-n, --plug=[id]" />
+		<content type="string"  />
+		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
+	</parameter>
+	<parameter name="tenant-name" unique="0" required="0" deprecated="1">
+		<getopt mixed="-t, --tenant-name=[tenant]" />
+		<content type="string" default="admin"  />
+		<shortdesc lang="en">Keystone Admin Tenant</shortdesc>
+	</parameter>
+	<parameter name="tenant_name" unique="0" required="0" obsoletes="tenant-name">
+		<getopt mixed="-t, --tenant-name=[tenant]" />
+		<content type="string" default="admin"  />
+		<shortdesc lang="en">Keystone Admin Tenant</shortdesc>
+	</parameter>
+	<parameter name="username" unique="0" required="1" obsoletes="login">
+		<getopt mixed="-l, --username=[name]" />
+		<content type="string"  />
+		<shortdesc lang="en">Login name</shortdesc>
+	</parameter>
+	<parameter name="quiet" unique="0" required="0">
+		<getopt mixed="-q, --quiet" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Disable logging to stderr. Does not affect --verbose or --debug-file or logging to syslog.</shortdesc>
+	</parameter>
+	<parameter name="verbose" unique="0" required="0">
+		<getopt mixed="-v, --verbose" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Verbose mode. Multiple -v flags can be stacked on the command line (e.g., -vvv) to increase verbosity.</shortdesc>
+	</parameter>
+	<parameter name="verbose_level" unique="0" required="0">
+		<getopt mixed="--verbose-level" />
+		<content type="integer"  />
+		<shortdesc lang="en">Level of debugging detail in output. Defaults to the number of --verbose flags specified on the command line, or to 1 if verbose=1 in a stonith device configuration (i.e., on stdin).</shortdesc>
+	</parameter>
+	<parameter name="debug" unique="0" required="0" deprecated="1">
+		<getopt mixed="-D, --debug-file=[debugfile]" />
+		<content type="string"  />
+		<shortdesc lang="en">Write debug information to given file</shortdesc>
+	</parameter>
+	<parameter name="debug_file" unique="0" required="0" obsoletes="debug">
+		<getopt mixed="-D, --debug-file=[debugfile]" />
+		<content type="string"  />
+		<shortdesc lang="en">Write debug information to given file</shortdesc>
+	</parameter>
+	<parameter name="version" unique="0" required="0">
+		<getopt mixed="-V, --version" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Display version information and exit</shortdesc>
+	</parameter>
+	<parameter name="help" unique="0" required="0">
+		<getopt mixed="-h, --help" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Display help and exit</shortdesc>
+	</parameter>
+	<parameter name="separator" unique="0" required="0">
+		<getopt mixed="-C, --separator=[char]" />
+		<content type="string" default=","  />
+		<shortdesc lang="en">Separator for CSV created by 'list' operation</shortdesc>
+	</parameter>
+	<parameter name="delay" unique="0" required="0">
+		<getopt mixed="--delay=[seconds]" />
+		<content type="second" default="0"  />
+		<shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
+	</parameter>
+	<parameter name="disable_timeout" unique="0" required="0">
+		<getopt mixed="--disable-timeout=[true/false]" />
+		<content type="string"  />
+		<shortdesc lang="en"> Disable timeout (true/false) (default: true when run from Pacemaker 2.0+)</shortdesc>
+	</parameter>
+	<parameter name="login_timeout" unique="0" required="0">
+		<getopt mixed="--login-timeout=[seconds]" />
+		<content type="second" default="5"  />
+		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
+	</parameter>
+	<parameter name="openstack-path" unique="0" required="0" deprecated="1">
+		<getopt mixed="--openstack-path=[path]" />
+		<content type="string" default="/usr/bin/openstack"  />
+		<shortdesc lang="en">Path to the OpenStack binary</shortdesc>
+	</parameter>
+	<parameter name="openstack_path" unique="0" required="0" obsoletes="openstack-path">
+		<getopt mixed="--openstack-path=[path]" />
+		<shortdesc lang="en">Path to the OpenStack binary</shortdesc>
+	</parameter>
+	<parameter name="power_timeout" unique="0" required="0">
+		<getopt mixed="--power-timeout=[seconds]" />
+		<content type="second" default="20"  />
+		<shortdesc lang="en">Test X seconds for status change after ON/OFF</shortdesc>
+	</parameter>
+	<parameter name="power_wait" unique="0" required="0">
+		<getopt mixed="--power-wait=[seconds]" />
+		<content type="second" default="0"  />
+		<shortdesc lang="en">Wait X seconds after issuing ON/OFF</shortdesc>
+	</parameter>
+	<parameter name="shell_timeout" unique="0" required="0">
+		<getopt mixed="--shell-timeout=[seconds]" />
+		<content type="second" default="3"  />
+		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
+	</parameter>
+	<parameter name="retry_on" unique="0" required="0">
+		<getopt mixed="--retry-on=[attempts]" />
+		<content type="integer" default="1"  />
+		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
+	</parameter>
+</parameters>
+<actions>
+	<action name="on" automatic="0"/>
+	<action name="off" />
+	<action name="reboot" />
+	<action name="status" />
+	<action name="list" />
+	<action name="list-status" />
+	<action name="monitor" />
+	<action name="metadata" />
+	<action name="manpage" />
+	<action name="validate-all" />
+</actions>
+</resource-agent>

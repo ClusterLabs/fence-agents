@@ -1,0 +1,80 @@
+<grammar xmlns="http://relaxng.org/ns/structure/1.0">
+
+<start><element name="resource-agent">
+	<attribute name="name" />
+	<attribute name="shortdesc" />
+
+	<zeroOrMore>
+		<element name="symlink">
+			<attribute name="name" />
+			<attribute name="shortdesc" />
+		</element>
+	</zeroOrMore>
+
+	<element name="longdesc"> <text /> </element>
+	<element name="vendor-url"> <text /> </element>
+
+	<element name="parameters"> <oneOrMore>
+		<element name="parameter">
+			<attribute name="name" />
+			<attribute name="unique"> <ref name="boolean-values" /> </attribute>
+			<attribute name="required"> <ref name="boolean-values" />  </attribute>
+			<optional><attribute name="deprecated"> <ref name="boolean-values" /></attribute></optional>
+			<optional><attribute name="obsoletes" /> </optional>
+			<element name="getopt">
+				<attribute name="mixed" />
+			</element>
+			<element name="content">
+				<choice>
+					<attribute name="type">
+						<choice>
+							<value>boolean</value>
+							<value>string</value>
+							<value>second</value>
+							<value>integer</value>
+						</choice>
+					</attribute>
+					<group>
+						<attribute name="type">
+							<value>select</value>
+						</attribute>
+						<zeroOrMore>
+							<element name="option">
+								<attribute name="value" />
+							</element>
+						</zeroOrMore>
+					</group>
+				</choice>
+				<optional>
+					<attribute name="default"> <text /> </attribute>
+				</optional>
+			</element>
+
+			<oneOrMore> <element name="shortdesc">
+				<attribute name="lang" />
+				<text />
+			</element> </oneOrMore>
+		</element>
+	</oneOrMore> </element>
+
+	<element name="actions"> <oneOrMore>
+		<element name="action">
+			<attribute name="name" />
+			<optional>
+				<attribute name="on_target"> <ref name="boolean-values" /> </attribute>
+			</optional>
+			<optional>
+				<attribute name="automatic"> <ref name="boolean-values" /> </attribute>
+			</optional>
+		</element>
+	</oneOrMore> </element>
+</element></start>
+
+<define name="boolean-values">
+	<choice>
+		<value>0</value>
+		<value>1</value>
+	</choice>
+</define>
+
+</grammar>
