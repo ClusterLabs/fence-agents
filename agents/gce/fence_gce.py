@@ -358,6 +358,8 @@ def main():
 	define_new_opts()
 
 	all_opt["power_timeout"]["default"] = "60"
+	all_opt["method"]["default"] = "cycle"
+	all_opt["method"]["help"] = "-m, --method=[method]          Method to fence (onoff|cycle) (Default: cycle)"
 
 	options = check_input(device_opt, process_input(device_opt))
 
