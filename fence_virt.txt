@@ -1,0 +1,127 @@
+We need a fencing agent which can work in a variety of guest cluster
+configurations and host configurations.
+
+Requirements
+
+1. Nonrequirement of guest to host networking.  Virtual machines
+   may be configured to run using a nework unknown to the host
+   operating system.  Therefore, the ability to run without network
+   communication between the guest and the hsot is required.
+
+2. Ease of configuration.  The absolute minimum possible configuration
+   must be available.
+
+3. Nonrequirement of host clustering software.  Multiple layers of
+   configuration sucks.  While I fundamentally disagree with the general
+   idea that running CMAN on the host constitutes a "heavyweight
+   cluster", perception is important.
+
+4. Ability to support RHEV-M, oVirt server, and other virtual machine
+   management technologies.  This is beneficial from a security standpoint
+   since it is assumed the management server will be aware of what VMs
+   are allowed to fence what other VMs.
+
+5. Upgrade compatibility with fence_xvm from a configuration standpoint.
+   This may be provided by a symlink over fence_xvm.  If this feature
+   can not be provided as a matter of design, a method to convert an
+   existing fence_xvm/fence_xvmd configuration to fence_virt must be
+   present.
+
+
+Guest to Host Interaction
+-------------------------
+
+The proposal is to use various communications media plugins in order
+to facilitate flexibility with respect to how virtual machine 
+environments are configured.
+
+There are at least 3 simple plugins for guest/client to host/server
+communications:
+
+ * Direct serial.  The guest sends fencing requests out via /dev/ttySX
+   in the guest.  The host is listening on a Unix domain socket[1],
+   and forwards fencing requests accordingly.
+
+   This satisifies most of the requirements, but adds a conundrum
+   when configuring guest clusters, as /dev/ttySX may be /dev/ttySY
+   on another guest.  So, either we must account for this per-guest
+   configuration discrepancy or we must make it an administrative
+   requirement to provide the same serial device on each host
+
+ * Multicast.  This violates the networking requirement, but this is
+   okay since this method of operation is optional.  This operational
+   mode provides for one of the simpler configurations: all that is
+   needed is the guest's name or UUID.  The guest to host
+   communications operates in the same manner as fence_xvm/fence_xvmd,
+   except that there is an implied requirement on restricting the
+   multicast packets accepted to be from the local guests.
+
+ * VM Channel over Serial.  This works like direct serial, but
+   instead of owning the whole device, the device may be shared between
+   multiple applications.  The server subscribes to a channel and
+   listens for fencing requests on the channel; the client in the
+   guest OS connects to the channel and issues fencing requests across
+   it.  One interesting thing is that it may be possible to provide
+   unprivileged users the ability to fence using this method (I
+   do not claim to know if this is useful or not).
+
+
+Host to Hypervisor interaction
+------------------------------
+
+Similar to the way we have plugins for guest to host interaction, 
+we also have plugins which actually do the real work.  These plugins
+are responsible for all of the actual real work performed, including
+tracking VMs if required, forwarding requests to the appropriate hosts
+or management services, and handling the responses.
+
+We propose at 5 plugins in this case:
+
+ * Libvirt (local-only).  There is no intracommunication and no
+   migration support is provided 
+
+ * Cluster CPG (+ libvirt).  This the way fence_xvmd
+   operates today.  This setup has the most requirements on the
+   infrastructure, as it requires guest to host networking _and_
+   host-to-host clustering in order to keep track of virtual
+   machines.  The benefit is that it is self-contained and requires
+   no external management nodes.  VM states are stored so that other
+   CPG group members know the locations of other VMs and can make
+   some decisions about whether a VM is dead based on whether a host
+   is dead (i.e. if fencing is in use or can be performed on the
+   host).
+
+ * Libvirt-QMF ... ???  Subscription to the appropriate cluster
+   specific AMQP channel is required on the host side, but this
+   handles routing the message very easily.  The fencing request
+   is forwarded to the other listeners on the channel, the VM owner
+   takes the action requested and returns a value.  When new VMs
+   are created, the event is broadcast out via the AMQP channel so
+   other hosts know the locations of other VMs and can make some
+   decisions about whether a VM is dead based on whether a host
+   is dead (i.e. if fencing is in use or can be performed on the
+   host).
+
+ * oVirt Manager.  The request is forwarded to the oVirt Manager
+   and the oVirt manager is responsible for taking the appropriate
+   action and responding to the request.
+   
+ * RHEV-M.  The request is forwarded to the RHEV-M node, which is
+   responsible for taking the appropriate action and responding to
+   the request.
+
+
+These plugins have no requirements on which guest to host communication
+plugin is used (you could, if you wanted, use 'direct serial' with
+'cluster cpg', or 'multicast' with 'RHEV-H' for example).
+
+These plugins must also be able to discover where appropriate.  For
+example, the cpg plugin can only be used if corosync/openais
+is running.  A defined plugin preference order should be specified/documented
+so that the host daemon behaves in a predictable manner in absence of
+host-side configuration data (about which plugin to use).
+
+
+[1] TCP was also explored, however, the security is much better 
+    using a Unix domain socket, despite the additional complexity 
+    of listening for VM creation events.

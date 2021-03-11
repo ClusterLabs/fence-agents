@@ -1,0 +1,7 @@
+High Priority / Blockers for v1.0;
+
+* endian-clean / 64-bit clean data structure analysis
+
+Future Stuff:
+
+* clean up development bits so third parties can develop plugins

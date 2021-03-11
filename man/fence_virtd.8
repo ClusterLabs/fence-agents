@@ -1,0 +1,53 @@
+.TH FENCE_AGENT 8 2010-01-05 "fence_virtd (Fence Agent)"
+.SH NAME
+fence_virtd - Fencing host for virtual machines
+
+.SH DESCRIPTION
+.P
+fence_virtd is a host daemon designed to route fencing requests for
+virtual machines.
+
+Fence_virt and fence_xvm talk to fence_virtd, which supports multiple backend plugins, including:
+ - libvirt for single-node operation
+ - Corosync CPG and libvirt when using Linux-cluster release 3.0.0 or later
+ - libvirt-qpid for multi-node, non-cluster operation
+
+For compatibility, fence_xvm from linux-cluster release 2 may talk to fence_virtd.
+
+.P
+fence_virtd accepts a few options on the command line, but most options
+are read from fence_virt.conf.
+
+.SH PARAMETERS
+.TP
+.B -d
+. 
+Specify debug level, e.g. "-d99"
+
+.TP
+.B -c
+. 
+Interactively prompt user for configuration information
+
+.TP
+.B -f
+. 
+Specify an alternate configuration file instead of /etc/fence_virt.conf
+
+.TP
+.B -F
+. 
+Do not fork into background after starting (overrides any setting in fence_virt.conf)
+
+.TP
+.B -w
+. 
+Wait for backend to be available (overrides any setting in fence_virt.conf)
+
+.TP
+.B -p
+. 
+Specify the full path to the pid file used to record the active process pid.
+
+.SH SEE ALSO
+fence_virt(8), fence_xvm(8), fence(8), fence_virt.conf(5)

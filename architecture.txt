@@ -1,0 +1,16 @@
+The actual architecture of fence_virtd is very simple.  We have a set
+of listener plugins which listens for fencing requests for virtual
+machines.
+
+These plugins are assigned callbacks which are entry functions in to
+the backend plugins.  The backend plugins perform the actual fencing
+request.
+
+In the middle, we have only enough code to provide basic integration
+functions between the listener and backend plugins.  This includes a 
+very simple confiugration plugin which we pass to each of the plugins.
+
+Because we are passing function pointers in to the plugins themselves
+for configuration (rather than having the plugins call an API directly,
+for example), we are able to swap out the configuration subsystem for
+other, more full-featured configuration systems, such as libccs.
