@@ -165,6 +165,11 @@ if echo "$AGENTS_LIST" | grep -q -E "all|zvm( |$)"; then
 	FENCE_ZVM=1
 fi
 
+FENCE_VIRT=0
+if echo "$AGENTS_LIST" | grep -q -E "all|virt( |$)"; then
+	FENCE_VIRT=1
+fi
+
 if test "x$AGENTS_LIST" != xall; then
 	for j in $AGENTS_LIST; do
 		if ! test -f agents/$j/fence_$j*.py; then
@@ -317,6 +322,7 @@ AM_CONDITIONAL(BUILD_FENCE_MANUAL, test $FENCE_MANUAL -eq 1)
 AM_CONDITIONAL(BUILD_FENCE_MPATH, test $FENCE_MPATH -eq 1)
 AM_CONDITIONAL(BUILD_FENCE_SCSI, test $FENCE_SCSI -eq 1)
 AM_CONDITIONAL(BUILD_FENCE_ZVM, test $FENCE_ZVM -eq 1)
+AM_CONDITIONAL(BUILD_FENCE_VIRT, test $FENCE_VIRT -eq 1)
 AM_CONDITIONAL(BUILD_XENAPILIB, test $XENAPILIB -eq 1)
 
 AC_SUBST([IPMITOOL_PATH])
