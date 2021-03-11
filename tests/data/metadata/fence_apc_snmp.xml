@@ -1,0 +1,216 @@
+<?xml version="1.0" ?>
+<resource-agent name="fence_apc_snmp" shortdesc="Fence agent for APC, Tripplite PDU over SNMP" >
+<symlink name="fence_tripplite_snmp" shortdesc="Fence agent for Tripplife over SNMP"/>
+<longdesc>fence_apc_snmp is an I/O Fencing agent which can be used with the APC network power switch or Tripplite PDU devices.It logs into a device via SNMP and reboots a specified outlet. It supports SNMP v1, v2c, v3 with all combinations of  authenticity/privacy settings.</longdesc>
+<vendor-url>http://www.apc.com</vendor-url>
+<parameters>
+	<parameter name="action" unique="0" required="1">
+		<getopt mixed="-o, --action=[action]" />
+		<content type="string" default="reboot"  />
+		<shortdesc lang="en">Fencing action</shortdesc>
+	</parameter>
+	<parameter name="community" unique="0" required="0">
+		<getopt mixed="-c, --community=[community]" />
+		<content type="string" default="private"  />
+		<shortdesc lang="en">Set the community string</shortdesc>
+	</parameter>
+	<parameter name="ip" unique="0" required="1" obsoletes="ipaddr">
+		<getopt mixed="-a, --ip=[ip]" />
+		<content type="string"  />
+		<shortdesc lang="en">IP address or hostname of fencing device</shortdesc>
+	</parameter>
+	<parameter name="ipaddr" unique="0" required="1" deprecated="1">
+		<getopt mixed="-a, --ip=[ip]" />
+		<content type="string"  />
+		<shortdesc lang="en">IP address or hostname of fencing device</shortdesc>
+	</parameter>
+	<parameter name="ipport" unique="0" required="0">
+		<getopt mixed="-u, --ipport=[port]" />
+		<content type="integer" default="161"  />
+		<shortdesc lang="en">TCP/UDP port to use for connection with device</shortdesc>
+	</parameter>
+	<parameter name="login" unique="0" required="0" deprecated="1">
+		<getopt mixed="-l, --username=[name]" />
+		<content type="string"  />
+		<shortdesc lang="en">Login name</shortdesc>
+	</parameter>
+	<parameter name="passwd" unique="0" required="0" deprecated="1">
+		<getopt mixed="-p, --password=[password]" />
+		<content type="string"  />
+		<shortdesc lang="en">Login password or passphrase</shortdesc>
+	</parameter>
+	<parameter name="passwd_script" unique="0" required="0" deprecated="1">
+		<getopt mixed="-S, --password-script=[script]" />
+		<content type="string"  />
+		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
+	</parameter>
+	<parameter name="password" unique="0" required="0" obsoletes="passwd">
+		<getopt mixed="-p, --password=[password]" />
+		<content type="string"  />
+		<shortdesc lang="en">Login password or passphrase</shortdesc>
+	</parameter>
+	<parameter name="password_script" unique="0" required="0" obsoletes="passwd_script">
+		<getopt mixed="-S, --password-script=[script]" />
+		<content type="string"  />
+		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
+	</parameter>
+	<parameter name="plug" unique="0" required="1" obsoletes="port">
+		<getopt mixed="-n, --plug=[id]" />
+		<content type="string"  />
+		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
+	</parameter>
+	<parameter name="port" unique="0" required="1" deprecated="1">
+		<getopt mixed="-n, --plug=[id]" />
+		<content type="string"  />
+		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
+	</parameter>
+	<parameter name="snmp_auth_prot" unique="0" required="0">
+		<getopt mixed="-b, --snmp-auth-prot=[prot]" />
+		<content type="select"  >
+			<option value="MD5" />
+			<option value="SHA" />
+		</content>
+		<shortdesc lang="en">Set authentication protocol</shortdesc>
+	</parameter>
+	<parameter name="snmp_priv_passwd" unique="0" required="0">
+		<getopt mixed="-P, --snmp-priv-passwd=[pass]" />
+		<content type="string"  />
+		<shortdesc lang="en">Set privacy protocol password</shortdesc>
+	</parameter>
+	<parameter name="snmp_priv_passwd_script" unique="0" required="0">
+		<getopt mixed="-R, --snmp-priv-passwd-script" />
+		<content type="string"  />
+		<shortdesc lang="en">Script to run to retrieve privacy password</shortdesc>
+	</parameter>
+	<parameter name="snmp_priv_prot" unique="0" required="0">
+		<getopt mixed="-B, --snmp-priv-prot=[prot]" />
+		<content type="select"  >
+			<option value="DES" />
+			<option value="AES" />
+		</content>
+		<shortdesc lang="en">Set privacy protocol</shortdesc>
+	</parameter>
+	<parameter name="snmp_sec_level" unique="0" required="0">
+		<getopt mixed="-E, --snmp-sec-level=[level]" />
+		<content type="select"  >
+			<option value="noAuthNoPriv" />
+			<option value="authNoPriv" />
+			<option value="authPriv" />
+		</content>
+		<shortdesc lang="en">Set security level</shortdesc>
+	</parameter>
+	<parameter name="snmp_version" unique="0" required="0">
+		<getopt mixed="-d, --snmp-version=[version]" />
+		<content type="select" default="1"  >
+			<option value="1" />
+			<option value="2c" />
+			<option value="3" />
+		</content>
+		<shortdesc lang="en">Specifies SNMP version to use</shortdesc>
+	</parameter>
+	<parameter name="username" unique="0" required="0" obsoletes="login">
+		<getopt mixed="-l, --username=[name]" />
+		<content type="string"  />
+		<shortdesc lang="en">Login name</shortdesc>
+	</parameter>
+	<parameter name="quiet" unique="0" required="0">
+		<getopt mixed="-q, --quiet" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Disable logging to stderr. Does not affect --verbose or --debug-file or logging to syslog.</shortdesc>
+	</parameter>
+	<parameter name="verbose" unique="0" required="0">
+		<getopt mixed="-v, --verbose" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Verbose mode. Multiple -v flags can be stacked on the command line (e.g., -vvv) to increase verbosity.</shortdesc>
+	</parameter>
+	<parameter name="verbose_level" unique="0" required="0">
+		<getopt mixed="--verbose-level" />
+		<content type="integer"  />
+		<shortdesc lang="en">Level of debugging detail in output. Defaults to the number of --verbose flags specified on the command line, or to 1 if verbose=1 in a stonith device configuration (i.e., on stdin).</shortdesc>
+	</parameter>
+	<parameter name="debug" unique="0" required="0" deprecated="1">
+		<getopt mixed="-D, --debug-file=[debugfile]" />
+		<content type="string"  />
+		<shortdesc lang="en">Write debug information to given file</shortdesc>
+	</parameter>
+	<parameter name="debug_file" unique="0" required="0" obsoletes="debug">
+		<getopt mixed="-D, --debug-file=[debugfile]" />
+		<content type="string"  />
+		<shortdesc lang="en">Write debug information to given file</shortdesc>
+	</parameter>
+	<parameter name="version" unique="0" required="0">
+		<getopt mixed="-V, --version" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Display version information and exit</shortdesc>
+	</parameter>
+	<parameter name="help" unique="0" required="0">
+		<getopt mixed="-h, --help" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Display help and exit</shortdesc>
+	</parameter>
+	<parameter name="separator" unique="0" required="0">
+		<getopt mixed="-C, --separator=[char]" />
+		<content type="string" default=","  />
+		<shortdesc lang="en">Separator for CSV created by 'list' operation</shortdesc>
+	</parameter>
+	<parameter name="delay" unique="0" required="0">
+		<getopt mixed="--delay=[seconds]" />
+		<content type="second" default="0"  />
+		<shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
+	</parameter>
+	<parameter name="disable_timeout" unique="0" required="0">
+		<getopt mixed="--disable-timeout=[true/false]" />
+		<content type="string"  />
+		<shortdesc lang="en"> Disable timeout (true/false) (default: true when run from Pacemaker 2.0+)</shortdesc>
+	</parameter>
+	<parameter name="login_timeout" unique="0" required="0">
+		<getopt mixed="--login-timeout=[seconds]" />
+		<content type="second" default="5"  />
+		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
+	</parameter>
+	<parameter name="power_timeout" unique="0" required="0">
+		<getopt mixed="--power-timeout=[seconds]" />
+		<content type="second" default="20"  />
+		<shortdesc lang="en">Test X seconds for status change after ON/OFF</shortdesc>
+	</parameter>
+	<parameter name="power_wait" unique="0" required="0">
+		<getopt mixed="--power-wait=[seconds]" />
+		<content type="second" default="0"  />
+		<shortdesc lang="en">Wait X seconds after issuing ON/OFF</shortdesc>
+	</parameter>
+	<parameter name="shell_timeout" unique="0" required="0">
+		<getopt mixed="--shell-timeout=[seconds]" />
+		<content type="second" default="3"  />
+		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
+	</parameter>
+	<parameter name="retry_on" unique="0" required="0">
+		<getopt mixed="--retry-on=[attempts]" />
+		<content type="integer" default="1"  />
+		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
+	</parameter>
+	<parameter name="snmpget_path" unique="0" required="0">
+		<getopt mixed="--snmpget-path=[path]" />
+		<shortdesc lang="en">Path to snmpget binary</shortdesc>
+	</parameter>
+	<parameter name="snmpset_path" unique="0" required="0">
+		<getopt mixed="--snmpset-path=[path]" />
+		<shortdesc lang="en">Path to snmpset binary</shortdesc>
+	</parameter>
+	<parameter name="snmpwalk_path" unique="0" required="0">
+		<getopt mixed="--snmpwalk-path=[path]" />
+		<shortdesc lang="en">Path to snmpwalk binary</shortdesc>
+	</parameter>
+</parameters>
+<actions>
+	<action name="on" automatic="0"/>
+	<action name="off" />
+	<action name="reboot" />
+	<action name="status" />
+	<action name="list" />
+	<action name="list-status" />
+	<action name="monitor" />
+	<action name="metadata" />
+	<action name="manpage" />
+	<action name="validate-all" />
+</actions>
+</resource-agent>

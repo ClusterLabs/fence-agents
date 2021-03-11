@@ -1,0 +1,50 @@
+.TH fence_kdump_send 8
+.SH NAME
+fence_kdump_send - send kdump acknowlegement message to cluster nodes
+.SH SYNOPSIS
+.B
+fence_kdump_send
+[\fIOPTIONS]\fR... [NODE]...
+.SH DESCRIPTION
+\fIfence_kdump_send\fP is a utility used to send messages that
+acknowledge that the node has entered the kdump crash recovery
+service. This utility is intended to be used the the \fIfence_kdump\fP
+agent as a means detect that a failed node has entered the kdump crash
+recovery service.
+The \fIfence_kdump_send\fP utility is typically run from within the
+kdump kernel after a cluster node has encountered a kernel panic. Once
+the cluster node has entered the kdump crash recovery service,
+\fIfence_kdump_send\fP will periodically send messages to all cluster
+nodes. When the \fIfence_kdump\fP agent receives a valid message from
+the failed node, fencing is complete.
+.SH OPTIONS
+.TP
+.B -p, --ipport=\fIPORT\fP
+IP port number that the \fIfence_kdump\fP agent is using to listen for
+messages. (default: 7410)
+.TP
+.B -f, --family=\fIFAMILY\fP
+IP network family. Force the \fIfence_kdump_send\fP utility to use a
+particular network family. Value for \fIFAMILY\fP can be "auto",
+"ipv4", or "ipv6". (default: auto)
+.TP
+.B -c, --count=\fICOUNT\fP
+Number of messages to send. If \fICOUNT\fP is zero,
+\fIfence_kdump_send\fP will send messages indefinitely. (default: 0)
+.TP
+.B -i, --interval=\fIINTERVAL\fP
+Time to wait between sending a message. The value for \fIINTERVAL\fP
+must be greater than zero. (default: 10)
+.TP
+.B -v, --verbose
+Print verbose output.
+.TP
+.B -V, --version
+Print version and exit.
+.TP
+.B -h, --help
+Print usage and exit.
+.SH AUTHOR
+Ryan O'Hara <rohara@redhat.com>
+.SH SEE ALSO
+fence_kdump(8), mkdumprd(8), kdump.conf(5)
