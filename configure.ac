@@ -129,18 +129,6 @@ AC_ARG_WITH([fenceagentslibdir],
 	[ FENCEAGENTSLIBDIR="$withval" ],
 	[ FENCEAGENTSLIBDIR="${datadir}/fence" ])
 
-AC_ARG_WITH([default-config-dir],
-	[  --with-default-config-dir=DIR
-			  cluster config directory. ],
-	[ DEFAULT_CONFIG_DIR="$withval" ],
-	[ DEFAULT_CONFIG_DIR="$sysconfdir/cluster" ])
-
-AC_ARG_WITH([default-config-file],
-	[  --with-default-config-file=FILE
-			  cluster config file. ],
-	[ DEFAULT_CONFIG_FILE="$withval" ],
-	[ DEFAULT_CONFIG_FILE="cluster.conf" ])
-
 AC_ARG_WITH([agents],
 	[  --with-agents=LIST
                           list of agents to build/ship (default: all). ],
@@ -342,22 +330,8 @@ fi
 
 ## do subst
 
-AC_SUBST([DEFAULT_CONFIG_DIR])
-AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_DIR], "$(eval echo ${DEFAULT_CONFIG_DIR})",
-		   [Default config directory])
-
-AC_SUBST([DEFAULT_CONFIG_FILE])
-AC_DEFINE_UNQUOTED([DEFAULT_CONFIG_FILE], "$(eval echo ${DEFAULT_CONFIG_FILE})",
-		   [Default config file])
-
 AC_SUBST([LOGDIR])
-AC_DEFINE_UNQUOTED([LOGDIR], "$(eval echo ${LOGDIR})",
-		   [Default logging directory])
-
 AC_SUBST([CLUSTERVARRUN])
-AC_DEFINE_UNQUOTED([CLUSTERVARRUN], "$(eval echo ${CLUSTERVARRUN})",
-		   [Default cluster var/run directory])
-
 AC_SUBST([CLUSTERDATA])
 AC_SUBST([FENCEAGENTSLIBDIR])
 AC_SUBST([SNMPBIN])
