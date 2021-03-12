@@ -50,14 +50,12 @@ $(foreach t,$(TARGET),$(eval $(t) : $(t:=.py)))
 $(TARGET): $(abs_top_builddir)/config.status
 	$(call gen_agent_from_py)
 
-clean: clean-man
+clean-local: clean-man
 	rm -f $(CLEAN_TARGET:%.8=%) $(CLEAN_TARGET_ADDITIONAL) $(mpathdata_SCRIPTS) $(scsidata_SCRIPTS) */*.pyc *.pyc */*.wiki
 
 	if [ "$(abs_builddir)" = "$(abs_top_builddir)/lib" ]; then \
 		rm -rf $(TARGET) __pycache__; \
 	fi
-
-clean-local: clean
 
 install-exec-hook: $(TARGET)
 	if [ -n "$(man8dir)" ]; then \
