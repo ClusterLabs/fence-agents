@@ -384,9 +384,10 @@ listener_config_tcp(config_object_t *config)
 
 	done = 0;
 	do {
-		text_input("TCP Listen Port", val, inp, sizeof(inp));
 		char *p;
 		int ret;
+
+		text_input("TCP Listen Port", val, inp, sizeof(inp));
 
 		ret = strtol(inp, &p, 0);
 		if (*p != '\0' || ret <= 0 || ret >= 65536) {

@@ -543,11 +543,12 @@ WARNLIST="
 	all
 	shadow
 	missing-prototypes
+	missing-declarations
+	strict-prototypes
+	declaration-after-statement
 	"
 
 #WARNLIST="
-#	missing-declarations
-#	strict-prototypes
 #	declaration-after-statement
 #	pointer-arith
 #	write-strings
