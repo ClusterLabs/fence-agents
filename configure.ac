@@ -546,11 +546,10 @@ WARNLIST="
 	missing-declarations
 	strict-prototypes
 	declaration-after-statement
+	pointer-arith
 	"
 
 #WARNLIST="
-#	declaration-after-statement
-#	pointer-arith
 #	write-strings
 #	cast-align
 #	bad-function-cast

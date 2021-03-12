@@ -70,6 +70,7 @@ _write_retry(int fd, void *buf, int count, struct timeval * timeout)
 {
 	int n, total = 0, remain = count, rv = 0;
 	fd_set wfds, xfds;
+	char *tmp_buf = (char *)buf;
 
 	while (total < count) {
 
@@ -96,7 +97,7 @@ _write_retry(int fd, void *buf, int count, struct timeval * timeout)
 		/* 
 		 * Attempt to write to fd
 		 */
-		n = write(fd, buf + (off_t) total, remain);
+		n = write(fd, tmp_buf + total, remain);
 
 		/*
 		 * When we know our fd was select()ed and we receive 0 bytes
@@ -142,6 +143,7 @@ _read_retry(int sockfd, void *buf, int count, struct timeval * timeout)
 {
 	int n, total = 0, remain = count, rv = 0;
 	fd_set rfds, xfds;
+	char *tmp_buf = (char *)buf;
 
 	while (total < count) {
 		FD_ZERO(&rfds);
@@ -169,7 +171,7 @@ _read_retry(int sockfd, void *buf, int count, struct timeval * timeout)
 		/* 
 		 * Attempt to read off the socket 
 		 */
-		n = read(sockfd, buf + (off_t) total, remain);
+		n = read(sockfd, tmp_buf + total, remain);
 
 		/*
 		 * When we know our socket was select()ed and we receive 0 bytes
