@@ -49,27 +49,8 @@ AX_CHECK_LINK_FLAG([-Wl,--enable-new-dtags],
 		   [AC_MSG_ERROR(["Linker support for --enable-new-dtags is required"])])
 AX_CHECK_LINK_FLAG([-Wl,--as-needed], [AM_LDFLAGS="$AM_LDFLAGS -Wl,--as-needed"])
 
-VIRT_AM_LDFLAGS="$AM_LDFLAGS -fPIC -fPIE -Wl,-z,now"
-
-AC_SUBST([VIRT_AM_LDFLAGS])
-saved_LDFLAGS="$LDFLAGS"
-LDFLAGS="$VIRT_AM_LDFLAGS $LDFLAGS"
-
 LT_PREREQ([2.2.6])
 LT_INIT
-
-LDFLAGS="$saved_LDFLAGS"
-
-VIRT_AM_CFLAGS="-fPIC -fPIE -I\$(top_srcdir)/agents/virt/include -D_GNU_SOURCE"
-AC_SUBST([VIRT_AM_CFLAGS])
-
-VIRT_COMMON_LDFLAGS="-Wl,-wrap,syslog,-wrap,closelog"
-AC_SUBST([VIRT_COMMON_LDFLAGS])
-VIRT_COMMON_LIBS="-Wl,-Bstatic -L\$(top_builddir)/agents/virt/common -lfence_virt -Wl,-Bdynamic"
-AC_SUBST([VIRT_COMMON_LIBS])
-
-VIRT_CONFIG_LIBS="-L\$(top_builddir)/agents/virt/config -lsimpleconfig"
-AC_SUBST([VIRT_CONFIG_LIBS])
 
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([lib/fencing.py.py])
@@ -207,6 +188,22 @@ fi
 FENCE_VIRT=0
 if echo "$AGENTS_LIST" | grep -q -E "all|virt( |$)"; then
 	FENCE_VIRT=1
+
+	VIRT_AM_LDFLAGS="$AM_LDFLAGS -fPIC -fPIE -Wl,-z,now"
+	AC_SUBST([VIRT_AM_LDFLAGS])
+
+	VIRT_AM_CFLAGS="-fPIC -fPIE -I\$(top_srcdir)/agents/virt/include -D_GNU_SOURCE"
+	AC_SUBST([VIRT_AM_CFLAGS])
+
+	VIRT_COMMON_LDFLAGS="-Wl,-wrap,syslog,-wrap,closelog"
+	AC_SUBST([VIRT_COMMON_LDFLAGS])
+
+	VIRT_COMMON_LIBS="-Wl,-Bstatic -L\$(top_builddir)/agents/virt/common -lfence_virt -Wl,-Bdynamic"
+	AC_SUBST([VIRT_COMMON_LIBS])
+
+	VIRT_CONFIG_LIBS="-L\$(top_builddir)/agents/virt/config -lsimpleconfig"
+	AC_SUBST([VIRT_CONFIG_LIBS])
+
 	# Checks for libraries.
 	AX_PTHREAD(,[AC_MSG_ERROR([POSIX threads support is required])])
 	PKG_CHECK_MODULES([nss], [nss])
