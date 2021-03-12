@@ -23,7 +23,7 @@ nodist_libsimpleconfig_a_SOURCES = \
 			    y.tab.c \
 			    config.c
 
-libsimpleconfig_a_CFLAGS  = $(AM_CFLAGS)
+libsimpleconfig_a_CFLAGS  = $(VIRT_AM_CFLAGS)
 
 noinst_HEADERS		  = config-stack.h
 

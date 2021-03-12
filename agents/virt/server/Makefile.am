@@ -1,7 +1,7 @@
 ###############################################################################
 ###############################################################################
 ##
-##  Copyright (C) 2009-2019 Red Hat, Inc.
+##  Copyright (C) 2009-2021 Red Hat, Inc.
 ##  
 ##  This copyrighted material is made available to anyone wishing to use,
 ##  modify, copy, or redistribute it subject to the terms and conditions
@@ -22,13 +22,13 @@ sbin_PROGRAMS			= fence_virtd
 fence_virtd_SOURCES		= main.c plugin.c config.c static_map.c uuid-test.c \
 				  daemon_init.c
 
-fence_virtd_CFLAGS		= $(AM_CFLAGS) \
+fence_virtd_CFLAGS		= $(VIRT_AM_CFLAGS) \
 				  $(nss_CFLAGS) $(xml2_CFLAGS) $(uuid_CFLAGS) $(PTHREAD_CFLAGS)
 
-fence_virtd_LDADD		= $(CONFIG_LIBS) $(COMMON_LIBS) \
+fence_virtd_LDADD		= $(VIRT_CONFIG_LIBS) $(VIRT_COMMON_LIBS) \
 				  $(nss_LIBS) $(xml2_LIBS) $(uuid_LIBS) $(PTHREAD_LIBS) $(dl_LIBS)
 
-fence_virtd_LDFLAGS		= $(AM_LDFLAGS) $(COMMON_LDFLAGS)
+fence_virtd_LDFLAGS		= $(VIRT_AM_LDFLAGS) $(VIRT_COMMON_LDFLAGS)
 
 #
 # modules
@@ -53,8 +53,8 @@ fence_virtd_CFLAGS		+= -DMODULE_PATH=\"$(pkglibdir)/\"
 
 pkglib_LTLIBRARIES		=
 
-MODULESCFLAGS			= $(AM_CFLAGS)
-MODULESLDFLAGS			= $(AM_LDFLAGS) $(COMMON_LIBS) $(COMMON_LDFLAGS) -module -avoid-version -export-dynamic
+MODULESCFLAGS			= $(VIRT_AM_CFLAGS)
+MODULESLDFLAGS			= $(VIRT_AM_LDFLAGS) $(VIRT_COMMON_LIBS) $(VIRT_COMMON_LDFLAGS) -module -avoid-version -export-dynamic
 
 if modlibvirt
 pkglib_LTLIBRARIES		+= virt.la
