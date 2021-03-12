@@ -76,7 +76,6 @@ AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_PROG_AWK
 AC_PROG_CXX
-AC_PROG_RANLIB
 AC_PROG_YACC
 AC_PROG_LEX
 PKG_PROG_PKG_CONFIG
@@ -88,7 +87,7 @@ PKG_PROG_PKG_CONFIG
 cc_supports_flag() {
 	local CFLAGS="$@"
 	AC_MSG_CHECKING([whether $CC supports "$@"])
-	AC_COMPILE_IFELSE([int main(){return 0;}],
+	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[ ]], [[ ]])],
 			  [RC=0; AC_MSG_RESULT([yes])],
 			  [RC=1; AC_MSG_RESULT([no])])
 	return $RC
