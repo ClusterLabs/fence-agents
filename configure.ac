@@ -547,10 +547,10 @@ WARNLIST="
 	strict-prototypes
 	declaration-after-statement
 	pointer-arith
+	write-strings
 	"
 
 #WARNLIST="
-#	write-strings
 #	cast-align
 #	bad-function-cast
 #	missing-format-attribute

@@ -961,10 +961,10 @@ args_finalize(fence_virt_args_t *args)
 		switch(args->net.family) {
 		case 0:
 		case PF_INET:
-			addr = IPV4_MCAST_DEFAULT;
+			addr = (char *)IPV4_MCAST_DEFAULT;
 			break;
 		case PF_INET6:
-			addr = IPV6_MCAST_DEFAULT;
+			addr = (char *)IPV6_MCAST_DEFAULT;
 			break;
 		default:
 			args->flags |= F_ERR;
