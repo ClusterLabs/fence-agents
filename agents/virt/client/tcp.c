@@ -39,8 +39,7 @@
 #include "tcp.h"
 #include "debug.h"
 #include "fdops.h"
-
-void do_read_hostlist(int fd, int timeout);
+#include "client.h"
 
 static int
 tcp_exchange(int fd, fence_auth_type_t auth, void *key,

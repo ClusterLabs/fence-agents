@@ -69,13 +69,6 @@ int _line_count = 1;
 }
 
 %%
-void
-reset_vars(void)
-{
-	_line_count = 1;
-}
-
-
 int
 yywrap(void)
 {

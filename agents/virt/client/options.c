@@ -564,7 +564,7 @@ static struct arg_info _arg_info[] = {
 };
 
 
-struct arg_info *
+static struct arg_info *
 find_arg_by_char(char arg)
 {
 	int x = 0;
@@ -578,7 +578,7 @@ find_arg_by_char(char arg)
 }
 
 
-struct arg_info *
+static struct arg_info *
 find_arg_by_string(char *arg)
 {
 	int x = 0;
@@ -838,7 +838,7 @@ args_metadata(char *progname, const char *optstr)
   @param linelen	Max size of line
   @return		0 on success, -1 on failure
  */
-int
+static int
 cleanup(char *line, size_t linelen)
 {
 	char *p;

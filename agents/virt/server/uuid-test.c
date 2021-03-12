@@ -4,6 +4,8 @@
 #include <errno.h>
 #include <string.h>
 
+#include "uuid-test.h"
+
 int
 is_uuid(const char *value)
 {

@@ -37,6 +37,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 
+#include "tcp.h"
 #include "debug.h"
 
 static int connect_nb(int fd, struct sockaddr *dest, socklen_t len, int timeout);

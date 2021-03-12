@@ -8,18 +8,6 @@
 #define PLUGIN_VERSION_LISTENER ((double)0.3)
 #define PLUGIN_VERSION_BACKEND  ((double)0.2)
 
-#define LISTENER_VER_SYM listener_plugin_version
-#define BACKEND_VER_SYM backend_plugin_version
-#define LISTENER_INFO_SYM listener_plugin_info
-#define BACKEND_INFO_SYM backend_plugin_info
-#define LISTENER_VER_STR "listener_plugin_version"
-#define BACKEND_VER_STR "backend_plugin_version"
-#define LISTENER_INFO_STR "listener_plugin_info"
-#define BACKEND_INFO_STR "backend_plugin_info"
-
-
-
-
 typedef void * listener_context_t;
 typedef void * backend_context_t;
 
@@ -84,6 +72,13 @@ typedef struct backend_plugin {
 	backend_cleanup_fn cleanup;
 } backend_plugin_t;
 
+double backend_plugin_version(void);
+const backend_plugin_t * backend_plugin_info(void);
+
+#define BACKEND_VER_SYM backend_plugin_version
+#define BACKEND_INFO_SYM backend_plugin_info
+#define BACKEND_VER_STR "backend_plugin_version"
+#define BACKEND_INFO_STR "backend_plugin_info"
 
 typedef int (*listener_init_fn)(listener_context_t *c,
 				const fence_callbacks_t *cb,
@@ -103,6 +98,13 @@ typedef struct listener_plugin {
 	listener_cleanup_fn cleanup;
 } listener_plugin_t;
 
+double listener_plugin_version(void);
+const listener_plugin_t * listener_plugin_info(void);
+
+#define LISTENER_VER_SYM listener_plugin_version
+#define LISTENER_INFO_SYM listener_plugin_info
+#define LISTENER_VER_STR "listener_plugin_version"
+#define LISTENER_INFO_STR "listener_plugin_info"
 
 typedef enum {
 	PLUGIN_NONE = 0,

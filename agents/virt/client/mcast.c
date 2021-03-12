@@ -53,6 +53,7 @@
 #include "mcast.h"
 #include "debug.h"
 #include "fdops.h"
+#include "client.h"
 
 
 static int

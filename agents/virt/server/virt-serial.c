@@ -272,7 +272,7 @@ struct event_args {
 	int wake_fd;
 };
 
-void
+static void
 connectClose(virConnectPtr conn ATTRIBUTE_UNUSED,
                          int reason,
                          void *opaque ATTRIBUTE_UNUSED)

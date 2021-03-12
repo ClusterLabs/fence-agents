@@ -39,6 +39,7 @@ static int dropped = 0;
 static pthread_t thread_id = 0;
 
 void __real_syslog(int severity, const char *fmt, ...);
+void __wrap_syslog(int severity, const char *fmt, ...);
 
 static void *
 _log_thread(void *arg)
@@ -153,7 +154,7 @@ __wrap_syslog(int severity, const char *fmt, ...)
 
 void __real_closelog(void);
 
-void
+static void
 __wrap_closelog(void)
 {
 	struct log_entry *lent;

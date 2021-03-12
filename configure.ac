@@ -60,7 +60,7 @@ LT_INIT
 
 LDFLAGS="$saved_LDFLAGS"
 
-VIRT_AM_CFLAGS="-fPIC -fPIE -I\$(top_srcdir)/agents/virt/include -Wall -Wformat=2 -Wstrict-prototypes -Wshadow -Wno-unused -D_GNU_SOURCE"
+VIRT_AM_CFLAGS="-fPIC -fPIE -I\$(top_srcdir)/agents/virt/include -Wformat=2 -Wstrict-prototypes -Wno-unused -D_GNU_SOURCE"
 AC_SUBST([VIRT_AM_CFLAGS])
 
 VIRT_COMMON_LDFLAGS="-Wl,-wrap,syslog,-wrap,closelog"
@@ -538,12 +538,14 @@ fi
 # extra warnings
 EXTRA_WARNINGS=""
 
-WARNLIST=""
+WARNLIST="
+	error
+	all
+	shadow
+	missing-prototypes
+	"
 
 #WARNLIST="
-#	all
-#	shadow
-#	missing-prototypes
 #	missing-declarations
 #	strict-prototypes
 #	declaration-after-statement

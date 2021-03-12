@@ -28,6 +28,8 @@
 #include <fcntl.h>
 #include <errno.h>
 
+#include "fdops.h"
+
 /**
  * This is a wrapper around select which will retry in the case we receive
  * EINTR.  This is necessary for _read_retry, since it wouldn't make sense
