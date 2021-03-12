@@ -60,7 +60,7 @@ LT_INIT
 
 LDFLAGS="$saved_LDFLAGS"
 
-VIRT_AM_CFLAGS="-fPIC -fPIE -I\$(top_srcdir)/agents/virt/include -Wformat=2 -Wstrict-prototypes -Wno-unused -D_GNU_SOURCE"
+VIRT_AM_CFLAGS="-fPIC -fPIE -I\$(top_srcdir)/agents/virt/include -D_GNU_SOURCE"
 AC_SUBST([VIRT_AM_CFLAGS])
 
 VIRT_COMMON_LDFLAGS="-Wl,-wrap,syslog,-wrap,closelog"
@@ -548,20 +548,17 @@ WARNLIST="
 	declaration-after-statement
 	pointer-arith
 	write-strings
+	cast-align
+	bad-function-cast
+	missing-format-attribute
+	format=2
+	format-security
+	format-nonliteral
+	no-long-long
+	unsigned-char
+	gnu89-inline
+	no-strict-aliasing
 	"
-
-#WARNLIST="
-#	cast-align
-#	bad-function-cast
-#	missing-format-attribute
-#	format=2
-#	format-security
-#	format-nonliteral
-#	no-long-long
-#	unsigned-char
-#	gnu89-inline
-#	no-strict-aliasing
-#	"
 
 for j in $WARNLIST; do
 	if cc_supports_flag -W$j; then
