@@ -174,33 +174,39 @@ fi
 
 FENCE_VIRT=0
 if echo "$AGENTS_LIST" | grep -q -E "all|virt( |$)"; then
-	FENCE_VIRT=1
+	case "$host_os" in
+		*bsd*)
+			;;
+		*)
+			FENCE_VIRT=1
 
-	VIRT_AM_LDFLAGS="$AM_LDFLAGS -fPIC -fPIE -Wl,-z,now"
-	AC_SUBST([VIRT_AM_LDFLAGS])
+			VIRT_AM_LDFLAGS="$AM_LDFLAGS -fPIC -fPIE -Wl,-z,now"
+			AC_SUBST([VIRT_AM_LDFLAGS])
 
-	VIRT_AM_CFLAGS="-fPIC -fPIE -I\$(top_srcdir)/agents/virt/include -D_GNU_SOURCE"
-	AC_SUBST([VIRT_AM_CFLAGS])
+			VIRT_AM_CFLAGS="-fPIC -fPIE -I\$(top_srcdir)/agents/virt/include -D_GNU_SOURCE"
+			AC_SUBST([VIRT_AM_CFLAGS])
 
-	VIRT_COMMON_LDFLAGS="-Wl,-wrap,syslog,-wrap,closelog"
-	AC_SUBST([VIRT_COMMON_LDFLAGS])
+			VIRT_COMMON_LDFLAGS="-Wl,-wrap,syslog,-wrap,closelog"
+			AC_SUBST([VIRT_COMMON_LDFLAGS])
 
-	VIRT_COMMON_LIBS="-Wl,-Bstatic -L\$(top_builddir)/agents/virt/common -lfence_virt -Wl,-Bdynamic"
-	AC_SUBST([VIRT_COMMON_LIBS])
+			VIRT_COMMON_LIBS="-Wl,-Bstatic -L\$(top_builddir)/agents/virt/common -lfence_virt -Wl,-Bdynamic"
+			AC_SUBST([VIRT_COMMON_LIBS])
 
-	VIRT_CONFIG_LIBS="-L\$(top_builddir)/agents/virt/config -lsimpleconfig"
-	AC_SUBST([VIRT_CONFIG_LIBS])
+			VIRT_CONFIG_LIBS="-L\$(top_builddir)/agents/virt/config -lsimpleconfig"
+			AC_SUBST([VIRT_CONFIG_LIBS])
 
-	# Checks for libraries.
-	AX_PTHREAD(,[AC_MSG_ERROR([POSIX threads support is required])])
-	PKG_CHECK_MODULES([nss], [nss])
-	PKG_CHECK_MODULES([xml2], [libxml-2.0])
-	PKG_CHECK_MODULES([uuid], [uuid])
-	saved_LIBS="$LIBS"
-	LIBS=
-	AC_SEARCH_LIBS([dlopen], [dl dld], , [AC_MSG_ERROR([dlopen not found])])
-	AC_SUBST([dl_LIBS], [$LIBS])
-	LIBS="$saved_LIBS"
+			# Checks for libraries.
+			AX_PTHREAD(,[AC_MSG_ERROR([POSIX threads support is required])])
+			PKG_CHECK_MODULES([nss], [nss])
+			PKG_CHECK_MODULES([xml2], [libxml-2.0])
+			PKG_CHECK_MODULES([uuid], [uuid])
+			saved_LIBS="$LIBS"
+			LIBS=
+			AC_SEARCH_LIBS([dlopen], [dl dld], , [AC_MSG_ERROR([dlopen not found])])
+			AC_SUBST([dl_LIBS], [$LIBS])
+			LIBS="$saved_LIBS"
+			;;
+	esac
 fi
 
 if test "x$AGENTS_LIST" != xall; then
@@ -355,8 +361,10 @@ AC_SUBST([POWERMAN_PATH])
 
 ## fence-virt stuff
 
-sysconf=$(eval echo $sysconfdir)
-AC_DEFINE_UNQUOTED([SYSCONFDIR], ["$sysconf"], [Default config dir])
+if test "x$FENCE_VIRT" = "x1"; then
+	sysconf=$(eval echo $sysconfdir)
+	AC_DEFINE_UNQUOTED([SYSCONFDIR], ["$sysconf"], [Default config dir])
+fi
 
 #
 # Modular build for fence_virtd to split up dependencies
@@ -389,7 +397,7 @@ AC_ARG_ENABLE(libvirt-plugin,
 [ modlibvirt=$enableval ], [ modlibvirt=yes ])
 
 AM_CONDITIONAL([modlibvirt], [test "x$modlibvirt" == "xyes"])
-if test "x$modlibvirt" == "xyes"; then
+if test "x$modlibvirt" == "xyes" && test "x$FENCE_VIRT" = "x1"; then
 	PKG_CHECK_MODULES([virt], [libvirt])
 fi
 
@@ -401,7 +409,7 @@ AC_ARG_ENABLE(cpg-plugin,
 
 AM_CONDITIONAL([modcpg], [test "x$modcpg" == "xyes"])
 
-if test "x$modcpg" == "xyes"; then
+if test "x$modcpg" == "xyes" && test "x$FENCE_VIRT" = "x1"; then
 	PKG_CHECK_MODULES([cpg], [libcpg])
 fi
 
@@ -413,7 +421,7 @@ AC_ARG_ENABLE(libvirt-qmf-plugin,
 
 AM_CONDITIONAL([modlibvirtqmf], [test "x$modlibvirtqmf" == "xyes"])
 
-if test "x$modlibvirtqmf" == "xyes"; then
+if test "x$modlibvirtqmf" == "xyes" && test "x$FENCE_VIRT" = "x1"; then
 	PKG_CHECK_MODULES([qpid], [qpid])
 fi
 
@@ -425,7 +433,7 @@ AC_ARG_ENABLE(pm-fence-plugin,
 
 AM_CONDITIONAL([modpmfence], [test "x$modpmfence" == "xyes"])
 
-if test "x$modpmfence" == "xyes"; then
+if test "x$modpmfence" == "xyes" && test "x$FENCE_VIRT" = "x1"; then
 	PKG_CHECK_MODULES([cib], [pacemaker-cib])
 	PKG_CHECK_MODULES([ncurses], [ncurses])
 	PKG_CHECK_MODULES([glib2], [glib-2.0])
@@ -477,7 +485,7 @@ AM_CONDITIONAL([xvmcompat], [test "x$xvmcompat" == "xyes"])
 # Try to detect the appropriate conf dir. Several systems have both /etc/default
 # and /etc/sysconfig but latter is always primary.
 AC_ARG_VAR(initconfdir, [directory for initscripts configuration])
-if test "x$initconfdir" = x; then
+if test "x$initconfdir" = x && test "x$FENCE_VIRT" = "x1"; then
 	AC_CHECK_FILE(/etc/conf.d, [initconfdir='$(sysconfdir)/conf.d}'], [# Gentoo/Arch
 	AC_CHECK_FILE(/etc/sysconfig, [initconfdir='$(sysconfdir)/sysconfig'], [# RedHat/Fedora/Slax/Mandriva/S
 	AC_CHECK_FILE(/etc/default, [initconfdir='$(sysconfdir)/default'], [# Debian/Ubuntu
