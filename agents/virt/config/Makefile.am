@@ -23,8 +23,7 @@ nodist_libsimpleconfig_a_SOURCES = \
 			    y.tab.c \
 			    config.c
 
-libsimpleconfig_a_CFLAGS  = $(VIRT_AM_CFLAGS) \
-			    -DYY_NO_UNPUT -DYY_NO_INPUT
+libsimpleconfig_a_CFLAGS  = $(VIRT_AM_CFLAGS) -Wno-unused
 
 noinst_HEADERS		  = config-stack.h
 
