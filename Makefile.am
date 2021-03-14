@@ -13,8 +13,8 @@ AUTOMAKE_OPTIONS	= foreign
 MAINTAINERCLEANFILES	= Makefile.in aclocal.m4 configure depcomp \
 			  config.guess config.sub missing install-sh \
 			  autoheader automake autoconf libtool libtoolize \
-			  ltmain.sh compile make/clusterautoconfig.h.in \
-			  make/clusterautoconfig.h.in~ autoscan.log \
+			  ltmain.sh compile make/config.h.in \
+			  make/config.h.in~ autoscan.log \
 			  configure.scan
 
 TARFILES		= $(PACKAGE_NAME)-$(VERSION).tar.bz2 \
