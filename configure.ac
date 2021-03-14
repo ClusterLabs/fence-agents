@@ -517,7 +517,6 @@ fi
 EXTRA_WARNINGS=""
 
 WARNLIST="
-	error
 	all
 	shadow
 	missing-prototypes
