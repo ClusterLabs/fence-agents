@@ -454,7 +454,7 @@ static struct arg_info _arg_info[] = {
 	  assign_ip_address },
 
 	{ 'S', "-S <cid>", "vsock",
-          NULL, 0, 0, "int", "2",
+          NULL, 0, 0, "integer", "2",
 	  "vm socket CID to connect to in vsock mode",
 	  assign_cid },
 
@@ -494,7 +494,7 @@ static struct arg_info _arg_info[] = {
 	  assign_key },
 
 	{ 'D', "-D <device>", "serial_device",
-	  NULL, 0, 0, "string", NULL,
+	  NULL, 0, 0, "string", DEFAULT_SERIAL_DEVICE,
 	  "Serial device (default=" DEFAULT_SERIAL_DEVICE  ")",
 	  assign_device },
 
@@ -767,6 +767,7 @@ args_metadata(char *progname, const char *optstr)
 	printf("<resource-agent name=\"%s\" shortdesc=\"Fence agent for virtual machines\">\n", basename(progname));
 	printf("<longdesc>%s is an I/O Fencing agent which can be used with "
 	       "virtual machines.</longdesc>\n", basename(progname));
+	printf("<vendor-url>https://libvirt.org</vendor-url>\n");
 	printf("<parameters>\n");
 
 	for (x = 0; x < strlen(optstr); x++) {
@@ -777,11 +778,11 @@ args_metadata(char *progname, const char *optstr)
 			continue;
 
 		if (arg->obsoletes)
-			printf("\t<parameter name=\"%s\" obsoletes=\"%s\">\n", arg->stdin_opt, arg->obsoletes);
+			printf("\t<parameter name=\"%s\" unique=\"0\" required=\"%d\" obsoletes=\"%s\">\n", arg->stdin_opt, (!strcmp(arg->content_type, "boolean") || arg->default_value) ? 0 : 1, arg->obsoletes);
 		else if (arg->deprecated)
-			printf("\t<parameter name=\"%s\" deprecated=\"%d\">\n", arg->stdin_opt, arg->deprecated);
+			printf("\t<parameter name=\"%s\" unique=\"0\" required=\"%d\" deprecated=\"%d\">\n", arg->stdin_opt, (!strcmp(arg->content_type, "boolean") || arg->default_value) ? 0 : 1, arg->deprecated);
 		else
-			printf("\t<parameter name=\"%s\">\n", arg->stdin_opt);
+			printf("\t<parameter name=\"%s\" unique=\"0\" required=\"%d\">\n", arg->stdin_opt, (!strcmp(arg->content_type, "boolean") || arg->default_value) ? 0 : 1);
 
                 printf("\t\t<getopt mixed=\"-%c\" />\n",arg->opt);
                 if (arg->default_value) {
@@ -801,8 +802,10 @@ args_metadata(char *progname, const char *optstr)
 
 		arg = &_arg_info[x];
 
-		printf("\t<parameter name=\"%s\">\n",arg->stdin_opt);
+		printf("\t<parameter name=\"%s\" unique=\"0\" required=\"%d\">\n", arg->stdin_opt,
+			(!strcmp(arg->content_type, "boolean") || arg->default_value) ? 0 : 1);
 		printf("\t\t<!-- DEPRECATED; FOR COMPATIBILITY ONLY -->\n");
+		printf("\t\t<getopt mixed=\"\" />\n");
                 if (arg->default_value) {
                   printf("\t\t<content type=\"%s\" default=\"%s\" />\n", arg->content_type, arg->default_value);
                 } else {

@@ -1,0 +1,100 @@
+<?xml version="1.0" ?>
+<resource-agent name="fence_virt" shortdesc="Fence agent for virtual machines">
+<longdesc>fence_virt is an I/O Fencing agent which can be used with virtual machines.</longdesc>
+<vendor-url>https://libvirt.org</vendor-url>
+<parameters>
+	<parameter name="debug" unique="0" required="0">
+		<getopt mixed="-d" />
+		<content type="boolean" />
+		<shortdesc lang="en">Specify (stdin) or increment (command line) debug level</shortdesc>
+	</parameter>
+	<parameter name="serial_device" unique="0" required="0">
+		<getopt mixed="-D" />
+		<content type="string" default="/dev/ttyS1" />
+		<shortdesc lang="en">Serial device (default=/dev/ttyS1)</shortdesc>
+	</parameter>
+	<parameter name="serial_params" unique="0" required="0">
+		<getopt mixed="-P" />
+		<content type="string" default="115200,8N1" />
+		<shortdesc lang="en">Serial Parameters (default=115200,8N1)</shortdesc>
+	</parameter>
+	<parameter name="channel_address" unique="0" required="0">
+		<getopt mixed="-A" />
+		<content type="string" default="10.0.2.179" />
+		<shortdesc lang="en">VM Channel IP address (default=10.0.2.179)</shortdesc>
+	</parameter>
+	<parameter name="ipport" unique="0" required="0">
+		<getopt mixed="-p" />
+		<content type="string" default="1229" />
+		<shortdesc lang="en">TCP, Multicast, VMChannel, or VM socket port (default=1229)</shortdesc>
+	</parameter>
+	<parameter name="plug" unique="0" required="1" obsoletes="port">
+		<getopt mixed="-n" />
+		<content type="string" />
+		<shortdesc lang="en">Virtual Machine (domain name) to fence</shortdesc>
+	</parameter>
+	<parameter name="port" unique="0" required="1" deprecated="1">
+		<getopt mixed="-H" />
+		<content type="string" />
+		<shortdesc lang="en">Virtual Machine (domain name) to fence</shortdesc>
+	</parameter>
+	<parameter name="action" unique="0" required="0">
+		<getopt mixed="-o" />
+		<content type="string" default="reboot" />
+		<shortdesc lang="en">Fencing action (null, off, on, [reboot], status, list, list-status, monitor, validate-all, metadata)</shortdesc>
+	</parameter>
+	<parameter name="timeout" unique="0" required="0">
+		<getopt mixed="-t" />
+		<content type="string" default="30" />
+		<shortdesc lang="en">Fencing timeout (in seconds; default=30)</shortdesc>
+	</parameter>
+	<parameter name="ipaddr" unique="0" required="0">
+		<getopt mixed="-T" />
+		<content type="string" default="127.0.0.1" />
+		<shortdesc lang="en">IP address to connect to in TCP mode (default=127.0.0.1 / ::1)</shortdesc>
+	</parameter>
+	<parameter name="vsock" unique="0" required="0">
+		<getopt mixed="-S" />
+		<content type="integer" default="2" />
+		<shortdesc lang="en">vm socket CID to connect to in vsock mode</shortdesc>
+	</parameter>
+	<parameter name="auth" unique="0" required="0">
+		<getopt mixed="-C" />
+		<content type="string" default="sha256" />
+		<shortdesc lang="en">Authentication (none, sha1, [sha256], sha512)</shortdesc>
+	</parameter>
+	<parameter name="hash" unique="0" required="0">
+		<getopt mixed="-c" />
+		<content type="string" default="sha256" />
+		<shortdesc lang="en">Packet hash strength (none, sha1, [sha256], sha512)</shortdesc>
+	</parameter>
+	<parameter name="key_file" unique="0" required="0">
+		<getopt mixed="-k" />
+		<content type="string" default="/etc/cluster/fence_xvm.key" />
+		<shortdesc lang="en">Shared key file (default=/etc/cluster/fence_xvm.key)</shortdesc>
+	</parameter>
+	<parameter name="delay" unique="0" required="0">
+		<getopt mixed="-w" />
+		<content type="string" default="0" />
+		<shortdesc lang="en">Fencing delay (in seconds; default=0)</shortdesc>
+	</parameter>
+	<parameter name="domain" unique="0" required="1">
+		<!-- DEPRECATED; FOR COMPATIBILITY ONLY -->
+		<getopt mixed="" />
+		<content type="string" />
+		<shortdesc lang="en">Virtual Machine (domain name) to fence (deprecated; use port)</shortdesc>
+	</parameter>
+</parameters>
+<actions>
+	<action name="null" />
+	<action name="on" />
+	<action name="off" />
+	<action name="reboot" />
+	<action name="metadata" />
+	<action name="status" />
+	<action name="monitor" />
+	<action name="list" />
+	<action name="list-status" />
+	<action name="validate-all" />
+</actions>
+</resource-agent>
