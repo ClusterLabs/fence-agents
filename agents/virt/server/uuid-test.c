@@ -16,6 +16,8 @@ is_uuid(const char *value)
 		return 0;
 	}
 
+	memset(id, 0, sizeof(uuid_t));
+
 	if (uuid_is_null(id) < 0) {
 		errno = EINVAL;
 		return -1;
