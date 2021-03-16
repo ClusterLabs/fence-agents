@@ -1,7 +1,7 @@
 ###############################################################################
 ###############################################################################
 ##
-##  Copyright (C) 2019 Red Hat, Inc.  All rights reserved.
+##  Copyright (C) 2019-2021 Red Hat, Inc.  All rights reserved.
 ##
 ##  This copyrighted material is made available to anyone wishing to use,
 ##  modify, copy, or redistribute it subject to the terms and conditions
@@ -77,6 +77,7 @@ fence-agents-sanbox2 \\
 fence-agents-sbd \\
 fence-agents-scsi \\
 fence-agents-vbox \\
+fence-virt \\
 fence-agents-vmware \\
 fence-agents-vmware-rest \\
 fence-agents-vmware-soap \\
@@ -108,7 +109,7 @@ EOF)
 
 # Build dependencies
 ## general
-BuildRequires: autoconf automake libtool
+BuildRequires: autoconf automake libtool make
 ## compiled code (-kdump)
 BuildRequires: gcc
 ## man pages generating
@@ -141,6 +142,23 @@ BuildRequires: python-novaclient python-keystoneclient
 %endif
 %endif
 
+# fence-virt
+%if 0%{?suse_version}
+%define nss_devel mozilla-nss-devel
+%define nspr_devel mozilla-nspr-devel
+%define systemd_units systemd
+%else
+%define nss_devel nss-devel
+%define nspr_devel nspr-devel
+%define systemd_units systemd-units
+%endif
+
+BuildRequires:  corosynclib-devel libvirt-devel
+BuildRequires:  libxml2-devel %{nss_devel} %{nspr_devel}
+BuildRequires:  flex bison libuuid-devel
+BuildRequires: %{systemd_units}
+
+
 # turn off the brp-python-bytecompile script
 # (for F28+ or equivalent, the latter is the preferred form)
 %global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompilespace:.*$!!g')
@@ -158,11 +176,14 @@ sed -i.orig 's|FENCE_ZVM=1|FENCE_ZVM=0|' configure.ac
 %endif
 
 ./autogen.sh
-%{configure}
+%{configure} --disable-libvirt-qmf-plugin --enable-cpg-plugin
 CFLAGS="$(echo '%{optflags}')" make %{_smp_mflags}
 
 %install
+rm -rf %{buildroot}
 make install DESTDIR=%{buildroot}
+mkdir -p %{buildroot}/%{_unitdir}/
+install -m 0644 agents/virt/fence_virtd.service %{buildroot}/%{_unitdir}/
 # bytecompile Python source code in a non-standard location
 %if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7
 %py_byte_compile %{__python3} %{buildroot}%{_datadir}/fence
@@ -174,9 +195,39 @@ make install DESTDIR=%{buildroot}
 chmod 0755 %{buildroot}%{_datadir}/fence/*.py
 # remove docs
 rm -rf %{buildroot}/usr/share/doc/fence-agents
+# remove .a files
+rm -f %{buildroot}/%{_libdir}/%{name}/*.*a
 
 %post
 ccs_update_schema > /dev/null 2>&1 ||:
+# https://fedoraproject.org/wiki/Packaging:ScriptletSnippets#Systemd
+if [ $1 -eq 1 ] ; then
+    # Initial installation
+    /bin/systemctl daemon-reload >/dev/null 2>&1 || :
+fi
+
+%preun
+# https://fedoraproject.org/wiki/Packaging:ScriptletSnippets#Systemd
+if [ $1 -eq 0 ] ; then
+    # Package removal, not upgrade
+    /bin/systemctl --no-reload disable fence_virtd.service &> /dev/null || :
+    /bin/systemctl stop fence_virtd.service &> /dev/null || :
+fi
+
+%postun
+# https://fedoraproject.org/wiki/Packaging:ScriptletSnippets#Systemd
+/bin/systemctl daemon-reload &> /dev/null || :
+if [ $1 -ge 1 ] ; then
+    # Package upgrade, not uninstall
+    /bin/systemctl try-restart fence_virtd.service &> /dev/null || :
+fi
+
+%triggerun -- fence_virtd < 0.3.0-1
+# https://fedoraproject.org/wiki/Packaging:ScriptletSnippets#Packages_migrating_to_a_systemd_unit_file_from_a_SysV_initscript
+/usr/bin/systemd-sysv-convert --save fence_virtd &> /dev/null || :
+/sbin/chkconfig --del fence_virtd &> /dev/null || :
+/bin/systemctl daemon-reload >/dev/null 2>&1 || :
+/bin/systemctl try-restart fence_virtd.service &> /dev/null || :
 
 %description
 A collection of executables to handle isolation ("fencing") of possibly
@@ -1191,6 +1242,86 @@ Fence agent for IBM z/VM over IP.
 %files zvm
 %{_sbindir}/fence_zvmip
 %{_mandir}/man8/fence_zvmip.8*
+
+# fence-virt
+
+%package -n fence-virt
+Summary: A pluggable fencing framework for virtual machines
+Requires(post):	systemd-sysv %{systemd_units}
+Requires(preun):	%{systemd_units}
+Requires(postun):	%{systemd_units}
+%description -n fence-virt
+Fencing agent for virtual machines.
+%files -n fence-virt
+%doc agents/virt/docs/*
+%{_sbindir}/fence_virt
+%{_sbindir}/fence_xvm
+%{_mandir}/man8/fence_virt.*
+%{_mandir}/man8/fence_xvm.*
+
+%package -n fence-virtd
+Summary: Daemon which handles requests from fence-virt
+%description -n fence-virtd
+This package provides the host server framework, fence_virtd,
+for fence_virt.  The fence_virtd host daemon is resposible for
+processing fencing requests from virtual machines and routing
+the requests to the appropriate physical machine for action.
+%files -n fence-virtd
+%{_sbindir}/fence_virtd
+%{_unitdir}/fence_virtd.service
+%config(noreplace) %{_sysconfdir}/fence_virt.conf
+%dir %{_libdir}/%{name}
+%{_libdir}/%{name}/vsock.so
+%{_mandir}/man5/fence_virt.conf.*
+%{_mandir}/man8/fence_virtd.*
+
+%package -n fence-virtd-multicast
+Summary:  Multicast listener for fence-virtd
+Requires: fence-virtd
+%description -n fence-virtd-multicast
+Provides multicast listener capability for fence-virtd.
+%files -n fence-virtd-multicast
+%{_libdir}/%{name}/multicast.so
+
+%package -n fence-virtd-serial
+Summary:  Serial VMChannel listener for fence-virtd
+Requires: libvirt >= 0.6.2
+Requires: fence-virtd
+%description -n fence-virtd-serial
+Provides serial VMChannel listener capability for fence-virtd.
+%files -n fence-virtd-serial
+%{_libdir}/%{name}/serial.so
+
+%package -n fence-virtd-tcp
+Summary:  TCP listener for fence-virtd
+Requires: fence-virtd
+%description -n fence-virtd-tcp
+Provides TCP listener capability for fence-virtd.
+%files -n fence-virtd-tcp
+%{_libdir}/%{name}/tcp.so
+
+%package -n fence-virtd-libvirt
+Summary:  Libvirt backend for fence-virtd
+Requires: libvirt >= 0.6.0
+Requires: fence-virtd
+%description -n fence-virtd-libvirt
+Provides fence_virtd with a connection to libvirt to fence
+virtual machines.  Useful for running a cluster of virtual
+machines on a desktop.
+%files -n fence-virtd-libvirt
+%{_libdir}/%{name}/virt.so
+
+%package -n fence-virtd-cpg
+Summary:  CPG/libvirt backend for fence-virtd
+Requires: corosynclib
+Requires: fence-virtd
+%description -n fence-virtd-cpg
+Provides fence_virtd with a connection to libvirt to fence
+virtual machines. Uses corosync CPG to keep track of VM
+locations to allow for non-local VMs to be fenced when VMs
+are located on corosync cluster nodes.
+%files -n fence-virtd-cpg
+%{_libdir}/%{name}/cpg.so
 
 %changelog
 * @date@ Autotools generated version <nobody@nowhere.org> - @version@-@specver@-@numcomm@.@alphatag@.@dirty@

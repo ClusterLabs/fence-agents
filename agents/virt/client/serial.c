@@ -23,13 +23,14 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/ioctl.h>
-#include <fdops.h>
-#include <xvm.h>
-#include <options.h>
-#include <client.h>
 #include <sys/time.h>
 #include <arpa/inet.h>
-#include <tcp.h>
+
+#include "fdops.h"
+#include "xvm.h"
+#include "options.h"
+#include "client.h"
+#include "tcp.h"
 
 
 static int
@@ -181,9 +182,7 @@ hangup(int fd, int delay)
 	}
 }
 
-void do_read_hostlist(int fd, int timeout);
-
-int
+static int
 wait_for(int fd, const char *pattern, size_t size, struct timeval *tout)
 {
 	char *pos = (char *)pattern;

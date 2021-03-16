@@ -18,12 +18,11 @@
 #include "debug.h"
 
 /* configure.c */
-int do_configure(config_object_t *config, const char *filename);
 int daemon_init(const char *prog, const char *pid_file, int nofork);
 int daemon_cleanup(void);
 
 
-void
+static void
 usage(void)
 {
 	printf("Usage: fence_virtd [options]\n");
@@ -38,7 +37,7 @@ usage(void)
 
 
 static int run = 1;
-void
+static void
 exit_handler(int sig)
 {
 	run = 0;

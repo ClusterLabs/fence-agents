@@ -79,7 +79,7 @@ cpg_get_ids(uint32_t *my_id, uint32_t *high_id)
 	return 0;
 }
 
-void
+static void
 cpg_deliver_func(cpg_handle_t h,
 		 const struct cpg_name *group_name,
 		 uint32_t nodeid,
@@ -146,7 +146,7 @@ out_unlock:
 }
 
 
-void
+static void
 cpg_config_change(cpg_handle_t h,
 		  const struct cpg_name *group_name,
 		  const struct cpg_address *members, size_t memberlen,

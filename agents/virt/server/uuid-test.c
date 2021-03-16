@@ -4,6 +4,8 @@
 #include <errno.h>
 #include <string.h>
 
+#include "uuid-test.h"
+
 int
 is_uuid(const char *value)
 {
@@ -13,6 +15,8 @@ is_uuid(const char *value)
 	if (strlen(value) < 36) {
 		return 0;
 	}
+
+	memset(id, 0, sizeof(uuid_t));
 
 	if (uuid_is_null(id) < 0) {
 		errno = EINVAL;

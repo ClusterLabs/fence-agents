@@ -90,8 +90,6 @@ _sc_dump(void *config, FILE *fp)
 static int
 free_value(struct value *v)
 {
-	int x;
-
 	if (v) {
 		free(v->id);
 		free(v->val);
@@ -107,7 +105,6 @@ _sc_free_node(struct node *node)
 {
 	struct node *n;
 	struct value *v;
-	int x;
 
 	if (!node)
 		return;
@@ -188,7 +185,7 @@ _sc_get(void *config, const char *key, char *value, size_t valuesz)
 	assert(strlen(key) < sizeof(buf));
 
 	ptr = (char *)key;
-top:
+
 	while ((slash = strchr(ptr, '/'))) {
 		memset(buf, 0, sizeof(buf));
 		strncpy(buf, ptr, (slash - ptr));

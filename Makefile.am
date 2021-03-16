@@ -13,8 +13,8 @@ AUTOMAKE_OPTIONS	= foreign
 MAINTAINERCLEANFILES	= Makefile.in aclocal.m4 configure depcomp \
 			  config.guess config.sub missing install-sh \
 			  autoheader automake autoconf libtool libtoolize \
-			  ltmain.sh compile make/clusterautoconfig.h.in \
-			  make/clusterautoconfig.h.in~ autoscan.log \
+			  ltmain.sh compile make/config.h.in \
+			  make/config.h.in~ autoscan.log \
 			  configure.scan
 
 TARFILES		= $(PACKAGE_NAME)-$(VERSION).tar.bz2 \
@@ -59,8 +59,11 @@ gen-ChangeLog:
 # this will get rid of "libtoolized" m4 files
 maintainer-clean-local:
 	rm -rf $(filter-out \
-	         $(top_srcdir)/m4/ac_python_module.m4,$(wildcard \
-		                                        $(top_srcdir)/m4/*.m4))
+		$(top_srcdir)/m4/ax_check_link_flag.m4 \
+		$(top_srcdir)/m4/ax_prog_date.m4 \
+		$(top_srcdir)/m4/ax_pthread.m4 \
+		$(top_srcdir)/m4/ac_python_module.m4, \
+		$(wildcard $(top_srcdir)/m4/*.m4))
 
 ## make rpm/srpm section.
 $(SPEC): $(SPEC).in

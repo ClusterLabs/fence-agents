@@ -71,15 +71,15 @@ typedef struct {
 
 /* Private structure for commandline / stdin fencing args */
 struct arg_info {
-	char opt;
-	char *opt_desc;
-	char *stdin_opt;
-	char *obsoletes;
+	const char opt;
+	const char *opt_desc;
+	const char *stdin_opt;
+	const char *obsoletes;
 	int deprecated;
 	int eh;
-	char *content_type;
-	char *default_value;
-	char *desc;
+	const char *content_type;
+	const char *default_value;
+	const char *desc;
 	void (*assign)(fence_virt_args_t *, struct arg_info *, char *);
 };
 

@@ -19,6 +19,10 @@ dist_man_MANS			=
 
 EXTRA_SCRIPTS			=
 
+if BUILD_FENCE_VIRT
+SUBDIRS				= virt
+endif
+
 if BUILD_FENCE_KDUMP
 sbin_PROGRAMS			+= kdump/fence_kdump
 libexec_PROGRAMS		+= kdump/fence_kdump_send
