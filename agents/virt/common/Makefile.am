@@ -17,7 +17,7 @@ noinst_LTLIBRARIES	 = libfence_virt.la
 libfence_virt_la_SOURCES = mcast.c ip_lookup.c simple_auth.c tcp.c \
 			   debug.c fdops.c log.c
 
-libfence_virt_la_CFLAGS	 = $(VIRT_AM_CFLAGS) $(nss_CFLAGS) $(AM_CFLAGS)
+libfence_virt_la_CFLAGS	 = $(VIRT_AM_CFLAGS) $(nss_CFLAGS) $(AM_CFLAGS) -Wno-cast-align
 
 libfence_virt_la_LDFLAGS = $(VIRT_AM_LDFLAGS) $(VIRT_COMMON_LDFLAGS)
 
