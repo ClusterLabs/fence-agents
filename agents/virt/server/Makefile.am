@@ -50,62 +50,64 @@ serial_la_SOURCES		= virt-serial.c virt-sockets.c serial.c
 #################
 if modularbuild
 
-fence_virtd_CFLAGS		+= -DMODULE_PATH=\"$(pkglibdir)/\"
+fence_virtd_CFLAGS		+= -DMODULE_PATH=\"$(libdir)/fence-virt/\"
 
-pkglib_LTLIBRARIES		=
+fvlibdir			= $(libdir)/fence-virt
+
+fvlib_LTLIBRARIES		=
 
 MODULESCFLAGS			= $(VIRT_AM_CFLAGS) $(AM_CFLAGS)
 MODULESLDFLAGS			= $(VIRT_AM_LDFLAGS) $(VIRT_COMMON_LIBS) $(VIRT_COMMON_LDFLAGS) -module -avoid-version -export-dynamic
 
 if modlibvirt
-pkglib_LTLIBRARIES		+= virt.la
+fvlib_LTLIBRARIES		+= virt.la
 virt_la_SOURCES			+= virt.c uuid-test.c
 virt_la_CFLAGS			= $(MODULESCFLAGS) $(nss_CFLAGS) $(virt_CFLAGS)
 virt_la_LDFLAGS			= $(MODULESLDFLAGS) $(nss_LIBS) $(virt_LIBS)
 endif
 if modlibvirtqmf
-pkglib_LTLIBRARIES		+= virt-qmf.la
+fvlib_LTLIBRARIES		+= virt-qmf.la
 virt_qmf_la_SOURCES		+= uuid-test.c
 virt_qmf_la_CXXFLAGS		= $(MODULESCFLAGS) $(nss_CFLAGS) $(qpid_CFLAGS)
 virt_qmf_la_LDFLAGS		= $(MODULESLDFLAGS) $(nss_LIBS) $(qpid_LIBS)
 endif
 if modpmfence
-pkglib_LTLIBRARIES		+= pm-fence.la
+fvlib_LTLIBRARIES		+= pm-fence.la
 pm_fence_la_CFLAGS		= $(MODULESCFLAGS) $(nss_CFLAGS) $(cib_CFLAGS) $(glib2_CFLAGS) $(xml2_CFLAGS)
 pm_fence_la_LDFLAGS		= $(MODULESLDFLAGS) $(nss_LIBS) $(cib_LIBS) $(glib2_LIBS) $(xml2_LIBS)
 endif
 if modcpg
-pkglib_LTLIBRARIES		+= cpg.la
+fvlib_LTLIBRARIES		+= cpg.la
 cpg_la_SOURCES			+= virt.c history.c uuid-test.c
 cpg_la_CFLAGS			= $(MODULESCFLAGS) $(nss_CFLAGS) $(cpg_CFLAGS) $(virt_CFLAGS)
 cpg_la_LDFLAGS			= $(MODULESLDFLAGS) $(nss_LIBS) $(cpg_LIBS) $(virt_LIBS)
 endif
 if modmulticast
-pkglib_LTLIBRARIES		+= multicast.la
+fvlib_LTLIBRARIES		+= multicast.la
 multicast_la_SOURCES		+= history.c
 multicast_la_CFLAGS		= $(MODULESCFLAGS) $(nss_CFLAGS)
 multicast_la_LDFLAGS		= $(MODULESLDFLAGS) $(nss_LIBS)
 endif
 if modserial
-pkglib_LTLIBRARIES		+= serial.la
+fvlib_LTLIBRARIES		+= serial.la
 serial_la_SOURCES		+= history.c
 serial_la_CFLAGS		= $(MODULESCFLAGS) $(nss_CFLAGS) $(xml2_CFLAGS) $(virt_CFLAGS)
 serial_la_LDFLAGS		= $(MODULESLDFLAGS) $(nss_LIBS) $(xml2_LIBS) $(virt_LIBS)
 endif
 if modtcp
-pkglib_LTLIBRARIES		+= tcp.la
+fvlib_LTLIBRARIES		+= tcp.la
 tcp_la_SOURCES			+= history.c
 tcp_la_CFLAGS			= $(MODULESCFLAGS) $(nss_CFLAGS)
 tcp_la_LDFLAGS			= $(MODULESLDFLAGS) $(nss_LIBS)
 endif
 if modvsock
-pkglib_LTLIBRARIES		+= vsock.la
+fvlib_LTLIBRARIES		+= vsock.la
 vsock_la_SOURCES		+= history.c
 vsock_la_CFLAGS			= $(MODULESCFLAGS) $(nss_CFLAGS)
 vsock_la_LDFLAGS		= $(MODULESLDFLAGS) $(nss_LIBS)
 endif
 if modnull
-pkglib_LTLIBRARIES		+= null.la
+fvlib_LTLIBRARIES		+= null.la
 null_la_CFLAGS			= $(MODULESCFLAGS)
 null_la_LDFLAGS			= $(MODULESLDFLAGS)
 endif

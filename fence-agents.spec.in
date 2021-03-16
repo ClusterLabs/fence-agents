@@ -197,6 +197,7 @@ chmod 0755 %{buildroot}%{_datadir}/fence/*.py
 rm -rf %{buildroot}/usr/share/doc/fence-agents
 # remove .a files
 rm -f %{buildroot}/%{_libdir}/%{name}/*.*a
+rm -f %{buildroot}/%{_libdir}/fence-virt/*.*a
 
 %post
 ccs_update_schema > /dev/null 2>&1 ||:
@@ -1270,8 +1271,8 @@ the requests to the appropriate physical machine for action.
 %{_sbindir}/fence_virtd
 %{_unitdir}/fence_virtd.service
 %config(noreplace) %{_sysconfdir}/fence_virt.conf
-%dir %{_libdir}/%{name}
-%{_libdir}/%{name}/vsock.so
+%dir %{_libdir}/fence-virt
+%{_libdir}/fence-virt/vsock.so
 %{_mandir}/man5/fence_virt.conf.*
 %{_mandir}/man8/fence_virtd.*
 
@@ -1281,7 +1282,7 @@ Requires: fence-virtd
 %description -n fence-virtd-multicast
 Provides multicast listener capability for fence-virtd.
 %files -n fence-virtd-multicast
-%{_libdir}/%{name}/multicast.so
+%{_libdir}/fence-virt/multicast.so
 
 %package -n fence-virtd-serial
 Summary:  Serial VMChannel listener for fence-virtd
@@ -1290,7 +1291,7 @@ Requires: fence-virtd
 %description -n fence-virtd-serial
 Provides serial VMChannel listener capability for fence-virtd.
 %files -n fence-virtd-serial
-%{_libdir}/%{name}/serial.so
+%{_libdir}/fence-virt/serial.so
 
 %package -n fence-virtd-tcp
 Summary:  TCP listener for fence-virtd
@@ -1298,7 +1299,7 @@ Requires: fence-virtd
 %description -n fence-virtd-tcp
 Provides TCP listener capability for fence-virtd.
 %files -n fence-virtd-tcp
-%{_libdir}/%{name}/tcp.so
+%{_libdir}/fence-virt/tcp.so
 
 %package -n fence-virtd-libvirt
 Summary:  Libvirt backend for fence-virtd
@@ -1309,7 +1310,7 @@ Provides fence_virtd with a connection to libvirt to fence
 virtual machines.  Useful for running a cluster of virtual
 machines on a desktop.
 %files -n fence-virtd-libvirt
-%{_libdir}/%{name}/virt.so
+%{_libdir}/fence-virt/virt.so
 
 %package -n fence-virtd-cpg
 Summary:  CPG/libvirt backend for fence-virtd
@@ -1321,7 +1322,7 @@ virtual machines. Uses corosync CPG to keep track of VM
 locations to allow for non-local VMs to be fenced when VMs
 are located on corosync cluster nodes.
 %files -n fence-virtd-cpg
-%{_libdir}/%{name}/cpg.so
+%{_libdir}/fence-virt/cpg.so
 
 %changelog
 * @date@ Autotools generated version <nobody@nowhere.org> - @version@-@specver@-@numcomm@.@alphatag@.@dirty@
