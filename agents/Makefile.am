@@ -31,10 +31,10 @@ man_MANS			+= kdump/fence_kdump.8
 dist_man_MANS			+= kdump/fence_kdump_send.8
 
 kdump_fence_kdump_SOURCES	= kdump/fence_kdump.c
-kdump_fence_kdump_CFLAGS	= -D_GNU_SOURCE -Ikdump
+kdump_fence_kdump_CFLAGS	= -D_GNU_SOURCE -Ikdump $(AM_CFLAGS) -Wno-cast-align
 
 kdump_fence_kdump_send_SOURCES	= kdump/fence_kdump_send.c
-kdump_fence_kdump_send_CFLAGS	= -D_GNU_SOURCE -Ikdump
+kdump_fence_kdump_send_CFLAGS	= -D_GNU_SOURCE -Ikdump $(AM_CFLAGS) -Wno-cast-align
 endif
 
 if BUILD_FENCE_MANUAL
@@ -51,7 +51,7 @@ sbin_PROGRAMS			+= zvm/fence_zvm
 man_MANS			+= zvm/fence_zvm.8
 
 zvm_fence_zvm_SOURCES		= zvm/fence_zvm.c
-zvm_fence_zvm_CFLAGS		= -D_GNU_SOURCE -Izvm
+zvm_fence_zvm_CFLAGS		= -D_GNU_SOURCE -Izvm $(AM_CFLAGS)
 endif
 
 if BUILD_FENCE_MPATH

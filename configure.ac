@@ -85,7 +85,7 @@ PKG_PROG_PKG_CONFIG
 # this function checks if CC support options passed as
 # args. Global CFLAGS are ignored during this test.
 cc_supports_flag() {
-	local CFLAGS="$@"
+	local CFLAGS="-Werror $@"
 	AC_MSG_CHECKING([whether $CC supports "$@"])
 	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[ ]], [[ ]])],
 			  [RC=0; AC_MSG_RESULT([yes])],
@@ -544,8 +544,10 @@ for j in $WARNLIST; do
 	fi
 done
 
-CFLAGS="$ENV_CFLAGS $OPT_CFLAGS $GDB_FLAGS \
-	$EXTRA_WARNINGS $WERROR_CFLAGS"
+AM_CFLAGS="$ENV_CFLAGS $OPT_CFLAGS $GDB_FLAGS $EXTRA_WARNINGS"
+
+AC_SUBST([AM_CFLAGS])
+
 CPPFLAGS="-I\$(top_builddir)/make -I\$(top_srcdir)/make -I. $ENV_CPPFLAGS"
 LDFLAGS="$ENV_LDFLAGS"
 

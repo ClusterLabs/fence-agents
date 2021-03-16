@@ -23,7 +23,8 @@ fence_virtd_SOURCES		= main.c plugin.c config.c static_map.c uuid-test.c \
 				  daemon_init.c
 
 fence_virtd_CFLAGS		= $(VIRT_AM_CFLAGS) \
-				  $(nss_CFLAGS) $(xml2_CFLAGS) $(uuid_CFLAGS) $(PTHREAD_CFLAGS)
+				  $(nss_CFLAGS) $(xml2_CFLAGS) $(uuid_CFLAGS) $(PTHREAD_CFLAGS) \
+				  $(AM_CFLAGS)
 
 fence_virtd_LDADD		= $(VIRT_CONFIG_LIBS) $(VIRT_COMMON_LIBS) \
 				  $(nss_LIBS) $(xml2_LIBS) $(uuid_LIBS) $(PTHREAD_LIBS) $(dl_LIBS)
@@ -53,7 +54,7 @@ fence_virtd_CFLAGS		+= -DMODULE_PATH=\"$(pkglibdir)/\"
 
 pkglib_LTLIBRARIES		=
 
-MODULESCFLAGS			= $(VIRT_AM_CFLAGS)
+MODULESCFLAGS			= $(VIRT_AM_CFLAGS) $(AM_CFLAGS)
 MODULESLDFLAGS			= $(VIRT_AM_LDFLAGS) $(VIRT_COMMON_LIBS) $(VIRT_COMMON_LDFLAGS) -module -avoid-version -export-dynamic
 
 if modlibvirt
