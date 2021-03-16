@@ -18,7 +18,7 @@ TARGET			= $(sbin_PROGRAMS)
 
 fence_virt_SOURCES	= mcast.c serial.c main.c options.c tcp.c vsock.c
 
-fence_virt_CFLAGS	= $(VIRT_AM_CFLAGS) $(nss_CFLAGS) $(xml2_CFLAGS) $(PTHREAD_CFLAGS)
+fence_virt_CFLAGS	= $(VIRT_AM_CFLAGS) $(nss_CFLAGS) $(xml2_CFLAGS) $(PTHREAD_CFLAGS) $(AM_CFLAGS)
 
 fence_virt_LDFLAGS	= $(VIRT_AM_LDFLAGS) $(COMMON_LDFLAGS)
 fence_virt_LDADD	= $(VIRT_COMMON_LIBS) $(nss_LIBS) $(xml2_LIBS) $(PTHREAD_LIBS)
