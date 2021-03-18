@@ -391,18 +391,6 @@ if test "x$modcpg" == "xyes" && test "x$FENCE_VIRT" = "x1"; then
 	PKG_CHECK_MODULES([cpg], [libcpg])
 fi
 
-# (broken!) libvirt-qmf plugin: Disabled by default
-AC_ARG_ENABLE(libvirt-qmf-plugin,
-[AS_HELP_STRING([--enable-libvirt-qmf-plugin],
-		[Enable libvirt-qmf backend plugin])],
-[ modlibvirtqmf=$enableval ], [ modlibvirtqmf=no ])
-
-AM_CONDITIONAL([modlibvirtqmf], [test "x$modlibvirtqmf" == "xyes"])
-
-if test "x$modlibvirtqmf" == "xyes" && test "x$FENCE_VIRT" = "x1"; then
-	PKG_CHECK_MODULES([qpid], [qpid])
-fi
-
 # (broken with pcmk 2.0!) pm-fence plugin: Disabled by default
 AC_ARG_ENABLE(pm-fence-plugin,
 [AS_HELP_STRING([--enable-pm-fence-plugin],
