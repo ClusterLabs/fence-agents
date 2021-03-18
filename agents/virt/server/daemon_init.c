@@ -105,19 +105,10 @@ int
 check_process_running(const char *cmd, const char *filename, pid_t * pid)
 {
 	pid_t oldpid;
-	FILE *fp;
+	FILE *fp = NULL;
 	int ret;
-	struct stat st;
 
 	*pid = -1;
-
-	/*
-	 * Now see if there is a pidfile associated with this cmd in /var/run
-	 */
-	fp = NULL;
-	ret = stat(filename, &st);
-	if ((ret < 0) || (!st.st_size))
-		return 0;
 
 	/*
 	 * Read the pid from the file.
