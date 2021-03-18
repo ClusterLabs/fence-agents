@@ -16,14 +16,14 @@
 
 struct perm_entry {
 	list_head();
-	char name[128];
+	char name[129];
 };
 
 struct perm_group {
 	list_head();
 	struct perm_entry *uuids;
 	struct perm_entry *ips;
-	char name[128];
+	char name[129];
 };
 
 
