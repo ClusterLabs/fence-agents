@@ -176,7 +176,7 @@ sed -i.orig 's|FENCE_ZVM=1|FENCE_ZVM=0|' configure.ac
 %endif
 
 ./autogen.sh
-%{configure} --disable-libvirt-qmf-plugin --enable-cpg-plugin
+%{configure} --disable-libvirt-qmf-plugin
 CFLAGS="$(echo '%{optflags}')" make %{_smp_mflags}
 
 %install

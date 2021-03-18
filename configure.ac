@@ -389,9 +389,9 @@ fi
 
 # cpg plugin: Disabled by default
 AC_ARG_ENABLE(cpg-plugin,
-[AS_HELP_STRING([--enable-cpg-plugin],
+[AS_HELP_STRING([--disable-cpg-plugin],
 		[Enable CPG/libvirt backend plugin])],
-[ modcpg=$enableval ], [ modcpg=no ])
+[ modcpg=$enableval ], [ modcpg=yes ])
 
 AM_CONDITIONAL([modcpg], [test "x$modcpg" == "xyes"])
 
