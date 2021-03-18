@@ -275,7 +275,7 @@ serial_dispatch(listener_context_t c, struct timeval *timeout)
 		max = info->wake_fd;
 
 	n = select(max+1, &rfds, NULL, NULL, timeout);
-	if (n <= 0) {
+	if (n < 0) {
 		if (errno == EINTR || errno == EAGAIN)
 			n = 0;
 		else
