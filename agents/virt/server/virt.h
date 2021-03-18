@@ -32,8 +32,8 @@ typedef struct {
 } vm_state_t;
 
 typedef struct {
-	char v_name[MAX_DOMAINNAME_LENGTH];
-	char v_uuid[MAX_DOMAINNAME_LENGTH];
+	char v_name[MAX_DOMAINNAME_LENGTH + 1];
+	char v_uuid[MAX_DOMAINNAME_LENGTH + 1];
 	vm_state_t v_state;
 } virt_state_t;
 
