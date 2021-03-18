@@ -368,14 +368,6 @@ fi
 
 ### The following options only are used when $modules="yes" ###
 
-# Null plugin: Disabled by default
-AC_ARG_ENABLE(null-plugin,
-[AS_HELP_STRING([--enable-null-plugin],
-		[Enable null (no-op) backend plugin])],
-[ modnull=$enableval ], [ modnull=no ])
-
-AM_CONDITIONAL([modnull], [test "x$modnull" == "xyes"])
-
 # libvirt plugin: Enabled by default
 AC_ARG_ENABLE(libvirt-plugin,
 [AS_HELP_STRING([--disable-libvirt-plugin],

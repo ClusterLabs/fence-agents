@@ -32,7 +32,6 @@ fence_virtd_LDADD		= $(VIRT_CONFIG_LIBS) $(VIRT_COMMON_LIBS) \
 fence_virtd_LDFLAGS		= $(VIRT_AM_LDFLAGS) $(VIRT_COMMON_LDFLAGS)
 
 virt_la_SOURCES			= libvirt.c
-null_la_SOURCES			= null.c
 virt_qmf_la_SOURCES		= libvirt-qmf.cpp
 pm_fence_la_SOURCES		= pm-fence.c
 cpg_la_SOURCES			= cpg-virt.c cpg.c
@@ -96,9 +95,4 @@ fvlib_LTLIBRARIES		+= vsock.la
 vsock_la_SOURCES		+= history.c
 vsock_la_CFLAGS			= $(MODULESCFLAGS) $(nss_CFLAGS)
 vsock_la_LDFLAGS		= $(MODULESLDFLAGS) $(nss_LIBS)
-endif
-if modnull
-fvlib_LTLIBRARIES		+= null.la
-null_la_CFLAGS			= $(MODULESCFLAGS)
-null_la_LDFLAGS			= $(MODULESLDFLAGS)
 endif
