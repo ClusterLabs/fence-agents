@@ -258,6 +258,7 @@ main(int argc, char **argv)
 	lp->cleanup(listener_ctx);
 	p->cleanup(backend_ctx);
 
+	plugin_unload();
 	daemon_cleanup();
 
 	return 0;

@@ -44,14 +44,15 @@ typedef struct _plugin_list {
 	list_head();
 	const listener_plugin_t *listener;
 	const backend_plugin_t *backend;
+	void *handle;
 	plugin_type_t type;
 } plugin_list_t;
 
 static plugin_list_t *server_plugins = NULL;
 
 
-int
-plugin_reg_backend(const backend_plugin_t *plugin)
+static int
+plugin_reg_backend(void *handle, const backend_plugin_t *plugin)
 {
 	plugin_list_t *newplug;
 
@@ -66,14 +67,15 @@ plugin_reg_backend(const backend_plugin_t *plugin)
 	memset(newplug, 0, sizeof(*newplug));
 	newplug->backend = plugin;
 	newplug->type = PLUGIN_BACKEND;
+	newplug->handle = handle;
 
 	list_insert(&server_plugins, newplug);
 	return 0;
 }
 
 
-int
-plugin_reg_listener(const listener_plugin_t *plugin)
+static int
+plugin_reg_listener(void *handle, const listener_plugin_t *plugin)
 {
 	plugin_list_t *newplug;
 
@@ -88,6 +90,7 @@ plugin_reg_listener(const listener_plugin_t *plugin)
 	memset(newplug, 0, sizeof(*newplug));
 	newplug->listener = plugin;
 	newplug->type = PLUGIN_LISTENER;
+	newplug->handle = handle;
 
 	list_insert(&server_plugins, newplug);
 	return 0;
@@ -190,7 +193,7 @@ backend_plugin_load(void *handle, const char *libpath)
 	}
 
 	plug = modinfo();
-	if (plugin_reg_backend(plug) < 0) {
+	if (plugin_reg_backend(handle, plug) < 0) {
 		dbg_printf(1, "Failed to register %s %s\n", plug->name,
 			   plug->version);
 		errno = EINVAL;
@@ -235,7 +238,7 @@ listener_plugin_load(void *handle, const char *libpath)
 	}
 
 	plug = modinfo();
-	if (plugin_reg_listener(plug) < 0) {
+	if (plugin_reg_listener(handle, plug) < 0) {
 		dbg_printf(1, "Failed to register %s %s\n", plug->name,
 			   plug->version);
 		errno = EINVAL;
@@ -262,34 +265,11 @@ int
 plugin_load(const char *libpath)
 {
 	void *handle = NULL;
-	struct stat sb;
 
 	errno = 0;
 
 	if (!libpath) {
 		errno = EINVAL;
-		return -1;
-	}
-
-	if (stat(libpath, &sb) != 0) {
-		return -1;
-	}
-
-	/*
-	   If it's not owner-readable or it's a directory,
-	   ignore/fail.  Thus, a user may change the permission of
-	   a plugin "u-r" and this would then prevent magma apps
-	   from loading it.
-	 */
-	if (S_ISDIR(sb.st_mode)) {
-		errno = EISDIR;
-		return -1;
-	}
-
-	if (!(sb.st_mode & S_IRUSR)) {
-		dbg_printf(1, "Ignoring %s (User-readable bit not set)\n",
-			   libpath);
-		errno = EPERM;
 		return -1;
 	}
 
@@ -309,6 +289,17 @@ plugin_load(const char *libpath)
 	dlclose(handle);
 	errno = EINVAL;
 	return -1;
+}
+
+void
+plugin_unload(void)
+{
+	plugin_list_t *p;
+	int x;
+
+	list_for(&server_plugins, p, x) {
+		dlclose(p->handle);
+	}
 }
 
 /**
@@ -424,5 +415,3 @@ plugin_search(const char *pathname)
 
 	return found;
 }
-
-
