@@ -72,7 +72,7 @@ int
 ipv6_listen(const char *addr_str, uint16_t port, int backlog)
 {
 	struct sockaddr_in6 _sin6;
-	int fd, ret;
+	int fd, opt=1;
 
 	dbg_printf(4, "%s: Setting up ipv6 listen socket for %s:%d\n",
 		__FUNCTION__, addr_str, port);
@@ -101,17 +101,17 @@ ipv6_listen(const char *addr_str, uint16_t port, int backlog)
 	if (fd < 0)
 		return -1;
 
-	ret = 1;
-	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void *)&ret, sizeof (ret));
-
-	ret = set_cloexec(fd);
-	if (ret < 0) {
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void *)&opt, sizeof (opt)) < 0) {
 		close(fd);
 		return -1;
 	}
 
-	ret = bind(fd, (struct sockaddr *)&_sin6, sizeof(_sin6));
-	if (ret < 0) {
+	if (set_cloexec(fd) < 0) {
+		close(fd);
+		return -1;
+	}
+
+	if (bind(fd, (struct sockaddr *)&_sin6, sizeof(_sin6)) < 0) {
 		close(fd);
 		return -1;
 	}
@@ -139,7 +139,7 @@ int
 ipv4_listen(const char *addr_str, uint16_t port, int backlog)
 {
 	struct sockaddr_in _sin;
-	int fd, ret;
+	int fd, opt=1;
 
 	dbg_printf(4, "%s: Setting up ipv4 listen socket for %s:%d\n",
 		__FUNCTION__, addr_str, port);
@@ -166,22 +166,22 @@ ipv4_listen(const char *addr_str, uint16_t port, int backlog)
 	if (fd < 0)
 		return -1;
 
-	ret = 1;
-	setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void *)&ret, sizeof (ret));
-	
-	ret = set_cloexec(fd);
-	if (ret < 0) {
+	if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (void *)&opt, sizeof (opt)) < 0) {
 		close(fd);
 		return -1;
 	}
 
-	ret = bind(fd, (struct sockaddr *)&_sin, sizeof(_sin));
-	if (ret < 0) {
+	if (set_cloexec(fd) < 0) {
 		close(fd);
 		return -1;
 	}
 
-	if (listen(fd, backlog) < 0){
+	if (bind(fd, (struct sockaddr *)&_sin, sizeof(_sin)) < 0) {
+		close(fd);
+		return -1;
+	}
+
+	if (listen(fd, backlog) < 0) {
 		close(fd);
 		return -1;
 	}
@@ -287,14 +287,20 @@ connect_nb(int fd, struct sockaddr *dest, socklen_t len, int timeout)
 	 * Use TCP Keepalive
 	 */
 	if (setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (void *)&flags,
-		       sizeof(flags))<0)
+		       sizeof(flags))<0) {
 		return -1;
-			
+	}
+
 	/*
 	   Set up non-blocking connect
 	 */
 	flags = fcntl(fd, F_GETFL, 0);
-	fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+	if (flags < 0) {
+		return -1;
+	}
+	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) {
+		return -1;
+	}
 
 	ret = connect(fd, dest, len);
 
@@ -330,7 +336,10 @@ connect_nb(int fd, struct sockaddr *dest, socklen_t len, int timeout)
 				return -1;
 			}
 
-			fcntl(fd, F_SETFL, flags);
+			if (fcntl(fd, F_SETFL, flags) < 0) {
+				close(fd);
+				return -1;
+			}
 			return 0;
 		}
 	}
