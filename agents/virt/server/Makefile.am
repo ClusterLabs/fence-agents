@@ -31,13 +31,13 @@ fence_virtd_LDADD		= $(VIRT_CONFIG_LIBS) $(VIRT_COMMON_LIBS) \
 
 fence_virtd_LDFLAGS		= $(VIRT_AM_LDFLAGS) $(VIRT_COMMON_LDFLAGS)
 
-virt_la_SOURCES			= libvirt.c
+virt_la_SOURCES			= libvirt.c virt.c uuid-test.c
 pm_fence_la_SOURCES		= pm-fence.c
-cpg_la_SOURCES			= cpg-virt.c cpg.c
-multicast_la_SOURCES		= mcast.c
-tcp_la_SOURCES			= tcp.c
-vsock_la_SOURCES		= vsock.c
-serial_la_SOURCES		= virt-serial.c virt-sockets.c serial.c
+cpg_la_SOURCES			= cpg-virt.c cpg.c virt.c
+multicast_la_SOURCES		= mcast.c history.c
+tcp_la_SOURCES			= tcp.c history.c
+vsock_la_SOURCES		= vsock.c history.c
+serial_la_SOURCES		= virt-serial.c virt-sockets.c serial.c history.c
 
 fence_virtd_CFLAGS		+= -DMODULE_PATH=\"$(libdir)/fence-virt/\"
 
@@ -50,7 +50,6 @@ MODULESLDFLAGS			= $(VIRT_AM_LDFLAGS) $(VIRT_COMMON_LIBS) $(VIRT_COMMON_LDFLAGS)
 
 if modlibvirt
 fvlib_LTLIBRARIES		+= virt.la
-virt_la_SOURCES			+= virt.c uuid-test.c
 virt_la_CFLAGS			= $(MODULESCFLAGS) $(nss_CFLAGS) $(virt_CFLAGS)
 virt_la_LDFLAGS			= $(MODULESLDFLAGS) $(nss_LIBS) $(virt_LIBS)
 endif
@@ -61,31 +60,26 @@ pm_fence_la_LDFLAGS		= $(MODULESLDFLAGS) $(nss_LIBS) $(cib_LIBS) $(glib2_LIBS) $
 endif
 if modcpg
 fvlib_LTLIBRARIES		+= cpg.la
-cpg_la_SOURCES			+= virt.c history.c uuid-test.c
 cpg_la_CFLAGS			= $(MODULESCFLAGS) $(nss_CFLAGS) $(cpg_CFLAGS) $(virt_CFLAGS)
 cpg_la_LDFLAGS			= $(MODULESLDFLAGS) $(nss_LIBS) $(cpg_LIBS) $(virt_LIBS)
 endif
 if modmulticast
 fvlib_LTLIBRARIES		+= multicast.la
-multicast_la_SOURCES		+= history.c
 multicast_la_CFLAGS		= $(MODULESCFLAGS) $(nss_CFLAGS)
 multicast_la_LDFLAGS		= $(MODULESLDFLAGS) $(nss_LIBS)
 endif
 if modserial
 fvlib_LTLIBRARIES		+= serial.la
-serial_la_SOURCES		+= history.c
 serial_la_CFLAGS		= $(MODULESCFLAGS) $(nss_CFLAGS) $(xml2_CFLAGS) $(virt_CFLAGS)
 serial_la_LDFLAGS		= $(MODULESLDFLAGS) $(nss_LIBS) $(xml2_LIBS) $(virt_LIBS)
 endif
 if modtcp
 fvlib_LTLIBRARIES		+= tcp.la
-tcp_la_SOURCES			+= history.c
 tcp_la_CFLAGS			= $(MODULESCFLAGS) $(nss_CFLAGS)
 tcp_la_LDFLAGS			= $(MODULESLDFLAGS) $(nss_LIBS)
 endif
 if modvsock
 fvlib_LTLIBRARIES		+= vsock.la
-vsock_la_SOURCES		+= history.c
 vsock_la_CFLAGS			= $(MODULESCFLAGS) $(nss_CFLAGS)
 vsock_la_LDFLAGS		= $(MODULESLDFLAGS) $(nss_LIBS)
 endif
