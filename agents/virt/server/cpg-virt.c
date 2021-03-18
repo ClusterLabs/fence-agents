@@ -536,10 +536,8 @@ cpg_virt_init(backend_context_t *c, config_object_t *config)
 	info->magic = MAGIC;
 	info->config = config;
 
-#ifdef _MODULE
 	if (sc_get(config, "fence_virtd/@debug", value, sizeof(value)) == 0)
 		dset(atoi(value));
-#endif
 
 	cpg_virt_init_libvirt(info);
 
@@ -632,8 +630,6 @@ static backend_plugin_t cpg_virt_plugin = {
 	.cleanup = cpg_virt_shutdown,
 };
 
-
-#ifdef _MODULE
 double
 BACKEND_VER_SYM(void)
 {
@@ -645,10 +641,3 @@ BACKEND_INFO_SYM(void)
 {
 	return &cpg_virt_plugin;
 }
-#else
-static void __attribute__((constructor))
-cpg_register_plugin(void)
-{
-	plugin_reg_backend(&cpg_virt_plugin);
-}
-#endif

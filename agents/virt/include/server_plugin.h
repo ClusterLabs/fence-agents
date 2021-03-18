@@ -122,10 +122,8 @@ const backend_plugin_t *plugin_find_backend(const char *name);
 const listener_plugin_t *plugin_find_listener(const char *name);
 
 void plugin_dump(void);
-#ifdef _MODULE
 int plugin_load(const char *filename);
 int plugin_search(const char *pathname);
-#endif
 
 #ifdef __cplusplus
 }

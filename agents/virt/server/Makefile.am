@@ -31,10 +31,6 @@ fence_virtd_LDADD		= $(VIRT_CONFIG_LIBS) $(VIRT_COMMON_LIBS) \
 
 fence_virtd_LDFLAGS		= $(VIRT_AM_LDFLAGS) $(VIRT_COMMON_LDFLAGS)
 
-#
-# modules
-#
-
 virt_la_SOURCES			= libvirt.c
 null_la_SOURCES			= null.c
 virt_qmf_la_SOURCES		= libvirt-qmf.cpp
@@ -44,11 +40,6 @@ multicast_la_SOURCES		= mcast.c
 tcp_la_SOURCES			= tcp.c
 vsock_la_SOURCES		= vsock.c
 serial_la_SOURCES		= virt-serial.c virt-sockets.c serial.c
-
-#################
-# Modular build #
-#################
-if modularbuild
 
 fence_virtd_CFLAGS		+= -DMODULE_PATH=\"$(libdir)/fence-virt/\"
 
@@ -110,63 +101,4 @@ if modnull
 fvlib_LTLIBRARIES		+= null.la
 null_la_CFLAGS			= $(MODULESCFLAGS)
 null_la_LDFLAGS			= $(MODULESLDFLAGS)
-endif
-
-else
-
-####################
-# Monolithic build #
-####################
-
-# avoid a linking issues when:
-# 1) do a server modular build
-# 2) run configure to switch to monolithic build without make clean
-# 3) do a server build
-#
-# libtool will get confused by the presence of .la files in the builddir
-# and will fail to link the binary
-
-EXTRA_fence_virtd_DEPENDENCIES	= cleanmods
-
-cleanmods:
-	@rm -rf $(builddir)/*.la
-
-fence_virtd_SOURCES		+= virt.c history.c
-
-if modlibvirt
-fence_virtd_SOURCES		+= $(libvirt_la_SOURCES)
-fence_virtd_CFLAGS		+= $(virt_CFLAGS)
-fence_virtd_LDADD		+= $(virt_LIBS)
-endif
-if modlibvirtqmf
-fence_virtd_SOURCES		+= $(libvirt_qmf_la_SOURCES)
-fence_virtd_CFLAGS		+= $(qpid_CFLAGS)
-fence_virtd_LDADD		+= $(qpid_LIBS)
-endif
-if modpmfence
-fence_virtd_SOURCES		+= $(pm_fence_la_SOURCES)
-fence_virtd_CFLAGS		+= $(cib_CFLAGS)
-fence_virtd_LDADD		+= $(cib_LIBS)
-endif
-if modcpg
-fence_virtd_SOURCES		+= $(cpg_la_SOURCES)
-fence_virtd_CFLAGS		+= $(cpg_CFLAGS)
-fence_virtd_LDADD		+= $(cpg_LIBS)
-endif
-if modmulticast
-fence_virtd_SOURCES		+= $(multicast_la_SOURCES)
-endif
-if modserial
-fence_virtd_SOURCES		+= $(serial_la_SOURCES)
-endif
-if modtcp
-fence_virtd_SOURCES		+= $(tcp_la_SOURCES)
-endif
-if modvsock
-fence_virtd_SOURCES		+= $(vsock_la_SOURCES)
-endif
-if modnull
-fence_virtd_SOURCES		+= $(null_la_SOURCES)
-endif
-
 endif

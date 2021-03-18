@@ -292,10 +292,8 @@ libvirt_init(backend_context_t *c, config_object_t *config)
 
 	libvirt_init_libvirt_conf(info);
 
-#ifdef _MODULE
 	if (sc_get(config, "fence_virtd/@debug", value, sizeof(value)) == 0)
 		dset(atoi(value));
-#endif
 
 	if (info->vp_count < 1) {
 		dbg_printf(1, "[libvirt:INIT] Could not connect to any hypervisors\n");
@@ -348,8 +346,6 @@ static backend_plugin_t libvirt_plugin = {
 	.cleanup = libvirt_shutdown,
 };
 
-
-#ifdef _MODULE
 double
 BACKEND_VER_SYM(void)
 {
@@ -361,10 +357,3 @@ BACKEND_INFO_SYM(void)
 {
 	return &libvirt_plugin;
 }
-#else
-static void __attribute__((constructor))
-libvirt_register_plugin(void)
-{
-	plugin_reg_backend(&libvirt_plugin);
-}
-#endif

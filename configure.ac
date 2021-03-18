@@ -366,20 +366,6 @@ if test "x$FENCE_VIRT" = "x1"; then
 	AC_DEFINE_UNQUOTED([SYSCONFDIR], ["$sysconf"], [Default config dir])
 fi
 
-#
-# Modular build for fence_virtd to split up dependencies
-# (default)
-#
-AC_ARG_ENABLE(modules,
-[AS_HELP_STRING([--disable-modules],
-		[Disable modular build])],
-[ modules=$enableval ], [ modules=yes ])
-AM_CONDITIONAL([modularbuild], [test "x$modules" == "xyes"])
-
-if test "x$modules" == "xyes"; then
-	AC_DEFINE_UNQUOTED([_MODULE], [1], [modular build])
-fi
-
 ### The following options only are used when $modules="yes" ###
 
 # Null plugin: Disabled by default

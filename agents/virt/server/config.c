@@ -67,7 +67,6 @@ text_input(const char *prompt, char *dfl, char *input, size_t len)
 static int
 plugin_path_configure(config_object_t *config)
 {
-#ifdef _MODULE
 	char val[4096];
 	char inp[4096];
 	int done = 0;
@@ -99,7 +98,6 @@ plugin_path_configure(config_object_t *config)
 
 	sc_set(config, "fence_virtd/@module_path", inp);
 
-#endif
 	return 0;
 }
 
