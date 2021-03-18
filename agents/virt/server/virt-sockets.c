@@ -38,7 +38,9 @@ connect_nb(int fd, struct sockaddr *dest, socklen_t len, int timeout)
 	   Set up non-blocking connect
 	 */
 	flags = fcntl(fd, F_GETFL, 0);
-	fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) {
+		return -1;
+	}
 
 	ret = connect(fd, dest, len);
 
@@ -78,7 +80,9 @@ connect_nb(int fd, struct sockaddr *dest, socklen_t len, int timeout)
 	}
 
 done:
-	fcntl(fd, F_SETFL, flags);
+	if (fcntl(fd, F_SETFL, flags) < 0) {
+		return -1;
+	}
 	return 0;
 }
 
