@@ -32,7 +32,6 @@ fence_virtd_LDADD		= $(VIRT_CONFIG_LIBS) $(VIRT_COMMON_LIBS) \
 fence_virtd_LDFLAGS		= $(VIRT_AM_LDFLAGS) $(VIRT_COMMON_LDFLAGS)
 
 virt_la_SOURCES			= libvirt.c virt.c uuid-test.c
-pm_fence_la_SOURCES		= pm-fence.c
 cpg_la_SOURCES			= cpg-virt.c cpg.c virt.c
 multicast_la_SOURCES		= mcast.c history.c
 tcp_la_SOURCES			= tcp.c history.c
@@ -52,11 +51,6 @@ if modlibvirt
 fvlib_LTLIBRARIES		+= virt.la
 virt_la_CFLAGS			= $(MODULESCFLAGS) $(nss_CFLAGS) $(virt_CFLAGS)
 virt_la_LDFLAGS			= $(MODULESLDFLAGS) $(nss_LIBS) $(virt_LIBS)
-endif
-if modpmfence
-fvlib_LTLIBRARIES		+= pm-fence.la
-pm_fence_la_CFLAGS		= $(MODULESCFLAGS) $(nss_CFLAGS) $(cib_CFLAGS) $(glib2_CFLAGS) $(xml2_CFLAGS)
-pm_fence_la_LDFLAGS		= $(MODULESLDFLAGS) $(nss_LIBS) $(cib_LIBS) $(glib2_LIBS) $(xml2_LIBS)
 endif
 if modcpg
 fvlib_LTLIBRARIES		+= cpg.la

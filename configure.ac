@@ -391,21 +391,6 @@ if test "x$modcpg" == "xyes" && test "x$FENCE_VIRT" = "x1"; then
 	PKG_CHECK_MODULES([cpg], [libcpg])
 fi
 
-# (broken with pcmk 2.0!) pm-fence plugin: Disabled by default
-AC_ARG_ENABLE(pm-fence-plugin,
-[AS_HELP_STRING([--enable-pm-fence-plugin],
-		[Enable pm-fence backend plugin])],
-[ modpmfence=$enableval ], [ modpmfence=no ])
-
-AM_CONDITIONAL([modpmfence], [test "x$modpmfence" == "xyes"])
-
-if test "x$modpmfence" == "xyes" && test "x$FENCE_VIRT" = "x1"; then
-	PKG_CHECK_MODULES([cib], [pacemaker-cib])
-	PKG_CHECK_MODULES([ncurses], [ncurses])
-	PKG_CHECK_MODULES([glib2], [glib-2.0])
-	AC_SEARCH_LIBS([read_attr_delegate], [cib], [ ], [ AC_DEFINE_UNQUOTED([PM_1_0], [1], [pacemaker 1.0]) ])
-fi
-
 # multicast plugin: Enabled by default
 AC_ARG_ENABLE(multicast-plugin,
 [AS_HELP_STRING([--disable-multicast-plugin],
