@@ -116,16 +116,13 @@ typedef enum {
 extern "C" {
 #endif
 
-int plugin_reg_backend(const backend_plugin_t *plugin);
-int plugin_reg_listener(const listener_plugin_t *plugin);
 const backend_plugin_t *plugin_find_backend(const char *name);
 const listener_plugin_t *plugin_find_listener(const char *name);
 
 void plugin_dump(void);
-#ifdef _MODULE
 int plugin_load(const char *filename);
+void plugin_unload(void);
 int plugin_search(const char *pathname);
-#endif
 
 #ifdef __cplusplus
 }

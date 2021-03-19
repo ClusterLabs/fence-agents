@@ -162,7 +162,6 @@ main(int argc, char **argv)
 
 	dbg_printf(1, "Listener plugin: %s\n", listener_name);
 
-#ifdef _MODULE
 	if (sc_get(config, "fence_virtd/@module_path", val,
 		   sizeof(val))) {
 #ifdef MODULE_PATH
@@ -183,7 +182,6 @@ main(int argc, char **argv)
 		return 1;
 	}
 
-#endif
 	if (dget() > 3)
 		plugin_dump();
 
@@ -260,6 +258,7 @@ main(int argc, char **argv)
 	lp->cleanup(listener_ctx);
 	p->cleanup(backend_ctx);
 
+	plugin_unload();
 	daemon_cleanup();
 
 	return 0;

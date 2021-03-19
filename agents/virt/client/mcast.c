@@ -225,10 +225,18 @@ send_multicast_packets(ip_list_t *ipl, fence_virt_args_t *args,
 		if (ipa->ipa_family == PF_INET) {
 			freq.addrlen = sizeof(struct in_addr);
 			/* XXX Swap order for in_addr ? XXX */
-			inet_pton(PF_INET, ipa->ipa_address, freq.address);
+			if (inet_pton(PF_INET, ipa->ipa_address, freq.address) != 1) {
+				dbg_printf(2, "Unable to convert address\n");
+				close(mc_sock);
+				return -1;
+			}
 		} else if (ipa->ipa_family == PF_INET6) {
 			freq.addrlen = sizeof(struct in6_addr);
-			inet_pton(PF_INET6, ipa->ipa_address, freq.address);
+			if (inet_pton(PF_INET6, ipa->ipa_address, freq.address) != 1) {
+				dbg_printf(2, "Unable to convert address\n");
+				close(mc_sock);
+				return -1;
+			}
 		}
 
 		freq.flags = 0;
@@ -242,8 +250,11 @@ send_multicast_packets(ip_list_t *ipl, fence_virt_args_t *args,
 		dbg_printf(3, "Sending to %s via %s\n", args->net.addr,
 		        ipa->ipa_address);
 
-		sendto(mc_sock, &freq, sizeof(freq), 0,
-		       (struct sockaddr *)tgt, tgt_len);
+		if(sendto(mc_sock, &freq, sizeof(freq), 0,
+			  (struct sockaddr *)tgt, tgt_len) < 0) {
+			dbg_printf(3, "Unable to send packet to %s via %s\n",
+				   args->net.addr, ipa->ipa_address);
+		}
 
 		close(mc_sock);
 	}
@@ -369,16 +380,14 @@ mcast_fence_virt(fence_virt_args_t *args)
 		case AUTH_SHA512:
 			ret = tcp_exchange(fd, args->net.auth, key, key_len,
 					    args->timeout);
-			close(fd);
-			return ret;
 			break;
 		/* case AUTH_X509:
 			return ssl_exchange(...); */
 		default:
-			close(fd);
-			return 1;
+			ret = 1;
+			break;
 	}
 
 	close(fd);
-	return 1;
+	return ret;
 }

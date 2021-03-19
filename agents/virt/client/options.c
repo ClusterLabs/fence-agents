@@ -849,7 +849,7 @@ cleanup(char *line, size_t linelen)
 	
 	/* Remove leading whitespace. */
 	p = line;
-	for (x = 0; x <= linelen; x++) {
+	for (x = 0; x < linelen; x++) {
 		switch (line[x]) {
 		case '\t':
 		case ' ':
@@ -868,7 +868,7 @@ eol:
 		memmove(p, &line[x], linelen-x);
 
 	/* Remove trailing whitespace. */
-	for (x=0; x <= linelen; x++) {
+	for (x=0; x < linelen; x++) {
 		switch(line[x]) {
 		case '\t':
 		case ' ':

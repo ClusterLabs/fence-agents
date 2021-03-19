@@ -383,10 +383,8 @@ vsock_config(config_object_t *config, vsock_options *args)
 	char value[1024];
 	int errors = 0;
 
-#ifdef _MODULE
 	if (sc_get(config, "fence_virtd/@debug", value, sizeof(value))==0)
 		dset(atoi(value));
-#endif
 
 	if (sc_get(config, "listeners/vsock/@key_file",
 		   value, sizeof(value)-1) == 0) {
@@ -554,8 +552,6 @@ static listener_plugin_t vsock_plugin = {
 	.cleanup = vsock_shutdown,
 };
 
-
-#ifdef _MODULE
 double
 LISTENER_VER_SYM(void)
 {
@@ -567,10 +563,3 @@ LISTENER_INFO_SYM(void)
 {
 	return &vsock_plugin;
 }
-#else
-static void __attribute__((constructor))
-vsock_register_plugin(void)
-{
-	plugin_reg_listener(&vsock_plugin);
-}
-#endif

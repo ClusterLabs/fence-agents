@@ -275,7 +275,7 @@ serial_dispatch(listener_context_t c, struct timeval *timeout)
 		max = info->wake_fd;
 
 	n = select(max+1, &rfds, NULL, NULL, timeout);
-	if (n <= 0) {
+	if (n < 0) {
 		if (errno == EINTR || errno == EAGAIN)
 			n = 0;
 		else
@@ -345,10 +345,8 @@ serial_config(config_object_t *config, serial_info *args)
 	char value[1024];
 	int errors = 0;
 
-#ifdef _MODULE
 	if (sc_get(config, "fence_virtd/@debug", value, sizeof(value))==0)
 		dset(atoi(value));
-#endif
 
 	if (sc_get(config, "listeners/serial/@uri",
 		   value, sizeof(value)-1) == 0) {
@@ -448,8 +446,6 @@ static listener_plugin_t serial_plugin = {
 	.cleanup = serial_shutdown,
 };
 
-
-#ifdef _MODULE
 double
 LISTENER_VER_SYM(void)
 {
@@ -461,11 +457,3 @@ LISTENER_INFO_SYM(void)
 {
 	return &serial_plugin;
 }
-#else
-static void __attribute__((constructor))
-serial_register_plugin(void)
-{
-	plugin_reg_listener(&serial_plugin);
-}
-#endif
-

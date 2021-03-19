@@ -42,21 +42,28 @@ yesno(const char *prompt, int dfl)
 
 
 static int
-text_input(const char *prompt, char *dfl, char *input, size_t len)
+text_input(const char *prompt, const char *dfl, char *input, size_t len)
 {
-	printf("%s [%s]: ", prompt, dfl?dfl:"");
+	const char *tmpdfl = dfl;
+	const char *nulldfl = "";
+
+	if (dfl == NULL) {
+		tmpdfl = nulldfl;
+	}
+
+	printf("%s [%s]: ", prompt, tmpdfl);
 	fflush(stdout);
 
 	memset(input, 0, len);
 	if (fgets(input, len, stdin) == NULL) {
-		strncpy(input, dfl, len);
+		strncpy(input, tmpdfl, len);
 		return 0;
 	}
 	if (input[strlen(input)-1] == '\n')
 		input[strlen(input)-1] = 0;
 
 	if (strlen(input) == 0) {
-		strncpy(input, dfl, len);
+		strncpy(input, tmpdfl, len);
 		return 0;
 	}
 
@@ -67,7 +74,6 @@ text_input(const char *prompt, char *dfl, char *input, size_t len)
 static int
 plugin_path_configure(config_object_t *config)
 {
-#ifdef _MODULE
 	char val[4096];
 	char inp[4096];
 	int done = 0;
@@ -99,7 +105,6 @@ plugin_path_configure(config_object_t *config)
 
 	sc_set(config, "fence_virtd/@module_path", inp);
 
-#endif
 	return 0;
 }
 

@@ -366,29 +366,7 @@ if test "x$FENCE_VIRT" = "x1"; then
 	AC_DEFINE_UNQUOTED([SYSCONFDIR], ["$sysconf"], [Default config dir])
 fi
 
-#
-# Modular build for fence_virtd to split up dependencies
-# (default)
-#
-AC_ARG_ENABLE(modules,
-[AS_HELP_STRING([--disable-modules],
-		[Disable modular build])],
-[ modules=$enableval ], [ modules=yes ])
-AM_CONDITIONAL([modularbuild], [test "x$modules" == "xyes"])
-
-if test "x$modules" == "xyes"; then
-	AC_DEFINE_UNQUOTED([_MODULE], [1], [modular build])
-fi
-
 ### The following options only are used when $modules="yes" ###
-
-# Null plugin: Disabled by default
-AC_ARG_ENABLE(null-plugin,
-[AS_HELP_STRING([--enable-null-plugin],
-		[Enable null (no-op) backend plugin])],
-[ modnull=$enableval ], [ modnull=no ])
-
-AM_CONDITIONAL([modnull], [test "x$modnull" == "xyes"])
 
 # libvirt plugin: Enabled by default
 AC_ARG_ENABLE(libvirt-plugin,
@@ -403,41 +381,14 @@ fi
 
 # cpg plugin: Disabled by default
 AC_ARG_ENABLE(cpg-plugin,
-[AS_HELP_STRING([--enable-cpg-plugin],
+[AS_HELP_STRING([--disable-cpg-plugin],
 		[Enable CPG/libvirt backend plugin])],
-[ modcpg=$enableval ], [ modcpg=no ])
+[ modcpg=$enableval ], [ modcpg=yes ])
 
 AM_CONDITIONAL([modcpg], [test "x$modcpg" == "xyes"])
 
 if test "x$modcpg" == "xyes" && test "x$FENCE_VIRT" = "x1"; then
 	PKG_CHECK_MODULES([cpg], [libcpg])
-fi
-
-# (broken!) libvirt-qmf plugin: Disabled by default
-AC_ARG_ENABLE(libvirt-qmf-plugin,
-[AS_HELP_STRING([--enable-libvirt-qmf-plugin],
-		[Enable libvirt-qmf backend plugin])],
-[ modlibvirtqmf=$enableval ], [ modlibvirtqmf=no ])
-
-AM_CONDITIONAL([modlibvirtqmf], [test "x$modlibvirtqmf" == "xyes"])
-
-if test "x$modlibvirtqmf" == "xyes" && test "x$FENCE_VIRT" = "x1"; then
-	PKG_CHECK_MODULES([qpid], [qpid])
-fi
-
-# (broken with pcmk 2.0!) pm-fence plugin: Disabled by default
-AC_ARG_ENABLE(pm-fence-plugin,
-[AS_HELP_STRING([--enable-pm-fence-plugin],
-		[Enable pm-fence backend plugin])],
-[ modpmfence=$enableval ], [ modpmfence=no ])
-
-AM_CONDITIONAL([modpmfence], [test "x$modpmfence" == "xyes"])
-
-if test "x$modpmfence" == "xyes" && test "x$FENCE_VIRT" = "x1"; then
-	PKG_CHECK_MODULES([cib], [pacemaker-cib])
-	PKG_CHECK_MODULES([ncurses], [ncurses])
-	PKG_CHECK_MODULES([glib2], [glib-2.0])
-	AC_SEARCH_LIBS([read_attr_delegate], [cib], [ ], [ AC_DEFINE_UNQUOTED([PM_1_0], [1], [pacemaker 1.0]) ])
 fi
 
 # multicast plugin: Enabled by default
