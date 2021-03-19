@@ -108,6 +108,7 @@ add_ip_addresses(int family, ip_list_t *ipl)
 	struct nlmsgerr *err;
 	char buf[10240];
 	char outbuf[256];
+	char label[256];
 	int x, fd, len;
 
 	dbg_printf(5, "Connecting to Netlink...\n");
@@ -116,11 +117,15 @@ add_ip_addresses(int family, ip_list_t *ipl)
 		perror("socket");
 		exit(1);
 	}
-	
+
 	dbg_printf(5, "Sending address dump request\n");
-	send_addr_dump(fd, family);
+	if (send_addr_dump(fd, family) < 0) {
+		perror("sendto");
+		close(fd);
+		return -1;
+	}
 	memset(buf, 0, sizeof(buf));
-	
+
 	dbg_printf(5, "Waiting for response\n");
 	x = recvfrom(fd, buf, sizeof(buf), 0, NULL, 0);
 	if (x < 0) {
@@ -128,7 +133,7 @@ add_ip_addresses(int family, ip_list_t *ipl)
 		close(fd);
 		return -1;
 	}
-	
+
 	dbg_printf(5, "Received %d bytes\n", x);
 
 	nh = (struct nlmsghdr *)buf;
@@ -169,8 +174,8 @@ add_ip_addresses(int family, ip_list_t *ipl)
 			continue;
 		}
 
-		rta = (struct rtattr *)(ifa + sizeof(*ifa));
-		len -= sizeof(*ifa);
+		rta = IFA_RTA(ifa);
+		len -= sizeof(struct ifaddrmsg);
 		do {
 			/* Make sure we've got a valid rtaddr field */
 			if (!RTA_OK(rta, len)) {
@@ -185,14 +190,13 @@ add_ip_addresses(int family, ip_list_t *ipl)
 			}
 
 			if (rta->rta_type == IFA_LABEL) {
+				memset(label, 0, sizeof(label));
+				strncpy(label, (char *)RTA_DATA(rta), sizeof(label) - 1);
 				dbg_printf(5, "Skipping label: %s\n",
-					(char *)RTA_DATA(rta));
+					label);
 			}
 
 			nrta = RTA_NEXT(rta, len);
-			if (!nrta)
-				break;
-
 			len -= (nrta - rta);
 			rta = nrta;
 		} while (RTA_OK(rta, len));
