@@ -36,6 +36,11 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 		<content type="string"  />
 		<shortdesc lang="en">Secret Key.</shortdesc>
 	</parameter>
+	<parameter name="filter" unique="0" required="0">
+		<getopt mixed="--filter=[key=value]" />
+		<content type="string"  />
+		<shortdesc lang="en">Filter for list-action</shortdesc>
+	</parameter>
 	<parameter name="boto3_debug" unique="0" required="0">
 		<getopt mixed="-b, --boto3_debug=[option]" />
 		<content type="string" default="False"  />
