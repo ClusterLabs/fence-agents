@@ -1,4 +1,6 @@
-#!@PYTHON@ -tt#
+#!@PYTHON@ -tt
+
+#
 # Requires the googleapiclient and oauth2client
 # RHEL 7.x: google-api-python-client==1.6.7 python-gflags==2.0 pyasn1==0.4.8 rsa==3.4.2 pysocks==1.7.1 httplib2==0.19.0
 # RHEL 8.x: pysocks==1.7.1 httplib2==0.19.0
