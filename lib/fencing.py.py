@@ -15,7 +15,8 @@ import itertools
 RELEASE_VERSION = "@RELEASE_VERSION@"
 
 __all__ = ['atexit_handler', 'check_input', 'process_input', 'all_opt', 'show_docs',
-		'fence_login', 'fence_action', 'fence_logout']
+           'fence_login', 'fence_action', 'fence_logout', 'fail_usage', 'run_delay',
+           'SyslogLibHandler']
 
 EC_OK = 0
 EC_GENERIC_ERROR = 1
