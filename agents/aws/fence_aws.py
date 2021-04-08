@@ -38,8 +38,15 @@ def get_nodes_list(conn, options):
 	logger.info("Starting monitor operation")
 	result = {}
 	try:
-		for instance in conn.instances.all():
-			result[instance.id] = ("", None)
+		if "--filter" in options:
+			filter_key   = options["--filter"].split("=")[0].strip()
+			filter_value = options["--filter"].split("=")[1].strip()
+			filter = [{ "Name": filter_key, "Values": [filter_value] }]
+			for instance in conn.instances.filter(Filters=filter):
+				result[instance.id] = ("", None)
+		else:
+			for instance in conn.instances.all():
+				result[instance.id] = ("", None)
 	except ClientError:
 		fail_usage("Failed: Incorrect Access Key or Secret Key.")
 	except EndpointConnectionError:
@@ -111,7 +118,7 @@ def define_new_opts():
 	all_opt["region"] = {
 		"getopt" : "r:",
 		"longopt" : "region",
-		"help" : "-r, --region=[region]           Region, e.g. us-east-1",
+		"help" : "-r, --region=[region]          Region, e.g. us-east-1",
 		"shortdesc" : "Region.",
 		"required" : "0",
 		"order" : 2
@@ -132,21 +139,29 @@ def define_new_opts():
 		"required" : "0",
 		"order" : 4
 	}
+	all_opt["filter"] = {
+		"getopt" : ":",
+		"longopt" : "filter",
+		"help" : "--filter=[key=value]           Filter (e.g. vpc-id=[vpc-XXYYZZAA]",
+		"shortdesc": "Filter for list-action",
+		"required": "0",
+		"order": 5
+	}
 	all_opt["boto3_debug"] = {
 		"getopt" : "b:",
 		"longopt" : "boto3_debug",
-		"help" : "-b, --boto3_debug=[option]      Boto3 and Botocore library debug logging",
+		"help" : "-b, --boto3_debug=[option]     Boto3 and Botocore library debug logging",
 		"shortdesc": "Boto Lib debug",
 		"required": "0",
 		"default": "False",
-		"order": 5
+		"order": 6
 	}
 
 # Main agent method
 def main():
 	conn = None
 
-	device_opt = ["port", "no_password", "region", "access_key", "secret_key", "boto3_debug"]
+	device_opt = ["port", "no_password", "region", "access_key", "secret_key", "filter", "boto3_debug"]
 
 	atexit.register(atexit_handler)
 
