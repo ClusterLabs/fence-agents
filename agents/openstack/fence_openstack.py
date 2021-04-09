@@ -14,7 +14,7 @@ try:
     from novaclient import client
     from novaclient.exceptions import Conflict, NotFound
 except ImportError:
-    fail_usage("Failed: Nova client not found or not accessible")
+    pass
 
 urllib3.disable_warnings(urllib3.exceptions.SecurityWarning)
 
