@@ -216,6 +216,7 @@ def define_new_opts():
 
 
 def main():
+    conn = None
 
     device_opt = [
         "login",
@@ -281,16 +282,19 @@ This agent calls the python-novaclient and it is mandatory to be installed "
     project_domain_name = options["--project-domain-name"]
     cacert = options["--cacert"]
     apitimeout = options["--apitimeout"]
-    conn = nova_login(
-        username,
-        password,
-        projectname,
-        auth_url,
-        user_domain_name,
-        project_domain_name,
-        cacert,
-        apitimeout,
-    )
+    try:
+        conn = nova_login(
+            username,
+            password,
+            projectname,
+            auth_url,
+            user_domain_name,
+            project_domain_name,
+            cacert,
+            apitimeout,
+        )
+    except Exception as e:
+        fail_usage("Failed: Unable to connect to Nova: " + str(e))
 
     # Operate the fencing device
     result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list)
