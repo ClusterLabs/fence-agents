@@ -236,9 +236,7 @@ def main():
     define_new_opts()
 
     all_opt["port"]["required"] = "0"
-    all_opt["port"][
-        "help"
-    ] = "-n, --plug=[UUID]              UUID of the node to be fenced"
+    all_opt["port"]["help"] = "-n, --plug=[UUID]              UUID of the node to be fenced"
     all_opt["port"]["shortdesc"] = "UUID of the node to be fenced."
     all_opt["power_timeout"]["default"] = "60"
 
@@ -278,9 +276,7 @@ This agent calls the python-novaclient and it is mandatory to be installed "
     try:
         auth_url = options["--auth-url"]
     except KeyError:
-        fail_usage(
-            "Failed: You have to set the Keystone service endpoint for authorization"
-        )
+        fail_usage("Failed: You have to set the Keystone service endpoint for authorization")
     user_domain_name = options["--user-domain-name"]
     project_domain_name = options["--project-domain-name"]
     cacert = options["--cacert"]
@@ -297,9 +293,7 @@ This agent calls the python-novaclient and it is mandatory to be installed "
     )
 
     # Operate the fencing device
-    result = fence_action(
-        conn, options, set_power_status, get_power_status, get_nodes_list
-    )
+    result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list)
     sys.exit(result)
 
 
