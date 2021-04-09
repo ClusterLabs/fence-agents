@@ -33,15 +33,15 @@
 		<content type="string"  />
 		<shortdesc lang="en">Script to run to retrieve password</shortdesc>
 	</parameter>
-	<parameter name="plug" unique="0" required="1" obsoletes="port">
-		<getopt mixed="-n, --plug=[id]" />
+	<parameter name="plug" unique="0" required="0" obsoletes="port">
+		<getopt mixed="-n, --plug=[UUID]" />
 		<content type="string"  />
-		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
+		<shortdesc lang="en">UUID of the node to be fenced.</shortdesc>
 	</parameter>
-	<parameter name="port" unique="0" required="1" deprecated="1">
-		<getopt mixed="-n, --plug=[id]" />
+	<parameter name="port" unique="0" required="0" deprecated="1">
+		<getopt mixed="-n, --plug=[UUID]" />
 		<content type="string"  />
-		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
+		<shortdesc lang="en">UUID of the node to be fenced.</shortdesc>
 	</parameter>
 	<parameter name="username" unique="0" required="1" obsoletes="login">
 		<getopt mixed="-l, --username=[name]" />

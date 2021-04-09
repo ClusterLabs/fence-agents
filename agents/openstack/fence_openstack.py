@@ -235,6 +235,11 @@ def main():
 
     define_new_opts()
 
+    all_opt["port"]["required"] = "0"
+    all_opt["port"][
+        "help"
+    ] = "-n, --plug=[UUID]              UUID of the node to be fenced"
+    all_opt["port"]["shortdesc"] = "UUID of the node to be fenced."
     all_opt["power_timeout"]["default"] = "60"
 
     options = check_input(device_opt, process_input(device_opt))
