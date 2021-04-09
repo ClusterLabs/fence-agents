@@ -8,7 +8,7 @@ import urllib3
 
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import SyslogLibHandler, fail_usage, run_delay
+from fencing import fail_usage, run_delay
 
 try:
     from novaclient import client
@@ -17,11 +17,6 @@ except ImportError:
     fail_usage("Failed: Nova client not found or not accessible")
 
 urllib3.disable_warnings(urllib3.exceptions.SecurityWarning)
-
-logger = logging.getLogger(__name__)
-logger.propagate = False
-logger.setLevel(logging.INFO)
-logger.addHandler(SyslogLibHandler())
 
 
 def translate_status(instance_status):
@@ -33,7 +28,7 @@ def translate_status(instance_status):
 
 
 def get_nodes_list(conn, options):
-    logger.info("Running %s action", options["--action"])
+    logging.info("Running %s action", options["--action"])
     result = {}
     response = conn.servers.list(detailed=True)
     if response is not None:
@@ -46,7 +41,7 @@ def get_nodes_list(conn, options):
 
 
 def get_power_status(conn, options):
-    logger.info("Running %s action on %s", options["--action"], options["--plug"])
+    logging.info("Running %s action on %s", options["--action"], options["--plug"])
     server = None
     try:
         server = conn.servers.get(options["--plug"])
@@ -56,12 +51,12 @@ def get_power_status(conn, options):
         fail_usage("Server %s not found", options["--plug"])
     state = server.status
     status = translate_status(state)
-    logger.info("get_power_status: %s (state: %s)" % (status, state))
+    logging.info("get_power_status: %s (state: %s)" % (status, state))
     return status
 
 
 def set_power_status(conn, options):
-    logger.info("Running %s action on %s", options["--action"], options["--plug"])
+    logging.info("Running %s action on %s", options["--action"], options["--plug"])
     action = options["--action"]
     server = None
     try:
@@ -71,26 +66,26 @@ def set_power_status(conn, options):
     if server is None:
         fail_usage("Server %s not found", options["--plug"])
     if action == "on":
-        logger.info("Starting instance " + server.name)
+        logging.info("Starting instance " + server.name)
         try:
             server.start()
         except Conflict as e:
             fail_usage(e)
-        logger.info("Called start API call for " + server.id)
+        logging.info("Called start API call for " + server.id)
     if action == "off":
-        logger.info("Stopping instance " + server.name)
+        logging.info("Stopping instance " + server.name)
         try:
             server.stop()
         except Conflict as e:
             fail_usage(e)
-        logger.info("Called stop API call for " + server.id)
+        logging.info("Called stop API call for " + server.id)
     if action == "reboot":
-        logger.info("Rebooting instance " + server.name)
+        logging.info("Rebooting instance " + server.name)
         try:
             server.reboot("HARD")
         except Conflict as e:
             fail_usage(e)
-        logger.info("Called reboot hard API call for " + server.id)
+        logging.info("Called reboot hard API call for " + server.id)
 
 
 def nova_login(
@@ -141,7 +136,7 @@ def nova_login(
         )
 
     session = ksc_session.Session(auth=auth, verify=cacert, timeout=apitimeout)
-    nova = client.Client("2", logger=logger, session=session, timeout=apitimeout)
+    nova = client.Client("2", session=session, timeout=apitimeout)
     apiversion = None
     try:
         apiversion = nova.versions.get_current()
@@ -150,8 +145,8 @@ def nova_login(
     except Unauthorized as e:
         fail_usage("Failed: Unauthorized: " + str(e))
     except Exception as e:
-        logger.error(e)
-    logger.debug("Nova version: %s", apiversion)
+        logging.error(e)
+    logging.debug("Nova version: %s", apiversion)
     return nova
 
 
