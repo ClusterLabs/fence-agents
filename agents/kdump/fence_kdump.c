@@ -530,9 +530,6 @@ main (int argc, char **argv)
 {
     int error = 1;
     fence_kdump_opts_t opts;
-    char *ptr;
-    char node_list[2049];
-    memset(node_list, '\0', 2049);
 
     init_options (&opts);
 
@@ -545,21 +542,20 @@ main (int argc, char **argv)
     openlog ("fence_kdump", LOG_CONS|LOG_PID, LOG_DAEMON);
 
     if (opts.action == FENCE_KDUMP_ACTION_OFF) {
+        char node_list[strlen(opts.nodename)];
         if (opts.nodename == NULL) {
             log_error (0, "action 'off' requires nodename\n");
             exit (1);
         }
 
-        strncpy(node_list, opts.nodename, 2048); //make local copy of nodename on which we can safely iterate
+        strcpy(node_list, opts.nodename); //make local copy of nodename on which we can safely iterate
         // iterate through node_list
-        ptr = strtok(node_list, ",");
-        while (ptr != NULL) {
+        for (char *ptr = strtok(node_list, ","); ptr != NULL; ptr = strtok(NULL, ",")) {
             set_option_nodename (&opts, ptr); //overwrite nodename for next function
             if (get_options_node (&opts) != 0) {
                 log_error (0, "failed to get node '%s'\n", opts.nodename);
                 exit (1);
             }
-            ptr = strtok(NULL, ",");
         }
     }
 
