@@ -88,16 +88,8 @@ def set_power_status(conn, options):
         logging.info("Called reboot hard API call for " + server.id)
 
 
-def nova_login(
-    username,
-    password,
-    projectname,
-    auth_url,
-    user_domain_name,
-    project_domain_name,
-    cacert,
-    apitimeout,
-):
+def nova_login(username, password, projectname, auth_url, user_domain_name,
+               project_domain_name, cacert, apitimeout):
     legacy_import = False
 
     try:
@@ -247,11 +239,9 @@ def main():
     if "--uuid" in options:
         options["--plug"] = options["--uuid"]
         del options["--uuid"]
-    elif (
-        "--help" not in options
-        and options["--action"] in ["off", "on", "reboot", "status", "validate-all"]
-        and "--plug" not in options
-    ):
+    elif ("--help" not in options
+          and options["--action"] in ["off", "on", "reboot", "status", "validate-all"]
+          and "--plug" not in options):
         stop_after_error = False if options["--action"] == "validate-all" else True
         fail_usage(
             "Failed: You have to enter plug number or machine identification",
@@ -260,9 +250,7 @@ def main():
 
     docs = {}
     docs["shortdesc"] = "Fence agent for OpenStack's Nova service"
-    docs[
-        "longdesc"
-    ] = "fence_openstack is a Fencing agent \
+    docs["longdesc"] = "fence_openstack is a Fencing agent \
 which can be used with machines controlled by the Openstack's Nova service. \
 This agent calls the python-novaclient and it is mandatory to be installed "
     docs["vendorurl"] = "https://wiki.openstack.org/wiki/Nova"
