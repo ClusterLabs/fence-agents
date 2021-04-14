@@ -530,6 +530,7 @@ main (int argc, char **argv)
 {
     int error = 1;
     fence_kdump_opts_t opts;
+    char *ptr;
 
     init_options (&opts);
 
@@ -550,7 +551,7 @@ main (int argc, char **argv)
 
         strcpy(node_list, opts.nodename); //make local copy of nodename on which we can safely iterate
         // iterate through node_list
-        for (char *ptr = strtok(node_list, ","); ptr != NULL; ptr = strtok(NULL, ",")) {
+        for (ptr = strtok(node_list, ","); ptr != NULL; ptr = strtok(NULL, ",")) {
             set_option_nodename (&opts, ptr); //overwrite nodename for next function
             if (get_options_node (&opts) != 0) {
                 log_error (0, "failed to get node '%s'\n", opts.nodename);
