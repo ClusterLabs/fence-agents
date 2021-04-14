@@ -531,6 +531,7 @@ main (int argc, char **argv)
     int error = 1;
     fence_kdump_opts_t opts;
     char *ptr;
+    char *node_list;
 
     init_options (&opts);
 
@@ -543,11 +544,11 @@ main (int argc, char **argv)
     openlog ("fence_kdump", LOG_CONS|LOG_PID, LOG_DAEMON);
 
     if (opts.action == FENCE_KDUMP_ACTION_OFF) {
-        char node_list[strlen(opts.nodename)];
         if (opts.nodename == NULL) {
             log_error (0, "action 'off' requires nodename\n");
             exit (1);
         }
+        node_list = (char *)malloc(strlen(opts.nodename)+1);
 
         strcpy(node_list, opts.nodename); //make local copy of nodename on which we can safely iterate
         // iterate through node_list
@@ -558,6 +559,7 @@ main (int argc, char **argv)
                 exit (1);
             }
         }
+        free(node_list);
     }
 
     if (verbose != 0) {
