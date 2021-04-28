@@ -190,6 +190,11 @@
 		<content type="second" default="3"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
 	</parameter>
+	<parameter name="stonith_status_sleep" unique="0" required="0">
+		<getopt mixed="--stonith-status-sleep=[seconds]" />
+		<content type="second" default="1"  />
+		<shortdesc lang="en">] Sleep X seconds between status calls during a STONITH action</shortdesc>
+	</parameter>
 	<parameter name="ipmitool_timeout" unique="0" required="0">
 		<getopt mixed="--ipmitool-timeout=[timeout]" />
 		<content type="string" default="2"  />

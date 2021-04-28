@@ -367,6 +367,14 @@ all_opt = {
 		"default" : "0",
 		"required" : "0",
 		"order" : 200},
+	"stonith_status_sleep" : {
+		"getopt" : ":",
+		"longopt" : "stonith-status-sleep",
+		"type" : "second",
+		"help" : "--stonith-status-sleep=[seconds]   Sleep X seconds between status calls during a STONITH action",
+		"default" : "1",
+		"required" : "0",
+		"order" : 200},
 	"missing_as_off" : {
 		"getopt" : "",
 		"longopt" : "missing-as-off",
@@ -478,7 +486,8 @@ DEPENDENCY_OPT = {
 		"default" : ["help", "debug", "verbose", "verbose_level",
 			 "version", "action", "agent", "power_timeout",
 			 "shell_timeout", "login_timeout", "disable_timeout",
-			 "power_wait", "retry_on", "delay", "quiet"],
+			 "power_wait", "stonith_status_sleep", "retry_on", "delay",
+			 "quiet"],
 		"passwd" : ["passwd_script"],
 		"sudo" : ["sudo_path"],
 		"secure" : ["identity_file", "ssh_options", "ssh_path", "inet4_only", "inet6_only"],
@@ -828,7 +837,7 @@ def async_set_multi_power_fn(connection, options, set_power_fn, get_power_fn, re
 
 		for _ in itertools.count(1):
 			if get_multi_power_fn(connection, options, get_power_fn) != options["--action"]:
-				time.sleep(1)
+				time.sleep(int(options["--stonith-status-sleep"]))
 			else:
 				return True
 
