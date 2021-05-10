@@ -72,7 +72,7 @@ The fence_mpath agent works by having a unique key for each node that has to be 
 	<parameter name="disable_timeout" unique="0" required="0">
 		<getopt mixed="--disable-timeout=[true/false]" />
 		<content type="string"  />
-		<shortdesc lang="en"> Disable timeout (true/false) (default: true when run from Pacemaker 2.0+)</shortdesc>
+		<shortdesc lang="en">Disable timeout (true/false) (default: true when run from Pacemaker 2.0+)</shortdesc>
 	</parameter>
 	<parameter name="login_timeout" unique="0" required="0">
 		<getopt mixed="--login-timeout=[seconds]" />
@@ -101,7 +101,7 @@ The fence_mpath agent works by having a unique key for each node that has to be 
 	<parameter name="stonith_status_sleep" unique="0" required="0">
 		<getopt mixed="--stonith-status-sleep=[seconds]" />
 		<content type="second" default="1"  />
-		<shortdesc lang="en">] Sleep X seconds between status calls during a STONITH action</shortdesc>
+		<shortdesc lang="en">Sleep X seconds between status calls during a STONITH action</shortdesc>
 	</parameter>
 	<parameter name="store_path" unique="0" required="0">
 		<getopt mixed="--store-path=[path]" />

@@ -641,7 +641,7 @@ def metadata(options, avail_opt, docs):
 			mixed = _encode_html_entities(mixed)
 
 			if not "shortdesc" in opt:
-				shortdesc = re.sub("\s\s+", " ", opt["help"][31:])
+				shortdesc = re.sub(".*\s\s+", "", opt["help"][31:])
 			else:
 				shortdesc = opt["shortdesc"]
 
