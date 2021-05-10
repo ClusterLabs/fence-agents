@@ -125,7 +125,7 @@ def get_nodes_list(conn, options):
 	if "--zone" not in options:
 		fail_usage("Failed: get_nodes_list: Please specify the --zone in the command")
 	try:
-		for zone in options["--zone"].split(";"):
+		for zone in options["--zone"].split(","):
 			instanceList = retry_api_execute(options, conn.instances().list(
 				project=options["--project"],
 				zone=zone))
@@ -146,8 +146,8 @@ def get_power_status(conn, options):
 			return "off"
 		else:
 			return "on"
-	zones = options["--zone"].split(";") if "--zone" in options else []
-	for i, instance in enumerate(options["--plug"].split(";")):
+	zones = options["--zone"].split(",") if "--zone" in options else []
+	for i, instance in enumerate(options["--plug"].split(",")):
 		# If zone is not listed for an entry we attempt to get it automatically
 		zone = zones[i] if i < len(zones) else get_zone(conn, options, instance)
 		instance_status = get_instance_power_status(conn, options, instance, zone)
@@ -202,8 +202,8 @@ def wait_for_operation(conn, options, zone, operation):
 
 def set_power_status(conn, options):
 	logging.debug("set_power_status");
-	zones = options["--zone"].split(";") if "--zone" in options else []
-	for i, instance in enumerate(options["--plug"].split(";")):
+	zones = options["--zone"].split(",") if "--zone" in options else []
+	for i, instance in enumerate(options["--plug"].split(",")):
 		# If zone is not listed for an entry we attempt to get it automatically
 		zone = zones[i] if i < len(zones) else get_zone(conn, options, instance)
 		set_instance_power_status(conn, options, instance, zone, options["--action"])
@@ -238,8 +238,8 @@ def set_instance_power_status(conn, options, instance, zone, action):
 
 def power_cycle(conn, options):
 	logging.debug("power_cycle");
-	zones = options["--zone"].split(";") if "--zone" in options else []
-	for i, instance in enumerate(options["--plug"].split(";")):
+	zones = options["--zone"].split(",") if "--zone" in options else []
+	for i, instance in enumerate(options["--plug"].split(",")):
 		# If zone is not listed for an entry we attempt to get it automatically
 		zone = zones[i] if i < len(zones) else get_zone(conn, options, instance)
 		if not power_cycle_instance(conn, options, instance, zone):
@@ -493,12 +493,12 @@ def main():
 	# Populates zone automatically if missing from the command
 	if "--plug" in options and "--zone" not in options:
 		zones = []
-		for instance in options["--plug"].split(";"):
+		for instance in options["--plug"].split(","):
 			try:
 				zones.append(get_zone(conn, options, instance))
 			except Exception as err:
 				fail_usage("Failed retrieving GCE zone. Please provide --zone option: {}".format(str(err)))
-		options["--zone"] = ";".join(zones)
+		options["--zone"] = ",".join(zones)
 
 	# Operate the fencing device
 	result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list, power_cycle)
