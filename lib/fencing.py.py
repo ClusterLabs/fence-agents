@@ -879,6 +879,27 @@ def set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set
 
 	return False
 
+def multi_reboot_cycle_fn(connection, options, reboot_cycle_fn, retry_attempts=1):
+	success = True
+	plugs = options["--plugs"] if "--plugs" in options else [""]
+
+	for plug in plugs:
+		try:
+			options["--uuid"] = str(uuid.UUID(plug))
+		except ValueError:
+			pass
+		except KeyError:
+			pass
+
+		options["--plug"] = plug
+		for retry in range(retry_attempts):
+			if reboot_cycle_fn(connection, options):
+				break
+			if retry == retry_attempts-1:
+				success = False
+		time.sleep(int(options["--power-wait"]))
+
+	return success
 
 def show_docs(options, docs=None):
 	device_opt = options["device_opt"]
@@ -971,10 +992,11 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 		elif options["--action"] == "reboot":
 			power_on = False
 			if options.get("--method", "").lower() == "cycle" and reboot_cycle_fn is not None:
-				for _ in range(1, 1 + int(options["--retry-on"])):
-					if reboot_cycle_fn(connection, options):
-						power_on = True
-						break
+				try:
+					power_on = multi_reboot_cycle_fn(connection, options, reboot_cycle_fn, 1 + int(options["--retry-on"]))
+				except Exception as ex:
+					# an error occured during reboot action
+					logging.warning("%s", str(ex))
 
 				if not power_on:
 					fail(EC_TIMED_OUT)
@@ -1397,11 +1419,6 @@ def _validate_input(options, stop = True):
 		device_opt.count("no_port") == 0 and not device_opt.count("port_as_ip"):
 		valid_input = False
 		fail_usage("Failed: You have to enter plug number or machine identification", stop)
-
-	if "--plug" in options and len(options["--plug"].split(",")) > 1 and \
-			"--method" in options and options["--method"] == "cycle":
-		valid_input = False
-		fail_usage("Failed: Cannot use --method cycle for more than 1 plug", stop)
 
 	for failed_opt in _get_opts_with_invalid_choices(options):
 		valid_input = False
