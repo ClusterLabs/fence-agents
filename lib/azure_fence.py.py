@@ -292,19 +292,19 @@ def get_azure_credentials(config):
         from msrestazure.azure_active_directory import MSIAuthentication
         credentials = MSIAuthentication()
     elif cloud_environment:
-        from azure.common.credentials import ServicePrincipalCredentials
-        credentials = ServicePrincipalCredentials(
+        from azure.identity import ClientSecretCredential
+        credentials = ClientSecretCredential(
             client_id = config.ApplicationId,
-            secret = config.ApplicationKey,
-            tenant = config.Tenantid,
+            client_secret = config.ApplicationKey,
+            tenant_id = config.Tenantid,
             cloud_environment=cloud_environment
         )
     else:
-        from azure.common.credentials import ServicePrincipalCredentials
-        credentials = ServicePrincipalCredentials(
+        from azure.identity import ClientSecretCredential
+        credentials = ClientSecretCredential(
             client_id = config.ApplicationId,
-            secret = config.ApplicationKey,
-            tenant = config.Tenantid
+            client_secret = config.ApplicationKey,
+            tenant_id = config.Tenantid
         )
 
     return credentials

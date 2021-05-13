@@ -115,7 +115,7 @@ def set_power_status(clients, options):
 
         if (options["--action"]=="off"):
             logging.info("Poweroff " + vmName + " in resource group " + rgName)
-            compute_client.virtual_machines.power_off(rgName, vmName, skip_shutdown=True)
+            compute_client.virtual_machines.begin_power_off(rgName, vmName, skip_shutdown=True)
         elif (options["--action"]=="on"):
             logging.info("Starting " + vmName + " in resource group " + rgName)
             compute_client.virtual_machines.start(rgName, vmName)
