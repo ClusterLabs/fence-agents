@@ -174,6 +174,7 @@ fi
 
 FENCE_VIRT=0
 if echo "$AGENTS_LIST" | grep -q -E "all|virt( |$)"; then
+	AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s/virt( |$)//")
 	case "$host_os" in
 		*bsd*)
 			;;
@@ -212,7 +213,7 @@ fi
 if test "x$AGENTS_LIST" != xall; then
 	for j in $AGENTS_LIST; do
 		if ! test -f agents/$j/fence_$j*.py; then
-			AC_ERROR([Agent $j does not exists])
+			AC_ERROR([Agent $j does not exist])
 		fi
 		AGENTS_LIST=`echo "$AGENTS_LIST" | sed -E -e "s#$j([^_/]|$)#$j/fence_$j\1#g" -e "s#zvm/fence_zvm( |$)#zvm/fence_zvmip\1#g"`
 	done
