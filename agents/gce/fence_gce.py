@@ -34,10 +34,8 @@ try:
   import socks
   try:
     from google.oauth2.credentials import Credentials as GoogleCredentials
-    from google.oauth2.service_account import Credentials as ServiceAccountCredentials
   except:
     from oauth2client.client import GoogleCredentials
-    from oauth2client.service_account import ServiceAccountCredentials
 except:
   pass
 
@@ -402,10 +400,16 @@ def main():
 
 	# Prepare cli
 	try:
-		if options.get("--serviceaccount"):
+		serviceaccount = options.get("--serviceaccount")
+		if serviceaccount:
 			scope = ['https://www.googleapis.com/auth/cloud-platform']
-			credentials = ServiceAccountCredentials.from_json_keyfile_name(options.get("--serviceaccount"), scope)
 			logging.debug("using credentials from service account")
+			try:
+				from google.oauth2.service_account import Credentials as ServiceAccountCredentials
+				credentials = ServiceAccountCredentials.from_service_account_file(filename=serviceaccount, scopes=scope)
+			except ImportError:
+				from oauth2client.service_account import ServiceAccountCredentials
+				credentials = ServiceAccountCredentials.from_json_keyfile_name(serviceaccount, scope)
 		else:
 			try:
 				from googleapiclient import _auth
