@@ -1,35 +1,32 @@
 <?xml version="1.0" ?>
-<resource-agent name="fence_mpath" shortdesc="Fence agent for multipath persistent reservation" >
-<longdesc>fence_mpath is an I/O fencing agent that uses SCSI-3 persistent reservations to control access multipath devices. Underlying devices must support SCSI-3 persistent reservations (SPC-3 or greater) as well as the "preempt-and-abort" subcommand.
-The fence_mpath agent works by having a unique key for each node that has to be set in /etc/multipath.conf. Once registered, a single node will become the reservation holder by creating a "write exclusive, registrants only" reservation on the device(s). The result is that only registered nodes may write to the device(s). When a node failure occurs, the fence_mpath agent will remove the key belonging to the failed node from the device(s). The failed node will no longer be able to write to the device(s). A manual reboot is required.
-
-When used as a watchdog device you can define e.g. retry=1, retry-sleep=2 and verbose=yes parameters in /etc/sysconfig/stonith if you have issues with it failing.</longdesc>
-<vendor-url>https://www.sourceware.org/dm/</vendor-url>
+<resource-agent name="fence_kubevirt" shortdesc="Fence agent for KubeVirt" >
+<longdesc>fence_kubevirt is an I/O Fencing agent for KubeVirt.</longdesc>
+<vendor-url>https://kubevirt.io/</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
 		<getopt mixed="-o, --action=[action]" />
-		<content type="string" default="off"  />
+		<content type="string" default="reboot"  />
 		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
-	<parameter name="devices" unique="0" required="0">
-		<getopt mixed="-d, --devices=[devices]" />
+	<parameter name="plug" unique="0" required="1" obsoletes="port">
+		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />
-		<shortdesc lang="en">List of devices to use for current operation. Devices can be comma-separated list of device-mapper multipath devices (eg. /dev/mapper/3600508b400105df70000e00000ac0000 or /dev/mapper/mpath1). Each device must support SCSI-3 persistent reservations.</shortdesc>
+		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
 	</parameter>
-	<parameter name="key" unique="0" required="0">
-		<getopt mixed="-k, --key=[key]" />
+	<parameter name="port" unique="0" required="1" deprecated="1">
+		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />
-		<shortdesc lang="en">Replaced by port/-n/--plug</shortdesc>
+		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
 	</parameter>
-	<parameter name="plug" unique="0" required="0" obsoletes="port">
-		<getopt mixed="-n, --plug=[key]" />
+	<parameter name="namespace" unique="0" required="1">
+		<getopt mixed="--namespace=[namespace]" />
 		<content type="string"  />
-		<shortdesc lang="en">Key to use for the current operation. This key should be unique to a node and have to be written in /etc/multipath.conf. For the "on" action, the key specifies the key use to register the local node. For the "off" action, this key specifies the key to be removed from the device(s).</shortdesc>
+		<shortdesc lang="en">Namespace of the KubeVirt machine.</shortdesc>
 	</parameter>
-	<parameter name="port" unique="0" required="0" deprecated="1">
-		<getopt mixed="-n, --plug=[key]" />
+	<parameter name="kubeconfig" unique="0" required="0">
+		<getopt mixed="--kubeconfig=[kubeconfig]" />
 		<content type="string"  />
-		<shortdesc lang="en">Key to use for the current operation. This key should be unique to a node and have to be written in /etc/multipath.conf. For the "on" action, the key specifies the key use to register the local node. For the "off" action, this key specifies the key to be removed from the device(s).</shortdesc>
+		<shortdesc lang="en">Kubeconfig file path</shortdesc>
 	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
@@ -66,6 +63,11 @@ When used as a watchdog device you can define e.g. retry=1, retry-sleep=2 and ve
 		<content type="boolean"  />
 		<shortdesc lang="en">Display help and exit</shortdesc>
 	</parameter>
+	<parameter name="separator" unique="0" required="0">
+		<getopt mixed="-C, --separator=[char]" />
+		<content type="string" default=","  />
+		<shortdesc lang="en">Separator for CSV created by 'list' operation</shortdesc>
+	</parameter>
 	<parameter name="delay" unique="0" required="0">
 		<getopt mixed="--delay=[seconds]" />
 		<content type="second" default="0"  />
@@ -80,10 +82,6 @@ When used as a watchdog device you can define e.g. retry=1, retry-sleep=2 and ve
 		<getopt mixed="--login-timeout=[seconds]" />
 		<content type="second" default="5"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
-	</parameter>
-	<parameter name="mpathpersist_path" unique="0" required="0">
-		<getopt mixed="--mpathpersist-path=[path]" />
-		<shortdesc lang="en">Path to mpathpersist binary</shortdesc>
 	</parameter>
 	<parameter name="power_timeout" unique="0" required="0">
 		<getopt mixed="--power-timeout=[seconds]" />
@@ -105,34 +103,19 @@ When used as a watchdog device you can define e.g. retry=1, retry-sleep=2 and ve
 		<content type="second" default="1"  />
 		<shortdesc lang="en">Sleep X seconds between status calls during a STONITH action</shortdesc>
 	</parameter>
-	<parameter name="store_path" unique="0" required="0">
-		<getopt mixed="--store-path=[path]" />
-		<shortdesc lang="en">Path to directory where fence agent can store information</shortdesc>
-	</parameter>
 	<parameter name="retry_on" unique="0" required="0">
 		<getopt mixed="--retry-on=[attempts]" />
 		<content type="integer" default="1"  />
 		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
 	</parameter>
-	<parameter name="sudo" unique="0" required="0" deprecated="1">
-		<getopt mixed="--use-sudo" />
-		<content type="boolean"  />
-		<shortdesc lang="en">Use sudo (without password) when calling 3rd party software</shortdesc>
-	</parameter>
-	<parameter name="use_sudo" unique="0" required="0" obsoletes="sudo">
-		<getopt mixed="--use-sudo" />
-		<content type="boolean"  />
-		<shortdesc lang="en">Use sudo (without password) when calling 3rd party software</shortdesc>
-	</parameter>
-	<parameter name="sudo_path" unique="0" required="0">
-		<getopt mixed="--sudo-path=[path]" />
-		<shortdesc lang="en">Path to sudo binary</shortdesc>
-	</parameter>
 </parameters>
 <actions>
-	<action name="on" on_target="1" automatic="1"/>
+	<action name="on" automatic="0"/>
 	<action name="off" />
+	<action name="reboot" />
 	<action name="status" />
+	<action name="list" />
+	<action name="list-status" />
 	<action name="monitor" />
 	<action name="metadata" />
 	<action name="manpage" />
