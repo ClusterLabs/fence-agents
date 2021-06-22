@@ -1,6 +1,5 @@
 import logging, re, time
 from fencing import fail_usage
-import os
 
 FENCE_SUBNET_NAME = "fence-subnet"
 FENCE_INBOUND_RULE_NAME = "FENCE_DENY_ALL_INBOUND"
