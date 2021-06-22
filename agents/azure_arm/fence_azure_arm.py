@@ -120,7 +120,7 @@ def set_power_status(clients, options):
                 compute_client.virtual_machines.begin_power_off(rgName, vmName, skip_shutdown=True)
             except AttributeError:
                 # use older API verson if it fails
-                logging.info("Poweroff " + vmName + " did not work via 'virtual_machines.begin_power_off. Trying virtual_machines.power_off'.")
+                logging.debug("Poweroff " + vmName + " did not work via 'virtual_machines.begin_power_off. Trying virtual_machines.power_off'.")
                 compute_client.virtual_machines.power_off(rgName, vmName, skip_shutdown=True)
         elif (options["--action"]=="on"):
             logging.info("Starting " + vmName + " in resource group " + rgName)
@@ -129,7 +129,7 @@ def set_power_status(clients, options):
                 compute_client.virtual_machines.begin_start(rgName, vmName)
             except AttributeError:
                 # use older API verson if it fails
-                logging.info("Starting " + vmName + " did not work via 'virtual_machines.begin_start. Trying virtual_machines.start'.")
+                logging.debug("Starting " + vmName + " did not work via 'virtual_machines.begin_start. Trying virtual_machines.start'.")
                 compute_client.virtual_machines.start(rgName, vmName)
 
 
