@@ -292,20 +292,41 @@ def get_azure_credentials(config):
         from msrestazure.azure_active_directory import MSIAuthentication
         credentials = MSIAuthentication()
     elif cloud_environment:
-        from azure.common.credentials import ServicePrincipalCredentials
-        credentials = ServicePrincipalCredentials(
-            client_id = config.ApplicationId,
-            secret = config.ApplicationKey,
-            tenant = config.Tenantid,
-            cloud_environment=cloud_environment
-        )
+        try:
+            # try to use new libraries ClientSecretCredential (azure.identity, based on azure.core)
+            from azure.identity import ClientSecretCredential
+            credentials = ClientSecretCredential(
+                client_id = config.ApplicationId,
+                client_secret = config.ApplicationKey,
+                tenant_id = config.Tenantid,
+                cloud_environment=cloud_environment
+            )
+        except ImportError:
+             # use old libraries ServicePrincipalCredentials (azure.common) if new one is not available
+            from azure.common.credentials import ServicePrincipalCredentials
+            credentials = ServicePrincipalCredentials(
+                client_id = config.ApplicationId,
+                secret = config.ApplicationKey,
+                tenant = config.Tenantid,
+                cloud_environment=cloud_environment
+            )
     else:
-        from azure.common.credentials import ServicePrincipalCredentials
-        credentials = ServicePrincipalCredentials(
-            client_id = config.ApplicationId,
-            secret = config.ApplicationKey,
-            tenant = config.Tenantid
-        )
+        try:
+            # try to use new libraries ClientSecretCredential (azure.identity, based on azure.core)
+            from azure.identity import ClientSecretCredential
+            credentials = ClientSecretCredential(
+                client_id = config.ApplicationId,
+                client_secret = config.ApplicationKey,
+                tenant_id = config.Tenantid
+            )
+        except ImportError:
+             # use old libraries ServicePrincipalCredentials (azure.common) if new one is not available
+            from azure.common.credentials import ServicePrincipalCredentials
+            credentials = ServicePrincipalCredentials(
+                client_id = config.ApplicationId,
+                secret = config.ApplicationKey,
+                tenant = config.Tenantid
+            )
 
     return credentials
 
