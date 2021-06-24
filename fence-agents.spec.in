@@ -41,6 +41,7 @@ fence-agents-aws \\
 fence-agents-azure-arm \\
 fence-agents-bladecenter \\
 fence-agents-brocade \\
+fence-agents-cdu \\
 fence-agents-cisco-mds \\
 fence-agents-cisco-ucs \\
 fence-agents-docker \\
@@ -459,6 +460,17 @@ Fence agent for Brocade devices that are accessed via telnet or SSH.
 %files brocade
 %{_sbindir}/fence_brocade
 %{_mandir}/man8/fence_brocade.8*
+
+%package cdu
+License: GPLv3-only
+Summary: Fence agent for a Sentry Switch CDU
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description cdu
+Fence agent for Sentry Switch CDU power switch.
+%files cdu
+%{_sbindir}/fence_cdu
+%{_mandir}/man8/fence_cdu.8*
 
 %package cisco-mds
 License: GPLv2+ and LGPLv2+
