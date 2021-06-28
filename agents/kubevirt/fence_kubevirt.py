@@ -81,7 +81,7 @@ def define_new_opts():
 def virtctl_vm_action(conn, action, namespace, name):
     path = '/apis/subresources.{api_version}/namespaces/{namespace}/virtualmachines/{name}/{action}'
     path = path.format(api_version=API_VERSION, namespace=namespace, name=name, action=action)
-    return conn.request('put', path, accept_header='*/*')
+    return conn.request('put', path, header_params={'accept': '*/*'})
 
 def validate_options(required_options_list, options):
     for required_option in required_options_list:
