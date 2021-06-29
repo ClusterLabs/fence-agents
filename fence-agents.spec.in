@@ -870,6 +870,18 @@ Fence agent for use with kdump crash recovery service.
 %{_mandir}/man8/fence_kdump.8*
 %{_mandir}/man8/fence_kdump_send.8*
 
+%package kubevirt
+License: GPLv2+ and LGPLv2+
+Summary: Fence agent for KubeVirt platform
+Requires: python3-openshift >= 0.12.1
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description kubevirt
+Fence agent for KubeVirt platform.
+%files kubevirt
+%{_sbindir}/fence_kubevirt
+%{_mandir}/man8/fence_kubevirt.8*
+
 %package ldom
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Sun LDom virtual machines
