@@ -173,7 +173,7 @@ sed -i.orig 's|FENCE_ZVM=1|FENCE_ZVM=0|' configure.ac
 
 %build
 %if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
-	PYTHON="%{__python3}"
+	export PYTHON="%{__python3}"
 %endif
 
 ./autogen.sh
