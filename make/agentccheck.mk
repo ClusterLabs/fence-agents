@@ -2,6 +2,7 @@ DATADIR:=$(abs_top_srcdir)/tests/data/metadata
 TEST_TARGET=$(filter-out $(TEST_TARGET_SKIP),$(TARGET))
 
 check: $(TEST_TARGET:%=%.xml-check) $(SYMTARGET:%=%.xml-check) $(TEST_TARGET:%=%.delay-check) $(TEST_TARGET:%=%.rng-check)
+delay-check: $(TEST_TARGET:%=%.delay-check) $(SYMTARGET:%=%.delay-check)
 xml-check: $(TEST_TARGET:%=%.xml-check) $(SYMTARGET:%=%.xml-check)
 xml-upload: $(TEST_TARGET:%=%.xml-upload) $(SYMTARGET:%=%.xml-upload)
 
