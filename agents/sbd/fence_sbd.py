@@ -394,13 +394,14 @@ which can be used in environments where sbd can be used (shared storage)."
         if DEVICE_INIT != return_code:
             exit(return_code)
 
-    # we check against the defined timeouts. If the pacemaker timeout is smaller
-    # then that defined within sbd we should report this.
-    power_timeout = int(options["--power-timeout"])
-    sbd_msg_timeout = get_msg_timeout(options)
-    if power_timeout <= sbd_msg_timeout:
-        logging.warn("power timeout needs to be \
-                greater then sbd message timeout")
+    if options.get("--disable-timeout", "0").lower() in ["0", "no", "off", "false"]:
+        # we check against the defined timeouts. If the pacemaker timeout is smaller
+        # then that defined within sbd we should report this.
+        power_timeout = int(options["--power-timeout"])
+        sbd_msg_timeout = get_msg_timeout(options)
+        if power_timeout <= sbd_msg_timeout:
+            logging.warn("power timeout needs to be \
+                    greater then sbd message timeout")
 
     result = fence_action(\
                 None, \
