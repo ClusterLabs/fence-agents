@@ -398,7 +398,7 @@ which can be used in environments where sbd can be used (shared storage)."
     # then that defined within sbd we should report this.
     power_timeout = int(options["--power-timeout"])
     sbd_msg_timeout = get_msg_timeout(options)
-    if power_timeout <= sbd_msg_timeout:
+    if 0 < power_timeout <= sbd_msg_timeout:
         logging.warn("power timeout needs to be \
                 greater then sbd message timeout")
 
