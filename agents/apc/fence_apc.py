@@ -90,7 +90,8 @@ def get_power_status(conn, options):
 		try:
 			(_, status) = outlets[options["--plug"]]
 			return status.lower().strip()
-		except KeyError:
+		except KeyError as e:
+			logging.error("Failed: {}".format(str(e)))
 			fail(EC_STATUS)
 
 def set_power_status(conn, options):
@@ -199,7 +200,8 @@ def get_power_status5(conn, options):
 		try:
 			(_, status) = outlets[options["--plug"]]
 			return status.lower().strip()
-		except KeyError:
+		except KeyError as e:
+			logging.error("Failed: {}".format(str(e)))
 			fail(EC_STATUS)
 
 def set_power_status5(conn, options):
