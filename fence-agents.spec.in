@@ -56,6 +56,8 @@ fence-agents-heuristics-ping \\
 fence-agents-hpblade \\
 fence-agents-ibmblade \\
 fence-agents-ibmz \\
+fence-agents-ibm-powervs \\
+fence-agents-ibm-vpc \\
 fence-agents-ifmib \\
 fence-agents-ilo-moonshot \\
 fence-agents-ilo-mp \\
@@ -716,6 +718,28 @@ Web Services REST API.
 %files ibmz
 %{_sbindir}/fence_ibmz
 %{_mandir}/man8/fence_ibmz.8*
+
+%package ibm-powervs
+License: GPLv2+ and LGPLv2+
+Summary: Fence agent for IBM PowerVS
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description ibm-powervs
+Fence agent for IBM PowerVS that are accessed via REST API.
+%files ibm-powervs
+%{_sbindir}/fence_ibm_powervs
+%{_mandir}/man8/fence_ibm_powervs.8*
+
+%package ibm-vpc
+License: GPLv2+ and LGPLv2+
+Summary: Fence agent for IBM Cloud VPC
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description ibm-vpc
+Fence agent for IBM Cloud VPC that are accessed via REST API.
+%files ibm-vpc
+%{_sbindir}/fence_ibm_vpc
+%{_mandir}/man8/fence_ibm_vpc.8*
 
 %package ifmib
 License: GPLv2+ and LGPLv2+
