@@ -406,7 +406,15 @@ License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Azure Resource Manager
 Requires: fence-agents-common = %{version}-%{release}
 %if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?fedora} > 34
+Requires: python3-azure-common
+Requires: python3-azure-identity
+Requires: python3-azure-mgmt-compute
+Requires: python3-azure-mgmt-network
+Requires: python3-msrestazure
+%else
 Requires: python3-azure-sdk
+%endif
 %else
 Requires: python-azure-sdk
 %endif
