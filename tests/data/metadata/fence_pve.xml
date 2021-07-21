@@ -72,19 +72,29 @@
 		<shortdesc lang="en">Login name</shortdesc>
 	</parameter>
 	<parameter name="node_name" unique="0" required="0" deprecated="1">
-		<getopt mixed="-N, --nodename" />
+		<getopt mixed="--nodename" />
 		<content type="string"  />
-		<shortdesc lang="en">Node on which machine is located. (Optional, will be automatically determined)</shortdesc>
+		<shortdesc lang="en">Replaced by --pve-node</shortdesc>
 	</parameter>
 	<parameter name="nodename" unique="0" required="0" obsoletes="node_name">
-		<getopt mixed="-N, --nodename" />
+		<getopt mixed="--nodename" />
 		<content type="string"  />
-		<shortdesc lang="en">Node on which machine is located. (Optional, will be automatically determined)</shortdesc>
+		<shortdesc lang="en">Replaced by --pve-node</shortdesc>
+	</parameter>
+	<parameter name="pve_node" unique="0" required="0">
+		<getopt mixed="-N, --pve-node=[node_name]" />
+		<content type="string"  />
+		<shortdesc lang="en">Proxmox node name on which machine is located. (Must be specified if not using --pve-node-auto)</shortdesc>
 	</parameter>
 	<parameter name="vmtype" unique="0" required="1">
 		<getopt mixed="--vmtype" />
 		<content type="string" default="qemu"  />
 		<shortdesc lang="en">Virtual machine type lxc or qemu. (Default: qemu)</shortdesc>
+	</parameter>
+	<parameter name="pve_node_auto" unique="0" required="0">
+		<getopt mixed="-A, --pve-node-auto" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Automatically select proxmox node. (This option overrides --pve-node)</shortdesc>
 	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
