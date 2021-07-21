@@ -11,7 +11,7 @@ import io
 import atexit
 import logging
 sys.path.append("@FENCEAGENTSLIBDIR@")
-from fencing import fail, EC_LOGIN_DENIED, atexit_handler, all_opt, check_input, process_input, show_docs, fence_action, run_delay
+from fencing import fail, fail_usage, EC_LOGIN_DENIED, atexit_handler, all_opt, check_input, process_input, show_docs, fence_action, run_delay
 
 if sys.version_info[0] > 2: import urllib.parse as urllib
 else: import urllib
@@ -19,23 +19,23 @@ else: import urllib
 def get_power_status(conn, options):
 	del conn
 	state = {"running" : "on", "stopped" : "off"}
-	if options["--nodename"] is None:
+	if options["--pve-node"] is None:
 		nodes = send_cmd(options, "nodes")
 		if type(nodes) is not dict or "data" not in nodes or type(nodes["data"]) is not list:
 			return None
 		for node in nodes["data"]: # lookup the node holding the vm
 			if type(node) is not dict or "node" not in node:
 				return None
-			options["--nodename"] = node["node"]
+			options["--pve-node"] = node["node"]
 			status = get_power_status(None, options)
 			if status is not None:
-				logging.info("vm found on node: " + options["--nodename"])
+				logging.info("vm found on node: " + options["--pve-node"])
 				break
 			else:
-				options["--nodename"] = None
+				options["--pve-node"] = None
 		return status
 	else:
-		cmd = "nodes/" + options["--nodename"] + "/" + options["--vmtype"] +"/" + options["--plug"] + "/status/current"
+		cmd = "nodes/" + options["--pve-node"] + "/" + options["--vmtype"] +"/" + options["--plug"] + "/status/current"
 		result = send_cmd(options, cmd)
 		if type(result) is dict and "data" in result:
 			if type(result["data"]) is dict and "status" in result["data"]:
@@ -50,13 +50,13 @@ def set_power_status(conn, options):
 		'on' : "start",
 		'off': "stop"
 	}[options["--action"]]
-	cmd = "nodes/" + options["--nodename"] + "/" + options["--vmtype"] +"/" + options["--plug"] + "/status/" + action
+	cmd = "nodes/" + options["--pve-node"] + "/" + options["--vmtype"] +"/" + options["--plug"] + "/status/" + action
 	send_cmd(options, cmd, post={"skiplock":1})
 
 
 def reboot_cycle(conn, options):
 	del conn
-	cmd = "nodes/" + options["--nodename"] + "/" + options["--vmtype"] + "/" + options["--plug"] + "/status/reset"
+	cmd = "nodes/" + options["--pve-node"] + "/" + options["--vmtype"] + "/" + options["--plug"] + "/status/reset"
 	result = send_cmd(options, cmd, post={"skiplock":1})
 	return type(result) is dict and "data" in result
 
@@ -139,21 +139,41 @@ def send_cmd(options, cmd, post=None):
 def main():
 	atexit.register(atexit_handler)
 
-	all_opt["node_name"] = {
-		"getopt" : "N:",
-		"longopt" : "nodename",
-		"help" : "-N, --nodename                 "
-			"Node on which machine is located",
+	all_opt["pve_node_auto"] = {
+		"getopt" : "A",
+		"longopt" : "pve-node-auto",
+		"help" : "-A, --pve-node-auto            "
+			"Automatically select proxmox node",
 		"required" : "0",
-		"shortdesc" : "Node on which machine is located. "
-			"(Optional, will be automatically determined)",
+		"shortdesc" : "Automatically select proxmox node. "
+			"(This option overrides --pve-node)",
+		"type": "boolean",
 		"order": 2
+	}
+	all_opt["pve_node"] = {
+		"getopt" : "N:",
+		"longopt" : "pve-node",
+		"help" : "-N, --pve-node=[node_name]     "
+			"Proxmox node name on which machine is located",
+		"required" : "0",
+		"shortdesc" : "Proxmox node name on which machine is located. "
+			"(Must be specified if not using --pve-node-auto)",
+		"order": 2
+	}
+	all_opt["node_name"] = {
+		"getopt" : ":",
+		"longopt" : "nodename",
+		"help" : "--nodename                     "
+			"Replaced by --pve-node",
+		"required" : "0",
+		"shortdesc" : "Replaced by --pve-node",
+		"order": 3
 	}
 	all_opt["vmtype"] = {
 		"getopt" : ":",
 		"longopt" : "vmtype",
 		"default" : "qemu",
-		"help" : "--vmtype					   "
+		"help" : "--vmtype                       "
 			"Virtual machine type lxc or qemu (default: qemu)",
 		"required" : "1",
 		"shortdesc" : "Virtual machine type lxc or qemu. "
@@ -161,7 +181,7 @@ def main():
 		"order": 2
 	}
 
-	device_opt = ["ipaddr", "login", "passwd", "web", "port", "node_name", "vmtype", "method"]
+	device_opt = ["ipaddr", "login", "passwd", "web", "port", "pve_node", "pve_node_auto", "node_name", "vmtype", "method"]
 
 	all_opt["login"]["required"] = "0"
 	all_opt["login"]["default"] = "root@pam"
@@ -181,8 +201,18 @@ machines acting as nodes in a virtualized cluster."
 
 	run_delay(options)
 
-	if "--nodename" not in options or not options["--nodename"]:
-		options["--nodename"] = None
+	if "--pve-node-auto" in options:
+		# Force pve-node to None to allow autodiscovery
+		options["--pve-node"] = None
+	elif "--pve-node" in options and options["--pve-node"]:
+		# Leave pve-node alone
+		pass
+	elif "--nodename" in options and options["--nodename"]:
+		# map nodename into pve-node to support legacy implementations
+		options["--pve-node"] = options["--nodename"]
+	else:
+		fail_usage("At least one of pve-node-auto or pve-node must be supplied")
+
 
 	if options["--vmtype"] != "qemu":
 		# For vmtypes other than qemu, only the onoff method is valid
