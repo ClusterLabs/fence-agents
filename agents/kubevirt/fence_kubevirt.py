@@ -92,7 +92,7 @@ def validate_options(required_options_list, options):
 def main():
     conn = None
 
-    device_opt = ["port", "namespace", "kubeconfig", "separator", "no_password"]
+    device_opt = ["port", "namespace", "kubeconfig", "ssl_insecure", "no_password"]
     define_new_opts()
     options = check_input(device_opt, process_input(device_opt))
 
@@ -105,6 +105,11 @@ def main():
     run_delay(options)
 
     validate_options(['--namespace'], options)
+
+    # Disable insecure-certificate-warning message
+    if "--ssl-insecure" in options:
+        import urllib3
+        urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
     try:
         from kubernetes import config

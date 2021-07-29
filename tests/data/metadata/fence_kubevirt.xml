@@ -18,6 +18,11 @@
 		<content type="string"  />
 		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
 	</parameter>
+	<parameter name="ssl_insecure" unique="0" required="0">
+		<getopt mixed="--ssl-insecure" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Use SSL connection without verifying certificate</shortdesc>
+	</parameter>
 	<parameter name="namespace" unique="0" required="1">
 		<getopt mixed="--namespace=[namespace]" />
 		<content type="string"  />
