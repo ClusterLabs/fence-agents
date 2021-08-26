@@ -188,7 +188,7 @@ def mpath_check(hardreboot=False):
 		return int(sys.argv[2])
 	options = {}
 	options["--mpathpersist-path"] = "/usr/sbin/mpathpersist"
-	options["--store-path"] = "/var/run/cluster"
+	options["--store-path"] = "@STORE_PATH@"
 	options["--power-timeout"] = "5"
 	options["retry"] = "0"
 	options["retry-sleep"] = "1"

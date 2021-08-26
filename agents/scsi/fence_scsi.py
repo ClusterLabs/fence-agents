@@ -13,7 +13,7 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import fail_usage, run_command, atexit_handler, check_input, process_input, show_docs, fence_action, all_opt
 from fencing import run_delay
 
-STORE_PATH = "/var/run/cluster/fence_scsi"
+STORE_PATH = "@STORE_PATH@"
 
 
 def get_status(conn, options):
