@@ -26,12 +26,22 @@ def open_socket(options):
 	except socket.gaierror:
 		fail(EC_LOGIN_DENIED)
 
-	conn = socket.socket()
+	if "--ssl" in options:
+		import ssl
+		sock = socket.socket()
+		sslcx = ssl.create_default_context()
+		if "--ssl-insecure" in options:
+			sslcx.check_hostname = False
+			sslcx.verify_mode = ssl.CERT_NONE
+		conn = sslcx.wrap_socket(sock, server_hostname=options["--ip"])
+	else:
+		conn = socket.socket()
 	conn.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 	conn.settimeout(float(options["--shell-timeout"]) or None)
 	try:
 		conn.connect(addr)
-	except socket.error:
+	except socket.error as e:
+		logging.debug(e)
 		fail(EC_LOGIN_DENIED)
 
 	return conn
@@ -122,11 +132,12 @@ def get_list_of_images(options, command, data_as_plug):
 	images = set()
 
 	if output_len > 3*INT4:
+		recvflag = socket.MSG_WAITALL if "--ssl" not in options else 0
 		array_len = struct.unpack("!i", conn.recv(INT4))[0]
 		data = ""
 
 		while True:
-			read_data = conn.recv(1024, socket.MSG_WAITALL).decode("UTF-8")
+			read_data = conn.recv(1024, recvflag).decode("UTF-8")
 			data += read_data
 			if array_len == len(data):
 				break
@@ -146,7 +157,8 @@ def get_list_of_images(options, command, data_as_plug):
 	return (return_code, reason_code, images)
 
 def main():
-	device_opt = ["ipaddr", "login", "passwd", "port", "method", "missing_as_off", "inet4_only", "inet6_only"]
+	device_opt = ["ipaddr", "login", "passwd", "port", "method", "missing_as_off",
+		      "inet4_only", "inet6_only", "ssl"]
 
 	atexit.register(atexit_handler)
 
