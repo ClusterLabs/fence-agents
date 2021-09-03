@@ -33,6 +33,11 @@
 		<content type="string"  />
 		<shortdesc lang="en">Kubeconfig file path</shortdesc>
 	</parameter>
+	<parameter name="apiversion" unique="0" required="0">
+		<getopt mixed="--apiversion=[apiversion]" />
+		<content type="string" default="kubevirt.io/v1"  />
+		<shortdesc lang="en">Version of the KubeVirt API.</shortdesc>
+	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
 		<content type="boolean"  />

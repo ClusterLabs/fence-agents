@@ -11,15 +11,14 @@ try:
 except ImportError:
     logging.error("Couldn\'t import kubernetes.client.exceptions.ApiException - not found or not accessible")
 
-API_VERSION='kubevirt.io/v1'
-
 def get_nodes_list(conn, options):
     logging.debug("Starting list/monitor operation")
     result = {}
     try:
+        apiversion = options.get("--apiversion")
         namespace = options.get("--namespace")
         include_uninitialized = True
-        vm_api = conn.resources.get(api_version=API_VERSION, kind='VirtualMachine')
+        vm_api = conn.resources.get(api_version=apiversion, kind='VirtualMachine')
         vm_list = vm_api.get(namespace=namespace)
         for vm in vm_list.items:
             result[vm.metadata.name] = ("", None)
@@ -30,9 +29,10 @@ def get_nodes_list(conn, options):
 def get_power_status(conn, options):
     logging.debug("Starting get status operation")
     try:
+        apiversion = options.get("--apiversion")
         namespace = options.get("--namespace")
         name = options.get("--plug")
-        vmi_api = conn.resources.get(api_version=API_VERSION,
+        vmi_api = conn.resources.get(api_version=apiversion,
                                               kind='VirtualMachineInstance')
         vmi = vmi_api.get(name=name, namespace=namespace)
         if vmi is not None:
@@ -52,35 +52,45 @@ def get_power_status(conn, options):
 def set_power_status(conn, options):
     logging.debug("Starting set status operation")
     try:
+        apiversion= options.get("--apiversion")
         namespace = options.get("--namespace")
         name = options.get("--plug")
         action = 'start' if options["--action"] == "on" else 'stop'
-        virtctl_vm_action(conn, action, namespace, name)
+        virtctl_vm_action(conn, action, namespace, name, apiversion)
     except Exception as e:
         logging.error("Failed to set power status, with Exception: %s", e)
         fail(EC_STATUS)
 
 def define_new_opts():
-	all_opt["namespace"] = {
-		"getopt" : ":",
-		"longopt" : "namespace",
-		"help" : "--namespace=[namespace]        Namespace of the KubeVirt machine",
-		"shortdesc" : "Namespace of the KubeVirt machine.",
-		"required" : "1",
-		"order" : 2
-	}
-	all_opt["kubeconfig"] = {
-		"getopt" : ":",
-		"longopt" : "kubeconfig",
-		"help" : "--kubeconfig=[kubeconfig]      Kubeconfig file path",
-		"shortdesc": "Kubeconfig file path",
-		"required": "0",
-		"order": 4
-	}
+    all_opt["namespace"] = {
+        "getopt" : ":",
+        "longopt" : "namespace",
+        "help" : "--namespace=[namespace]        Namespace of the KubeVirt machine",
+        "shortdesc" : "Namespace of the KubeVirt machine.",
+        "required" : "1",
+        "order" : 2
+    }
+    all_opt["kubeconfig"] = {
+        "getopt" : ":",
+        "longopt" : "kubeconfig",
+        "help" : "--kubeconfig=[kubeconfig]      Kubeconfig file path",
+        "shortdesc": "Kubeconfig file path",
+        "required": "0",
+        "order": 4
+    }
+    all_opt["apiversion"] = {
+        "getopt" : ":",
+        "longopt" : "apiversion",
+        "help" : "--apiversion=[apiversion]      Version of the KubeVirt API",
+        "shortdesc" : "Version of the KubeVirt API.",
+        "required" : "0",
+        "default" : "kubevirt.io/v1",
+        "order" : 5
+    }
 
-def virtctl_vm_action(conn, action, namespace, name):
+def virtctl_vm_action(conn, action, namespace, name, apiversion):
     path = '/apis/subresources.{api_version}/namespaces/{namespace}/virtualmachines/{name}/{action}'
-    path = path.format(api_version=API_VERSION, namespace=namespace, name=name, action=action)
+    path = path.format(api_version=apiversion, namespace=namespace, name=name, action=action)
     return conn.request('put', path, header_params={'accept': '*/*'})
 
 def validate_options(required_options_list, options):
@@ -92,7 +102,7 @@ def validate_options(required_options_list, options):
 def main():
     conn = None
 
-    device_opt = ["port", "namespace", "kubeconfig", "ssl_insecure", "no_password"]
+    device_opt = ["port", "namespace", "kubeconfig", "ssl_insecure", "no_password", "apiversion"]
     define_new_opts()
     options = check_input(device_opt, process_input(device_opt))
 
