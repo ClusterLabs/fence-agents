@@ -65,7 +65,7 @@ def replace_api_uri(options, http_request):
 			{
 				"matchlength": 4,
 				"match": "https://compute.googleapis.com/compute/v1/projects/(.*)/zones/(.*)/instances/(.*)/reset(.*)",
-				"replace": "https://baremetalsolution.googleapis.com/v1alpha1/projects/\\1/locations/\\2/instances/\\3:resetInstance\\4"
+				"replace": "https://baremetalsolution.googleapis.com/v1/projects/\\1/locations/\\2/instances/\\3:resetInstance\\4"
 			})
 	for uri_replacement in uri_replacements:
 		# each uri_replacement should have matchlength, match, and replace
@@ -144,15 +144,14 @@ def get_power_status(conn, options):
 			return "off"
 		else:
 			return "on"
-	zones = options["--zone"].split(",") if "--zone" in options else []
-	for i, instance in enumerate(options["--plug"].split(",")):
-		# If zone is not listed for an entry we attempt to get it automatically
-		zone = zones[i] if i < len(zones) else get_zone(conn, options, instance)
-		instance_status = get_instance_power_status(conn, options, instance, zone)
-		# If any of the instances do not match the intended status we return the
-		# the opposite status so that the fence agent can change it.
-		if instance_status != options.get("--action"):
-			return instance_status
+	# If zone is not listed for an entry we attempt to get it automatically
+	instance = options["--plug"]
+	zone = get_zone(conn, options, instance) if "--plugzonemap" not in options else options["--plugzonemap"][instance]
+	instance_status = get_instance_power_status(conn, options, instance, zone)
+	# If any of the instances do not match the intended status we return the
+	# the opposite status so that the fence agent can change it.
+	if instance_status != options.get("--action"):
+		return instance_status
 
 	return options.get("--action")
 
@@ -199,12 +198,11 @@ def wait_for_operation(conn, options, zone, operation):
 
 
 def set_power_status(conn, options):
-	logging.debug("set_power_status");
-	zones = options["--zone"].split(",") if "--zone" in options else []
-	for i, instance in enumerate(options["--plug"].split(",")):
-		# If zone is not listed for an entry we attempt to get it automatically
-		zone = zones[i] if i < len(zones) else get_zone(conn, options, instance)
-		set_instance_power_status(conn, options, instance, zone, options["--action"])
+	logging.debug("set_power_status")
+	instance = options["--plug"]
+	# If zone is not listed for an entry we attempt to get it automatically
+	zone = get_zone(conn, options, instance) if "--plugzonemap" not in options else options["--plugzonemap"][instance]
+	set_instance_power_status(conn, options, instance, zone, options["--action"])
 
 
 def set_instance_power_status(conn, options, instance, zone, action):
@@ -235,13 +233,12 @@ def set_instance_power_status(conn, options, instance, zone, action):
 		fail_usage("Failed: set_instance_power_status: {}".format(str(err)))
 
 def power_cycle(conn, options):
-	logging.debug("power_cycle");
-	zones = options["--zone"].split(",") if "--zone" in options else []
-	for i, instance in enumerate(options["--plug"].split(",")):
-		# If zone is not listed for an entry we attempt to get it automatically
-		zone = zones[i] if i < len(zones) else get_zone(conn, options, instance)
-		if not power_cycle_instance(conn, options, instance, zone):
-			return False
+	logging.debug("power_cycle")
+	instance = options["--plug"]
+	# If zone is not listed for an entry we attempt to get it automatically
+	zone = get_zone(conn, options, instance) if "--plugzonemap" not in options else options["--plugzonemap"][instance]
+	if not power_cycle_instance(conn, options, instance, zone):
+		return False
 	return True
 
 
@@ -455,6 +452,7 @@ def main():
 		serviceaccount = options.get("--serviceaccount")
 		if serviceaccount:
 			scope = ['https://www.googleapis.com/auth/cloud-platform']
+			credentials = ServiceAccountCredentials.from_json_keyfile_name(serviceaccount, scope)
 			logging.debug("using credentials from service account")
 			try:
 				from google.oauth2.service_account import Credentials as ServiceAccountCredentials
@@ -495,14 +493,26 @@ def main():
 		options["--zone"] = "none"
 
 	# Populates zone automatically if missing from the command
-	if "--plug" in options and "--zone" not in options:
-		zones = []
-		for instance in options["--plug"].split(","):
+	zones = [] if not "--zone" in options else options["--zone"].split(",")
+	options["--plugzonemap"] = {}
+	if "--plug" in options:
+		for i, instance in enumerate(options["--plug"].split(",")):
+			if len(zones) == 1:
+				# If only one zone is specified, use it across all plugs
+				options["--plugzonemap"][instance] = zones[0]
+				continue
+
+			if len(zones) - 1 >= i:
+				# If we have enough zones specified with the --zone flag use the zone at
+				# the same index as the plug
+				options["--plugzonemap"][instance] = zones[i]
+				continue
+
 			try:
-				zones.append(get_zone(conn, options, instance))
+				# In this case we do not have a zone specified so we attempt to detect it
+				options["--plugzonemap"][instance] = get_zone(conn, options, instance)
 			except Exception as err:
 				fail_usage("Failed retrieving GCE zone. Please provide --zone option: {}".format(str(err)))
-		options["--zone"] = ",".join(zones)
 
 	# Operate the fencing device
 	result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list, power_cycle)
