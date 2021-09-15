@@ -41,6 +41,7 @@ fence-agents-aws \\
 fence-agents-azure-arm \\
 fence-agents-bladecenter \\
 fence-agents-brocade \\
+fence-agents-cdu \\
 fence-agents-cisco-mds \\
 fence-agents-cisco-ucs \\
 fence-agents-docker \\
@@ -55,6 +56,8 @@ fence-agents-heuristics-ping \\
 fence-agents-hpblade \\
 fence-agents-ibmblade \\
 fence-agents-ibmz \\
+fence-agents-ibm-powervs \\
+fence-agents-ibm-vpc \\
 fence-agents-ifmib \\
 fence-agents-ilo-moonshot \\
 fence-agents-ilo-mp \\
@@ -172,7 +175,7 @@ sed -i.orig 's|FENCE_ZVM=1|FENCE_ZVM=0|' configure.ac
 
 %build
 %if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
-	PYTHON="%{__python3}"
+	export PYTHON="%{__python3}"
 %endif
 
 ./autogen.sh
@@ -405,7 +408,15 @@ License: GPLv2+ and LGPLv2+
 Summary: Fence agent for Azure Resource Manager
 Requires: fence-agents-common = %{version}-%{release}
 %if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?fedora} > 34
+Requires: python3-azure-common
+Requires: python3-azure-identity
+Requires: python3-azure-mgmt-compute
+Requires: python3-azure-mgmt-network
+Requires: python3-msrestazure
+%else
 Requires: python3-azure-sdk
+%endif
 %else
 Requires: python-azure-sdk
 %endif
@@ -459,6 +470,17 @@ Fence agent for Brocade devices that are accessed via telnet or SSH.
 %files brocade
 %{_sbindir}/fence_brocade
 %{_mandir}/man8/fence_brocade.8*
+
+%package cdu
+License: GPLv3-only
+Summary: Fence agent for a Sentry Switch CDU
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description cdu
+Fence agent for Sentry Switch CDU power switch.
+%files cdu
+%{_sbindir}/fence_cdu
+%{_mandir}/man8/fence_cdu.8*
 
 %package cisco-mds
 License: GPLv2+ and LGPLv2+
@@ -697,6 +719,28 @@ Web Services REST API.
 %{_sbindir}/fence_ibmz
 %{_mandir}/man8/fence_ibmz.8*
 
+%package ibm-powervs
+License: GPLv2+ and LGPLv2+
+Summary: Fence agent for IBM PowerVS
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description ibm-powervs
+Fence agent for IBM PowerVS that are accessed via REST API.
+%files ibm-powervs
+%{_sbindir}/fence_ibm_powervs
+%{_mandir}/man8/fence_ibm_powervs.8*
+
+%package ibm-vpc
+License: GPLv2+ and LGPLv2+
+Summary: Fence agent for IBM Cloud VPC
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description ibm-vpc
+Fence agent for IBM Cloud VPC that are accessed via REST API.
+%files ibm-vpc
+%{_sbindir}/fence_ibm_vpc
+%{_mandir}/man8/fence_ibm_vpc.8*
+
 %package ifmib
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for devices with IF-MIB interfaces
@@ -857,6 +901,18 @@ Fence agent for use with kdump crash recovery service.
 %{_libexecdir}/fence_kdump_send
 %{_mandir}/man8/fence_kdump.8*
 %{_mandir}/man8/fence_kdump_send.8*
+
+%package kubevirt
+License: GPLv2+ and LGPLv2+
+Summary: Fence agent for KubeVirt platform
+Requires: python3-openshift >= 0.12.1
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description kubevirt
+Fence agent for KubeVirt platform.
+%files kubevirt
+%{_sbindir}/fence_kubevirt
+%{_mandir}/man8/fence_kubevirt.8*
 
 %package ldom
 License: GPLv2+ and LGPLv2+

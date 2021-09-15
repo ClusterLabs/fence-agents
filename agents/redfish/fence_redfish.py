@@ -42,7 +42,7 @@ def set_power_status(conn, options):
         'off': "ForceOff",
         'reboot': "ForceRestart",
         'diag': "Nmi"
-    }[options["--action"]]
+    }[options.get("original-action") or options["--action"]]
 
     payload = {'ResetType': action}
 
@@ -56,6 +56,8 @@ def set_power_status(conn, options):
     response = send_post_request(options, action_uri, payload)
     if response['ret'] is False:
         fail_usage("Error sending power command")
+    if options.get("original-action") == "diag":
+        return True
     return
 
 def send_get_request(options, uri):
@@ -159,7 +161,16 @@ access to control power on a server."
         else:
             options["--systems-uri"] = sysresult["uri"]
 
-    result = fence_action(None, options, set_power_status, get_power_status, None)
+    reboot_fn = None
+    if options["--action"] == "diag":
+        # Diag is a special action that can't be verified so we will reuse reboot functionality
+        # to minimize impact on generic library
+        options["original-action"] = options["--action"]
+        options["--action"] = "reboot"
+        options["--method"] = "cycle"
+        reboot_fn = set_power_status
+
+    result = fence_action(None, options, set_power_status, get_power_status, None, reboot_fn)
     sys.exit(result)
 
 if __name__ == "__main__":

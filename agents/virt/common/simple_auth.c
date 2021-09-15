@@ -288,7 +288,7 @@ sha_challenge(int fd, fence_auth_type_t auth, void *key,
 		return 0;
 	} else if (ret < sizeof(response)) {
 		dbg_printf(0,
-			"read data from socket is too short(actual: %d, expected: %lu)\n",
+			"read data from socket is too short(actual: %d, expected: %zu)\n",
 			ret, sizeof(response));
 		return 0;
 	}
@@ -372,7 +372,7 @@ sha_response(int fd, fence_auth_type_t auth, void *key,
 		return 0;
 	} else if (ret < sizeof(hash)) {
 		dbg_printf(2,
-			"Only part of hash is written(actual: %d, expected: %lu)\n",
+			"Only part of hash is written(actual: %d, expected: %zu)\n",
 			ret,
 			sizeof(hash));
 		return 0;

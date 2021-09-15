@@ -15,14 +15,18 @@ acknowledges node has entered kdump crash recovery service. If a valid
 message is received from the failed node, the node is considered to be
 fenced and the agent returns success. Failure to receive a valid
 message from the failed node in the given timeout period results in
-fencing failure.</longdesc>
+fencing failure. When multiple node names/IP addresses are specified
+a single valid message is sufficient for success. This is useful when
+single node can send message via several different IP addresses.
+</longdesc>
 <vendor-url>http://www.kernel.org/pub/linux/utils/kernel/kexec/</vendor-url>
 <parameters>
 	<parameter name="nodename" unique="0" required="0">
-		<getopt mixed="-n, --nodename=NODE" />
+		<getopt mixed="-n, --nodename=NODE[,NODE...]" />
 		<content type="string" />
-		<shortdesc lang="en">Name or IP address of node to be fenced. This option is required for
-the "off" action.</shortdesc>
+		<shortdesc lang="en">List of names or IP addresses of node to be fenced. This option is
+required for the "off" action. Multiple values separated by commas
+can be specified. All values must be of same IP network family.</shortdesc>
 	</parameter>
 	<parameter name="ipport" unique="0" required="0">
 		<getopt mixed="-p, --ipport=PORT" />

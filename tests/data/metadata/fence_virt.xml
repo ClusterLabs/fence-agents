@@ -78,8 +78,7 @@
 		<content type="string" default="0" />
 		<shortdesc lang="en">Fencing delay (in seconds; default=0)</shortdesc>
 	</parameter>
-	<parameter name="domain" unique="0" required="1">
-		<!-- DEPRECATED; FOR COMPATIBILITY ONLY -->
+	<parameter name="domain" unique="0" required="0" deprecated="1">
 		<getopt mixed="" />
 		<content type="string" />
 		<shortdesc lang="en">Virtual Machine (domain name) to fence (deprecated; use port)</shortdesc>

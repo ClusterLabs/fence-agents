@@ -174,7 +174,8 @@ used with Cisco UCS to fence machines."
 		if result == None:
 			## Cookie is absenting in response
 			fail(EC_LOGIN_DENIED)
-	except Exception:
+	except Exception as e:
+		logging.error("Failed: {}".format(str(e)))
 		fail(EC_LOGIN_DENIED)
 
 	options_global["cookie"] = result.group(1)

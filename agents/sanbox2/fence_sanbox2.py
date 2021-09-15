@@ -28,7 +28,8 @@ def get_power_status(conn, options):
 			conn.send_eol("admin end")
 			conn.send_eol("exit")
 			conn.close()
-		except Exception:
+		except Exception as e:
+			logging.error("Failed: {}".format(str(e)))
 			pass
 		fail(EC_TIMED_OUT)
 
@@ -54,7 +55,8 @@ def set_power_status(conn, options):
 			conn.send_eol("admin end")
 			conn.send_eol("exit")
 			conn.close()
-		except Exception:
+		except Exception as e:
+			logging.error("Failed: {}".format(str(e)))
 			pass
 		fail(EC_TIMED_OUT)
 
@@ -66,7 +68,8 @@ def set_power_status(conn, options):
 			conn.send_eol("admin end")
 			conn.send_eol("exit")
 			conn.close()
-		except Exception:
+		except Exception as e:
+			logging.error("Failed: {}".format(str(e)))
 			pass
 		fail(EC_TIMED_OUT)
 
@@ -91,7 +94,8 @@ def get_list_devices(conn, options):
 			conn.send_eol("admin end")
 			conn.send_eol("exit")
 			conn.close()
-		except Exception:
+		except Exception as e:
+			logging.error("Failed: {}".format(str(e)))
 			pass
 		fail(EC_TIMED_OUT)
 

@@ -782,7 +782,7 @@ args_metadata(char *progname, const char *optstr)
 		else if (arg->deprecated)
 			printf("\t<parameter name=\"%s\" unique=\"0\" required=\"%d\" deprecated=\"%d\">\n", arg->stdin_opt, (!strcmp(arg->content_type, "boolean") || arg->default_value) ? 0 : 1, arg->deprecated);
 		else
-			printf("\t<parameter name=\"%s\" unique=\"0\" required=\"%d\">\n", arg->stdin_opt, (!strcmp(arg->content_type, "boolean") || arg->default_value) ? 0 : 1);
+			printf("\t<parameter name=\"%s\" unique=\"0\" required=\"%d\">\n", arg->stdin_opt, (!strcmp(arg->content_type, "boolean") || arg->default_value || !strcmp(arg->stdin_opt, "multicast_address")) ? 0 : 1);
 
                 printf("\t\t<getopt mixed=\"-%c\" />\n",arg->opt);
                 if (arg->default_value) {
@@ -802,9 +802,8 @@ args_metadata(char *progname, const char *optstr)
 
 		arg = &_arg_info[x];
 
-		printf("\t<parameter name=\"%s\" unique=\"0\" required=\"%d\">\n", arg->stdin_opt,
-			(!strcmp(arg->content_type, "boolean") || arg->default_value) ? 0 : 1);
-		printf("\t\t<!-- DEPRECATED; FOR COMPATIBILITY ONLY -->\n");
+		printf("\t<parameter name=\"%s\" unique=\"0\" required=\"%d\" deprecated=\"1\">\n", arg->stdin_opt,
+			(!strcmp(arg->content_type, "boolean") || arg->default_value || !strcmp(arg->stdin_opt, "domain")) ? 0 : 1);
 		printf("\t\t<getopt mixed=\"\" />\n");
                 if (arg->default_value) {
                   printf("\t\t<content type=\"%s\" default=\"%s\" />\n", arg->content_type, arg->default_value);

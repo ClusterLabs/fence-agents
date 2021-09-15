@@ -236,8 +236,22 @@ set_option_timeout (fence_kdump_opts_t *opts, const char *arg)
 static inline void
 set_option_verbose (fence_kdump_opts_t *opts, const char *arg)
 {
+    int i;
+
     if (arg != NULL) {
-        opts->verbose = atoi (arg);
+        if (isdigit(arg[0])) {
+            opts->verbose += atoi (arg);
+        } else {
+            opts->verbose += 1; /* initial -v */
+            for (i = 0; i < strlen(arg); i++) {
+                if (arg[i] == 'v') {
+                    opts->verbose += 1;
+                } else {
+                    fprintf (stderr, "[error]: invalid value '%c' for verbose\n", arg[i]);
+                    return;
+                }
+            }
+        }
     } else {
         opts->verbose += 1;
     }

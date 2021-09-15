@@ -36,6 +36,11 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 		<content type="string"  />
 		<shortdesc lang="en">Secret Key.</shortdesc>
 	</parameter>
+	<parameter name="filter" unique="0" required="0">
+		<getopt mixed="--filter=[key=value]" />
+		<content type="string"  />
+		<shortdesc lang="en">Filter for list-action</shortdesc>
+	</parameter>
 	<parameter name="boto3_debug" unique="0" required="0">
 		<getopt mixed="-b, --boto3_debug=[option]" />
 		<content type="string" default="False"  />
@@ -89,7 +94,7 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 	<parameter name="disable_timeout" unique="0" required="0">
 		<getopt mixed="--disable-timeout=[true/false]" />
 		<content type="string"  />
-		<shortdesc lang="en"> Disable timeout (true/false) (default: true when run from Pacemaker 2.0+)</shortdesc>
+		<shortdesc lang="en">Disable timeout (true/false) (default: true when run from Pacemaker 2.0+)</shortdesc>
 	</parameter>
 	<parameter name="login_timeout" unique="0" required="0">
 		<getopt mixed="--login-timeout=[seconds]" />
@@ -110,6 +115,11 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 		<getopt mixed="--shell-timeout=[seconds]" />
 		<content type="second" default="3"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
+	</parameter>
+	<parameter name="stonith_status_sleep" unique="0" required="0">
+		<getopt mixed="--stonith-status-sleep=[seconds]" />
+		<content type="second" default="1"  />
+		<shortdesc lang="en">Sleep X seconds between status calls during a STONITH action</shortdesc>
 	</parameter>
 	<parameter name="retry_on" unique="0" required="0">
 		<getopt mixed="--retry-on=[attempts]" />
