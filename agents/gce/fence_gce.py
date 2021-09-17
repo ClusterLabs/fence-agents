@@ -452,7 +452,6 @@ def main():
 		serviceaccount = options.get("--serviceaccount")
 		if serviceaccount:
 			scope = ['https://www.googleapis.com/auth/cloud-platform']
-			credentials = ServiceAccountCredentials.from_json_keyfile_name(serviceaccount, scope)
 			logging.debug("using credentials from service account")
 			try:
 				from google.oauth2.service_account import Credentials as ServiceAccountCredentials
