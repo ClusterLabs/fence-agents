@@ -15,4 +15,4 @@ Because many fence agents are quite similar to each other, a fencing library (in
 * [ClusterLabs website](http://www.clusterlabs.org/)
 * [User and developer documentation](https://github.com/ClusterLabs/fence-agents/tree/master/doc/FenceAgentAPI.md)
 * Mailing lists for [users](http://oss.clusterlabs.org/mailman/listinfo/users) and [developers](http://oss.clusterlabs.org/mailman/listinfo/developers)
-* #clusterlabs IRC channel on [freenode](http://freenode.net/)
+* #clusterlabs IRC channel on [Libera](https://Libera.chat/)
