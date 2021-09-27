@@ -39,7 +39,7 @@ def get_power_status(conn, options):
 
 def main():
 	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", \
-			"port", "switch"]
+			"port"]
 
 	atexit.register(atexit_handler)
 
@@ -56,12 +56,6 @@ should be avoided while a GFS cluster is running because the connection \
 will block any necessary fencing actions."
 	docs["vendorurl"] = "http://www.cyberpower.com"
 	show_docs(options, docs)
-
-	## Support for --plug [switch]:[plug] notation that was used before
-	if (("--plug" in options) == 1) and (-1 != options["--plug"].find(":")):
-		(switch, plug) = options["--plug"].split(":", 1)
-		options["--switch"] = switch
-		options["--plug"] = plug
 
 	##
 	## Operate the fencing device
