@@ -11,11 +11,11 @@ import sys, re, time
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, fail_usage, EC_STATUS
+from fencing import fail, EC_STATUS
 
 def set_power_status(conn, options):
 
-	conn.send_eol("oltctrl index "+options["--plug"]+" act delay"+options["--action"])
+	conn.send_eol("oltctrl index " + options["--plug"] + " act delay" + options["--action"])
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
 def get_power_status(conn, options):
@@ -39,7 +39,7 @@ def get_power_status(conn, options):
 
 def main():
 	device_opt = ["ipaddr", "login", "passwd", "cmd_prompt", "secure", \
-			"port", "switch", "telnet"]
+			"port", "switch"]
 
 	atexit.register(atexit_handler)
 
