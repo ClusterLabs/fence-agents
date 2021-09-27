@@ -148,7 +148,7 @@ def set_boot_order(_, client, options):
 
     if options["--boot-option"] == "pxe":
         device = "Intel(r) AMT: Force PXE Boot"
-    elif options["--boot-option"] == "hd" or "hdsafe":
+    elif options["--boot-option"] in ["hd", "hdsafe"]:
         device = "Intel(r) AMT: Force Hard-drive Boot"
     elif options["--boot-option"] == "cd":
         device = "Intel(r) AMT: Force CD/DVD Boot"
