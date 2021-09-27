@@ -544,7 +544,7 @@ BuildArch: noarch
 %description cyberpower-ssh
 %files cyberpower-ssh
 %{_sbindir}/fence_cyberpower_ssh
-%{_mandir}/man8/fence_cyberpower.8*
+%{_mandir}/man8/fence_cyberpower_ssh.8*
 
 %package docker
 License: GPLv2+ and LGPLv2+
