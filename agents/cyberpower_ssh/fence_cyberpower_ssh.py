@@ -13,7 +13,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 
 def set_power_status(conn, options):
-
 	conn.send_eol("oltctrl index " + options["--plug"] + " act delay" + options["--action"])
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
