@@ -286,11 +286,11 @@ def get_azure_credentials(config):
     credentials = None
     cloud_environment = get_azure_cloud_environment(config)
     if config.UseMSI and cloud_environment:
-        from msrestazure.azure_active_directory import MSIAuthentication
-        credentials = MSIAuthentication(cloud_environment=cloud_environment)
+        from azure.identity import ManagedIdentityCredential
+        credentials = ManagedIdentityCredential(cloud_environment=cloud_environment)
     elif config.UseMSI:
-        from msrestazure.azure_active_directory import MSIAuthentication
-        credentials = MSIAuthentication()
+        from azure.identity import ManagedIdentityCredential
+        credentials = ManagedIdentityCredential()
     elif cloud_environment:
         try:
             # try to use new libraries ClientSecretCredential (azure.identity, based on azure.core)
@@ -340,7 +340,8 @@ def get_azure_compute_client(config):
         compute_client = ComputeManagementClient(
             credentials,
             config.SubscriptionId,
-            base_url=cloud_environment.endpoints.resource_manager
+            base_url=cloud_environment.endpoints.resource_manager,
+            credential_scopes=[cloud_environment.endpoints.resource_manager + "/.default"]
         )
     else:
         compute_client = ComputeManagementClient(
@@ -359,7 +360,8 @@ def get_azure_network_client(config):
         network_client = NetworkManagementClient(
             credentials,
             config.SubscriptionId,
-            base_url=cloud_environment.endpoints.resource_manager
+            base_url=cloud_environment.endpoints.resource_manager,
+            credential_scopes=[cloud_environment.endpoints.resource_manager + "/.default"]
         )
     else:
         network_client = NetworkManagementClient(
