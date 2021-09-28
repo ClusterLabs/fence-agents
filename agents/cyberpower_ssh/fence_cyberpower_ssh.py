@@ -11,7 +11,6 @@ import sys, re, time
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, EC_STATUS
 
 def set_power_status(conn, options):
 
