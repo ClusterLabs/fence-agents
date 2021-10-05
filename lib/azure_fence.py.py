@@ -286,11 +286,19 @@ def get_azure_credentials(config):
     credentials = None
     cloud_environment = get_azure_cloud_environment(config)
     if config.UseMSI and cloud_environment:
-        from msrestazure.azure_active_directory import MSIAuthentication
-        credentials = MSIAuthentication(cloud_environment=cloud_environment)
+        try:
+            from azure.identity import ManagedIdentityCredential
+            credentials = ManagedIdentityCredential(cloud_environment=cloud_environment)
+        except ImportError:
+            from msrestazure.azure_active_directory import MSIAuthentication
+            credentials = MSIAuthentication(cloud_environment=cloud_environment)
     elif config.UseMSI:
-        from msrestazure.azure_active_directory import MSIAuthentication
-        credentials = MSIAuthentication()
+        try:
+            from azure.identity import ManagedIdentityCredential
+            credentials = ManagedIdentityCredential()
+        except ImportError:
+            from msrestazure.azure_active_directory import MSIAuthentication
+            credentials = MSIAuthentication()
     elif cloud_environment:
         try:
             # try to use new libraries ClientSecretCredential (azure.identity, based on azure.core)
@@ -337,11 +345,19 @@ def get_azure_compute_client(config):
     credentials = get_azure_credentials(config)
 
     if cloud_environment:
-        compute_client = ComputeManagementClient(
-            credentials,
-            config.SubscriptionId,
-            base_url=cloud_environment.endpoints.resource_manager
-        )
+        try:
+            compute_client = ComputeManagementClient(
+                credentials,
+                config.SubscriptionId,
+                base_url=cloud_environment.endpoints.resource_manager,
+                credential_scopes=[cloud_environment.endpoints.resource_manager + "/.default"]
+            )
+        except TypeError:
+            compute_client = ComputeManagementClient(
+                credentials,
+                config.SubscriptionId,
+                base_url=cloud_environment.endpoints.resource_manager
+            )
     else:
         compute_client = ComputeManagementClient(
             credentials,
@@ -356,11 +372,19 @@ def get_azure_network_client(config):
     credentials = get_azure_credentials(config)
 
     if cloud_environment:
-        network_client = NetworkManagementClient(
-            credentials,
-            config.SubscriptionId,
-            base_url=cloud_environment.endpoints.resource_manager
-        )
+        try:
+            network_client = NetworkManagementClient(
+                credentials,
+                config.SubscriptionId,
+                base_url=cloud_environment.endpoints.resource_manager,
+                credential_scopes=[cloud_environment.endpoints.resource_manager + "/.default"]
+            )
+        except TypeError:
+            network_client = NetworkManagementClient(
+                credentials,
+                config.SubscriptionId,
+                base_url=cloud_environment.endpoints.resource_manager
+            )
     else:
         network_client = NetworkManagementClient(
             credentials,
