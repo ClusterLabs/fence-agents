@@ -2,10 +2,10 @@
 
 #
 # Requires the googleapiclient and oauth2client
-# RHEL 7.x: google-api-python-client==1.6.7 python-gflags==2.0 pyasn1==0.4.8 rsa==3.4.2
-# RHEL 8.x: nothing additional needed
-# SLES 12.x: python-google-api-python-client python-oauth2client python-oauth2client-gce
-# SLES 15.x: python3-google-api-python-client python3-oauth2client python3-oauth2client-gce
+# RHEL 7.x: google-api-python-client==1.6.7 python-gflags==2.0 pyasn1==0.4.8 rsa==3.4.2 pysocks==1.7.1 httplib2==0.19.0
+# RHEL 8.x: pysocks==1.7.1 httplib2==0.19.0
+# SLES 12.x: python-google-api-python-client python-oauth2client python-oauth2client-gce pysocks==1.7.1 httplib2==0.19.0
+# SLES 15.x: python3-google-api-python-client python3-oauth2client pysocks==1.7.1 httplib2==0.19.0
 #
 
 import atexit
@@ -65,7 +65,7 @@ def replace_api_uri(options, http_request):
 			{
 				"matchlength": 4,
 				"match": "https://compute.googleapis.com/compute/v1/projects/(.*)/zones/(.*)/instances/(.*)/reset(.*)",
-				"replace": "https://baremetalsolution.googleapis.com/v1alpha1/projects/\\1/locations/\\2/instances/\\3:resetInstance\\4"
+				"replace": "https://baremetalsolution.googleapis.com/v1/projects/\\1/locations/\\2/instances/\\3:resetInstance\\4"
 			})
 	for uri_replacement in uri_replacements:
 		# each uri_replacement should have matchlength, match, and replace
@@ -120,12 +120,15 @@ def translate_status(instance_status):
 
 def get_nodes_list(conn, options):
 	result = {}
+	if "--zone" not in options:
+		fail_usage("Failed: get_nodes_list: Please specify the --zone in the command")
 	try:
-		instanceList = retry_api_execute(options, conn.instances().list(
-			project=options["--project"],
-			zone=options["--zone"]))
-		for instance in instanceList["items"]:
-			result[instance["id"]] = (instance["name"], translate_status(instance["status"]))
+		for zone in options["--zone"].split(","):
+			instanceList = retry_api_execute(options, conn.instances().list(
+				project=options["--project"],
+				zone=zone))
+			for instance in instanceList["items"]:
+				result[instance["id"]] = (instance["name"], translate_status(instance["status"]))
 	except Exception as err:
 		fail_usage("Failed: get_nodes_list: {}".format(str(err)))
 
@@ -141,23 +144,47 @@ def get_power_status(conn, options):
 			return "off"
 		else:
 			return "on"
+	# If zone is not listed for an entry we attempt to get it automatically
+	instance = options["--plug"]
+	zone = get_zone(conn, options, instance) if "--plugzonemap" not in options else options["--plugzonemap"][instance]
+	instance_status = get_instance_power_status(conn, options, instance, zone)
+	# If any of the instances do not match the intended status we return the
+	# the opposite status so that the fence agent can change it.
+	if instance_status != options.get("--action"):
+		return instance_status
+
+	return options.get("--action")
+
+
+def get_instance_power_status(conn, options, instance, zone):
 	try:
-		instance = retry_api_execute(options, conn.instances().get(
-				project=options["--project"],
-				zone=options["--zone"],
-				instance=options["--plug"]))
+		instance = retry_api_execute(
+				options,
+				conn.instances().get(project=options["--project"], zone=zone, instance=instance))
 		return translate_status(instance["status"])
 	except Exception as err:
-		fail_usage("Failed: get_power_status: {}".format(str(err)))
+		fail_usage("Failed: get_instance_power_status: {}".format(str(err)))
 
 
-def wait_for_operation(conn, options, operation):
+def check_for_existing_operation(conn, options, instance, zone, operation_type):
+	logging.debug("check_for_existing_operation")
+	result = retry_api_execute(
+			options,
+			conn.zoneOperations().list(project=options["--project"], zone=zone))
+
+	for operation in result["items"]:
+		if operation["operationType"] == operation_type and operation[
+					"status"] == "RUNNING" and instance in operation["targetLink"]:
+			logging.info("Existing %s operation found", operation_type)
+			return operation
+
+
+def wait_for_operation(conn, options, zone, operation):
 	if 'name' not in operation:
 		logging.warning('Cannot wait for operation to complete, the'
 		' requested operation will continue asynchronously')
 		return
 	project = options["--project"]
-	zone = options["--zone"]
 	while True:
 		result = retry_api_execute(options, conn.zoneOperations().get(
 			project=project,
@@ -171,50 +198,72 @@ def wait_for_operation(conn, options, operation):
 
 
 def set_power_status(conn, options):
-	logging.debug("set_power_status");
-	try:
-		if options["--action"] == "off":
-			logging.info("Issuing poweroff of %s in zone %s" % (options["--plug"], options["--zone"]))
-			operation = retry_api_execute(options, conn.instances().stop(
-					project=options["--project"],
-					zone=options["--zone"],
-					instance=options["--plug"]))
-			logging.info("Poweroff command completed, waiting for the operation to complete")
-			wait_for_operation(conn, options, operation)
-			logging.info("Poweroff of %s in zone %s complete" % (options["--plug"], options["--zone"]))
-		elif options["--action"] == "on":
-			logging.info("Issuing poweron of %s in zone %s" % (options["--plug"], options["--zone"]))
-			operation = retry_api_execute(options, conn.instances().start(
-					project=options["--project"],
-					zone=options["--zone"],
-					instance=options["--plug"]))
-			wait_for_operation(conn, options, operation)
-			logging.info("Poweron of %s in zone %s complete" % (options["--plug"], options["--zone"]))
-	except Exception as err:
-		fail_usage("Failed: set_power_status: {}".format(str(err)))
+	logging.debug("set_power_status")
+	instance = options["--plug"]
+	# If zone is not listed for an entry we attempt to get it automatically
+	zone = get_zone(conn, options, instance) if "--plugzonemap" not in options else options["--plugzonemap"][instance]
+	set_instance_power_status(conn, options, instance, zone, options["--action"])
 
+
+def set_instance_power_status(conn, options, instance, zone, action):
+	logging.info("Setting power status of %s in zone %s", instance, zone)
+	project = options["--project"]
+
+	try:
+		if action == "off":
+			logging.info("Issuing poweroff of %s in zone %s", instance, zone)
+			operation = check_for_existing_operation(conn, options, instance, zone, "stop")
+			if not operation:
+				operation = retry_api_execute(
+						options,
+						conn.instances().stop(project=project, zone=zone, instance=instance))
+			logging.info("Poweroff command completed, waiting for the operation to complete")
+			wait_for_operation(conn, options, zone, operation)
+			logging.info("Poweroff of %s in zone %s complete", instance, zone)
+		elif action == "on":
+			logging.info("Issuing poweron of %s in zone %s", instance, zone)
+			operation = check_for_existing_operation(conn, options, instance, zone, "start")
+			if not operation:
+				operation = retry_api_execute(
+						options,
+						conn.instances().start(project=project, zone=zone, instance=instance))
+			wait_for_operation(conn, options, zone, operation)
+			logging.info("Poweron of %s in zone %s complete", instance, zone)
+	except Exception as err:
+		fail_usage("Failed: set_instance_power_status: {}".format(str(err)))
 
 def power_cycle(conn, options):
-	logging.debug("power_cycle");
+	logging.debug("power_cycle")
+	instance = options["--plug"]
+	# If zone is not listed for an entry we attempt to get it automatically
+	zone = get_zone(conn, options, instance) if "--plugzonemap" not in options else options["--plugzonemap"][instance]
+	if not power_cycle_instance(conn, options, instance, zone):
+		return False
+	return True
+
+
+def power_cycle_instance(conn, options, instance, zone):
+	logging.info("Issuing reset of %s in zone %s", instance, zone)
+	project = options["--project"]
+
 	try:
-		logging.info('Issuing reset of %s in zone %s' % (options["--plug"], options["--zone"]))
-		operation = retry_api_execute(options, conn.instances().reset(
-				project=options["--project"],
-				zone=options["--zone"],
-				instance=options["--plug"]))
+		operation = check_for_existing_operation(conn, options, instance, zone, "reset")
+		if not operation:
+			operation = retry_api_execute(
+					options,
+					conn.instances().reset(project=project, zone=zone, instance=instance))
 		logging.info("Reset command completed, waiting for the operation to complete")
-		wait_for_operation(conn, options, operation)
-		logging.info('Reset of %s in zone %s complete' % (options["--plug"], options["--zone"]))
+		wait_for_operation(conn, options, zone, operation)
+		logging.info("Reset of %s in zone %s complete", instance, zone)
 		return True
-	except Exception as err:
-		logging.error("Failed: power_cycle: {}".format(str(err)))
+	except Exception:
+		logging.exception("Failed: power_cycle")
 		return False
 
 
-def get_zone(conn, options):
+def get_zone(conn, options, instance):
 	logging.debug("get_zone");
 	project = options['--project']
-	instance = options['--plug']
 	fl = 'name="%s"' % instance
 	request = replace_api_uri(options, conn.instances().aggregatedList(project=project, filter=fl))
 	while request is not None:
@@ -441,11 +490,28 @@ def main():
 
 	if "--baremetalsolution" in options:
 		options["--zone"] = "none"
-	if not options.get("--zone"):
-		try:
-			options["--zone"] = get_zone(conn, options)
-		except Exception as err:
-			fail_usage("Failed retrieving GCE zone. Please provide --zone option: {}".format(str(err)))
+
+	# Populates zone automatically if missing from the command
+	zones = [] if not "--zone" in options else options["--zone"].split(",")
+	options["--plugzonemap"] = {}
+	if "--plug" in options:
+		for i, instance in enumerate(options["--plug"].split(",")):
+			if len(zones) == 1:
+				# If only one zone is specified, use it across all plugs
+				options["--plugzonemap"][instance] = zones[0]
+				continue
+
+			if len(zones) - 1 >= i:
+				# If we have enough zones specified with the --zone flag use the zone at
+				# the same index as the plug
+				options["--plugzonemap"][instance] = zones[i]
+				continue
+
+			try:
+				# In this case we do not have a zone specified so we attempt to detect it
+				options["--plugzonemap"][instance] = get_zone(conn, options, instance)
+			except Exception as err:
+				fail_usage("Failed retrieving GCE zone. Please provide --zone option: {}".format(str(err)))
 
 	# Operate the fencing device
 	result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list, power_cycle)
