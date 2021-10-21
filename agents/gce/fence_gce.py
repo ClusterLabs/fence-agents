@@ -374,13 +374,21 @@ def define_new_opts():
 		"required" : "0",
 		"order" : 9
 	}
+	all_opt["plugzonemap"] = {
+		"getopt" : ":",
+		"longopt" : "plugzonemap",
+		"help" : "--plugzonemap=[plugzonemap]    Comma separated zone map when fencing multiple plugs",
+		"shortdesc" : "Comma separated zone map when fencing multiple plugs.",
+		"required" : "0",
+		"order" : 10
+	}
 	all_opt["proxyhost"] = {
 		"getopt" : ":",
 		"longopt" : "proxyhost",
 		"help" : "--proxyhost=[proxy_host]       The proxy host to use, if one is needed to access the internet (Example: 10.122.0.33)",
 		"shortdesc" : "If a proxy is used for internet access, the proxy host should be specified.",
 		"required" : "0",
-		"order" : 10
+		"order" : 11
 	}
 	all_opt["proxyport"] = {
 		"getopt" : ":",
@@ -389,7 +397,7 @@ def define_new_opts():
 		"help" : "--proxyport=[proxy_port]       The proxy port to use, if one is needed to access the internet (Example: 3127)",
 		"shortdesc" : "If a proxy is used for internet access, the proxy port should be specified.",
 		"required" : "0",
-		"order" : 11
+		"order" : 12
 	}
 
 
@@ -398,7 +406,7 @@ def main():
 
 	device_opt = ["port", "no_password", "zone", "project", "stackdriver-logging",
 		"method", "baremetalsolution", "apitimeout", "retries", "retrysleep",
-		"serviceaccount", "proxyhost", "proxyport"]
+		"serviceaccount", "plugzonemap", "proxyhost", "proxyport"]
 
 	atexit.register(atexit_handler)
 
