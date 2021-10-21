@@ -5,6 +5,10 @@ Copyright (C) 2004-2011 Red Hat, Inc.  All rights reserved.
 
 Exceptions:
 
+agents/raritan_px3/*:
+ Copyright (c) 2021 SUSE LLC
+ Contributed by Thomas Renninger <trenn@suse.de>
+
 agents/ibmz/*:
  Copyright (c) 2020 IBM Corp.
  Contributed by Paulo de Rezende Pinatti <ppinatti at linux.ibm.com>
