@@ -235,7 +235,7 @@ do_action_metadata (const char *self)
     fprintf (stdout, "fence_kdump is an I/O fencing agent to be used with the kdump\n"
                      "crash recovery service. When the fence_kdump agent is invoked,\n"
                      "it will listen for a message from the failed node that acknowledges\n"
-                     "that the failed node it executing the kdump crash kernel.\n"
+                     "that the failed node is executing the kdump crash kernel.\n"
                      "Note that fence_kdump is not a replacement for traditional\n"
                      "fencing methods. The fence_kdump agent can only detect that a\n"
                      "node has entered the kdump crash recovery service. This allows the\n"
