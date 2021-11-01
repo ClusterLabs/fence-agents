@@ -4,7 +4,7 @@ import sys
 import logging
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, fail_usage, run_delay, EC_STATUS
+from fencing import fail, fail_usage, run_delay, EC_STATUS, EC_FETCH_VM_UUID
 
 try:
     from kubernetes.client.exceptions import ApiException
@@ -35,19 +35,26 @@ def get_power_status(conn, options):
         vmi_api = conn.resources.get(api_version=apiversion,
                                               kind='VirtualMachineInstance')
         vmi = vmi_api.get(name=name, namespace=namespace)
-        if vmi is not None:
-            phase = vmi.status.phase
-            if phase == "Running":
-                return "on"
-        return "off"
+        return translate_status(vmi.status.phase)
     except ApiException as e:
         if e.status == 404:
+            try:
+                vm_api = conn.resources.get(api_version=apiversion, kind='VirtualMachine')
+                vm = vm_api.get(name=name, namespace=namespace)
+            except ApiException as e:
+                logging.error("VM %s doesn't exist", name)
+                fail(EC_FETCH_VM_UUID)
             return "off"
         logging.error("Failed to get power status, with API Exception: %s", e)
         fail(EC_STATUS)
     except Exception as e:
         logging.error("Failed to get power status, with Exception: %s", e)
         fail(EC_STATUS)
+
+def translate_status(instance_status):
+    if instance_status == "Running":
+        return "on"
+    return "unknown"
 
 def set_power_status(conn, options):
     logging.debug("Starting set status operation")
