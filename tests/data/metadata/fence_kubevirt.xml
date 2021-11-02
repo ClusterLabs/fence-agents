@@ -95,7 +95,7 @@
 	</parameter>
 	<parameter name="power_timeout" unique="0" required="0">
 		<getopt mixed="--power-timeout=[seconds]" />
-		<content type="second" default="20"  />
+		<content type="second" default="40"  />
 		<shortdesc lang="en">Test X seconds for status change after ON/OFF</shortdesc>
 	</parameter>
 	<parameter name="power_wait" unique="0" required="0">
