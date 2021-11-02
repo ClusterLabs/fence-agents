@@ -2,6 +2,7 @@
 
 import sys
 import logging
+import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, fail_usage, run_delay, EC_STATUS, EC_FETCH_VM_UUID
@@ -110,7 +111,12 @@ def main():
     conn = None
 
     device_opt = ["port", "namespace", "kubeconfig", "ssl_insecure", "no_password", "apiversion"]
+
+    atexit.register(atexit_handler)
     define_new_opts()
+
+    all_opt["power_timeout"]["default"] = "40"
+
     options = check_input(device_opt, process_input(device_opt))
 
     docs = {}
