@@ -173,8 +173,8 @@ if echo "$AGENTS_LIST" | grep -q -E "all|zvm( |$)"; then
 fi
 
 FENCE_VIRT=0
-if echo "$AGENTS_LIST" | grep -q -E "all|virt( |$)"; then
-	AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s/virt( |$)//")
+if echo "$AGENTS_LIST" | grep -q -E "all|(^| )virt( |$)"; then
+	AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s/(^| )virt( |$)//")
 	case "$host_os" in
 		*bsd*)
 			;;
