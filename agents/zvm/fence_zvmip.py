@@ -165,6 +165,7 @@ def main():
 	all_opt["ipport"]["default"] = "44444"
 	all_opt["shell_timeout"]["default"] = "5"
 	all_opt["missing_as_off"]["default"] = "1"
+	all_opt["ssl"]["default"] = "1"
 	options = check_input(device_opt, process_input(device_opt), other_conditions=True)
 
 	if len(options.get("--plug", "")) > 8:
