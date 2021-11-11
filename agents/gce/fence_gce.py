@@ -41,6 +41,21 @@ except:
 
 METADATA_SERVER = 'http://metadata.google.internal/computeMetadata/v1/'
 METADATA_HEADERS = {'Metadata-Flavor': 'Google'}
+INSTANCE_LINK = 'https://www.googleapis.com/compute/v1/projects/{}/zones/{}/instances/{}'
+
+def run_on_fail(options):
+	if "--runonfail" in options:
+		command = options["--runonfail"]
+		logging.info("Due to failure, running command: {}".format(command))
+		os.system(command)
+
+def fail_fence_agent(options, message):
+	run_on_fail(options)
+	fail_usage(message)
+
+def raise_fence_agent(options, message):
+	run_on_fail(options)
+	raise Exception(message)
 
 #
 # Will use baremetalsolution setting or the environment variable
@@ -121,7 +136,7 @@ def translate_status(instance_status):
 def get_nodes_list(conn, options):
 	result = {}
 	if "--zone" not in options:
-		fail_usage("Failed: get_nodes_list: Please specify the --zone in the command")
+		fail_fence_agent(options, "Failed: get_nodes_list: Please specify the --zone in the command")
 	try:
 		for zone in options["--zone"].split(","):
 			instanceList = retry_api_execute(options, conn.instances().list(
@@ -130,7 +145,7 @@ def get_nodes_list(conn, options):
 			for instance in instanceList["items"]:
 				result[instance["id"]] = (instance["name"], translate_status(instance["status"]))
 	except Exception as err:
-		fail_usage("Failed: get_nodes_list: {}".format(str(err)))
+		fail_fence_agent(options, "Failed: get_nodes_list: {}".format(str(err)))
 
 	return result
 
@@ -163,27 +178,34 @@ def get_instance_power_status(conn, options, instance, zone):
 				conn.instances().get(project=options["--project"], zone=zone, instance=instance))
 		return translate_status(instance["status"])
 	except Exception as err:
-		fail_usage("Failed: get_instance_power_status: {}".format(str(err)))
+		fail_fence_agent(options, "Failed: get_instance_power_status: {}".format(str(err)))
 
 
 def check_for_existing_operation(conn, options, instance, zone, operation_type):
 	logging.debug("check_for_existing_operation")
+	if "--baremetalsolution" in options:
+		# There is no API for checking in progress operations
+		return False
+
+	project = options["--project"]
+	target_link = INSTANCE_LINK.format(project, zone, instance)
+	query_filter = '(targetLink = "{}") AND (operationType = "{}") AND (status = "RUNNING")'.format(target_link, operation_type)
 	result = retry_api_execute(
 			options,
-			conn.zoneOperations().list(project=options["--project"], zone=zone))
+			conn.zoneOperations().list(project=project, zone=zone, filter=query_filter, maxResults=1))
 
-	for operation in result["items"]:
-		if operation["operationType"] == operation_type and operation[
-					"status"] == "RUNNING" and instance in operation["targetLink"]:
-			logging.info("Existing %s operation found", operation_type)
-			return operation
+	if "items" in result and result["items"]:
+		logging.info("Existing %s operation found", operation_type)
+		return result["items"][0]
 
 
 def wait_for_operation(conn, options, zone, operation):
 	if 'name' not in operation:
 		logging.warning('Cannot wait for operation to complete, the'
 		' requested operation will continue asynchronously')
-		return
+		return False
+
+	wait_time = 0
 	project = options["--project"]
 	while True:
 		result = retry_api_execute(options, conn.zoneOperations().get(
@@ -192,8 +214,21 @@ def wait_for_operation(conn, options, zone, operation):
 			operation=operation['name']))
 		if result['status'] == 'DONE':
 			if 'error' in result:
-				raise Exception(result['error'])
-			return
+				raise_fence_agent(options, result['error'])
+			return True
+
+		if "--errortimeout" in options and wait_time > int(options["--errortimeout"]):
+			raise_fence_agent(options, "Operation did not complete before the timeout.")
+
+		if "--warntimeout" in options and wait_time > int(options["--warntimeout"]):
+			logging.warning("Operation did not complete before the timeout.")
+			if "--runonwarn" in options:
+				command = options["--runonwarn"]
+				logging.info("Due to warning, running command: {}".format(command))
+				os.system(command)
+			return False
+
+		wait_time = wait_time + 1
 		time.sleep(1)
 
 
@@ -213,33 +248,35 @@ def set_instance_power_status(conn, options, instance, zone, action):
 		if action == "off":
 			logging.info("Issuing poweroff of %s in zone %s", instance, zone)
 			operation = check_for_existing_operation(conn, options, instance, zone, "stop")
+			if operation and "--earlyexit" in options:
+				return
 			if not operation:
 				operation = retry_api_execute(
 						options,
 						conn.instances().stop(project=project, zone=zone, instance=instance))
 			logging.info("Poweroff command completed, waiting for the operation to complete")
-			wait_for_operation(conn, options, zone, operation)
-			logging.info("Poweroff of %s in zone %s complete", instance, zone)
+			if wait_for_operation(conn, options, zone, operation):
+				logging.info("Poweroff of %s in zone %s complete", instance, zone)
 		elif action == "on":
 			logging.info("Issuing poweron of %s in zone %s", instance, zone)
 			operation = check_for_existing_operation(conn, options, instance, zone, "start")
+			if operation and "--earlyexit" in options:
+				return
 			if not operation:
 				operation = retry_api_execute(
 						options,
 						conn.instances().start(project=project, zone=zone, instance=instance))
-			wait_for_operation(conn, options, zone, operation)
-			logging.info("Poweron of %s in zone %s complete", instance, zone)
+			if wait_for_operation(conn, options, zone, operation):
+				logging.info("Poweron of %s in zone %s complete", instance, zone)
 	except Exception as err:
-		fail_usage("Failed: set_instance_power_status: {}".format(str(err)))
+		fail_fence_agent(options, "Failed: set_instance_power_status: {}".format(str(err)))
 
 def power_cycle(conn, options):
 	logging.debug("power_cycle")
 	instance = options["--plug"]
 	# If zone is not listed for an entry we attempt to get it automatically
 	zone = get_zone(conn, options, instance) if "--plugzonemap" not in options else options["--plugzonemap"][instance]
-	if not power_cycle_instance(conn, options, instance, zone):
-		return False
-	return True
+	return power_cycle_instance(conn, options, instance, zone)
 
 
 def power_cycle_instance(conn, options, instance, zone):
@@ -248,17 +285,19 @@ def power_cycle_instance(conn, options, instance, zone):
 
 	try:
 		operation = check_for_existing_operation(conn, options, instance, zone, "reset")
+		if operation and "--earlyexit" in options:
+			return True
 		if not operation:
 			operation = retry_api_execute(
 					options,
 					conn.instances().reset(project=project, zone=zone, instance=instance))
-		logging.info("Reset command completed, waiting for the operation to complete")
-		wait_for_operation(conn, options, zone, operation)
-		logging.info("Reset of %s in zone %s complete", instance, zone)
+		logging.info("Reset command sent, waiting for the operation to complete")
+		if wait_for_operation(conn, options, zone, operation):
+			logging.info("Reset of %s in zone %s complete", instance, zone)
 		return True
-	except Exception:
+	except Exception as err:
 		logging.exception("Failed: power_cycle")
-		return False
+		raise err
 
 
 def get_zone(conn, options, instance):
@@ -275,7 +314,7 @@ def get_zone(conn, options, instance):
 					return inst['zone'].split("/")[-1]
 		request = replace_api_uri(options, conn.instances().aggregatedList_next(
 				previous_request=request, previous_response=response))
-	raise Exception("Unable to find instance %s" % (instance))
+	raise_fence_agent(options, "Unable to find instance %s" % (instance))
 
 
 def get_metadata(metadata_key, params=None, timeout=None):
@@ -399,6 +438,48 @@ def define_new_opts():
 		"required" : "0",
 		"order" : 12
 	}
+	all_opt["earlyexit"] = {
+		"getopt" : "",
+		"longopt" : "earlyexit",
+		"help" : "--earlyexit                    Return early if reset is already in progress",
+		"shortdesc" : "If an existing reset operation is detected, the fence agent will return before the operation completes with a 0 return code.",
+		"required" : "0",
+		"order" : 13
+	}
+	all_opt["warntimeout"] = {
+		"getopt" : ":",
+		"type" : "integer",
+		"longopt" : "warntimeout",
+		"help" : "--warntimeout=[warn_timeout]   Timeout seconds before logging a warning and returning a 0 status code",
+		"shortdesc" : "If the operation is not completed within the timeout, the cluster operations are allowed to continue.",
+		"required" : "0",
+		"order" : 14
+	}
+	all_opt["errortimeout"] = {
+		"getopt" : ":",
+		"type" : "integer",
+		"longopt" : "errortimeout",
+		"help" : "--errortimeout=[error_timeout] Timeout seconds before failing and returning a non-zero status code",
+		"shortdesc" : "If the operation is not completed within the timeout, cluster is notified of the operation failure.",
+		"required" : "0",
+		"order" : 15
+	}
+	all_opt["runonwarn"] = {
+		"getopt" : ":",
+		"longopt" : "runonwarn",
+		"help" : "--runonwarn=[run_on_warn]      If a timeout occurs and warning is generated, run the supplied command",
+		"shortdesc" : "If a timeout would occur while running the agent, then the supplied command is run.",
+		"required" : "0",
+		"order" : 16
+	}
+	all_opt["runonfail"] = {
+		"getopt" : ":",
+		"longopt" : "runonfail",
+		"help" : "--runonfail=[run_on_fail]      If a failure occurs, run the supplied command",
+		"shortdesc" : "If a failure would occur while running the agent, then the supplied command is run.",
+		"required" : "0",
+		"order" : 17
+	}
 
 
 def main():
@@ -406,7 +487,8 @@ def main():
 
 	device_opt = ["port", "no_password", "zone", "project", "stackdriver-logging",
 		"method", "baremetalsolution", "apitimeout", "retries", "retrysleep",
-		"serviceaccount", "plugzonemap", "proxyhost", "proxyport"]
+		"serviceaccount", "plugzonemap", "proxyhost", "proxyport", "earlyexit",
+		"warntimeout", "errortimeout", "runonwarn", "runonfail"]
 
 	atexit.register(atexit_handler)
 
@@ -487,14 +569,14 @@ def main():
 			conn = googleapiclient.discovery.build(
 				'compute', 'v1', credentials=credentials, cache_discovery=False)
 	except Exception as err:
-		fail_usage("Failed: Create GCE compute v1 connection: {}".format(str(err)))
+		fail_fence_agent(options, "Failed: Create GCE compute v1 connection: {}".format(str(err)))
 
 	# Get project and zone
 	if not options.get("--project"):
 		try:
 			options["--project"] = get_metadata('project/project-id')
 		except Exception as err:
-			fail_usage("Failed retrieving GCE project. Please provide --project option: {}".format(str(err)))
+			fail_fence_agent(options, "Failed retrieving GCE project. Please provide --project option: {}".format(str(err)))
 
 	if "--baremetalsolution" in options:
 		options["--zone"] = "none"
@@ -519,7 +601,7 @@ def main():
 				# In this case we do not have a zone specified so we attempt to detect it
 				options["--plugzonemap"][instance] = get_zone(conn, options, instance)
 			except Exception as err:
-				fail_usage("Failed retrieving GCE zone. Please provide --zone option: {}".format(str(err)))
+				fail_fence_agent(options, "Failed retrieving GCE zone. Please provide --zone option: {}".format(str(err)))
 
 	# Operate the fencing device
 	result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list, power_cycle)
