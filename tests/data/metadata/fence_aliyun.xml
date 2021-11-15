@@ -38,6 +38,11 @@
 		<content type="string"  />
 		<shortdesc lang="en">Ram Role.</shortdesc>
 	</parameter>
+	<parameter name="name_lookup" unique="0" required="0">
+		<getopt mixed="--name-lookup=[method]" />
+		<content type="string" default="instance"  />
+		<shortdesc lang="en">Name loookup method.</shortdesc>
+	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
 		<content type="boolean"  />

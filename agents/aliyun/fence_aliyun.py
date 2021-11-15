@@ -67,8 +67,15 @@ def get_nodes_list(conn, options):
 		instance_list = response.get('Instances').get('Instance')
 		for item in instance_list:
 			instance_id = item.get('InstanceId')
-			instance_name = item.get('InstanceName')
-			result[instance_id] = (instance_name, None)
+			if options["--name-lookup"] == "instance":
+				try:
+					vmname = item.get('InstanceName')
+				except UnicodeEncodeError:
+					fail_usage("Failed: Encoding error: use --name-lookup=\"host\" to use alternative lookup method")
+			else:
+					vmname = item.get('HostName')
+
+			result[instance_id] = (vmname, None)
 	return result
 
 def get_power_status(conn, options):
@@ -125,17 +132,26 @@ def define_new_opts():
 	all_opt["ram_role"] = {
 		"getopt": ":",
 		"longopt": "ram-role",
-		"help": "--ram-role=[name]        Ram Role",
+		"help": "--ram-role=[name]              Ram Role",
 		"shortdesc": "Ram Role.",
 		"required": "0",
 		"order": 5
+	}
+	all_opt["name_lookup"] = {
+		"getopt": ":",
+		"longopt": "name-lookup",
+		"help": "--name-lookup=[method]         Name lookup method (default: instance). Set to host if you experience encoding issues.",
+		"shortdesc": "Name loookup method.",
+		"required": "0",
+		"default" : "instance",
+		"order": 6
 	}
 
 # Main agent method
 def main():
 	conn = None
 
-	device_opt = ["port", "no_password", "region", "access_key", "secret_key", "ram_role"]
+	device_opt = ["port", "no_password", "region", "access_key", "secret_key", "ram_role", "name_lookup"]
 
 	atexit.register(atexit_handler)
 
