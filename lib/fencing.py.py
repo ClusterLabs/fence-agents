@@ -958,9 +958,15 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 						status = status.upper()
 
 					if options["--action"] == "list":
-						print(outlet_id + options["--separator"] + alias)
+						try:
+							print(outlet_id + options["--separator"] + alias)
+						except UnicodeEncodeError as e:
+							print((outlet_id + options["--separator"] + alias).encode("utf-8"))
 					elif options["--action"] == "list-status":
-						print(outlet_id + options["--separator"] + alias + options["--separator"] + status)
+						try:
+							print(outlet_id + options["--separator"] + alias + options["--separator"] + status)
+						except UnicodeEncodeError as e:
+							print((outlet_id + options["--separator"] + alias).encode("utf-8") + options["--separator"] + status)
 
 			return
 
