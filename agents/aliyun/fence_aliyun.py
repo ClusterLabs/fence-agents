@@ -1,52 +1,66 @@
 #!@PYTHON@ -tt
 
-import sys, re
+import sys
 import logging
 import atexit
 import json
+
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, fail_usage, EC_TIMED_OUT, run_delay
+from fencing import fail_usage, run_delay
+
 
 try:
 	from aliyunsdkcore import client
 	from aliyunsdkcore.auth.credentials import EcsRamRoleCredential
+	from aliyunsdkcore.profile import region_provider
+except ImportError as e:
+	logging.warn("The 'aliyunsdkcore' module has been not installed or is unavailable, try to execute the command 'pip install aliyun-python-sdk-core --upgrade' to solve. error: %s" % e)
+
+
+try:
 	from aliyunsdkecs.request.v20140526.DescribeInstancesRequest import DescribeInstancesRequest
 	from aliyunsdkecs.request.v20140526.StartInstanceRequest import StartInstanceRequest
 	from aliyunsdkecs.request.v20140526.StopInstanceRequest import StopInstanceRequest
 	from aliyunsdkecs.request.v20140526.RebootInstanceRequest import RebootInstanceRequest
-	from aliyunsdkcore.profile import region_provider
-except ImportError:
-	pass
+except ImportError as e:
+	logging.warn("The 'aliyunsdkecs' module has been not installed or is unavailable, try to execute the command 'pip install aliyun-python-sdk-ecs --upgrade' to solve. error: %s" % e)
+
 
 def _send_request(conn, request):
+	logging.debug("send request action: %s" % request.get_action_name())
 	request.set_accept_format('json')
 	try:
 		response_str = conn.do_action_with_exception(request)
-		response_detail = json.loads(response_str)
-		logging.debug("_send_request reponse: %s" % response_detail)
-		return response_detail
 	except Exception as e:
-		fail_usage("Failed: _send_request failed: %s" % e)
+		fail_usage("Failed: send request failed: Error: %s" % e)
+
+	response_detail = json.loads(response_str)
+	logging.debug("reponse: %s" % response_detail)
+	return response_detail
 
 def start_instance(conn, instance_id):
+	logging.debug("start instance %s" % instance_id)
 	request = StartInstanceRequest()
 	request.set_InstanceId(instance_id)
 	_send_request(conn, request)
 
 def stop_instance(conn, instance_id):
+	logging.debug("stop instance %s" % instance_id)
 	request = StopInstanceRequest()
 	request.set_InstanceId(instance_id)
 	request.set_ForceStop('true')
 	_send_request(conn, request)
 
 def reboot_instance(conn, instance_id):
+	logging.debug("reboot instance %s" % instance_id)
 	request = RebootInstanceRequest()
 	request.set_InstanceId(instance_id)
 	request.set_ForceStop('true')
 	_send_request(conn, request)
 
 def get_status(conn, instance_id):
+	logging.debug("get instance %s status" % instance_id)
 	request = DescribeInstancesRequest()
 	request.set_InstanceIds(json.dumps([instance_id]))
 	response = _send_request(conn, request)
@@ -58,20 +72,22 @@ def get_status(conn, instance_id):
 	return instance_status
 
 def get_nodes_list(conn, options):
+	logging.debug("start to get nodes list")
 	result = {}
 	request = DescribeInstancesRequest()
 	request.set_PageSize(100)
 	response = _send_request(conn, request)
-	instance_status = None
 	if response is not None:
 		instance_list = response.get('Instances').get('Instance')
 		for item in instance_list:
 			instance_id = item.get('InstanceId')
 			instance_name = item.get('InstanceName')
 			result[instance_id] = (instance_name, None)
+	logging.debug("get nodes list: %s" % result)
 	return result
 
 def get_power_status(conn, options):
+	logging.debug("start to get power(%s) status" % options["--plug"])
 	state = get_status(conn, options["--plug"])
 
 	if state == "Running":
@@ -80,14 +96,11 @@ def get_power_status(conn, options):
 		status = "off"
 	else:
 		status = "unknown"
-
-	logging.info("get_power_status: %s" % status)
-
+	logging.debug("the power(%s) status is %s" % (options["--plug"], status))
 	return status
 
-
 def set_power_status(conn, options):
-	logging.info("set_power_status: %s" % options["--action"])
+	logging.info("start to set power(%s) status to %s" % (options["--plug"], options["--action"]))
 
 	if (options["--action"]=="off"):
 		stop_instance(conn, options["--plug"])
@@ -95,7 +108,6 @@ def set_power_status(conn, options):
 		start_instance(conn, options["--plug"])
 	elif (options["--action"]=="reboot"):
 		reboot_instance(conn, options["--plug"])
-
 
 def define_new_opts():
 	all_opt["region"] = {
@@ -163,8 +175,15 @@ def main():
 			ram_role = options["--ram-role"]
 			role = EcsRamRoleCredential(ram_role)
 			conn = client.AcsClient(region_id=region, credential=role)
-		region_provider.modify_point('Ecs', region, 'ecs.%s.aliyuncs.com' % region)
-		
+		else:
+			fail_usage("Failed: User credentials are not set. Please set the Access Key and the Secret Key, or configure the RAM role.")
+
+		# Use intranet endpoint to access ECS service
+		try:
+			region_provider.modify_point('Ecs', region, 'ecs.%s.aliyuncs.com' % region)
+		except Exception as e:
+			logging.warn("Failed: failed to modify endpoint to 'ecs.%s.aliyuncs.com': %s" % (region, e))
+
 	# Operate the fencing device
 	result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list)
 	sys.exit(result)

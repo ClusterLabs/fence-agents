@@ -89,7 +89,7 @@ def set_power_status(conn, options):
 
 
 def nova_login(username, password, projectname, auth_url, user_domain_name,
-               project_domain_name, cacert, apitimeout):
+               project_domain_name, ssl_insecure, cacert, apitimeout):
     legacy_import = False
 
     try:
@@ -127,7 +127,7 @@ def nova_login(username, password, projectname, auth_url, user_domain_name,
             cacert=cacert,
         )
 
-    session = ksc_session.Session(auth=auth, verify=cacert, timeout=apitimeout)
+    session = ksc_session.Session(auth=auth, verify=False if ssl_insecure else cacert, timeout=apitimeout)
     nova = client.Client("2", session=session, timeout=apitimeout)
     apiversion = None
     try:
@@ -220,6 +220,7 @@ def main():
         "port",
         "no_port",
         "uuid",
+        "ssl_insecure",
         "cacert",
         "apitimeout",
     ]
@@ -268,6 +269,7 @@ This agent calls the python-novaclient and it is mandatory to be installed "
         fail_usage("Failed: You have to set the Keystone service endpoint for authorization")
     user_domain_name = options["--user-domain-name"]
     project_domain_name = options["--project-domain-name"]
+    ssl_insecure = "--ssl-insecure" in options
     cacert = options["--cacert"]
     apitimeout = options["--apitimeout"]
     try:
@@ -278,6 +280,7 @@ This agent calls the python-novaclient and it is mandatory to be installed "
             auth_url,
             user_domain_name,
             project_domain_name,
+            ssl_insecure,
             cacert,
             apitimeout,
         )

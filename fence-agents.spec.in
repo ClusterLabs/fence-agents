@@ -122,7 +122,11 @@ BuildRequires: libxslt
 %if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 BuildRequires: python3-devel
 BuildRequires: python3-pexpect python3-pycurl python3-requests
+%if 0%{?suse_version} > 1500
+BuildRequires: python3-suds-community
+%else
 BuildRequires: python3-suds
+%endif
 %if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7
 BuildRequires: python3-google-api-client python3-boto3 openwsman-python3
 %endif
@@ -1020,7 +1024,11 @@ Fence agent for OpenStack's Nova service.
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for OVH provider
 %if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?suse_version} > 1500
+Requires: python3-suds-community
+%else
 Requires: python3-suds
+%endif
 %else
 Requires: python-suds
 %endif
@@ -1237,7 +1245,11 @@ Fence agent for VMWare with REST API.
 License: GPLv2+ and LGPLv2+
 Summary: Fence agent for VMWare with SOAP API v4.1+
 %if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+%if 0%{?suse_version} > 1500
+Requires: python3-suds-community
+%else
 Requires: python3-suds
+%endif
 %else
 Requires: python-suds
 %endif
