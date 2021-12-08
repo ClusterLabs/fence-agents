@@ -93,6 +93,11 @@
 		<content type="second" default="300"  />
 		<shortdesc lang="en">How long to wait for server data</shortdesc>
 	</parameter>
+	<parameter name="load_on_activate" unique="0" required="0">
+		<getopt mixed="--load-on-activate" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Rely on the HMC to perform a load operation on activation</shortdesc>
+	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
 		<content type="boolean"  />
