@@ -28,7 +28,7 @@ else:
   import urllib2 as urlrequest
 sys.path.append("@FENCEAGENTSLIBDIR@")
 
-from fencing import fail_usage, run_delay, all_opt, atexit_handler, check_input, process_input, show_docs, fence_action
+from fencing import fail_usage, run_delay, all_opt, atexit_handler, check_input, process_input, show_docs, fence_action, run_command
 try:
   import googleapiclient.discovery
   import socks
@@ -45,9 +45,7 @@ INSTANCE_LINK = 'https://www.googleapis.com/compute/v1/projects/{}/zones/{}/inst
 
 def run_on_fail(options):
 	if "--runonfail" in options:
-		command = options["--runonfail"]
-		logging.info("Due to failure, running command: {}".format(command))
-		os.system(command)
+		run_command(options, options["--runonfail"])
 
 def fail_fence_agent(options, message):
 	run_on_fail(options)
@@ -223,9 +221,7 @@ def wait_for_operation(conn, options, zone, operation):
 		if "--warntimeout" in options and wait_time > int(options["--warntimeout"]):
 			logging.warning("Operation did not complete before the timeout.")
 			if "--runonwarn" in options:
-				command = options["--runonwarn"]
-				logging.info("Due to warning, running command: {}".format(command))
-				os.system(command)
+				run_command(options, options["--runonwarn"])
 			return False
 
 		wait_time = wait_time + 1
@@ -448,7 +444,7 @@ def define_new_opts():
 	}
 	all_opt["warntimeout"] = {
 		"getopt" : ":",
-		"type" : "integer",
+		"type" : "second",
 		"longopt" : "warntimeout",
 		"help" : "--warntimeout=[warn_timeout]   Timeout seconds before logging a warning and returning a 0 status code",
 		"shortdesc" : "If the operation is not completed within the timeout, the cluster operations are allowed to continue.",
@@ -457,7 +453,7 @@ def define_new_opts():
 	}
 	all_opt["errortimeout"] = {
 		"getopt" : ":",
-		"type" : "integer",
+		"type" : "second",
 		"longopt" : "errortimeout",
 		"help" : "--errortimeout=[error_timeout] Timeout seconds before failing and returning a non-zero status code",
 		"shortdesc" : "If the operation is not completed within the timeout, cluster is notified of the operation failure.",
