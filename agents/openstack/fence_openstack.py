@@ -127,7 +127,13 @@ def nova_login(username, password, projectname, auth_url, user_domain_name,
             cacert=cacert,
         )
 
-    session = ksc_session.Session(auth=auth, verify=False if ssl_insecure else cacert, timeout=apitimeout)
+    caverify=True
+    if ssl_insecure:
+        caverify=False
+    elif cacert:
+        caverify=cacert
+
+    session = ksc_session.Session(auth=auth, verify=caverify, timeout=apitimeout)
     nova = client.Client("2", session=session, timeout=apitimeout)
     apiversion = None
     try:
@@ -189,10 +195,10 @@ def define_new_opts():
     all_opt["cacert"] = {
         "getopt": ":",
         "longopt": "cacert",
-        "help": "--cacert=[cacert]              Path to the PEM file with trusted authority certificates",
+        "help": "--cacert=[cacert]              Path to the PEM file with trusted authority certificates (override global CA trust)",
         "required": "0",
         "shortdesc": "SSL X.509 certificates file",
-        "default": "/etc/pki/tls/certs/ca-bundle.crt",
+        "default": "",
         "order": 7,
     }
     all_opt["apitimeout"] = {
