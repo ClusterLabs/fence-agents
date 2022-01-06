@@ -100,7 +100,7 @@
 	</parameter>
 	<parameter name="cacert" unique="0" required="0">
 		<getopt mixed="--cacert=[cacert]" />
-		<content type="string" default="/etc/pki/tls/certs/ca-bundle.crt"  />
+		<content type="string" default=""  />
 		<shortdesc lang="en">SSL X.509 certificates file</shortdesc>
 	</parameter>
 	<parameter name="apitimeout" unique="0" required="0">
