@@ -274,7 +274,7 @@ This package contains support files including the Python fencing library.
 %exclude %{_mandir}/man8/*
 
 %package all
-License: GPLv2+, LGPLv2+ and ASL 2.0
+License: GPLv2+ and LGPLv2+ and ASL 2.0
 Summary: Set of unified programs capable of host isolation ("fencing")
 Requires: %{allfenceagents}
 Provides: fence-agents = %{version}-%{release}
