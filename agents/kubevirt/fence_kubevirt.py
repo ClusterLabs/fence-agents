@@ -12,12 +12,21 @@ try:
 except ImportError:
     logging.error("Couldn\'t import kubernetes.client.exceptions.ApiException - not found or not accessible")
 
+def _get_namespace(options):
+    from kubernetes import config
+
+    ns = options.get("--namespace")
+    if ns is None:
+        ns = config.kube_config.list_kube_config_contexts()[1]['context']['namespace']
+
+    return ns
+
 def get_nodes_list(conn, options):
     logging.debug("Starting list/monitor operation")
     result = {}
     try:
         apiversion = options.get("--apiversion")
-        namespace = options.get("--namespace")
+        namespace = _get_namespace(options)
         include_uninitialized = True
         vm_api = conn.resources.get(api_version=apiversion, kind='VirtualMachine')
         vm_list = vm_api.get(namespace=namespace)
@@ -31,7 +40,7 @@ def get_power_status(conn, options):
     logging.debug("Starting get status operation")
     try:
         apiversion = options.get("--apiversion")
-        namespace = options.get("--namespace")
+        namespace = _get_namespace(options)
         name = options.get("--plug")
         vmi_api = conn.resources.get(api_version=apiversion,
                                               kind='VirtualMachineInstance')
@@ -61,7 +70,7 @@ def set_power_status(conn, options):
     logging.debug("Starting set status operation")
     try:
         apiversion= options.get("--apiversion")
-        namespace = options.get("--namespace")
+        namespace = _get_namespace(options)
         name = options.get("--plug")
         action = 'start' if options["--action"] == "on" else 'stop'
         virtctl_vm_action(conn, action, namespace, name, apiversion)
@@ -75,7 +84,7 @@ def define_new_opts():
         "longopt" : "namespace",
         "help" : "--namespace=[namespace]        Namespace of the KubeVirt machine",
         "shortdesc" : "Namespace of the KubeVirt machine.",
-        "required" : "1",
+        "required" : "0",
         "order" : 2
     }
     all_opt["kubeconfig"] = {
@@ -101,11 +110,6 @@ def virtctl_vm_action(conn, action, namespace, name, apiversion):
     path = path.format(api_version=apiversion, namespace=namespace, name=name, action=action)
     return conn.request('put', path, header_params={'accept': '*/*'})
 
-def validate_options(required_options_list, options):
-    for required_option in required_options_list:
-        if required_option not in options:
-            fail_usage("Failed: %s option must be provided" % required_option)
-
 # Main agent method
 def main():
     conn = None
@@ -126,8 +130,6 @@ def main():
     show_docs(options, docs)
 
     run_delay(options)
-
-    validate_options(['--namespace'], options)
 
     # Disable insecure-certificate-warning message
     if "--ssl-insecure" in options:
