@@ -8,7 +8,7 @@ import urllib3
 
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail_usage, run_delay
+from fencing import fail_usage, run_delay, source_env
 
 try:
     from novaclient import client
@@ -25,6 +25,23 @@ def translate_status(instance_status):
     elif instance_status == "SHUTOFF":
         return "off"
     return "unknown"
+
+def get_cloud(options):
+    import os, yaml
+
+    clouds_yaml = os.path.expanduser("~/.config/openstack/clouds.yaml")
+    if os.path.exists(clouds_yaml):
+        with open(clouds_yaml, "r") as yaml_stream:
+            try:
+                clouds = yaml.safe_load(yaml_stream)
+            except yaml.YAMLError as exc:
+                fail_usage("Failed: Unable to read: " + clouds_yaml)
+
+    cloud = clouds.get("clouds").get(options["--cloud"])
+    if not cloud:
+        fail_usage("Cloud: {} not found.".format(options["--cloud"]))
+
+    return cloud
 
 
 def get_nodes_list(conn, options):
@@ -153,7 +170,7 @@ def define_new_opts():
         "getopt": ":",
         "longopt": "auth-url",
         "help": "--auth-url=[authurl]           Keystone Auth URL",
-        "required": "1",
+        "required": "0",
         "shortdesc": "Keystone Auth URL",
         "order": 2,
     }
@@ -161,7 +178,7 @@ def define_new_opts():
         "getopt": ":",
         "longopt": "project-name",
         "help": "--project-name=[project]       Tenant Or Project Name",
-        "required": "1",
+        "required": "0",
         "shortdesc": "Keystone Project",
         "default": "admin",
         "order": 3,
@@ -184,13 +201,38 @@ def define_new_opts():
         "default": "Default",
         "order": 5,
     }
+    all_opt["clouds-yaml"] = {
+        "getopt": ":",
+        "longopt": "clouds-yaml",
+        "help": "--clouds-yaml=[clouds-yaml]  Path to the clouds.yaml config file",
+        "required": "0",
+        "shortdesc": "clouds.yaml config file",
+        "default": "~/.config/openstack/clouds.yaml",
+        "order": 6,
+    }
+    all_opt["cloud"] = {
+        "getopt": ":",
+        "longopt": "cloud",
+        "help": "--cloud=[cloud]              Openstack cloud (from clouds.yaml).",
+        "required": "0",
+        "shortdesc": "Cloud from clouds.yaml",
+        "order": 7,
+    }
+    all_opt["openrc"] = {
+        "getopt": ":",
+        "longopt": "openrc",
+        "help": "--openrc=[openrc]              Path to the openrc config file",
+        "required": "0",
+        "shortdesc": "openrc config file",
+        "order": 8,
+    }
     all_opt["uuid"] = {
         "getopt": ":",
         "longopt": "uuid",
         "help": "--uuid=[uuid]                  Replaced by -n, --plug",
         "required": "0",
         "shortdesc": "Replaced by port/-n/--plug",
-        "order": 6,
+        "order": 9,
     }
     all_opt["cacert"] = {
         "getopt": ":",
@@ -199,7 +241,7 @@ def define_new_opts():
         "required": "0",
         "shortdesc": "SSL X.509 certificates file",
         "default": "",
-        "order": 7,
+        "order": 10,
     }
     all_opt["apitimeout"] = {
         "getopt": ":",
@@ -209,7 +251,7 @@ def define_new_opts():
         "shortdesc": "Timeout in seconds to use for API calls, default is 60.",
         "required": "0",
         "default": 60,
-        "order": 8,
+        "order": 11,
     }
 
 
@@ -218,11 +260,16 @@ def main():
 
     device_opt = [
         "login",
+        "no_login",
         "passwd",
+        "no_password",
         "auth-url",
         "project-name",
         "user-domain-name",
         "project-domain-name",
+        "clouds-yaml",
+        "cloud",
+        "openrc",
         "port",
         "no_port",
         "uuid",
@@ -265,19 +312,56 @@ This agent calls the python-novaclient and it is mandatory to be installed "
 
     run_delay(options)
 
-    username = options["--username"]
-    password = options["--password"]
-    projectname = options["--project-name"]
-    auth_url = None
-    try:
-        auth_url = options["--auth-url"]
-    except KeyError:
-        fail_usage("Failed: You have to set the Keystone service endpoint for authorization")
-    user_domain_name = options["--user-domain-name"]
-    project_domain_name = options["--project-domain-name"]
+    if options.get("--clouds-yaml"):
+        if not os.path.exists(os.path.expanduser(options["--clouds-yaml"])):
+            fail_usage("Failed: {} does not exist".format(options.get("--clouds-yaml")))
+        if not options.get("--cloud"):
+            fail_usage("Failed: \"cloud\" not specified")
+        cloud = get_cloud(options)
+        username = cloud.get("username")
+        password = cloud.get("password")
+        projectname = cloud.get("project_name")
+        auth_url = None
+        try:
+            auth_url = cloud.get("auth_url")
+        except KeyError:
+            fail_usage("Failed: You have to set the Keystone service endpoint for authorization")
+        user_domain_name = cloud.get("user_domain_name")
+        project_domain_name = cloud.get("project_domain_name")
+        caverify = cloud.get("verify")
+        if caverify in [True, False]:
+                options["--ssl-insecure"] = caverify
+        else:
+                options["--cacert"] = caverify
+    if options.get("--openrc") and os.path.exists(os.path.expanduser(options["--openrc"])):
+        source_env(options["--openrc"])
+        env = os.environ
+        username = env.get("OS_USERNAME")
+        password = env.get("OS_PASSWORD")
+        projectname = env.get("OS_PROJECT_NAME")
+        auth_url = None
+        try:
+            auth_url = env["OS_AUTH_URL"]
+        except KeyError:
+            fail_usage("Failed: You have to set the Keystone service endpoint for authorization")
+        user_domain_name = env.get("OS_USER_DOMAIN_NAME")
+        project_domain_name = env.get("OS_PROJECT_DOMAIN_NAME")
+    else:
+        username = options["--username"]
+        password = options["--password"]
+        projectname = options["--project-name"]
+        auth_url = None
+        try:
+            auth_url = options["--auth-url"]
+        except KeyError:
+            fail_usage("Failed: You have to set the Keystone service endpoint for authorization")
+        user_domain_name = options["--user-domain-name"]
+        project_domain_name = options["--project-domain-name"]
+
     ssl_insecure = "--ssl-insecure" in options
     cacert = options["--cacert"]
     apitimeout = options["--apitimeout"]
+
     try:
         conn = nova_login(
             username,
