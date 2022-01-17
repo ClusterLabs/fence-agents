@@ -8,7 +8,7 @@
 		<content type="string" default="reboot"  />
 		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
-	<parameter name="login" unique="0" required="1" deprecated="1">
+	<parameter name="login" unique="0" required="0" deprecated="1">
 		<getopt mixed="-l, --username=[name]" />
 		<content type="string"  />
 		<shortdesc lang="en">Login name</shortdesc>
@@ -48,27 +48,27 @@
 		<content type="boolean"  />
 		<shortdesc lang="en">Use SSL connection without verifying certificate</shortdesc>
 	</parameter>
-	<parameter name="username" unique="0" required="1" obsoletes="login">
+	<parameter name="username" unique="0" required="0" obsoletes="login">
 		<getopt mixed="-l, --username=[name]" />
 		<content type="string"  />
 		<shortdesc lang="en">Login name</shortdesc>
 	</parameter>
-	<parameter name="auth-url" unique="0" required="1" deprecated="1">
+	<parameter name="auth-url" unique="0" required="0" deprecated="1">
 		<getopt mixed="--auth-url=[authurl]" />
 		<content type="string"  />
 		<shortdesc lang="en">Keystone Auth URL</shortdesc>
 	</parameter>
-	<parameter name="auth_url" unique="0" required="1" obsoletes="auth-url">
+	<parameter name="auth_url" unique="0" required="0" obsoletes="auth-url">
 		<getopt mixed="--auth-url=[authurl]" />
 		<content type="string"  />
 		<shortdesc lang="en">Keystone Auth URL</shortdesc>
 	</parameter>
-	<parameter name="project-name" unique="0" required="1" deprecated="1">
+	<parameter name="project-name" unique="0" required="0" deprecated="1">
 		<getopt mixed="--project-name=[project]" />
 		<content type="string" default="admin"  />
 		<shortdesc lang="en">Keystone Project</shortdesc>
 	</parameter>
-	<parameter name="project_name" unique="0" required="1" obsoletes="project-name">
+	<parameter name="project_name" unique="0" required="0" obsoletes="project-name">
 		<getopt mixed="--project-name=[project]" />
 		<content type="string" default="admin"  />
 		<shortdesc lang="en">Keystone Project</shortdesc>
@@ -92,6 +92,26 @@
 		<getopt mixed="--project-domain-name=[domain]" />
 		<content type="string" default="Default"  />
 		<shortdesc lang="en">Keystone Project Domain Name</shortdesc>
+	</parameter>
+	<parameter name="clouds-yaml" unique="0" required="0" deprecated="1">
+		<getopt mixed="--clouds-yaml=[clouds-yaml]" />
+		<content type="string" default="~/.config/openstack/clouds.yaml"  />
+		<shortdesc lang="en">clouds.yaml config file</shortdesc>
+	</parameter>
+	<parameter name="clouds_yaml" unique="0" required="0" obsoletes="clouds-yaml">
+		<getopt mixed="--clouds-yaml=[clouds-yaml]" />
+		<content type="string" default="~/.config/openstack/clouds.yaml"  />
+		<shortdesc lang="en">clouds.yaml config file</shortdesc>
+	</parameter>
+	<parameter name="cloud" unique="0" required="0">
+		<getopt mixed="--cloud=[cloud]" />
+		<content type="string"  />
+		<shortdesc lang="en">Cloud from clouds.yaml</shortdesc>
+	</parameter>
+	<parameter name="openrc" unique="0" required="0">
+		<getopt mixed="--openrc=[openrc]" />
+		<content type="string"  />
+		<shortdesc lang="en">openrc config file</shortdesc>
 	</parameter>
 	<parameter name="uuid" unique="0" required="0">
 		<getopt mixed="--uuid=[uuid]" />
