@@ -93,16 +93,6 @@
 		<content type="string" default="Default"  />
 		<shortdesc lang="en">Keystone Project Domain Name</shortdesc>
 	</parameter>
-	<parameter name="clouds-yaml" unique="0" required="0" deprecated="1">
-		<getopt mixed="--clouds-yaml=[clouds-yaml]" />
-		<content type="string" default="~/.config/openstack/clouds.yaml"  />
-		<shortdesc lang="en">clouds.yaml config file</shortdesc>
-	</parameter>
-	<parameter name="clouds_yaml" unique="0" required="0" obsoletes="clouds-yaml">
-		<getopt mixed="--clouds-yaml=[clouds-yaml]" />
-		<content type="string" default="~/.config/openstack/clouds.yaml"  />
-		<shortdesc lang="en">clouds.yaml config file</shortdesc>
-	</parameter>
 	<parameter name="cloud" unique="0" required="0">
 		<getopt mixed="--cloud=[cloud]" />
 		<content type="string"  />

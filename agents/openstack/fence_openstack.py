@@ -3,6 +3,7 @@
 import atexit
 import logging
 import sys
+import os
 
 import urllib3
 
@@ -27,9 +28,15 @@ def translate_status(instance_status):
     return "unknown"
 
 def get_cloud(options):
-    import os, yaml
+    import yaml
 
-    clouds_yaml = os.path.expanduser("~/.config/openstack/clouds.yaml")
+    clouds_yaml = "~/.config/openstack/clouds.yaml"
+    if not os.path.exists(os.path.expanduser(clouds_yaml)):
+        clouds_yaml = "/etc/openstack/clouds.yaml"
+    if not os.path.exists(os.path.expanduser(clouds_yaml)):
+        fail_usage("Failed: ~/.config/openstack/clouds.yaml and /etc/openstack/clouds.yaml does not exist")
+
+    clouds_yaml = os.path.expanduser(clouds_yaml)
     if os.path.exists(clouds_yaml):
         with open(clouds_yaml, "r") as yaml_stream:
             try:
@@ -201,22 +208,13 @@ def define_new_opts():
         "default": "Default",
         "order": 5,
     }
-    all_opt["clouds-yaml"] = {
-        "getopt": ":",
-        "longopt": "clouds-yaml",
-        "help": "--clouds-yaml=[clouds-yaml]  Path to the clouds.yaml config file",
-        "required": "0",
-        "shortdesc": "clouds.yaml config file",
-        "default": "~/.config/openstack/clouds.yaml",
-        "order": 6,
-    }
     all_opt["cloud"] = {
         "getopt": ":",
         "longopt": "cloud",
-        "help": "--cloud=[cloud]              Openstack cloud (from clouds.yaml).",
+        "help": "--cloud=[cloud]              Openstack cloud (from ~/.config/openstack/clouds.yaml or /etc/openstack/clouds.yaml).",
         "required": "0",
         "shortdesc": "Cloud from clouds.yaml",
-        "order": 7,
+        "order": 6,
     }
     all_opt["openrc"] = {
         "getopt": ":",
@@ -224,7 +222,7 @@ def define_new_opts():
         "help": "--openrc=[openrc]              Path to the openrc config file",
         "required": "0",
         "shortdesc": "openrc config file",
-        "order": 8,
+        "order": 7,
     }
     all_opt["uuid"] = {
         "getopt": ":",
@@ -232,7 +230,7 @@ def define_new_opts():
         "help": "--uuid=[uuid]                  Replaced by -n, --plug",
         "required": "0",
         "shortdesc": "Replaced by port/-n/--plug",
-        "order": 9,
+        "order": 8,
     }
     all_opt["cacert"] = {
         "getopt": ":",
@@ -241,7 +239,7 @@ def define_new_opts():
         "required": "0",
         "shortdesc": "SSL X.509 certificates file",
         "default": "",
-        "order": 10,
+        "order": 9,
     }
     all_opt["apitimeout"] = {
         "getopt": ":",
@@ -251,7 +249,7 @@ def define_new_opts():
         "shortdesc": "Timeout in seconds to use for API calls, default is 60.",
         "required": "0",
         "default": 60,
-        "order": 11,
+        "order": 10,
     }
 
 
@@ -267,7 +265,6 @@ def main():
         "project-name",
         "user-domain-name",
         "project-domain-name",
-        "clouds-yaml",
         "cloud",
         "openrc",
         "port",
@@ -312,28 +309,26 @@ This agent calls the python-novaclient and it is mandatory to be installed "
 
     run_delay(options)
 
-    if options.get("--clouds-yaml"):
-        if not os.path.exists(os.path.expanduser(options["--clouds-yaml"])):
-            fail_usage("Failed: {} does not exist".format(options.get("--clouds-yaml")))
-        if not options.get("--cloud"):
-            fail_usage("Failed: \"cloud\" not specified")
+    if options.get("--cloud"):
         cloud = get_cloud(options)
-        username = cloud.get("username")
-        password = cloud.get("password")
-        projectname = cloud.get("project_name")
+        username = cloud.get("auth").get("username")
+        password = cloud.get("auth").get("password")
+        projectname = cloud.get("auth").get("project_name")
         auth_url = None
         try:
-            auth_url = cloud.get("auth_url")
+            auth_url = cloud.get("auth").get("auth_url")
         except KeyError:
             fail_usage("Failed: You have to set the Keystone service endpoint for authorization")
-        user_domain_name = cloud.get("user_domain_name")
-        project_domain_name = cloud.get("project_domain_name")
+        user_domain_name = cloud.get("auth").get("user_domain_name")
+        project_domain_name = cloud.get("auth").get("project_domain_name")
         caverify = cloud.get("verify")
         if caverify in [True, False]:
                 options["--ssl-insecure"] = caverify
         else:
                 options["--cacert"] = caverify
-    if options.get("--openrc") and os.path.exists(os.path.expanduser(options["--openrc"])):
+    elif options.get("--openrc"):
+        if not os.path.exists(os.path.expanduser(options["--openrc"])):
+            fail_usage("Failed: {} does not exist".format(options.get("--openrc")))
         source_env(options["--openrc"])
         env = os.environ
         username = env.get("OS_USERNAME")
