@@ -88,6 +88,31 @@ For instructions see: https://cloud.google.com/compute/docs/tutorials/python-gui
 		<content type="integer"  />
 		<shortdesc lang="en">If a proxy is used for internet access, the proxy port should be specified.</shortdesc>
 	</parameter>
+	<parameter name="earlyexit" unique="0" required="0">
+		<getopt mixed="--earlyexit" />
+		<content type="boolean"  />
+		<shortdesc lang="en">If an existing reset operation is detected, the fence agent will return before the operation completes with a 0 return code.</shortdesc>
+	</parameter>
+	<parameter name="warntimeout" unique="0" required="0">
+		<getopt mixed="--warntimeout=[warn_timeout]" />
+		<content type="second"  />
+		<shortdesc lang="en">If the operation is not completed within the timeout, the cluster operations are allowed to continue.</shortdesc>
+	</parameter>
+	<parameter name="errortimeout" unique="0" required="0">
+		<getopt mixed="--errortimeout=[error_timeout]" />
+		<content type="second"  />
+		<shortdesc lang="en">If the operation is not completed within the timeout, cluster is notified of the operation failure.</shortdesc>
+	</parameter>
+	<parameter name="runonwarn" unique="0" required="0">
+		<getopt mixed="--runonwarn=[run_on_warn]" />
+		<content type="string"  />
+		<shortdesc lang="en">If a timeout would occur while running the agent, then the supplied command is run.</shortdesc>
+	</parameter>
+	<parameter name="runonfail" unique="0" required="0">
+		<getopt mixed="--runonfail=[run_on_fail]" />
+		<content type="string"  />
+		<shortdesc lang="en">If a failure would occur while running the agent, then the supplied command is run.</shortdesc>
+	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
 		<content type="boolean"  />
