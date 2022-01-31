@@ -828,8 +828,8 @@ get_options_stdin (zvm_driver_t * zvm)
 		}
 		else if (!strcasecmp (opt, "port")) {
 			lTarget =
-				MIN (strlen (arg), sizeof (zvm->target) - 1);
-			strncpy (zvm->target, arg, lTarget);
+				MIN (strlen (arg), sizeof (zvm->target));
+			memcpy (zvm->target, arg, lTarget);
 			continue;
 		}
 		else if (!strcasecmp (opt, "timeout")) {
