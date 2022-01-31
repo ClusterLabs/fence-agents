@@ -22,6 +22,10 @@ rngdir			= ${CLUSTERDATA}/relaxng
 
 rng_DATA		= $(XSL) $(FASRNG)
 
+azure_fence.py: fencing.py
+fencing_snmp.py: fencing.py
+check_used_options.py: fencing.py
+
 include $(top_srcdir)/make/fencebuild.mk
 
 xml-check: all

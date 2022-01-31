@@ -3,12 +3,13 @@
 import atexit
 import logging
 import sys
+import os
 
 import urllib3
 
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail_usage, run_delay
+from fencing import fail_usage, run_delay, source_env
 
 try:
     from novaclient import client
@@ -25,6 +26,29 @@ def translate_status(instance_status):
     elif instance_status == "SHUTOFF":
         return "off"
     return "unknown"
+
+def get_cloud(options):
+    import yaml
+
+    clouds_yaml = "~/.config/openstack/clouds.yaml"
+    if not os.path.exists(os.path.expanduser(clouds_yaml)):
+        clouds_yaml = "/etc/openstack/clouds.yaml"
+    if not os.path.exists(os.path.expanduser(clouds_yaml)):
+        fail_usage("Failed: ~/.config/openstack/clouds.yaml and /etc/openstack/clouds.yaml does not exist")
+
+    clouds_yaml = os.path.expanduser(clouds_yaml)
+    if os.path.exists(clouds_yaml):
+        with open(clouds_yaml, "r") as yaml_stream:
+            try:
+                clouds = yaml.safe_load(yaml_stream)
+            except yaml.YAMLError as exc:
+                fail_usage("Failed: Unable to read: " + clouds_yaml)
+
+    cloud = clouds.get("clouds").get(options["--cloud"])
+    if not cloud:
+        fail_usage("Cloud: {} not found.".format(options["--cloud"]))
+
+    return cloud
 
 
 def get_nodes_list(conn, options):
@@ -127,7 +151,13 @@ def nova_login(username, password, projectname, auth_url, user_domain_name,
             cacert=cacert,
         )
 
-    session = ksc_session.Session(auth=auth, verify=False if ssl_insecure else cacert, timeout=apitimeout)
+    caverify=True
+    if ssl_insecure:
+        caverify=False
+    elif cacert:
+        caverify=cacert
+
+    session = ksc_session.Session(auth=auth, verify=caverify, timeout=apitimeout)
     nova = client.Client("2", session=session, timeout=apitimeout)
     apiversion = None
     try:
@@ -147,7 +177,7 @@ def define_new_opts():
         "getopt": ":",
         "longopt": "auth-url",
         "help": "--auth-url=[authurl]           Keystone Auth URL",
-        "required": "1",
+        "required": "0",
         "shortdesc": "Keystone Auth URL",
         "order": 2,
     }
@@ -155,7 +185,7 @@ def define_new_opts():
         "getopt": ":",
         "longopt": "project-name",
         "help": "--project-name=[project]       Tenant Or Project Name",
-        "required": "1",
+        "required": "0",
         "shortdesc": "Keystone Project",
         "default": "admin",
         "order": 3,
@@ -178,22 +208,38 @@ def define_new_opts():
         "default": "Default",
         "order": 5,
     }
+    all_opt["cloud"] = {
+        "getopt": ":",
+        "longopt": "cloud",
+        "help": "--cloud=[cloud]              Openstack cloud (from ~/.config/openstack/clouds.yaml or /etc/openstack/clouds.yaml).",
+        "required": "0",
+        "shortdesc": "Cloud from clouds.yaml",
+        "order": 6,
+    }
+    all_opt["openrc"] = {
+        "getopt": ":",
+        "longopt": "openrc",
+        "help": "--openrc=[openrc]              Path to the openrc config file",
+        "required": "0",
+        "shortdesc": "openrc config file",
+        "order": 7,
+    }
     all_opt["uuid"] = {
         "getopt": ":",
         "longopt": "uuid",
         "help": "--uuid=[uuid]                  Replaced by -n, --plug",
         "required": "0",
         "shortdesc": "Replaced by port/-n/--plug",
-        "order": 6,
+        "order": 8,
     }
     all_opt["cacert"] = {
         "getopt": ":",
         "longopt": "cacert",
-        "help": "--cacert=[cacert]              Path to the PEM file with trusted authority certificates",
+        "help": "--cacert=[cacert]              Path to the PEM file with trusted authority certificates (override global CA trust)",
         "required": "0",
         "shortdesc": "SSL X.509 certificates file",
-        "default": "/etc/pki/tls/certs/ca-bundle.crt",
-        "order": 7,
+        "default": "",
+        "order": 9,
     }
     all_opt["apitimeout"] = {
         "getopt": ":",
@@ -203,7 +249,7 @@ def define_new_opts():
         "shortdesc": "Timeout in seconds to use for API calls, default is 60.",
         "required": "0",
         "default": 60,
-        "order": 8,
+        "order": 10,
     }
 
 
@@ -212,11 +258,15 @@ def main():
 
     device_opt = [
         "login",
+        "no_login",
         "passwd",
+        "no_password",
         "auth-url",
         "project-name",
         "user-domain-name",
         "project-domain-name",
+        "cloud",
+        "openrc",
         "port",
         "no_port",
         "uuid",
@@ -259,19 +309,54 @@ This agent calls the python-novaclient and it is mandatory to be installed "
 
     run_delay(options)
 
-    username = options["--username"]
-    password = options["--password"]
-    projectname = options["--project-name"]
-    auth_url = None
-    try:
-        auth_url = options["--auth-url"]
-    except KeyError:
-        fail_usage("Failed: You have to set the Keystone service endpoint for authorization")
-    user_domain_name = options["--user-domain-name"]
-    project_domain_name = options["--project-domain-name"]
+    if options.get("--cloud"):
+        cloud = get_cloud(options)
+        username = cloud.get("auth").get("username")
+        password = cloud.get("auth").get("password")
+        projectname = cloud.get("auth").get("project_name")
+        auth_url = None
+        try:
+            auth_url = cloud.get("auth").get("auth_url")
+        except KeyError:
+            fail_usage("Failed: You have to set the Keystone service endpoint for authorization")
+        user_domain_name = cloud.get("auth").get("user_domain_name")
+        project_domain_name = cloud.get("auth").get("project_domain_name")
+        caverify = cloud.get("verify")
+        if caverify in [True, False]:
+                options["--ssl-insecure"] = caverify
+        else:
+                options["--cacert"] = caverify
+    elif options.get("--openrc"):
+        if not os.path.exists(os.path.expanduser(options["--openrc"])):
+            fail_usage("Failed: {} does not exist".format(options.get("--openrc")))
+        source_env(options["--openrc"])
+        env = os.environ
+        username = env.get("OS_USERNAME")
+        password = env.get("OS_PASSWORD")
+        projectname = env.get("OS_PROJECT_NAME")
+        auth_url = None
+        try:
+            auth_url = env["OS_AUTH_URL"]
+        except KeyError:
+            fail_usage("Failed: You have to set the Keystone service endpoint for authorization")
+        user_domain_name = env.get("OS_USER_DOMAIN_NAME")
+        project_domain_name = env.get("OS_PROJECT_DOMAIN_NAME")
+    else:
+        username = options["--username"]
+        password = options["--password"]
+        projectname = options["--project-name"]
+        auth_url = None
+        try:
+            auth_url = options["--auth-url"]
+        except KeyError:
+            fail_usage("Failed: You have to set the Keystone service endpoint for authorization")
+        user_domain_name = options["--user-domain-name"]
+        project_domain_name = options["--project-domain-name"]
+
     ssl_insecure = "--ssl-insecure" in options
     cacert = options["--cacert"]
     apitimeout = options["--apitimeout"]
+
     try:
         conn = nova_login(
             username,

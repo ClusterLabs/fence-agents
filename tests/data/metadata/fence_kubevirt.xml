@@ -23,7 +23,7 @@
 		<content type="boolean"  />
 		<shortdesc lang="en">Use SSL connection without verifying certificate</shortdesc>
 	</parameter>
-	<parameter name="namespace" unique="0" required="1">
+	<parameter name="namespace" unique="0" required="0">
 		<getopt mixed="--namespace=[namespace]" />
 		<content type="string"  />
 		<shortdesc lang="en">Namespace of the KubeVirt machine.</shortdesc>

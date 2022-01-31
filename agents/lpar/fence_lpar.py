@@ -56,6 +56,18 @@ def get_power_status(conn, options):
 
 	return _normalize_status(status)
 
+def is_comanaged(conn, options):
+	conn.send("lscomgmt -m " + options["--managed"] + "\n" )
+	conn.readline()
+	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
+
+	try:
+		cm = re.compile(",curr_master_mtms=(.*?),", re.IGNORECASE).search(conn.before).group(1)
+	except AttributeError as e:
+		cm = False
+
+	return cm
+
 def set_power_status(conn, options):
 	if options["--hmc-version"] == "3":
 		conn.send("chsysstate -o " + options["--action"] + " -r lpar -m " + options["--managed"]
@@ -66,11 +78,17 @@ def set_power_status(conn, options):
 		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 	elif options["--hmc-version"] in ["4", "IVM"]:
 		if options["--action"] == "on":
-			conn.send("chsysstate -o on -r lpar -m " + options["--managed"] +
-				" -n " + options["--plug"] +
-				" -f `lssyscfg -r lpar -F curr_profile " +
+			if is_comanaged(conn, options):
+				profile = ""
+			else:
+				profile = " -f `lssyscfg -r lpar -F curr_profile " + \
+				    " -m " + options["--managed"] + \
+				    " --filter \"lpar_names=" + options["--plug"] + "\"`"
+			conn.send("chsysstate -o on -r lpar" +
 				" -m " + options["--managed"] +
-				" --filter \"lpar_names=" + options["--plug"] + "\"`\n")
+				" -n " + options["--plug"] +
+				profile +
+				"\n")
 		else:
 			conn.send("chsysstate -o shutdown -r lpar --immed" +
 				" -m " + options["--managed"] + " -n " + options["--plug"] + "\n")
