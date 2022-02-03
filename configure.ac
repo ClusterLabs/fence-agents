@@ -168,7 +168,7 @@ if echo "$AGENTS_LIST" | grep -q -E "all|scsi"; then
 fi
 
 FENCE_ZVM=0
-if echo "$AGENTS_LIST" | grep -q -E "all|zvm( |$)"; then
+if echo "$AGENTS_LIST" | grep -q -E "zvm( |$)"; then
 	FENCE_ZVM=1
 fi
 
