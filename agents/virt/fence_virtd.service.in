@@ -1,7 +1,7 @@
 [Unit]
 Description=Fence-Virt system host daemon
 Documentation=man:fence_virtd(8)
-Documentation=man:fence_virt.con(5)
+Documentation=man:fence_virt.conf(5)
 
 After=basic.target
 After=network.target
