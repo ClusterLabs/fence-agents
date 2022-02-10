@@ -43,8 +43,8 @@ def get_power_status(conn, options):
         conn.send("STATUS\r\n")
         conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
         lines = conn.before.split("\n")
-        #    .A12     TowerA_Outlet12           On         Idle On  
-        #    .A12     test-01                   On         Idle On  
+        #    .A12     TowerA_Outlet12           On         Idle On
+        #    .A12     test-01                   On         Idle On
         show_re = re.compile('(\.\w+)\s+(\w+|\w+\W\w+)\s+(On|Off)\s+(On|Idle On|Off|Wake On)')
         for line in lines:
             res = show_re.search(line)
@@ -86,7 +86,7 @@ def disconnect(conn):
     conn.close()
 
 def main():
-    device_opt = [  "ipaddr", "login", "port", "switch", "passwd", "telnet" ]
+    device_opt = [ "ipaddr", "login", "port", "switch", "passwd", "telnet" ]
 
     atexit.register(atexit_handler)
 
