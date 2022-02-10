@@ -27,6 +27,8 @@
 ## +---------------------------------------------+
 ## Sentry Switched CDU   6a
 ## Sentry Switched CDU   7.1c <trenn@suse.de>
+## Sentry Switched CDU   7.1f <trenn@suse.de>
+## Sentry Switched PDU   8.0i <trenn@suse.de>
 ##
 ##
 #####
@@ -40,16 +42,30 @@ def get_power_status(conn, options):
     exp_result = 0
     outlets = {}
     try:
-        conn.send("STATUS\r\n")
+        if options["api-version"] == "8":
+            conn.send("STATUS ALL\r\n")
+        else:
+            conn.send("STATUS\r\n")
         conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
         lines = conn.before.split("\n")
-        #    .A12     TowerA_Outlet12           On         Idle On
-        #    .A12     test-01                   On         Idle On
-        show_re = re.compile('(\.\w+)\s+(\w+|\w+\W\w+)\s+(On|Off)\s+(On|Idle On|Off|Wake On)')
+        if options["api-version"] == "8":
+            #  AA13  Arm-Console3                     Wake On        On     Normal
+            #  AA14  Master_Outlet_14                 Wake On        On     Normal
+            show_re = re.compile('(\w+)\s+(\S+)\s+(On|Idle On|Off|Wake On)\s+(On|Off)')
+        else:
+            #    .A12     TowerA_Outlet12           On         Idle On
+            #    .A12     test-01                   On         Idle On
+            show_re = re.compile('(\.\w+)\s+(\w+|\w+\W\w+)\s+(On|Off)\s+(On|Idle On|Off|Wake On)')
         for line in lines:
             res = show_re.search(line)
             if res != None:
-                outlets[res.group(2)] = (res.group(1), res.group(3))
+                plug_id = res.group(1)
+                plug_name = res.group(2)
+                print(plug_name)
+                plug_state = res.group(3)
+                if options["api-version"] == "8":
+                    plug_state = res.group(4)
+                outlets[plug_name] = (plug_id, plug_state)
     except pexpect.EOF:
         fail(EC_CONNECTION_LOST)
     except pexpect.TIMEOUT:
@@ -67,9 +83,13 @@ def set_power_status(conn, options):
             conn.send("LIST OUTLETS\r\n")
             conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
             lines = conn.before.split("\n")
+            # if options["api-version"] == "8":
+            #    AA13  Arm-Console3
+            #    AA14  Master_Outlet_14
+            # else:
             #    .A12     TowerA_Outlet12
             #    .A12     test-01
-            show_re = re.compile('(\.\w+)\s+(\w+|\w+\W\w+)\s+')
+            show_re = re.compile('(\S+)\s+(\w+|\w+\W\w+)\s+')
             for line in lines:
                 res = show_re.search(line)
                 if res != None:
@@ -112,7 +132,7 @@ def main():
     ##
     ## Fence agent specific defaults
     #####
-    options["--command-prompt"] = "Switched CDU:"
+    options["--command-prompt"] = "Switched [PC]DU: "
 
     docs = { }
     docs["shortdesc"] = "Fence agent for a Sentry Switch CDU over telnet"
