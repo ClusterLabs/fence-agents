@@ -1502,6 +1502,8 @@ def _parse_input_stdin(avail_opt):
 			opt["--"+all_opt[name]["longopt"].rstrip(":")] = value
 		elif value.lower() in ["1", "yes", "on", "true"]:
 			opt["--"+all_opt[name]["longopt"]] = "1"
+		elif value.lower() in ["0", "no", "off", "false"]:
+			opt["--"+all_opt[name]["longopt"]] = "0"
 		else:
 			logging.warning("Parse error: Ignoring option '%s' because it does not have value\n", name)
 
