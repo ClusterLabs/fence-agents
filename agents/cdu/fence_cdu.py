@@ -31,7 +31,7 @@
 ##
 #####
 
-import sys, re, pexpect, atexit
+import sys, re, pexpect, atexit, logging
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, EC_TIMED_OUT, run_command, frun, EC_STATUS
@@ -85,6 +85,23 @@ def disconnect(conn):
     conn.sendline("LOGOUT")
     conn.close()
 
+def get_version(conn, options):
+    api_ver = "6"
+    sub = "a"
+    minor = ""
+    conn.send("VERSION\r\n")
+    conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
+    lines = conn.before.split("\n")
+    show_re = re.compile('Sentry Switched [PC]DU Version (\d)(.\d|)(\w)\r')
+    for line in lines:
+        res = show_re.search(line)
+        if res != None:
+            api_ver = res.group(1)
+            if res.group(2):
+                sub  = res.group(2).lstrip(".")
+            minor = res.group(3)
+    return (api_ver, sub, minor)
+
 def main():
     device_opt = [ "ipaddr", "login", "port", "switch", "passwd", "telnet" ]
 
@@ -116,9 +133,13 @@ via telnet and power's on/off an outlet."
     ## Operate the fencing device
     ####
     conn = fence_login(options)
-    # disable output paging
-    conn.sendline("set option more disabled")
-    conn.log_expect(options["--command-prompt"], int(options["--login-timeout"]))
+    (api_ver, sub, minor) = get_version(conn, options)
+    options["api-version"] = api_ver
+    logging.debug("Using API version: %s" % api_ver)
+    if api_ver == "7":
+        # disable output paging
+        conn.sendline("set option more disabled")
+        conn.log_expect(options["--command-prompt"], int(options["--login-timeout"]))
     result = fence_action(conn, options, set_power_status, get_power_status, get_power_status)
     ##
     ## Logout from system
