@@ -34,7 +34,7 @@
 import sys, re, pexpect, atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, EC_TIMED_OUT, run_command, frun
+from fencing import fail, EC_TIMED_OUT, run_command, frun, EC_STATUS
 
 def get_power_status(conn, options):
     exp_result = 0
