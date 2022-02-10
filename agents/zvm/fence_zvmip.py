@@ -156,17 +156,33 @@ def get_list_of_images(options, command, data_as_plug):
 	conn.close()
 	return (return_code, reason_code, images)
 
+def define_new_opts():
+	all_opt["disable_ssl"] = {
+		"getopt" : "",
+		"longopt" : "disable-ssl",
+		"help" : "--disable-ssl                  Don't use SSL connection",
+		"required" : "0",
+		"shortdesc" : "Don't use SSL",
+		"order": 2
+	}
+
 def main():
 	device_opt = ["ipaddr", "login", "passwd", "port", "method", "missing_as_off",
-		      "inet4_only", "inet6_only", "ssl"]
+		      "inet4_only", "inet6_only", "ssl", "disable_ssl"]
 
 	atexit.register(atexit_handler)
+	define_new_opts()
+
+	all_opt["ssl"]["help"] = "-z, --ssl                      Use SSL connection with verifying certificate (Default)"
 
 	all_opt["ipport"]["default"] = "44444"
 	all_opt["shell_timeout"]["default"] = "5"
 	all_opt["missing_as_off"]["default"] = "1"
 	all_opt["ssl"]["default"] = "1"
 	options = check_input(device_opt, process_input(device_opt), other_conditions=True)
+
+	if "--disable-ssl" in options or options["--ssl"] == "0":
+		del options["--ssl"]
 
 	if len(options.get("--plug", "")) > 8:
 		fail_usage("Failed: Name of image can not be longer than 8 characters")

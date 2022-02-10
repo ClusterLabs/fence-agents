@@ -94,7 +94,7 @@ to access the system's directory manager.
 	<parameter name="ssl" unique="0" required="0">
 		<getopt mixed="-z, --ssl" />
 		<content type="boolean" default="1"  />
-		<shortdesc lang="en">Use SSL connection with verifying certificate</shortdesc>
+		<shortdesc lang="en">Use SSL connection with verifying certificate (Default)</shortdesc>
 	</parameter>
 	<parameter name="ssl_insecure" unique="0" required="0">
 		<getopt mixed="--ssl-insecure" />
@@ -110,6 +110,11 @@ to access the system's directory manager.
 		<getopt mixed="-l, --username=[name]" />
 		<content type="string"  />
 		<shortdesc lang="en">Login name</shortdesc>
+	</parameter>
+	<parameter name="disable_ssl" unique="0" required="0">
+		<getopt mixed="--disable-ssl" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Don't use SSL</shortdesc>
 	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
