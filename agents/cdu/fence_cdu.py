@@ -27,29 +27,45 @@
 ## +---------------------------------------------+
 ## Sentry Switched CDU   6a
 ## Sentry Switched CDU   7.1c <trenn@suse.de>
+## Sentry Switched CDU   7.1f <trenn@suse.de>
+## Sentry Switched PDU   8.0i <trenn@suse.de>
 ##
 ##
 #####
 
-import sys, re, pexpect, atexit
+import sys, re, pexpect, atexit, logging
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, EC_TIMED_OUT, run_command, frun
+from fencing import fail, EC_TIMED_OUT, run_command, frun, EC_STATUS
 
 def get_power_status(conn, options):
     exp_result = 0
     outlets = {}
     try:
-        conn.send("STATUS\r\n")
+        if options["api-version"] == "8":
+            conn.send("STATUS ALL\r\n")
+        else:
+            conn.send("STATUS\r\n")
         conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
         lines = conn.before.split("\n")
-        #    .A12     TowerA_Outlet12           On         Idle On  
-        #    .A12     test-01                   On         Idle On  
-        show_re = re.compile('(\.\w+)\s+(\w+|\w+\W\w+)\s+(On|Off)\s+(On|Idle On|Off|Wake On)')
+        if options["api-version"] == "8":
+            #  AA13  Arm-Console3                     Wake On        On     Normal
+            #  AA14  Master_Outlet_14                 Wake On        On     Normal
+            show_re = re.compile('(\w+)\s+(\S+)\s+(On|Idle On|Off|Wake On)\s+(On|Off)')
+        else:
+            #    .A12     TowerA_Outlet12           On         Idle On
+            #    .A12     test-01                   On         Idle On
+            show_re = re.compile('(\.\w+)\s+(\w+|\w+\W\w+)\s+(On|Off)\s+(On|Idle On|Off|Wake On)')
         for line in lines:
             res = show_re.search(line)
             if res != None:
-                outlets[res.group(2)] = (res.group(1), res.group(3))
+                plug_id = res.group(1)
+                plug_name = res.group(2)
+                print(plug_name)
+                plug_state = res.group(3)
+                if options["api-version"] == "8":
+                    plug_state = res.group(4)
+                outlets[plug_name] = (plug_id, plug_state)
     except pexpect.EOF:
         fail(EC_CONNECTION_LOST)
     except pexpect.TIMEOUT:
@@ -67,9 +83,13 @@ def set_power_status(conn, options):
             conn.send("LIST OUTLETS\r\n")
             conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
             lines = conn.before.split("\n")
+            # if options["api-version"] == "8":
+            #    AA13  Arm-Console3
+            #    AA14  Master_Outlet_14
+            # else:
             #    .A12     TowerA_Outlet12
             #    .A12     test-01
-            show_re = re.compile('(\.\w+)\s+(\w+|\w+\W\w+)\s+')
+            show_re = re.compile('(\S+)\s+(\w+|\w+\W\w+)\s+')
             for line in lines:
                 res = show_re.search(line)
                 if res != None:
@@ -85,8 +105,25 @@ def disconnect(conn):
     conn.sendline("LOGOUT")
     conn.close()
 
+def get_version(conn, options):
+    api_ver = "6"
+    sub = "a"
+    minor = ""
+    conn.send("VERSION\r\n")
+    conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
+    lines = conn.before.split("\n")
+    show_re = re.compile('Sentry Switched [PC]DU Version (\d)(.\d|)(\w)\r')
+    for line in lines:
+        res = show_re.search(line)
+        if res != None:
+            api_ver = res.group(1)
+            if res.group(2):
+                sub  = res.group(2).lstrip(".")
+            minor = res.group(3)
+    return (api_ver, sub, minor)
+
 def main():
-    device_opt = [  "ipaddr", "login", "port", "switch", "passwd", "telnet" ]
+    device_opt = [ "ipaddr", "login", "port", "switch", "passwd", "telnet" ]
 
     atexit.register(atexit_handler)
 
@@ -95,7 +132,7 @@ def main():
     ##
     ## Fence agent specific defaults
     #####
-    options["--command-prompt"] = "Switched CDU:"
+    options["--command-prompt"] = "Switched [PC]DU: "
 
     docs = { }
     docs["shortdesc"] = "Fence agent for a Sentry Switch CDU over telnet"
@@ -116,9 +153,13 @@ via telnet and power's on/off an outlet."
     ## Operate the fencing device
     ####
     conn = fence_login(options)
-    # disable output paging
-    conn.sendline("set option more disabled")
-    conn.log_expect(options["--command-prompt"], int(options["--login-timeout"]))
+    (api_ver, sub, minor) = get_version(conn, options)
+    options["api-version"] = api_ver
+    logging.debug("Using API version: %s" % api_ver)
+    if api_ver == "7":
+        # disable output paging
+        conn.sendline("set option more disabled")
+        conn.log_expect(options["--command-prompt"], int(options["--login-timeout"]))
     result = fence_action(conn, options, set_power_status, get_power_status, get_power_status)
     ##
     ## Logout from system
