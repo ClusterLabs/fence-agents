@@ -98,6 +98,16 @@ When using network fencing the reboot-action will cause a quick-return once the 
 		<content type="string"  />
 		<shortdesc lang="en">Name of the cloud you want to use.</shortdesc>
 	</parameter>
+	<parameter name="metadata-endpoint" unique="0" required="0" deprecated="1">
+		<getopt mixed="--metadata-endpoint=[URL]" />
+		<content type="string"  />
+		<shortdesc lang="en">URL to metadata endpoint (used when cloud=stack).</shortdesc>
+	</parameter>
+	<parameter name="metadata_endpoint" unique="0" required="0" obsoletes="metadata-endpoint">
+		<getopt mixed="--metadata-endpoint=[URL]" />
+		<content type="string"  />
+		<shortdesc lang="en">URL to metadata endpoint (used when cloud=stack).</shortdesc>
+	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
 		<content type="boolean"  />

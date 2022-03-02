@@ -251,6 +251,7 @@ def get_azure_config(options):
     config.VMName = options.get("--plug")
     config.SubscriptionId = options.get("--subscriptionId")
     config.Cloud = options.get("--cloud")
+    config.MetadataEndpoint = options.get("--metadata-endpoint")
     config.UseMSI = "--msi" in options
     config.Tenantid = options.get("--tenantId")
     config.ApplicationId = options.get("--username")
@@ -279,6 +280,9 @@ def get_azure_cloud_environment(config):
         elif (config.Cloud.lower() == "usgov"):
             from msrestazure.azure_cloud import AZURE_US_GOV_CLOUD
             cloud_environment = AZURE_US_GOV_CLOUD
+        elif (config.Cloud.lower() == "stack"):
+            from msrestazure.azure_cloud import get_cloud_from_metadata_endpoint
+            cloud_environment = get_cloud_from_metadata_endpoint(config.MetadataEndpoint)
 
     return cloud_environment
 
@@ -345,6 +349,9 @@ def get_azure_compute_client(config):
     credentials = get_azure_credentials(config)
 
     if cloud_environment:
+        if (config.Cloud.lower() == "stack") and not config.MetadataEndpoint:
+                fail_usage("metadata-endpoint not specified")
+
         try:
             compute_client = ComputeManagementClient(
                 credentials,
@@ -372,6 +379,9 @@ def get_azure_network_client(config):
     credentials = get_azure_credentials(config)
 
     if cloud_environment:
+        if (config.Cloud.lower() == "stack") and not config.MetadataEndpoint:
+                fail_usage("metadata-endpoint not specified")
+
         try:
             network_client = NetworkManagementClient(
                 credentials,
