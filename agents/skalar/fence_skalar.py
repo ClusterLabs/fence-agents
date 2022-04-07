@@ -200,7 +200,7 @@ def main():
     run_delay(options)
     
     proto = "https://"
-    if "--ssl" in options or "--ssl-secure" in options:
+    if "--ssl-secure" in options:
         ssl_verify = True
     elif "--ssl-insecure" in options:
         ssl_verify = False

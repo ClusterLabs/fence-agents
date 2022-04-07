@@ -111,12 +111,13 @@ def send_cmd(options, cmd, post=None):
 			conn.setopt(pycurl.POSTFIELDS, urllib.urlencode(post))
 	conn.setopt(pycurl.WRITEFUNCTION, output_buffer.write)
 	conn.setopt(pycurl.TIMEOUT, int(options["--shell-timeout"]))
-	if "--ssl" in options or "--ssl-secure" in options:
-		conn.setopt(pycurl.SSL_VERIFYPEER, 1)
-		conn.setopt(pycurl.SSL_VERIFYHOST, 2)
-	else:
+
+	if "--ssl-insecure" in options:
 		conn.setopt(pycurl.SSL_VERIFYPEER, 0)
 		conn.setopt(pycurl.SSL_VERIFYHOST, 0)
+	else:
+		conn.setopt(pycurl.SSL_VERIFYPEER, 1)
+		conn.setopt(pycurl.SSL_VERIFYHOST, 2)
 
 	logging.debug("URL: " + url)
 
@@ -181,11 +182,12 @@ def main():
 		"order": 2
 	}
 
-	device_opt = ["ipaddr", "login", "passwd", "web", "port", "pve_node", "pve_node_auto", "node_name", "vmtype", "method"]
+	device_opt = ["ipaddr", "login", "passwd", "ssl", "web", "port", "pve_node", "pve_node_auto", "node_name", "vmtype", "method"]
 
 	all_opt["login"]["required"] = "0"
 	all_opt["login"]["default"] = "root@pam"
 	all_opt["ipport"]["default"] = "8006"
+	all_opt["ssl"]["default"] = "1"
 	all_opt["port"]["shortdesc"] = "Id of the virtual machine."
 	all_opt["ipaddr"]["shortdesc"] = "IP Address or Hostname of a node " +\
 		"within the Proxmox cluster."

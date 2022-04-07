@@ -34,7 +34,7 @@ class RequestsTransport(HttpAuthenticated):
 def soap_login(options):
 	run_delay(options)
 
-	if "--ssl" in options or "--ssl-secure" in options or "--ssl-insecure" in options:
+	if "--ssl-secure" in options or "--ssl-insecure" in options:
 		if "--ssl-insecure" in options:
 			import ssl
 			import urllib3

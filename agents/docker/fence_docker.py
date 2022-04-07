@@ -43,7 +43,7 @@ def get_list(conn, options):
 
 
 def send_cmd(options, cmd, post = False):
-	url = "http%s://%s:%s/v%s/%s" % ("s" if "--ssl" in options else "", options["--ip"], options["--ipport"], options["--api-version"], cmd)
+	url = "http%s://%s:%s/v%s/%s" % ("s" if "--ssl-secure" in options or "--ssl-insecure" in options else "", options["--ip"], options["--ipport"], options["--api-version"], cmd)
 	conn = pycurl.Curl()
 	output_buffer = io.BytesIO()
 	if logging.getLogger().getEffectiveLevel() < logging.WARNING:
@@ -55,7 +55,8 @@ def send_cmd(options, cmd, post = False):
 		conn.setopt(pycurl.POSTFIELDSIZE, 0)
 	conn.setopt(pycurl.WRITEFUNCTION, output_buffer.write)
 	conn.setopt(pycurl.TIMEOUT, int(options["--shell-timeout"]))
-	if "--ssl" in options:
+
+	if "--ssl-secure" in options:
 		if not (set(("--tlscert", "--tlskey", "--tlscacert")) <= set(options)):
 			fail_usage("Failed. If --ssl option is used, You have to also \
 specify: --tlscert, --tlskey and --tlscacert")
@@ -63,7 +64,7 @@ specify: --tlscert, --tlskey and --tlscacert")
 		conn.setopt(pycurl.SSLCERT, options["--tlscert"])
 		conn.setopt(pycurl.SSLKEY, options["--tlskey"])
 		conn.setopt(pycurl.CAINFO, options["--tlscacert"])
-	else:
+	elif "--ssl-insecure" in options:
 		conn.setopt(pycurl.SSL_VERIFYPEER, 0)
 		conn.setopt(pycurl.SSL_VERIFYHOST, 0)
 
@@ -135,6 +136,8 @@ TLS authentication.  Required if --ssl option is used.",
 	}
 
 	device_opt = ["ipaddr", "no_password", "no_login", "port", "method", "web", "tlscert", "tlskey", "tlscacert", "ssl", "api_version"]
+
+	all_opt["ssl"]["default"] = "1"
 
 	options = check_input(device_opt, process_input(device_opt))
 

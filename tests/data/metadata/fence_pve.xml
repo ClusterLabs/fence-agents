@@ -66,6 +66,21 @@
 		<content type="string"  />
 		<shortdesc lang="en">Id of the virtual machine.</shortdesc>
 	</parameter>
+	<parameter name="ssl" unique="0" required="0">
+		<getopt mixed="-z, --ssl" />
+		<content type="boolean" default="1"  />
+		<shortdesc lang="en">Use SSL connection with verifying certificate</shortdesc>
+	</parameter>
+	<parameter name="ssl_insecure" unique="0" required="0">
+		<getopt mixed="--ssl-insecure" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Use SSL connection without verifying certificate</shortdesc>
+	</parameter>
+	<parameter name="ssl_secure" unique="0" required="0">
+		<getopt mixed="--ssl-secure" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Use SSL connection with verifying certificate</shortdesc>
+	</parameter>
 	<parameter name="username" unique="0" required="1" obsoletes="login">
 		<getopt mixed="-l, --username=[name]" />
 		<content type="string" default="root@pam"  />
@@ -175,6 +190,10 @@
 		<getopt mixed="--retry-on=[attempts]" />
 		<content type="integer" default="1"  />
 		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
+	</parameter>
+	<parameter name="gnutlscli_path" unique="0" required="0">
+		<getopt mixed="--gnutlscli-path=[path]" />
+		<shortdesc lang="en">Path to gnutls-cli binary</shortdesc>
 	</parameter>
 </parameters>
 <actions>
