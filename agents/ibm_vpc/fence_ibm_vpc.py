@@ -161,14 +161,6 @@ def define_new_opts():
 		"shortdesc" : "API Key",
 		"order" : 0
 	}
-	all_opt["instance"] = {
-		"getopt" : ":",
-		"longopt" : "instance",
-		"help" : "--instance=[instance]          Cloud Instance",
-		"required" : "1",
-		"shortdesc" : "Cloud Instance",
-		"order" : 0
-	}
 	all_opt["region"] = {
 		"getopt" : ":",
 		"longopt" : "region",
@@ -181,7 +173,7 @@ def define_new_opts():
 		"getopt" : ":",
 		"longopt" : "limit",
 		"help" : "--limit=[number]               Limit number of nodes returned by API",
-		"required" : "1",
+		"required" : "0",
 		"default": 50,
 		"shortdesc" : "Number of nodes returned by API",
 		"order" : 0
@@ -191,7 +183,6 @@ def define_new_opts():
 def main():
 	device_opt = [
 		"apikey",
-		"instance",
 		"region",
 		"limit",
 		"port",
