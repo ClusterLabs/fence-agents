@@ -789,6 +789,12 @@ def check_input(device_opt, opt, other_conditions = False):
 	if "--password-script" in options:
 		options["--password"] = os.popen(options["--password-script"]).read().rstrip()
 
+	if "--ssl-secure" in options or "--ssl-insecure" in options:
+		options["--ssl"] = ""
+
+	if "--ssl" in options and "--ssl-insecure" not in options:
+		options["--ssl-secure"] = ""
+
 	if os.environ.get("PCMK_service") == "pacemaker-fenced" and "--disable-timeout" not in options:
 		options["--disable-timeout"] = "1"
 

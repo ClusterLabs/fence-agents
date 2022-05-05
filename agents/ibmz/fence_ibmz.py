@@ -534,7 +534,7 @@ def main():
     requests_log.propagate = True
     if "--verbose" in options:
         requests_log.setLevel(logging.DEBUG)
-    if "--ssl-secure" not in options:
+    if "--ssl-insecure" in options:
         urllib3.disable_warnings(
             category=urllib3.exceptions.InsecureRequestWarning)
 
@@ -548,7 +548,7 @@ def main():
         'connect_timeout': int(options['--connect-timeout']),
         'read_timeout': int(options['--read-timeout']),
         'port': int(options['--ipport']),
-        'ssl_verify': bool('--ssl-secure' in options),
+        'ssl_verify': bool('--ssl-insecure' not in options),
         'load_on_activate': bool('--load-on-activate' in options),
     }
     try:

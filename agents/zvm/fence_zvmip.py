@@ -26,7 +26,7 @@ def open_socket(options):
 	except socket.gaierror:
 		fail(EC_LOGIN_DENIED)
 
-	if "--ssl" in options:
+	if "--ssl-secure" in options or "--ssl-insecure" in options:
 		import ssl
 		sock = socket.socket()
 		sslcx = ssl.create_default_context()
@@ -132,7 +132,7 @@ def get_list_of_images(options, command, data_as_plug):
 	images = set()
 
 	if output_len > 3*INT4:
-		recvflag = socket.MSG_WAITALL if "--ssl" not in options else 0
+		recvflag = socket.MSG_WAITALL if "--ssl-secure" not in options and "--ssl-insecure" not in options else 0
 		array_len = struct.unpack("!i", conn.recv(INT4))[0]
 		data = ""
 
@@ -182,7 +182,9 @@ def main():
 	options = check_input(device_opt, process_input(device_opt), other_conditions=True)
 
 	if "--disable-ssl" in options or options["--ssl"] == "0":
-		del options["--ssl"]
+		for k in ["--ssl", "--ssl-secure", "--ssl-insecure"]:
+			if k in options:
+				del options[k]
 
 	if len(options.get("--plug", "")) > 8:
 		fail_usage("Failed: Name of image can not be longer than 8 characters")

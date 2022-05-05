@@ -85,7 +85,7 @@ def send_command(opt, command, method="GET"):
 		logging.debug("auto-detected API version: " + opt["--api-version"])
 
 	## setup correct URL
-	if "--ssl" in opt or "--ssl-secure" in opt or "--ssl-insecure" in opt:
+	if "--ssl-secure" in opt or "--ssl-insecure" in opt:
 		url = "https:"
 	else:
 		url = "http:"
@@ -126,11 +126,11 @@ def send_command(opt, command, method="GET"):
 			conn.setopt(pycurl.COOKIEJAR, cookie_file)
 
 	conn.setopt(pycurl.TIMEOUT, int(opt["--shell-timeout"]))
-	if "--ssl" in opt or "--ssl-secure" in opt:
+
+	if "--ssl-secure" in opt:
 		conn.setopt(pycurl.SSL_VERIFYPEER, 1)
 		conn.setopt(pycurl.SSL_VERIFYHOST, 2)
-
-	if "--ssl-insecure" in opt:
+	elif "--ssl-insecure" in opt:
 		conn.setopt(pycurl.SSL_VERIFYPEER, 0)
 		conn.setopt(pycurl.SSL_VERIFYHOST, 0)
 

@@ -20,7 +20,7 @@
 	</parameter>
 	<parameter name="ipport" unique="0" required="0">
 		<getopt mixed="-u, --ipport=[port]" />
-		<content type="integer" default="80"  />
+		<content type="integer" default="443"  />
 		<shortdesc lang="en">TCP/UDP port to use for connection with device</shortdesc>
 	</parameter>
 	<parameter name="method" unique="0" required="0">
@@ -43,7 +43,7 @@
 	</parameter>
 	<parameter name="ssl" unique="0" required="0">
 		<getopt mixed="-z, --ssl" />
-		<content type="boolean"  />
+		<content type="boolean" default="1"  />
 		<shortdesc lang="en">Use SSL connection with verifying certificate</shortdesc>
 	</parameter>
 	<parameter name="ssl_insecure" unique="0" required="0">
