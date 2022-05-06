@@ -1,11 +1,11 @@
-#!/usr/libexec/platform-python -tt
+#!@PYTHON@ -tt
 
 import sys
 import pycurl, io, json
 import logging
 import atexit
 import time
-sys.path.append("/usr/share/fence")
+sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, run_delay, EC_LOGIN_DENIED, EC_STATUS
 
@@ -16,7 +16,6 @@ state = {
 }
 
 def get_token(conn, options):
-
         try:
                 command = "identity/token"
                 action = "grant_type=urn%3Aibm%3Aparams%3Aoauth%3Agrant-type%3Aapikey&apikey={}".format(options["--token"])
@@ -25,20 +24,18 @@ def get_token(conn, options):
                 logging.debug("Failed: {}".format(e))
                 return "TOKEN_IS_MISSING_OR_WRONG"
 
-        #if "--verbose" in options:
-        #        logging.debug(json.dumps(res, indent=2))
-
         return res["access_token"]
 
 def get_list(conn, options):
 	outlets = {}
-	
+
 	try:
 		command = "cloud-instances/{}/pvm-instances".format(options["--instance"])
 		res = send_command(conn, command)
 	except Exception as e:
 		logging.debug("Failed: {}".format(e))
 		return outlets
+
 	for r in res["pvmInstances"]:
 		if "--verbose" in options:
 			logging.debug(json.dumps(r, indent=2))
@@ -47,7 +44,6 @@ def get_list(conn, options):
 	return outlets
 
 def get_power_status(conn, options):
-
 	try:
 		command = "cloud-instances/{}/pvm-instances/{}".format(
 				options["--instance"], options["--plug"])
@@ -56,11 +52,10 @@ def get_power_status(conn, options):
 	except KeyError as e:
 		logging.debug("Failed: Unable to get status for {}".format(e))
 		fail(EC_STATUS)
-	
+
 	return result
 
 def set_power_status(conn, options):
-
 	action = {
 		"on" :  '{"action" : "start"}',
 		"off" : '{"action" : "immediate-shutdown"}',
@@ -77,11 +72,11 @@ def connect(opt, token):
 	conn = pycurl.Curl()
 
 	## setup correct URL
-	conn.base_url = "https://private." + opt["--region"] + ".power-iaas.cloud.ibm.com/pcloud/v1/"
-	if opt["--api-type"] == "public":
-		conn.base_url = "https://" + opt["--region"] + ".power-iaas.cloud.ibm.com/pcloud/v1/"
+	conn.base_url = "https://" + opt["--region"] + ".power-iaas.cloud.ibm.com/pcloud/v1/"
+	if opt["--api-type"] == "private":
+		conn.base_url = "https://private." + opt["--region"] + ".power-iaas.cloud.ibm.com/pcloud/v1/"
 
-	if opt["--verbose-level"] > 1:
+	if opt["--verbose-level"] < 3:
 		conn.setopt(pycurl.VERBOSE, 0)
 
 	conn.setopt(pycurl.CONNECTTIMEOUT,int(opt["--shell-timeout"]))
@@ -129,7 +124,7 @@ def disconnect(conn):
 
 def send_command(conn, command, method="GET", action=None, printResult=True):
 	url = conn.base_url + command
-	
+
 	conn.setopt(pycurl.URL, url.encode("ascii"))
 
 	web_buffer = io.BytesIO()
@@ -144,10 +139,9 @@ def send_command(conn, command, method="GET", action=None, printResult=True):
 	conn.setopt(pycurl.WRITEFUNCTION, web_buffer.write)
 
 	try:
-		time.sleep(3)
 		conn.perform()
 	except Exception as e:
-		logging.error("ADD_DEBUG: {}".format(e))
+		logging.error("send_command(): {}".format(e))
 		raise(e)
 
 	rc = conn.getinfo(pycurl.HTTP_CODE)
@@ -208,9 +202,9 @@ def define_new_opts():
 	all_opt["api-type"] = {
                 "getopt" : ":",
                 "longopt" : "api-type",
-                "help" : "--api-type=[private|public]          API-type: 'private' (default) or 'public'",
+                "help" : "--api-type=[public|private]          API-type: 'public' (default) or 'private'",
                 "required" : "0",
-                "shortdesc" : "API-type (private|public)",
+                "shortdesc" : "API-type (public|private)",
                 "order" : 0
         }
 	all_opt["proxy"] = {
@@ -238,9 +232,10 @@ def main():
 	atexit.register(atexit_handler)
 	define_new_opts()
 
-	all_opt["shell_timeout"]["default"] = "500"
+	all_opt["shell_timeout"]["default"] = "15"
 	all_opt["power_timeout"]["default"] = "30"
 	all_opt["power_wait"]["default"] = "1"
+	all_opt["stonith_status_sleep"]["default"] = "3"
 	all_opt["api-type"]["default"] = "private"
 	all_opt["proxy"]["default"] = ""
 
@@ -257,7 +252,7 @@ used with IBM PowerVS to fence virtual machines."""
 	## Fence operations
 	####
 	run_delay(options)
-	
+
 	auth_conn = auth_connect(options)
 	token = get_token(auth_conn, options)
 	disconnect(auth_conn)

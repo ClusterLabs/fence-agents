@@ -3,6 +3,16 @@
 <longdesc>fence_ibm_powervs is an I/O Fencing agent which can be used with IBM PowerVS to fence virtual machines.</longdesc>
 <vendor-url>https://www.ibm.com</vendor-url>
 <parameters>
+	<parameter name="api-type" unique="0" required="0" deprecated="1">
+		<getopt mixed="--api-type=[public|private]" />
+		<content type="string" default="private"  />
+		<shortdesc lang="en">API-type (public|private)</shortdesc>
+	</parameter>
+	<parameter name="api_type" unique="0" required="0" obsoletes="api-type">
+		<getopt mixed="--api-type=[public|private]" />
+		<content type="string" default="private"  />
+		<shortdesc lang="en">API-type (public|private)</shortdesc>
+	</parameter>
 	<parameter name="crn" unique="0" required="1">
 		<getopt mixed="--crn=[crn]" />
 		<content type="string"  />
@@ -13,6 +23,11 @@
 		<content type="string"  />
 		<shortdesc lang="en">PowerVS Instance</shortdesc>
 	</parameter>
+	<parameter name="proxy" unique="0" required="0">
+		<getopt mixed="--proxy=[http://&lt;URL&gt;:&lt;PORT&gt;]" />
+		<content type="string" default=""  />
+		<shortdesc lang="en">Network proxy</shortdesc>
+	</parameter>
 	<parameter name="region" unique="0" required="1">
 		<getopt mixed="--region=[region]" />
 		<content type="string"  />
@@ -21,7 +36,7 @@
 	<parameter name="token" unique="0" required="1">
 		<getopt mixed="--token=[token]" />
 		<content type="string"  />
-		<shortdesc lang="en">Bearer Token</shortdesc>
+		<shortdesc lang="en">API Token</shortdesc>
 	</parameter>
 	<parameter name="action" unique="0" required="1">
 		<getopt mixed="-o, --action=[action]" />
@@ -110,7 +125,7 @@
 	</parameter>
 	<parameter name="stonith_status_sleep" unique="0" required="0">
 		<getopt mixed="--stonith-status-sleep=[seconds]" />
-		<content type="second" default="1"  />
+		<content type="second" default="3"  />
 		<shortdesc lang="en">Sleep X seconds between status calls during a STONITH action</shortdesc>
 	</parameter>
 	<parameter name="retry_on" unique="0" required="0">
