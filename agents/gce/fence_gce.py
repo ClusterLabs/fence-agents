@@ -18,6 +18,8 @@ import socket
 import sys
 import time
 
+from ssl import SSLError
+
 if sys.version_info >= (3, 0):
   # Python 3 imports.
   import urllib.parse as urlparse
@@ -564,6 +566,8 @@ def main():
 		else:
 			conn = googleapiclient.discovery.build(
 				'compute', 'v1', credentials=credentials, cache_discovery=False)
+	except SSLError as err:
+		fail_fence_agent(options, "Failed: Create GCE compute v1 connection: {}\n\nThis might be caused by old versions of httplib2.".format(str(err)))
 	except Exception as err:
 		fail_fence_agent(options, "Failed: Create GCE compute v1 connection: {}".format(str(err)))
 
