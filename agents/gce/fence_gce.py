@@ -135,10 +135,12 @@ def translate_status(instance_status):
 
 def get_nodes_list(conn, options):
 	result = {}
-	if "--zone" not in options:
-		fail_fence_agent(options, "Failed: get_nodes_list: Please specify the --zone in the command")
+	plug = options["--plug"] if "--plug" in options else ""
+	zones = options["--zone"] if "--zone" in options else ""
+	if not zones:
+		zones = get_zone(conn, options, plug) if "--plugzonemap" not in options else options["--plugzonemap"][plug]
 	try:
-		for zone in options["--zone"].split(","):
+		for zone in zones.split(","):
 			instanceList = retry_api_execute(options, conn.instances().list(
 				project=options["--project"],
 				zone=zone))
