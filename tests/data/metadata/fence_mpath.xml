@@ -81,6 +81,11 @@ When used as a watchdog device you can define e.g. retry=1, retry-sleep=2 and ve
 		<content type="second" default="5"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
 	</parameter>
+	<parameter name="suppress_errors" unique="0" required="0" obsoletes="suppress-errors">
+		<getopt mixed="--suppress-errors"/>
+		<content type="boolean"/>
+		<shortdesc lang="en">Error log suppression.</shortdesc>
+	</parameter>
 	<parameter name="mpathpersist_path" unique="0" required="0">
 		<getopt mixed="--mpathpersist-path=[path]" />
 		<shortdesc lang="en">Path to mpathpersist binary</shortdesc>
