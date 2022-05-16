@@ -15,6 +15,7 @@
 #####
 
 import sys, re, time
+import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
