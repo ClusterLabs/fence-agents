@@ -41,9 +41,14 @@ When used as a watchdog device you can define e.g. retry=1, retry-sleep=2 and ve
 		<content type="boolean"  />
 		<shortdesc lang="en">Open DEVICE read-only.</shortdesc>
 	</parameter>
+	<parameter name="suppress-errors" unique="0" required="0" deprecated="1">
+		<getopt mixed="--suppress-errors" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Error log suppression.</shortdesc>
+	</parameter>
 	<parameter name="suppress_errors" unique="0" required="0" obsoletes="suppress-errors">
-		<getopt mixed="--suppress-errors"/>
-		<content type="boolean"/>
+		<getopt mixed="--suppress-errors" />
+		<content type="boolean"  />
 		<shortdesc lang="en">Error log suppression.</shortdesc>
 	</parameter>
 	<parameter name="logfile" unique="0" required="0">
