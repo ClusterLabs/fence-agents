@@ -1,6 +1,7 @@
 #!@PYTHON@ -tt
 
 import sys
+import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
