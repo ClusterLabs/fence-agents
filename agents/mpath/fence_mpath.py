@@ -197,7 +197,8 @@ def mpath_check(hardreboot=False):
 		logging.getLogger().setLevel(logging.DEBUG)
 	devs = dev_read(options, fail=False)
 	if not devs:
-		logging.error("No devices found")
+		if "--suppress-errors" not in options:
+			logging.error("No devices found")
 		return 0
 	for dev, key in list(devs.items()):
 		for n in range(int(options["retry"]) + 1):
@@ -237,6 +238,14 @@ Each device must support SCSI-3 persistent reservations.",
 		"shortdesc" : "Replaced by port/-n/--plug",
 		"order": 1
 	}
+	all_opt["suppress-errors"] = {
+		"getopt" : "",
+		"longopt" : "suppress-errors",
+		"help" : "--suppress-errors              Suppress error log. Suppresses error logging when run from the watchdog service before pacemaker starts.",
+		"required" : "0",
+		"shortdesc" : "Error log suppression.",
+		"order": 4
+        }
 	all_opt["mpathpersist_path"] = {
 		"getopt" : ":",
 		"longopt" : "mpathpersist-path",
@@ -261,7 +270,7 @@ def main():
 
 	device_opt = ["no_login", "no_password", "devices", "key", "sudo", \
 	        "fabric_fencing", "on_target", "store_path", \
-		"mpathpersist_path", "force_on", "port", "no_port"]
+		"suppress-errors", "mpathpersist_path", "force_on", "port", "no_port"]
 
 	define_new_opts()
 

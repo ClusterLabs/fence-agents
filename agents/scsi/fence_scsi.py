@@ -270,12 +270,13 @@ def dev_write(dev, options):
 	f.close()
 
 
-def dev_read(fail=True):
+def dev_read(fail=True, opt=None):
 	file_path = STORE_PATH + ".dev"
 	try:
 		f = open(file_path, "r")
 	except IOError:
-		fail_usage("Failed: Cannot open file \"" + file_path + "\"", fail)
+		if "--suppress-errors" not in opt:
+			fail_usage("Failed: Cannot open file \"" + file_path + "\"", fail)
 		if not fail:
 			return None
 	# get not empty lines from file
@@ -358,13 +359,21 @@ be removed from the device(s).",
 		"shortdesc" : "Open DEVICE read-only.",
 		"order": 4
 	}
+	all_opt["suppress-errors"] = {
+		"getopt" : "",
+		"longopt" : "suppress-errors",
+		"help" : "--suppress-errors              Suppress error log. Suppresses error logging when run from the watchdog service before pacemaker starts.",
+		"required" : "0",
+		"shortdesc" : "Error log suppression.",
+		"order": 5
+	}
 	all_opt["logfile"] = {
 		"getopt" : ":",
 		"longopt" : "logfile",
 		"help" : "-f, --logfile                  Log output (stdout and stderr) to file",
 		"required" : "0",
 		"shortdesc" : "Log output (stdout and stderr) to file",
-		"order": 5
+		"order": 6
 	}
 	all_opt["corosync_cmap_path"] = {
 		"getopt" : ":",
@@ -445,9 +454,10 @@ def scsi_check(hardreboot=False):
 	options = scsi_check_get_options(options)
 	if "verbose" in options and options["verbose"] == "yes":
 		logging.getLogger().setLevel(logging.DEBUG)
-	devs = dev_read(fail=False)
+	devs = dev_read(fail=False,opt=options)
 	if not devs:
-		logging.error("No devices found")
+		if "--suppress-errors" not in options:
+			logging.error("No devices found")
 		return 0
 	key = get_key(fail=False)
 	if not key:
@@ -480,7 +490,7 @@ def main():
 
 	device_opt = ["no_login", "no_password", "devices", "nodename", "port",\
 	"no_port", "key", "aptpl", "fabric_fencing", "on_target", "corosync_cmap_path",\
-	"sg_persist_path", "sg_turs_path", "readonly", "logfile", "vgs_path",\
+	"sg_persist_path", "sg_turs_path", "readonly", "suppress-errors", "logfile", "vgs_path",\
 	"force_on", "key_value"]
 
 	define_new_opts()
