@@ -127,8 +127,13 @@ def get_list_of_images(options, command, data_as_plug):
 
 	conn.send(packet)
 
-	request_id = struct.unpack("!i", conn.recv(INT4))[0]
-	(output_len, request_id, return_code, reason_code) = struct.unpack("!iiii", conn.recv(INT4 * 4))
+	try:
+		request_id = struct.unpack("!i", conn.recv(INT4))[0]
+		(output_len, request_id, return_code, reason_code) = struct.unpack("!iiii", conn.recv(INT4 * 4))
+	except struct.error:
+		logging.debug(sys.exc_info())
+		fail_usage("Failed: Unable to connect to {} port: {} SSL: {} \n".format(options["--ip"], options["--ipport"], bool("--ssl" in options)))
+
 	images = set()
 
 	if output_len > 3*INT4:
