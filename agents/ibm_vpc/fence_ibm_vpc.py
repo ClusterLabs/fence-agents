@@ -88,6 +88,7 @@ def connect(opt):
 	conn.setopt(pycurl.TIMEOUT, int(opt["--shell-timeout"]))
 	conn.setopt(pycurl.SSL_VERIFYPEER, 1)
 	conn.setopt(pycurl.SSL_VERIFYHOST, 2)
+	conn.setopt(pycurl.PROXY, "{}".format(opt["--proxy"]))
 
 	# get bearer token
 	bearer_token = get_bearer_token(conn, opt)
@@ -169,6 +170,15 @@ def define_new_opts():
 		"shortdesc" : "Region",
 		"order" : 0
 	}
+	all_opt["proxy"] = {
+                "getopt" : ":",
+                "longopt" : "proxy",
+                "help" : "--proxy=[http://<URL>:<PORT>]          Proxy: 'http://<URL>:<PORT>'",
+                "required" : "0",
+		"default": "",
+                "shortdesc" : "Network proxy",
+                "order" : 0
+        }
 	all_opt["limit"] = {
 		"getopt" : ":",
 		"longopt" : "limit",
@@ -185,6 +195,7 @@ def main():
 		"apikey",
 		"region",
 		"limit",
+		"proxy",
 		"port",
 		"no_password",
 	]

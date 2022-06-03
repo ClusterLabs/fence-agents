@@ -13,6 +13,11 @@
 		<content type="string" default="50"  />
 		<shortdesc lang="en">Number of nodes returned by API</shortdesc>
 	</parameter>
+	<parameter name="proxy" unique="0" required="0">
+		<getopt mixed="--proxy=[http://&lt;URL&gt;:&lt;PORT&gt;]" />
+		<content type="string" default=""  />
+		<shortdesc lang="en">Network proxy</shortdesc>
+	</parameter>
 	<parameter name="region" unique="0" required="1">
 		<getopt mixed="--region=[region]" />
 		<content type="string"  />
