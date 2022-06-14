@@ -4,6 +4,7 @@ import sys
 import pycurl, io, json
 import logging
 import atexit
+import time
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, run_delay, EC_LOGIN_DENIED, EC_STATUS
@@ -13,6 +14,17 @@ state = {
 	 "SHUTOFF": "off",
 	 "ERROR": "unknown"
 }
+
+def get_token(conn, options):
+        try:
+                command = "identity/token"
+                action = "grant_type=urn%3Aibm%3Aparams%3Aoauth%3Agrant-type%3Aapikey&apikey={}".format(options["--token"])
+                res = send_command(conn, command, "POST", action, printResult=False)
+        except Exception as e:
+                logging.debug("Failed: {}".format(e))
+                return "TOKEN_IS_MISSING_OR_WRONG"
+
+        return res["access_token"]
 
 def get_list(conn, options):
 	outlets = {}
@@ -56,24 +68,52 @@ def set_power_status(conn, options):
 		logging.debug("Failed: Unable to set power to {} for {}".format(options["--action"], e))
 		fail(EC_STATUS)
 
-def connect(opt):
+def connect(opt, token):
 	conn = pycurl.Curl()
 
 	## setup correct URL
 	conn.base_url = "https://" + opt["--region"] + ".power-iaas.cloud.ibm.com/pcloud/v1/"
+	if opt["--api-type"] == "private":
+		conn.base_url = "https://private." + opt["--region"] + ".power-iaas.cloud.ibm.com/pcloud/v1/"
 
-	if opt["--verbose-level"] > 1:
-		conn.setopt(pycurl.VERBOSE, 1)
+	if opt["--verbose-level"] < 3:
+		conn.setopt(pycurl.VERBOSE, 0)
 
+	conn.setopt(pycurl.CONNECTTIMEOUT,int(opt["--shell-timeout"]))
 	conn.setopt(pycurl.TIMEOUT, int(opt["--shell-timeout"]))
 	conn.setopt(pycurl.SSL_VERIFYPEER, 1)
 	conn.setopt(pycurl.SSL_VERIFYHOST, 2)
+	conn.setopt(pycurl.PROXY, "{}".format(opt["--proxy"]))
 
 	# set auth token for later requests
 	conn.setopt(pycurl.HTTPHEADER, [
 		"Content-Type: application/json",
-		"Authorization: Bearer {}".format(opt["--token"]),
+		"Authorization: Bearer {}".format(token),
 		"CRN: {}".format(opt["--crn"]),
+		"User-Agent: curl",
+	])
+	
+	return conn
+
+def auth_connect(opt):
+	conn = pycurl.Curl()
+
+	# setup correct URL
+	conn.base_url = "https://iam.cloud.ibm.com/"
+
+	if opt["--verbose-level"] > 1:
+		conn.setopt(pycurl.VERBOSE, 1)
+
+	conn.setopt(pycurl.CONNECTTIMEOUT,int(opt["--shell-timeout"]))
+	conn.setopt(pycurl.TIMEOUT, int(opt["--shell-timeout"]))
+	conn.setopt(pycurl.SSL_VERIFYPEER, 1)
+	conn.setopt(pycurl.SSL_VERIFYHOST, 2)
+	conn.setopt(pycurl.PROXY, "{}".format(opt["--proxy"]))
+
+	# set auth token for later requests
+	conn.setopt(pycurl.HTTPHEADER, [
+		"Content-type: application/x-www-form-urlencoded",
+		"Accept: application/json",
 		"User-Agent: curl",
 	])
 
@@ -82,7 +122,7 @@ def connect(opt):
 def disconnect(conn):
 	conn.close()
 
-def send_command(conn, command, method="GET", action=None):
+def send_command(conn, command, method="GET", action=None, printResult=True):
 	url = conn.base_url + command
 
 	conn.setopt(pycurl.URL, url.encode("ascii"))
@@ -101,6 +141,7 @@ def send_command(conn, command, method="GET", action=None):
 	try:
 		conn.perform()
 	except Exception as e:
+		logging.error("send_command(): {}".format(e))
 		raise(e)
 
 	rc = conn.getinfo(pycurl.HTTP_CODE)
@@ -110,8 +151,7 @@ def send_command(conn, command, method="GET", action=None):
 
 	if rc != 200:
 		if len(result) > 0:
-			raise Exception("{}: {}".format(rc,
-					result["value"]["messages"][0]["default_message"]))
+			raise Exception("{}: {}".format(rc,result))
 		else:
 			raise Exception("Remote returned {} for request to {}".format(rc, url))
 
@@ -121,7 +161,8 @@ def send_command(conn, command, method="GET", action=None):
 	logging.debug("url: {}".format(url))
 	logging.debug("method: {}".format(method))
 	logging.debug("response code: {}".format(rc))
-	logging.debug("result: {}\n".format(result))
+	if printResult:
+		logging.debug("result: {}\n".format(result))
 
 	return result
 
@@ -129,9 +170,9 @@ def define_new_opts():
 	all_opt["token"] = {
 		"getopt" : ":",
 		"longopt" : "token",
-		"help" : "--token=[token]                Bearer Token",
+		"help" : "--token=[token]                API Token",
 		"required" : "1",
-		"shortdesc" : "Bearer Token",
+		"shortdesc" : "API Token",
 		"order" : 0
 	}
 	all_opt["crn"] = {
@@ -158,6 +199,22 @@ def define_new_opts():
 		"shortdesc" : "Region",
 		"order" : 0
 	}
+	all_opt["api-type"] = {
+                "getopt" : ":",
+                "longopt" : "api-type",
+                "help" : "--api-type=[public|private]          API-type: 'public' (default) or 'private'",
+                "required" : "0",
+                "shortdesc" : "API-type (public|private)",
+                "order" : 0
+        }
+	all_opt["proxy"] = {
+                "getopt" : ":",
+                "longopt" : "proxy",
+                "help" : "--proxy=[http://<URL>:<PORT>]          Proxy: 'http://<URL>:<PORT>'",
+                "required" : "0",
+                "shortdesc" : "Network proxy",
+                "order" : 0
+        }
 
 
 def main():
@@ -166,6 +223,8 @@ def main():
 		"crn",
 		"instance",
 		"region",
+		"api-type",
+		"proxy",
 		"port",
 		"no_password",
 	]
@@ -176,6 +235,9 @@ def main():
 	all_opt["shell_timeout"]["default"] = "15"
 	all_opt["power_timeout"]["default"] = "30"
 	all_opt["power_wait"]["default"] = "1"
+	all_opt["stonith_status_sleep"]["default"] = "3"
+	all_opt["api-type"]["default"] = "private"
+	all_opt["proxy"]["default"] = ""
 
 	options = check_input(device_opt, process_input(device_opt))
 
@@ -191,7 +253,10 @@ used with IBM PowerVS to fence virtual machines."""
 	####
 	run_delay(options)
 
-	conn = connect(options)
+	auth_conn = auth_connect(options)
+	token = get_token(auth_conn, options)
+	disconnect(auth_conn)
+	conn = connect(options, token)
 	atexit.register(disconnect, conn)
 
 	result = fence_action(conn, options, set_power_status, get_power_status, get_list)
