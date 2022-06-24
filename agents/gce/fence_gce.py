@@ -41,6 +41,12 @@ try:
 except:
   pass
 
+VERSION = '1.0.5'
+ACTION_IDS = {
+		'on': 1, 'off': 2, 'reboot': 3, 'status': 4, 'list': 5, 'list-status': 6,
+		'monitor': 7, 'metadata': 8, 'manpage': 9, 'validate-all': 10
+}
+USER_AGENT = 'sap-core-eng/fencegce/%s/%s/ACTION/%s'
 METADATA_SERVER = 'http://metadata.google.internal/computeMetadata/v1/'
 METADATA_HEADERS = {'Metadata-Flavor': 'Google'}
 INSTANCE_LINK = 'https://www.googleapis.com/compute/v1/projects/{}/zones/{}/instances/{}'
@@ -103,6 +109,13 @@ def replace_api_uri(options, http_request):
 
 def retry_api_execute(options, http_request):
 	replaced_http_request = replace_api_uri(options, http_request)
+	action = ACTION_IDS[options["--action"]] if options["--action"] in ACTION_IDS else 0
+	try:
+		user_agent_header = USER_AGENT % (VERSION, options["--image"], action)
+	except ValueError:
+		user_agent_header = USER_AGENT % (VERSION, options["--image"], 0)
+	replaced_http_request.headers["User-Agent"] = user_agent_header
+	logging.debug("User agent set as %s" % (user_agent_header))
 	retries = 3
 	if options.get("--retries"):
 		retries = int(options.get("--retries"))
@@ -579,6 +592,12 @@ def main():
 			options["--project"] = get_metadata('project/project-id')
 		except Exception as err:
 			fail_fence_agent(options, "Failed retrieving GCE project. Please provide --project option: {}".format(str(err)))
+
+	try:
+	  image = get_metadata('instance/image')
+	  options["--image"] = image[image.rindex('/')+1:]
+	except Exception as err:
+		options["--image"] = "unknown"
 
 	if "--baremetalsolution" in options:
 		options["--zone"] = "none"
