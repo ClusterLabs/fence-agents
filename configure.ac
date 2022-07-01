@@ -135,9 +135,37 @@ AC_ARG_WITH([agents],
 	[ AGENTS_LIST="$withval" ],
 	[ AGENTS_LIST="all" ])
 
+FENCETMPDIR=${localstatedir}/run/fence-agents
+AC_ARG_WITH(fencetmpdir,
+    [  --with-fencetmpdir=DIR      directory for fence agents state files [${FENCETMPDIR}]],
+    [ FENCETMPDIR="$withval" ])
+
+# Expand $prefix
+eval FENCETMPDIR="`eval echo ${FENCETMPDIR}`"
+AC_DEFINE_UNQUOTED(FENCETMPDIR,"$FENCETMPDIR", Where Fence agents keep state files)
+AC_SUBST(FENCETMPDIR)
+
+
 if test "x$AGENTS_LIST" = x; then
 	AC_ERROR([No agents selected])
 fi
+
+# PKG_CHECK_MODULES will fail if systemd is not found by default, so make sure
+# we set the proper vars and deal with it
+PKG_CHECK_MODULES([systemd], [systemd], [HAS_SYSTEMD=yes], [HAS_SYSTEMD=no])
+if test "x$HAS_SYSTEMD" == "xyes"; then
+	PKG_CHECK_VAR([SYSTEMD_TMPFILES_DIR], [systemd], [tmpfilesdir])
+	if test "x$SYSTEMD_TMPFILES_DIR" == "x"; then
+		AC_MSG_ERROR([Unable to detect systemd tmpfiles directory automatically])
+	fi
+
+	# sanitize systed vars when using non standard prefix
+	if test "$prefix" != "/usr"; then
+		SYSTEMD_TMPFILES_DIR="$prefix/$SYSTEMD_TMPFILES_DIR"
+		AC_SUBST([SYSTEMD_TMPFILES_DIR])
+	fi
+fi
+AM_CONDITIONAL(HAVE_SYSTEMD, [test "x$HAS_SYSTEMD" == xyes ])
 
 FENCE_KDUMP=0
 if echo "$AGENTS_LIST" | grep -q -E "all|kdump"; then
@@ -552,6 +580,8 @@ AC_CONFIG_FILES([Makefile
 		 agents/Makefile
 		 lib/Makefile
 		 doc/Makefile
+		 systemd/Makefile
+		 systemd/fence-agents.conf
 		 agents/virt/Makefile
 		 agents/virt/config/Makefile
 		 agents/virt/common/Makefile

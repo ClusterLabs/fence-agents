@@ -23,7 +23,7 @@ TARFILES		= $(PACKAGE_NAME)-$(VERSION).tar.bz2 \
 
 ACLOCAL_AMFLAGS		= -I m4
 
-SUBDIRS			= lib agents doc
+SUBDIRS			= lib agents doc systemd
 
 .PHONY: $(SUBDIRS)
 
@@ -34,6 +34,7 @@ doc: agents
 install-exec-local:
 			$(INSTALL) -d $(DESTDIR)/$(LOGDIR)
 			$(INSTALL) -d $(DESTDIR)/$(CLUSTERVARRUN)
+			$(INSTALL) -d -m 1755 $(DESTDIR)$(FENCETMPDIR)
 
 uninstall-local:
 			rmdir $(DESTDIR)/$(LOGDIR) || :;
