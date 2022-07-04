@@ -30,6 +30,12 @@ Source0: %{name}-%{version}%{?rcver:%{rcver}}%{?numcomm:.%{numcomm}}%{?alphatag:
 %endif
 %endif
 
+%if 0%{?rhel} == 9
+%ifarch ppc64le s390x
+%define rhel9_ppc64le_s390x 1
+%endif
+%endif
+
 # skipped: pve, raritan, rcd-serial, virsh
 %global allfenceagents %(cat <<EOF
 fence-agents-alom \\
@@ -121,28 +127,27 @@ BuildRequires: libxslt
 ## Python dependencies
 %if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
 BuildRequires: python3-devel
-BuildRequires: python3-pexpect python3-pycurl python3-requests
+BuildRequires: python3-httplib2 python3-pexpect python3-pycurl python3-requests
 %if 0%{?suse_version} > 1500
 BuildRequires: python3-suds-community
 %else
 BuildRequires: python3-suds
 %endif
 %if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7
-BuildRequires: python3-google-api-client python3-boto3 openwsman-python3
+BuildRequires: openwsman-python3
+%if ! %{defined rhel9_ppc64le_s390x}
+BuildRequires: python3-boto3
 %endif
-# (-openstack)
-%ifarch x86_64 ppc64le
-BuildRequires: python3-novaclient python3-keystoneclient
 %endif
 %if 0%{?suse_version}
-BuildRequires: python3-google-api-python-client python3-openwsman python3-boto3
+BuildRequires: python3-openwsman python3-boto3
 %endif
 %else
 BuildRequires: python-devel
 BuildRequires: pexpect python-pycurl python-requests
 BuildRequires: python-suds openwsman-python
 %if ! %{defined rhel7_s390x}
-BuildRequires: python-google-api-client python-boto3
+BuildRequires: python-boto3 python-httplib2
 %endif
 # (-openstack)
 %ifarch x86_64 ppc64le

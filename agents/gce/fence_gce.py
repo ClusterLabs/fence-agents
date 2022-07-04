@@ -9,7 +9,6 @@
 #
 
 import atexit
-import httplib2
 import logging
 import json
 import re
@@ -32,6 +31,7 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 
 from fencing import fail_usage, run_delay, all_opt, atexit_handler, check_input, process_input, show_docs, fence_action, run_command
 try:
+  import httplib2
   import googleapiclient.discovery
   import socks
   try:
