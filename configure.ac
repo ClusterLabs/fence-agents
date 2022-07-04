@@ -270,13 +270,6 @@ if echo "$AGENTS_LIST" | grep -q amt_ws; then
 		AC_MSG_WARN("Not building fence_amt_ws")
 	fi
 fi
-if echo "$AGENTS_LIST" | grep -q aws; then
-	AC_PYTHON_MODULE(boto3)
-	if test "x${HAVE_PYMOD_BOTO3}" != xyes; then
-		AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s#aws/fence_aws.py( |$)##")
-		AC_MSG_WARN("Not building fence_aws")
-	fi
-fi
 if echo "$AGENTS_LIST" | grep -q -E "ovh|vmware_soap"; then
 	AC_PYTHON_MODULE(suds)
 	if test "x${HAVE_PYMOD_SUDS}" != xyes; then
@@ -285,12 +278,7 @@ if echo "$AGENTS_LIST" | grep -q -E "ovh|vmware_soap"; then
 	fi
 fi
 if echo "$AGENTS_LIST" | grep -q gce; then
-	AC_PYTHON_MODULE(googleapiclient)
 	AC_PYTHON_MODULE(oauth2client)
-	if test "x${HAVE_PYMOD_GOOGLEAPICLIENT}" != xyes; then
-		AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s#gce/fence_gce.py( |$)##")
-		AC_MSG_WARN("Not building fence_ovh and fence_gce")
-	fi
 fi
 
 ## path to 3rd-party binaries
