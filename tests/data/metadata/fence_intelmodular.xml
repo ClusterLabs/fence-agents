@@ -136,7 +136,6 @@ Note: Since firmware update version 2.7, SNMP v2 write support is removed, and r
 	</parameter>
 	<parameter name="debug_file" unique="0" required="0" obsoletes="debug">
 		<getopt mixed="-D, --debug-file=[debugfile]" />
-		<content type="string"  />
 		<shortdesc lang="en">Write debug information to given file</shortdesc>
 	</parameter>
 	<parameter name="version" unique="0" required="0">
