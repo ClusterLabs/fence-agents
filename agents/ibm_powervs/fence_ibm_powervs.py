@@ -92,7 +92,7 @@ def connect(opt, token):
 		"CRN: {}".format(opt["--crn"]),
 		"User-Agent: curl",
 	])
-	
+
 	return conn
 
 def auth_connect(opt):

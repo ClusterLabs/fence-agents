@@ -4,9 +4,10 @@ import sys
 import pycurl, io, json
 import logging
 import atexit
+import hashlib
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, run_delay, EC_LOGIN_DENIED, EC_STATUS
+from fencing import fail, run_delay, EC_LOGIN_DENIED, EC_STATUS, EC_GENERIC_ERROR
 
 state = {
 	 "running": "on",
@@ -22,7 +23,7 @@ def get_list(conn, options):
 
 	try:
 		command = "instances?version=2021-05-25&generation=2&limit={}".format(options["--limit"])
-		res = send_command(conn, command)
+		res = send_command(conn, options, command)
 	except Exception as e:
 		logging.debug("Failed: Unable to get list: {}".format(e))
 		return outlets
@@ -38,7 +39,7 @@ def get_list(conn, options):
 def get_power_status(conn, options):
 	try:
 		command = "instances/{}?version=2021-05-25&generation=2".format(options["--plug"])
-		res = send_command(conn, command)
+		res = send_command(conn, options, command)
 		result = state[res["status"]]
 		if options["--verbose-level"] > 1:
 			logging.debug("Result:\n{}".format(json.dumps(res, indent=2)))
@@ -57,27 +58,71 @@ def set_power_status(conn, options):
 
 	try:
 		command = "instances/{}/actions?version=2021-05-25&generation=2".format(options["--plug"])
-		send_command(conn, command, "POST", action, 201)
+		send_command(conn, options, command, "POST", action, 201)
 	except Exception as e:
 		logging.debug("Failed: Unable to set power to {} for {}".format(options["--action"], e))
 		fail(EC_STATUS)
 
 def get_bearer_token(conn, options):
-	token = None
+	import os, errno
+
 	try:
-		conn.setopt(pycurl.HTTPHEADER, [
-			"Content-Type: application/x-www-form-urlencoded",
-			"User-Agent: curl",
-		])
-		token = send_command(conn, "https://iam.cloud.ibm.com/identity/token", "POST", "grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey={}".format(options["--apikey"]))["access_token"]
-	except Exception:
-		logging.error("Failed: Unable to authenticate")
-		fail(EC_LOGIN_DENIED)
+		# FIPS requires usedforsecurity=False and might not be
+		# available on all distros: https://bugs.python.org/issue9216
+		hash = hashlib.sha256(options["--apikey"].encode("utf-8"), usedforsecurity=False).hexdigest()
+	except (AttributeError, TypeError):
+		hash = hashlib.sha256(options["--apikey"].encode("utf-8")).hexdigest()
+	file_path = options["--token-file"].replace("[hash]", hash)
+	token = None
+
+	if not os.path.isdir(os.path.dirname(file_path)):
+		os.makedirs(os.path.dirname(file_path))
+
+	# For security, remove file with potentially elevated mode
+	try:
+		os.remove(file_path)
+	except OSError:
+		pass
+
+	try:
+		oldumask = os.umask(0)
+		file_handle = os.open(file_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o600)
+	except OSError as e:
+		if e.errno == errno.EEXIST:  # Failed as the file already exists.
+			logging.error("Failed: File already exists: {}".format(e))
+			sys.exit(EC_GENERIC_ERROR)
+		else:  # Something unexpected went wrong
+			logging.error("Failed: Unable to open file: {}".format(e))
+			sys.exit(EC_GENERIC_ERROR)
+	else:  # No exception, so the file must have been created successfully.
+		with os.fdopen(file_handle, 'w') as file_obj:
+			try:
+				conn.setopt(pycurl.HTTPHEADER, [
+					"Content-Type: application/x-www-form-urlencoded",
+					"User-Agent: curl",
+				])
+				token = send_command(conn, options, "https://iam.cloud.ibm.com/identity/token", "POST", "grant_type=urn:ibm:params:oauth:grant-type:apikey&apikey={}".format(options["--apikey"]))["access_token"]
+			except Exception as e:
+				logging.error("Failed: Unable to authenticate: {}".format(e))
+				fail(EC_LOGIN_DENIED)
+			file_obj.write(token)
+	finally:
+		os.umask(oldumask)
 
 	return token
 
+def set_bearer_token(conn, bearer_token):
+	conn.setopt(pycurl.HTTPHEADER, [
+		"Content-Type: application/json",
+		"Authorization: Bearer {}".format(bearer_token),
+		"User-Agent: curl",
+	])
+
+	return conn
+
 def connect(opt):
 	conn = pycurl.Curl()
+	bearer_token = ""
 
 	## setup correct URL
 	conn.base_url = "https://" + opt["--region"] + ".iaas.cloud.ibm.com/v1/"
@@ -91,21 +136,28 @@ def connect(opt):
 	conn.setopt(pycurl.PROXY, "{}".format(opt["--proxy"]))
 
 	# get bearer token
-	bearer_token = get_bearer_token(conn, opt)
+	try:
+		try:
+			# FIPS requires usedforsecurity=False and might not be
+			# available on all distros: https://bugs.python.org/issue9216
+			hash = hashlib.sha256(opt["--apikey"].encode("utf-8"), usedforsecurity=False).hexdigest()
+		except (AttributeError, TypeError):
+			hash = hashlib.sha256(opt["--apikey"].encode("utf-8")).hexdigest()
+		f = open(opt["--token-file"].replace("[hash]", hash))
+		bearer_token = f.read()
+		f.close()
+	except IOError:
+		bearer_token = get_bearer_token(conn, opt)
 
 	# set auth token for later requests
-	conn.setopt(pycurl.HTTPHEADER, [
-		"Content-Type: application/json",
-		"Authorization: Bearer {}".format(bearer_token),
-		"User-Agent: curl",
-	])
+	conn = set_bearer_token(conn, bearer_token)
 
 	return conn
 
 def disconnect(conn):
 	conn.close()
 
-def send_command(conn, command, method="GET", action=None, expected_rc=200):
+def send_command(conn, options, command, method="GET", action=None, expected_rc=200):
 	if not command.startswith("https"):
 		url = conn.base_url + command
 	else:
@@ -130,6 +182,26 @@ def send_command(conn, command, method="GET", action=None, expected_rc=200):
 		raise(e)
 
 	rc = conn.getinfo(pycurl.HTTP_CODE)
+
+	# auth if token has expired
+	if rc in [400, 401, 415]:
+		tokenconn = pycurl.Curl()
+		token = get_bearer_token(tokenconn, options)
+		tokenconn.close()
+		conn = set_bearer_token(conn, token)
+
+		# flush web_buffer
+		web_buffer.close()
+		web_buffer = io.BytesIO()
+		conn.setopt(pycurl.WRITEFUNCTION, web_buffer.write)
+
+		try:
+			conn.perform()
+		except Exception as e:
+			raise(e)
+
+		rc = conn.getinfo(pycurl.HTTP_CODE)
+
 	result = web_buffer.getvalue().decode("UTF-8")
 
 	web_buffer.close()
@@ -173,7 +245,7 @@ def define_new_opts():
 	all_opt["proxy"] = {
                 "getopt" : ":",
                 "longopt" : "proxy",
-                "help" : "--proxy=[http://<URL>:<PORT>]          Proxy: 'http://<URL>:<PORT>'",
+                "help" : "--proxy=[http://<URL>:<PORT>]  Proxy: 'http://<URL>:<PORT>'",
                 "required" : "0",
 		"default": "",
                 "shortdesc" : "Network proxy",
@@ -188,14 +260,26 @@ def define_new_opts():
 		"shortdesc" : "Number of nodes returned by API",
 		"order" : 0
 	}
+	all_opt["token_file"] = {
+		"getopt" : ":",
+		"longopt" : "token-file",
+		"help" : "--token-file=[path]            Path to the token cache file\n"
+			"\t\t\t\t  (Default: @FENCETMPDIR@/fence_ibm_vpc/[hash].token)\n"
+			"\t\t\t\t  [hash] will be replaced by a hashed value",
+		"required" : "0",
+		"default": "@FENCETMPDIR@/fence_ibm_vpc/[hash].token",
+		"shortdesc" : "Path to the token cache file",
+		"order" : 0
+	}
 
 
 def main():
 	device_opt = [
 		"apikey",
 		"region",
-		"limit",
 		"proxy",
+		"limit",
+		"token_file",
 		"port",
 		"no_password",
 	]
