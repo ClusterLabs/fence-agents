@@ -306,7 +306,7 @@ if echo "$AGENTS_LIST" | grep -q -E "ovh|vmware_soap"; then
 	fi
 fi
 if echo "$AGENTS_LIST" | grep -q gce; then
-	AC_PYTHON_MODULE(oauth2client)
+	AC_PYTHON_MODULE(google.auth)
 fi
 
 ## path to 3rd-party binaries
