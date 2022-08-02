@@ -1088,6 +1088,115 @@ def is_executable(path):
 			return True
 	return False
 
+def run_commands(options, commands, timeout=None, env=None, log_command=None):
+	# inspired by psutils.wait_procs (BSD License)
+	def check_gone(proc, timeout):
+		try:
+			returncode = proc.wait(timeout=timeout)
+		except subprocess.TimeoutExpired:
+			pass
+		else:
+			if returncode is not None or not proc.is_running():
+				proc.returncode = returncode
+				gone.add(proc)
+
+	if timeout is None and "--power-timeout" in options:
+		timeout = options["--power-timeout"]
+	if timeout == 0:
+		timeout = None
+	if timeout is not None:
+		timeout = float(timeout)
+
+	time_start = time.time()
+	procs = []
+	status = None
+	pipe_stdout = ""
+	pipe_stderr = ""
+
+	for command in commands:
+		logging.info("Executing: %s\n", log_command or command)
+
+		try:
+			process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env,
+					# decodes newlines and in python3 also converts bytes to str
+					universal_newlines=(sys.version_info[0] > 2))
+		except OSError:
+			fail_usage("Unable to run %s\n" % command)
+
+		procs.append(process)
+
+	gone = set()
+	alive = set(procs)
+
+	while True:
+		if alive:
+			max_timeout = 2.0 / len(alive)
+			for proc in alive:
+				if timeout is not None:
+					if time.time()-time_start >= timeout:
+						# quickly go over the rest
+						max_timeout = 0
+				check_gone(proc, max_timeout)
+			alive = alive - gone
+
+		if not alive:
+			break
+
+		if time.time()-time_start < 5.0:
+			# give it at least 5s to get a complete answer
+			# afterwards we're OK with a quorate answer
+			continue
+
+		if len(gone) > len(alive):
+			good_cnt = 0
+			for proc in gone:
+				if proc.returncode == 0:
+					good_cnt += 1
+			# a positive result from more than half is fine
+			if good_cnt > len(procs)/2:
+				break
+
+		if timeout is not None:
+			if time.time() - time_start >= timeout:
+				logging.debug("Stop waiting after %s\n", str(timeout))
+				break
+
+	logging.debug("Done: %d gone, %d alive\n", len(gone), len(alive))
+
+	for proc in gone:
+		if (status != 0):
+			status = proc.returncode
+		# hand over the best status we have
+		# but still collect as much stdout/stderr feedback
+		# avoid communicate as we know already process
+		# is gone and it seems to block when there
+		# are D state children we don't get rid off
+		os.set_blocking(proc.stdout.fileno(), False)
+		os.set_blocking(proc.stderr.fileno(), False)
+		try:
+			pipe_stdout += proc.stdout.read()
+		except:
+			pass
+		try:
+			pipe_stderr += proc.stderr.read()
+		except:
+			pass
+		proc.stdout.close()
+		proc.stderr.close()
+
+	for proc in alive:
+		proc.kill()
+
+	if status is None:
+		fail(EC_TIMED_OUT, stop=(int(options.get("retry", 0)) < 1))
+		status = EC_TIMED_OUT
+		pipe_stdout = ""
+		pipe_stderr = "timed out"
+
+	logging.debug("%s %s %s\n", str(status), str(pipe_stdout), str(pipe_stderr))
+
+	return (status, pipe_stdout, pipe_stderr)
+
 def run_command(options, command, timeout=None, env=None, log_command=None):
 	if timeout is None and "--power-timeout" in options:
 		timeout = options["--power-timeout"]
