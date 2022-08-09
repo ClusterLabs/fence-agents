@@ -55,6 +55,7 @@ fence-agents-docker \\
 fence-agents-drac \\
 fence-agents-drac5 \\
 fence-agents-eaton-snmp \\
+fence-agents-ecloud \\
 fence-agents-emerson \\
 fence-agents-eps \\
 fence-agents-gce \\
@@ -630,6 +631,23 @@ via the SNMP protocol.
 %files eaton-snmp
 %{_sbindir}/fence_eaton_snmp
 %{_mandir}/man8/fence_eaton_snmp.8*
+
+%package ecloud
+License: GPLv2+ and LGPLv2+
+Summary: Fence agent for eCloud and eCloud VPC
+Requires: python3-requests
+%if 0%{?fedora} || 0%{?centos} > 7 || 0%{?rhel} > 7 || 0%{?suse_version}
+Requires: python3-requests
+%else
+Requires: python-requests
+%endif
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description ecloud
+Fence agent for eCloud and eCloud VPC from ANS Group Limited
+%files ecloud
+%{_sbindir}/fence_ecloud
+%{_mandir}/man8/fence_ecloud.8*
 
 %package emerson
 License: GPLv2+ and LGPLv2+
