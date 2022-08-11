@@ -43,6 +43,10 @@ agents/node_assassin/*
  Copyright (C) 2009-2011 Madison Kelly/Alteeve's Niche!
  Author: Digimer <digimer at alteeve.com>
 
+agents/ecloud/fence_ecloud.py:
+ Copyright (C) 2022 ANS Group Limited
+ Author: Dane Elwell <dane.elwell@ans.co.uk>
+
 man/fence_ifmib.8:
  Copyright (C) 2008-2011 Ross Vandegrift.
  Written by Ross Vandegrift <ross at kallisti.us>
