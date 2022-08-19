@@ -1264,7 +1264,7 @@ def source_env(env_file):
                           executable="/bin/sh")
     # replace env
     os.environ.clear()
-    os.environ.update(line.partition('=')[::2] for line in output.decode("utf-8").split('\0'))
+    os.environ.update(line.partition('=')[::2] for line in output.decode("utf-8").split('\0') if not re.match("^\s*$", line))
 
 # Convert array of format [[key1, value1], [key2, value2], ... [keyN, valueN]] to dict, where key is
 # in format a.b.c.d...z and returned dict has key only z
