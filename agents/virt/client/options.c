@@ -734,9 +734,9 @@ args_usage(char *progname, const char *optstr, int print_stdin)
 
 	if (!print_stdin) {
 		if (progname) {
-			printf("usage: %s [args]\n", progname);
+			printf("usage: %s [args]\n\nNOTE: reboot-action does not power on nodes that are powered off.\n\n", progname);
 		} else {
-			printf("usage: fence_virt [args]\n");
+			printf("usage: fence_virt [args]\n\nNOTE: reboot-action does not power on nodes that are powered off.\n\n");
 		}
 	}
 
@@ -766,7 +766,8 @@ args_metadata(char *progname, const char *optstr)
 	printf("<?xml version=\"1.0\" ?>\n");
 	printf("<resource-agent name=\"%s\" shortdesc=\"Fence agent for virtual machines\">\n", basename(progname));
 	printf("<longdesc>%s is an I/O Fencing agent which can be used with "
-	       "virtual machines.</longdesc>\n", basename(progname));
+	       "virtual machines.\n\nNOTE: reboot-action does not power on nodes that are powered off."
+	       "</longdesc>\n", basename(progname));
 	printf("<vendor-url>https://libvirt.org</vendor-url>\n");
 	printf("<parameters>\n");
 
