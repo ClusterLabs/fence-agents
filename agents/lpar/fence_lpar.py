@@ -12,6 +12,7 @@
 
 import sys, re
 import atexit
+import logging
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, fail_usage, EC_STATUS_HMC
@@ -48,7 +49,7 @@ def get_power_status(conn, options):
 		elif options["--hmc-version"] in ["4", "IVM"]:
 			status = re.compile(",state=(.*?),", re.IGNORECASE).search(conn.before).group(1)
 	except AttributeError as e:
-		fail_usage("Command on HMC failed: {}\n{}".format(command, str(e)), False)
+		logging.debug("Command on HMC failed: {}\n{}".format(command, str(e)))
 		fail(EC_STATUS_HMC)
 
 	return _normalize_status(status)
