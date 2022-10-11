@@ -10,7 +10,7 @@ import atexit
 import hashlib
 import ctypes
 sys.path.append("@FENCEAGENTSLIBDIR@")
-from fencing import fail_usage, run_command, atexit_handler, check_input, process_input, show_docs, fence_action, all_opt, EC_STATUS
+from fencing import fail_usage, run_command, atexit_handler, check_input, process_input, show_docs, fence_action, all_opt
 from fencing import run_delay
 
 STORE_PATH = "@STORE_PATH@"
@@ -97,19 +97,7 @@ def do_action_monitor(options):
 
 	# Keys have to be present in order to fence/unfence
 	get_key()
-	devs = dev_read()
-
-	for dev in devs:
-		state_file = "/sys/block/{}/device/state".format(re.sub(".*\/", "", os.path.realpath(dev)))
-		try:
-			with open(state_file, "r") as f:
-				state = f.readline().strip()
-				logging.debug("{} is in state {}".format(dev, state))
-				if state not in [ "live", "running" ]:
-					logging.error("Failed: Unable to access " + dev)
-					return EC_STATUS
-		except Exception as e:
-			logging.debug(str(e))
+	dev_read()
 
 	return 0
 
