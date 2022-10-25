@@ -232,10 +232,10 @@ def main():
 	atexit.register(atexit_handler)
 	define_new_opts()
 
-	all_opt["shell_timeout"]["default"] = "15"
+	all_opt["shell_timeout"]["default"] = "500"
 	all_opt["power_timeout"]["default"] = "30"
 	all_opt["power_wait"]["default"] = "1"
-	all_opt["stonith_status_sleep"]["default"] = "3"
+	all_opt["stonith_status_sleep"]["default"] = "2"
 	all_opt["api-type"]["default"] = "private"
 	all_opt["proxy"]["default"] = ""
 
