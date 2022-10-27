@@ -119,12 +119,12 @@
 	</parameter>
 	<parameter name="shell_timeout" unique="0" required="0">
 		<getopt mixed="--shell-timeout=[seconds]" />
-		<content type="second" default="15"  />
+		<content type="second" default="500"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
 	</parameter>
 	<parameter name="stonith_status_sleep" unique="0" required="0">
 		<getopt mixed="--stonith-status-sleep=[seconds]" />
-		<content type="second" default="3"  />
+		<content type="second" default="2"  />
 		<shortdesc lang="en">Sleep X seconds between status calls during a STONITH action</shortdesc>
 	</parameter>
 	<parameter name="retry_on" unique="0" required="0">
