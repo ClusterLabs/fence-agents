@@ -230,6 +230,15 @@ by a user running a cluster of virtual machines on a single desktop computer.
 .
 the URI to use when connecting to libvirt.
 
+All libvirt URIs are accepted and passed as-is.
+
+See https://libvirt.org/uri.html#remote-uris for examples.
+
+NOTE: When VMs are run as non-root user the socket path must be set as part
+of the URI.
+
+Example: qemu:///session?socket=/run/user/<UID>/libvirt/virtqemud-sock
+
 .SS libvirt-qmf
 
 The libvirt-qmf plugin acts as a QMFv2 Console to the libvirt-qmf daemon in
