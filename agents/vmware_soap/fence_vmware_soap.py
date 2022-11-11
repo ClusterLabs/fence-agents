@@ -57,7 +57,7 @@ def soap_login(options):
 
 	try:
 		headers = {"Content-Type" : "text/xml;charset=UTF-8", "SOAPAction" : "vim25"}
-		login_timeout = int(options["--login-timeout"]) or 60
+		login_timeout = int(options["--login-timeout"]) or 50
 		conn = Client(url + "/vimService.wsdl", location=url, transport=RequestsTransport(verify=verify), headers=headers, timeout=login_timeout)
 
 		mo_ServiceInstance = Property('ServiceInstance')
