@@ -49,6 +49,8 @@ config_object_t *sc_init(void);
 /* Frees a previously-allocated copy of our simple config object */
 void sc_release(config_object_t *c);
 
+int check_file_permissions(const char *fname);
+
 int do_configure(config_object_t *config, const char *filename);
 
 #endif

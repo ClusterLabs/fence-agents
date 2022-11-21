@@ -14,7 +14,9 @@
 /* Local includes */
 #include "simpleconfig.h"
 #include "static_map.h"
+#include "xvm.h"
 #include "server_plugin.h"
+#include "simple_auth.h"
 #include "debug.h"
 
 /* configure.c */
@@ -202,6 +204,20 @@ main(int argc, char **argv)
 		memset(pid_file, 0, PATH_MAX);
 		snprintf(pid_file, PATH_MAX, "/var/run/%s.pid", basename(argv[0]));
 	}
+
+	if (check_file_permissions(config_file) != 0)
+		return -1;
+
+	sprintf(val, "listeners/%s/@key_file", listener_name);
+	if (sc_get(config, val,
+		   val, sizeof(val)-1) == 0) {
+		dbg_printf(1, "Got %s for key_file\n", val);
+	} else {
+		snprintf(val, sizeof(val), "%s", DEFAULT_KEY_FILE);
+	}
+
+	if (check_file_permissions(val) != 0)
+		return -1;
 
 	openlog(basename(argv[0]), LOG_NDELAY | LOG_PID, LOG_DAEMON);
 
