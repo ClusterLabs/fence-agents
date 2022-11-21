@@ -63,7 +63,8 @@ maintainer-clean-local:
 		$(top_srcdir)/m4/ax_check_link_flag.m4 \
 		$(top_srcdir)/m4/ax_prog_date.m4 \
 		$(top_srcdir)/m4/ax_pthread.m4 \
-		$(top_srcdir)/m4/ac_python_module.m4, \
+		$(top_srcdir)/m4/ac_python_module.m4 \
+		$(top_srcdir)/m4/PKG_CHECK_VAR.m4, \
 		$(wildcard $(top_srcdir)/m4/*.m4))
 
 ## make rpm/srpm section.
