@@ -322,6 +322,13 @@ all_opt = {
 		"help" : "-6, --inet6-only               Forces agent to use IPv6 addresses only",
 		"required" : "0",
 		"order" : 1},
+	"plug_separator" : {
+		"getopt" : ":",
+		"longopt" : "plug-separator",
+		"help" : "--plug-separator=[char]        Separator for plug parameter when specifying more than 1 plug",
+		"default" : ",",
+		"required" : "0",
+		"order" : 100},
 	"separator" : {
 		"getopt" : "C:",
 		"longopt" : "separator",
@@ -934,7 +941,7 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 
 	try:
 		if "--plug" in options:
-			options["--plugs"] = options["--plug"].split(",")
+			options["--plugs"] = options["--plug"].split(options["--plug-separator"])
 
 		## Process options that manipulate fencing device
 		#####
