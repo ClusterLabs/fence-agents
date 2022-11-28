@@ -153,7 +153,7 @@
 	</parameter>
 	<parameter name="login_timeout" unique="0" required="0">
 		<getopt mixed="--login-timeout=[seconds]" />
-		<content type="second" default="5"  />
+		<content type="second" default="10"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
 	</parameter>
 	<parameter name="power_timeout" unique="0" required="0">
