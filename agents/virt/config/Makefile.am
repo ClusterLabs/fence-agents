@@ -37,5 +37,8 @@ y.tab.c: config.y
 config.c: y.tab.c config.l
 	$(LEX) -oconfig.c $(srcdir)/config.l
 
+install-exec-hook:
+	chmod 600 $(DESTDIR)$(sysconfdir)/fence_virt.conf
+
 clean-local:
 	rm -f config.tab.c config.tab.h config.c y.tab.c y.tab.h

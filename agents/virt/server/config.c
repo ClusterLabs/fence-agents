@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <net/if.h>
 #include <arpa/inet.h>
+#include <errno.h>
 
 #include "simpleconfig.h"
 #include "static_map.h"
@@ -594,6 +595,35 @@ listener_configure(config_object_t *config)
 	return 0;
 }
 
+
+int
+check_file_permissions(const char *fname)
+{
+	struct stat st;
+	mode_t file_perms = 0600;
+	int ret;
+
+	ret = stat(fname, &st);
+	if (ret != 0) {
+		printf("stat failed on file '%s': %s\n",
+			 fname, strerror(errno));
+		return 1;
+	}
+
+	if ((st.st_mode & 0777) != file_perms) {
+		printf("Insecure permissions on file "
+			 "'%s': changing from 0%o to 0%o.\n", fname,
+			 (unsigned int)(st.st_mode & 0777),
+			 (unsigned int)file_perms);
+		if (chmod(fname, file_perms) != 0) {
+			printf("Unable to change permissions for file '%s'",
+				fname);
+			return 1;
+		}
+	}
+
+	return 0;
+}
 
 int
 do_configure(config_object_t *config, const char *config_file)
