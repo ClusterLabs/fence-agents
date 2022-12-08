@@ -239,37 +239,6 @@ of the URI.
 
 Example: qemu:///session?socket=/run/user/<UID>/libvirt/virtqemud-sock
 
-.SS libvirt-qmf
-
-The libvirt-qmf plugin acts as a QMFv2 Console to the libvirt-qmf daemon in
-order to route fencing requests over AMQP to the appropriate computer.
-
-.TP
-.B host
-.
-host or IP address of qpid broker.  Defaults to 127.0.0.1.
-
-.TP
-.B port
-.
-IP port of qpid broker.  Defaults to 5672.
-
-.TP
-.B username
-.
-Username for GSSAPI, if configured.
-
-.TP
-.B service
-.
-Qpid service to connect to.
-
-.TP
-.B gssapi
-.
-If set to 1, have fence_virtd use GSSAPI for authentication when communicating
-with the Qpid broker.  Default is 0 (off).
-
 .SS cpg
 
 The cpg plugin uses corosync CPG and libvirt to track virtual
