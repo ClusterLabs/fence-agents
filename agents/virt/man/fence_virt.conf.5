@@ -1,4 +1,4 @@
-.TH fence_virtd.conf 5
+.TH fence_virt.conf 5
 
 .SH NAME
 fence_virt.conf - configuration file for fence_virtd
@@ -304,15 +304,17 @@ This defines a group.
 .TP
 .B uuid
 .
-defines UUID as a member of a group.
+Defines UUID as a member of a group.  It can be used multiple times
+to specify both node name and UUID values that can be fenced.
 
 .TP
 .B ip
 .
-defines an IP which is allowed to send fencing requests
-for members of this group (e.g. for multicast).  It is
-highly recommended that this be used in conjunction with
-a key file.
+Defines an IP which is allowed to send fencing requests
+for members of this group (e.g. for multicast).  It can be used
+multiple times to allow more than 1 IP to send fencing requests to
+the group.  It is highly recommended that this be used in conjunction
+with a key file.
 
 
 
@@ -340,8 +342,11 @@ a key file.
  groups {
   group {
    ip = "192.168.1.1";
+   ip = "192.168.1.2";
    uuid = "44179d3f-6c63-474f-a212-20c8b4b25b16";
    uuid = "1ce02c4b-dfa1-42cb-b5b1-f0b1091ece60";
+   uuid = "node1";
+   uuid = "node2";
   }
  }
 
