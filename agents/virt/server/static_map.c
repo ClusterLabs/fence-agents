@@ -55,7 +55,7 @@ static_map_cleanup(void **info)
 
 
 static int
-static_map_check(void *info, const char *value1, const char *value2)
+static_map_check(void *info, const char *src, const char *tgt_uuid, const char *tgt_name)
 {
 	struct perm_group *groups = (struct perm_group *)info;
 	struct perm_group *group;
@@ -65,21 +65,21 @@ static_map_check(void *info, const char *value1, const char *value2)
 	if (!info)
 		return 1; /* no maps == wide open */
 
-	uuid = is_uuid(value1);
+	uuid = is_uuid(src);
 
 	list_for(&groups, group, x) {
 		left = NULL;
 
 		if (uuid) {
 			list_for(&group->uuids, tmp, y) {
-				if (!strcasecmp(tmp->name, value1)) {
+				if (!strcasecmp(tmp->name, src)) {
 					left = tmp;
 					break;
 				}
 			}
 		} else {
 			list_for(&group->ips, tmp, y) {
-				if (!strcasecmp(tmp->name, value1)) {
+				if (!strcasecmp(tmp->name, src)) {
 					left = tmp;
 					break;
 				}
@@ -90,8 +90,14 @@ static_map_check(void *info, const char *value1, const char *value2)
 			continue;
 
 		list_for(&group->uuids, tmp, y) {
-			if (!strcasecmp(tmp->name, value2)) {
+			if (!strcasecmp(tmp->name, tgt_uuid)) {
 				return 1;
+			}
+			/* useful only for list */
+			if (tgt_name) {
+				if (!strcasecmp(tmp->name, tgt_name)) {
+					return 1;
+				}
 			}
 		}
 	}

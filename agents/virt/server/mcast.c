@@ -61,7 +61,7 @@
 #include "history.h"
 
 #define NAME "multicast"
-#define MCAST_VERSION "1.2"
+#define MCAST_VERSION "1.3"
 
 #define MCAST_MAGIC 0xabb911a3
 
@@ -192,7 +192,7 @@ mcast_hostlist(const char *vm_name, const char *vm_uuid,
 	struct timeval tv;
 	int ret;
 
-	if (map_check(arg->map, arg->src, vm_uuid) == 0) {
+	if (map_check2(arg->map, arg->src, vm_uuid, vm_name) == 0) {
 		/* if we don't have access to fence this VM,
 		 * we should not see it in a hostlist either */
 		return 0;

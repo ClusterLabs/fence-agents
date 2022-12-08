@@ -45,7 +45,7 @@
 #include "fdops.h"
 
 #define NAME "vsock"
-#define VSOCK_VERSION "0.1"
+#define VSOCK_VERSION "0.2"
 
 #define VSOCK_MAGIC 0xa32d27c1e
 
@@ -145,7 +145,7 @@ vsock_hostlist(const char *vm_name, const char *vm_uuid,
 
 	/* Noops if auth == AUTH_NONE */
 
-	if (map_check(arg->map, peer_cid_str, vm_uuid) == 0) {
+	if (map_check2(arg->map, peer_cid_str, vm_uuid, vm_name) == 0) {
 		/* if we don't have access to fence this VM,
 		 * we should not see it in a hostlist either */
 		return 0;

@@ -58,7 +58,7 @@
 #include "xvm.h"
 
 #define NAME "serial"
-#define SERIAL_VERSION "0.4"
+#define SERIAL_VERSION "0.5"
 
 #define SERIAL_PLUG_MAGIC 0x1227a000
 
@@ -118,7 +118,7 @@ serial_hostlist(const char *vm_name, const char *vm_uuid,
 	struct timeval tv;
 	int ret;
 
-	if (map_check(arg->map, arg->src, vm_uuid) == 0) {
+	if (map_check2(arg->map, arg->src, vm_uuid, vm_name) == 0) {
 		/* if we don't have access to fence this VM,
 		 * we should not see it in a hostlist either */
 		return 0;
