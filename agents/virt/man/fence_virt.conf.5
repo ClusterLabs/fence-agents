@@ -302,6 +302,12 @@ groups if desired.
 This defines a group.
 
 .TP
+.B name
+.
+Optinally define the name of the group. Useful only for configuration
+redability and debugging of configuration parsing.
+
+.TP
 .B uuid
 .
 Defines UUID as a member of a group.  It can be used multiple times
@@ -341,6 +347,7 @@ with a key file.
  
  groups {
   group {
+   name = "cluster1";
    ip = "192.168.1.1";
    ip = "192.168.1.2";
    uuid = "44179d3f-6c63-474f-a212-20c8b4b25b16";

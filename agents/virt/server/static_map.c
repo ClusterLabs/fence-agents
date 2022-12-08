@@ -128,8 +128,11 @@ static_map_load(void *config_ptr, void **perm_info)
 					break;
 				}
 			}
-			snprintf(value, sizeof(value), "unnamed-%d",
-				 group_idx);
+			snprintf(buf2, sizeof(buf2)-1, "%s/@name", buf);
+			if (sc_get(config, buf2, value, sizeof(value)) != 0) {
+				snprintf(value, sizeof(value), "unnamed-%d",
+					 group_idx);
+			}
 		}
 
 		group = malloc(sizeof(*group));
