@@ -27,6 +27,8 @@
 #include <signal.h>
 #include <errno.h>
 #include <nss.h>
+#include <sys/socket.h>
+#include <netdb.h>
 
 /* Local includes */
 #include "xvm.h"
@@ -163,9 +165,18 @@ tcp_hostlist_end(int fd)
 	return 1;
 }
 
+static socklen_t
+sockaddr_len(const struct sockaddr_storage *ss)
+{
+	if (ss->ss_family == AF_INET) {
+		return sizeof(struct sockaddr_in);
+	} else {
+		return sizeof(struct sockaddr_in6);
+	}
+}
 
 static int
-do_fence_request_tcp(int fd, fence_req_t *req, tcp_info *info)
+do_fence_request_tcp(int fd, struct sockaddr_storage *ss, socklen_t sock_len, fence_req_t *req, tcp_info *info)
 {
 	char ip_addr_src[1024];
 	char response = 1;
@@ -186,8 +197,18 @@ do_fence_request_tcp(int fd, fence_req_t *req, tcp_info *info)
 		return -1;
 	}
 
-	dbg_printf(2, "Request %d seqno %d target %s\n", 
-		   req->request, req->seqno, req->domain);
+
+	if (getnameinfo((struct sockaddr *)ss, sockaddr_len(ss),
+			ip_addr_src, sizeof(ip_addr_src),
+			NULL, 0,
+			NI_NUMERICHOST | NI_NUMERICSERV) < 0) {
+		printf("Unable to resolve!\n");
+		close(fd);
+		return -1;
+	}
+
+	dbg_printf(2, "Request %d seqno %d src %s target %s\n",
+		   req->request, req->seqno, ip_addr_src, req->domain);
 
 	switch(req->request) {
 	case FENCE_NULL:
@@ -267,6 +288,8 @@ tcp_dispatch(listener_context_t c, struct timeval *timeout)
 	int client_fd;
     int ret;
 	struct timeval tv;
+	struct sockaddr_storage ss;
+	socklen_t sock_len = sizeof(ss);
 
     if (timeout != NULL)
     	memcpy(&tv, timeout, sizeof(tv));
@@ -290,7 +313,7 @@ tcp_dispatch(listener_context_t c, struct timeval *timeout)
 		return n;
 	}
 	
-	client_fd = accept(info->listen_sock, NULL, NULL);
+	client_fd = accept(info->listen_sock, (struct sockaddr *)&ss, &sock_len);
 	if (client_fd < 0) {
 		perror("accept");
 		return -1;
@@ -329,7 +352,7 @@ tcp_dispatch(listener_context_t c, struct timeval *timeout)
 	case AUTH_SHA256:
 	case AUTH_SHA512:
 		printf("Plain TCP request\n");
-		do_fence_request_tcp(client_fd, &data, info);
+		do_fence_request_tcp(client_fd, &ss, sock_len, &data, info);
 		break;
 	default:
 		printf("XXX Unhandled authentication\n");
