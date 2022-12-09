@@ -32,7 +32,7 @@ fence_virtd_LDADD		= $(VIRT_CONFIG_LIBS) $(VIRT_COMMON_LIBS) \
 fence_virtd_LDFLAGS		= $(VIRT_AM_LDFLAGS) $(VIRT_COMMON_LDFLAGS)
 
 virt_la_SOURCES			= libvirt.c virt.c uuid-test.c
-cpg_la_SOURCES			= cpg-virt.c cpg.c virt.c
+cpg_la_SOURCES			= cpg-virt.c cpg.c virt.c uuid-test.c
 multicast_la_SOURCES		= mcast.c history.c
 tcp_la_SOURCES			= tcp.c history.c
 vsock_la_SOURCES		= vsock.c history.c

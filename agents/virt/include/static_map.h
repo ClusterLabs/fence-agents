@@ -2,7 +2,7 @@
 #define _STATIC_MAP_H
 
 typedef int (*map_load_t)(void *config, void **perm_info);
-typedef int (*map_check_t)(void *info, const char *src, const char *tgt);
+typedef int (*map_check_t)(void *info, const char *src, const char *tgt_uuid, const char *tgt_name);
 typedef void (*map_cleanup_t)(void **info);
 
 typedef struct {
@@ -17,8 +17,10 @@ typedef struct {
  */
 #define map_load(obj, config) \
 	obj->load(config, &obj->info)
-#define map_check(obj, src, tgt) \
-	obj->check(obj->info, src, tgt)
+#define map_check(obj, src, tgt_uuid) \
+	obj->check(obj->info, src, tgt_uuid, NULL)
+#define map_check2(obj, src, tgt_uuid, tgt_name) \
+	obj->check(obj->info, src, tgt_uuid, tgt_name)
 #define map_free(obj) \
 	obj->cleanup(obj->info)
 

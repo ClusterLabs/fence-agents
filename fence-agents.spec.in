@@ -193,9 +193,8 @@ sed -i.orig 's|FENCE_ZVM=1|FENCE_ZVM=0|' configure.ac
 %{configure} \
 %if %{defined _tmpfilesdir}
 	SYSTEMD_TMPFILES_DIR=%{_tmpfilesdir} \
-	--with-fencetmpdir=/run/fence-agents \
+	--with-fencetmpdir=/run/fence-agents
 %endif
-	--disable-libvirt-qmf-plugin
 
 CFLAGS="$(echo '%{optflags}')" make %{_smp_mflags}
 

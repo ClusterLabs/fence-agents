@@ -124,7 +124,8 @@ libvirt domain description.  Note that only type
 .B unix
 , mode 
 .B bind
-serial ports and channels are supported.  Example libvirt XML:
+serial ports and channels are supported and each VM should have a
+separate unique socket.  Example libvirt XML:
 
 .in 8
   <\fBserial\fP type='unix'>
@@ -140,7 +141,7 @@ serial ports and channels are supported.  Example libvirt XML:
 .TP
 .B uri
 .
-the URI to use when connecting to libvirt by the serial plugin.
+the URI to use when connecting to libvirt by the serial plugin (optional).
 
 .TP
 .B path
@@ -239,37 +240,6 @@ of the URI.
 
 Example: qemu:///session?socket=/run/user/<UID>/libvirt/virtqemud-sock
 
-.SS libvirt-qmf
-
-The libvirt-qmf plugin acts as a QMFv2 Console to the libvirt-qmf daemon in
-order to route fencing requests over AMQP to the appropriate computer.
-
-.TP
-.B host
-.
-host or IP address of qpid broker.  Defaults to 127.0.0.1.
-
-.TP
-.B port
-.
-IP port of qpid broker.  Defaults to 5672.
-
-.TP
-.B username
-.
-Username for GSSAPI, if configured.
-
-.TP
-.B service
-.
-Qpid service to connect to.
-
-.TP
-.B gssapi
-.
-If set to 1, have fence_virtd use GSSAPI for authentication when communicating
-with the Qpid broker.  Default is 0 (off).
-
 .SS cpg
 
 The cpg plugin uses corosync CPG and libvirt to track virtual
@@ -302,10 +272,18 @@ groups if desired.
 This defines a group.
 
 .TP
+.B name
+.
+Optinally define the name of the group. Useful only for configuration
+redability and debugging of configuration parsing.
+
+.TP
 .B uuid
 .
 Defines UUID as a member of a group.  It can be used multiple times
 to specify both node name and UUID values that can be fenced.
+When using the serial listener, the vm uuid is required and it is
+recommeded to add also the vm name.
 
 .TP
 .B ip
@@ -315,7 +293,9 @@ for members of this group (e.g. for multicast).  It can be used
 multiple times to allow more than 1 IP to send fencing requests to
 the group.  It is highly recommended that this be used in conjunction
 with a key file.
-
+When using the vsock listener, ip should contain the CID value assigned
+by libvirt to the vm.
+When using the serial listener, ip value is not used and can be omitted.
 
 
 .SH EXAMPLE
@@ -341,6 +321,7 @@ with a key file.
  
  groups {
   group {
+   name = "cluster1";
    ip = "192.168.1.1";
    ip = "192.168.1.2";
    uuid = "44179d3f-6c63-474f-a212-20c8b4b25b16";

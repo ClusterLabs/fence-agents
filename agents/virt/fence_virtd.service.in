@@ -6,7 +6,6 @@ Documentation=man:fence_virt.conf(5)
 After=basic.target
 After=network.target
 After=syslog.target
-After=libvirt-qmf.service
 After=libvirtd.service
 After=corosync.service
 

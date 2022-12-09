@@ -159,7 +159,9 @@ void
 __wrap_closelog(void)
 {
 	struct log_entry *lent;
+#ifdef DEBUG
 	int lost = 0;
+#endif
 
 	if (thread_id != 0) {
 		pthread_cancel(thread_id);
@@ -168,7 +170,9 @@ __wrap_closelog(void)
 	}
 	__real_closelog();
 	while (_log_entries) {
+#ifdef DEBUG
 		++lost;
+#endif
 		lent = _log_entries;
 		list_remove(&_log_entries, lent);
 		free(lent->message);
