@@ -65,6 +65,8 @@ static_map_check(void *info, const char *src, const char *tgt_uuid, const char *
 	if (!info)
 		return 1; /* no maps == wide open */
 
+	dbg_printf(99, "[server:map_check] map request: src: %s uuid: %s name: %s\n", src, tgt_uuid, tgt_name);
+
 	uuid = is_uuid(src);
 
 	list_for(&groups, group, x) {
