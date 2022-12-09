@@ -356,7 +356,7 @@ serial_config(config_object_t *config, serial_info *args)
 
 	if (sc_get(config, "listeners/serial/@path",
 		   value, sizeof(value)-1) == 0) {
-		dbg_printf(1, "Got %s for uri\n", value);
+		dbg_printf(1, "Got %s for path\n", value);
 		args->path = strdup(value);
 	} 
 
