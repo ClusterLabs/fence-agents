@@ -124,7 +124,8 @@ libvirt domain description.  Note that only type
 .B unix
 , mode 
 .B bind
-serial ports and channels are supported.  Example libvirt XML:
+serial ports and channels are supported and each VM should have a
+separate unique socket.  Example libvirt XML:
 
 .in 8
   <\fBserial\fP type='unix'>
@@ -140,7 +141,7 @@ serial ports and channels are supported.  Example libvirt XML:
 .TP
 .B uri
 .
-the URI to use when connecting to libvirt by the serial plugin.
+the URI to use when connecting to libvirt by the serial plugin (optional).
 
 .TP
 .B path
@@ -281,6 +282,8 @@ redability and debugging of configuration parsing.
 .
 Defines UUID as a member of a group.  It can be used multiple times
 to specify both node name and UUID values that can be fenced.
+When using the serial listener in serial mode (/dev/ttyS1), the vm uuid
+is required and it is recommeded to add also the vm name.
 
 .TP
 .B ip
@@ -292,7 +295,8 @@ the group.  It is highly recommended that this be used in conjunction
 with a key file.
 When using the vsock listener, ip should contain the CID value assigned
 by libvirt to the vm.
-
+When using the serial listener in serial mode (/dev/ttyS1), ip value
+is not used and can be omitted.
 
 
 .SH EXAMPLE
