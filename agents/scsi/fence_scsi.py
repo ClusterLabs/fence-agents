@@ -566,11 +566,12 @@ failing."
 	or ("--key" in options and options["--key"])):
 		fail_usage("Failed: nodename or key is required", stop_after_error)
 
-	if not ("--key" in options and options["--key"]):
-		options["--key"] = generate_key(options)
+	if options["--action"] != "validate-all":
+		if not ("--key" in options and options["--key"]):
+			options["--key"] = generate_key(options)
 
-	if options["--key"] == "0" or not options["--key"]:
-		fail_usage("Failed: key cannot be 0", stop_after_error)
+		if options["--key"] == "0" or not options["--key"]:
+			fail_usage("Failed: key cannot be 0", stop_after_error)
 
 	if "--key-value" in options\
 	and (options["--key-value"] != "id" and options["--key-value"] != "hash"):
