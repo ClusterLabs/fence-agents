@@ -494,7 +494,7 @@ DEPENDENCY_OPT = {
 			 "version", "action", "agent", "power_timeout",
 			 "shell_timeout", "login_timeout", "disable_timeout",
 			 "power_wait", "stonith_status_sleep", "retry_on", "delay",
-			 "quiet"],
+			 "plug_separator", "quiet"],
 		"passwd" : ["passwd_script"],
 		"sudo" : ["sudo_path"],
 		"secure" : ["identity_file", "ssh_options", "ssh_path", "inet4_only", "inet6_only"],

@@ -150,6 +150,11 @@
 		<content type="boolean"  />
 		<shortdesc lang="en">Display help and exit</shortdesc>
 	</parameter>
+	<parameter name="plug_separator" unique="0" required="0">
+		<getopt mixed="--plug-separator=[char]" />
+		<content type="string" default=","  />
+		<shortdesc lang="en">Separator for plug parameter when specifying more than 1 plug</shortdesc>
+	</parameter>
 	<parameter name="separator" unique="0" required="0">
 		<getopt mixed="-C, --separator=[char]" />
 		<content type="string" default=","  />
