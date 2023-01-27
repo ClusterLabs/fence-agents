@@ -5,10 +5,14 @@ import logging
 import os
 import re
 import sys
-from pipes import quote
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail_usage, is_executable, run_command, run_delay
+
+try:
+	from shlex import quote
+except ImportError:
+	from pipes import quote
 
 def get_name_or_uuid(options):
 	return options["--uuid"] if "--uuid" in options else options["--plug"]
