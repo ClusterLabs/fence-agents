@@ -137,12 +137,41 @@ def register_dev(options, dev):
 		for slave in get_mpath_slaves(dev):
 			register_dev(options, slave)
 		return True
-	if get_reservation_key(options, dev, False) == options["--key"]:
-		return True
+
+	# Check if any registration exists for the key already. We track this in
+	# order to decide whether the existing registration needs to be cleared.
+	# This is needed since the previous registration could be for a
+	# different I_T nexus (different ISID).
+	registration_key_exists = False
+	if options["--key"] in get_registration_keys(options, dev):
+		registration_key_exists = True
+	if not register_helper(options, options["--key"], dev):
+		return False
+
+	if registration_key_exists:
+		# If key matches, make sure it matches with the connection that
+		# exists right now. To do this, we can issue a preempt with same key
+		# which should replace the old invalid entries from the target.
+		if not preempt(options, options["--key"], dev):
+			return False
+
+		# If there was no reservation, we need to issue another registration
+		# since the previous preempt would clear registration made above.
+		if get_reservation_key(options, dev, False) != options["--key"]:
+			return register_helper(options, options["--key"], dev)
+	return True
+
+# cancel registration without aborting tasks
+def preempt(options, host, dev):
+	reset_dev(options,dev)
+	cmd = options["--sg_persist-path"] + " -n -o -P -T 5 -K " + host + " -S " + options["--key"] + " -d " + dev
+	return not bool(run_cmd(options, cmd)["rc"])
+
+# helper function to send the register command
+def register_helper(options, host, dev):
 	reset_dev(options, dev)
 	cmd = options["--sg_persist-path"] + " -n -o -I -S " + options["--key"] + " -d " + dev
 	cmd += " -Z" if "--aptpl" in options else ""
-	#cmd return code != 0 but registration can be successful
 	return not bool(run_cmd(options, cmd)["rc"])
 
 
