@@ -146,13 +146,13 @@ def set_boot_order(_, client, options):
     wsman = 'http://schemas.dmtf.org/wbem/wsman/1/wsman.xsd'
     namespace = CIM_BootConfigSetting
 
-    if options["--boot-option"] == "pxe":
+    if options["--boot-option"] == "PXE":
         device = "Intel(r) AMT: Force PXE Boot"
-    elif options["--boot-option"] == "hd" or "hdsafe":
+    elif options["--boot-option"] in ["HD", "HDSAFE"]:
         device = "Intel(r) AMT: Force Hard-drive Boot"
-    elif options["--boot-option"] == "cd":
+    elif options["--boot-option"] == "CD":
         device = "Intel(r) AMT: Force CD/DVD Boot"
-    elif options["--boot-option"] == "diag":
+    elif options["--boot-option"] == "DIAG":
         device = "Intel(r) AMT: Force Diagnostic Boot"
     else:
         logging.error('Boot device: %s not supported.', \

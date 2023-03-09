@@ -12,6 +12,7 @@
 
 import sys, re
 import atexit
+import logging
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, fail_usage, EC_STATUS_HMC
@@ -28,31 +29,42 @@ def _normalize_status(status):
 
 def get_power_status(conn, options):
 	if options["--hmc-version"] == "3":
-		conn.send("lssyscfg -r lpar -m " + options["--managed"] + " -n " + options["--plug"] + " -F name,state\n")
-
-		# First line (command) may cause parsing issues if long
-		conn.readline()
-		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
-
-		try:
-			status = re.compile("^" + options["--plug"] + ",(.*?),.*$",
-					re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
-		except AttributeError:
-			fail(EC_STATUS_HMC)
+		command = "lssyscfg -r lpar -m " + options["--managed"] + " -n " + options["--plug"] + " -F name,state\n"
 	elif options["--hmc-version"] in ["4", "IVM"]:
-		conn.send("lssyscfg -r lpar -m "+ options["--managed"] +
-				" --filter 'lpar_names=" + options["--plug"] + "'\n")
+		command = "lssyscfg -r lpar -m "+ options["--managed"] + \
+			" --filter 'lpar_names=" + options["--plug"] + "'\n"
+	else:
+		# Bad HMC Version cannot be reached
+		fail(EC_STATUS_HMC)
 
-		# First line (command) may cause parsing issues if long
-		conn.readline()
-		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
+	conn.send(command)
+	# First line (command) may cause parsing issues if long
+	conn.readline()
+	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 
-		try:
+	try:
+		if options["--hmc-version"] == "3":
+			status = re.compile("^" + options["--plug"] + ",(.*?),.*$",
+					    re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
+		elif options["--hmc-version"] in ["4", "IVM"]:
 			status = re.compile(",state=(.*?),", re.IGNORECASE).search(conn.before).group(1)
-		except AttributeError:
-			fail(EC_STATUS_HMC)
+	except AttributeError as e:
+		logging.debug("Command on HMC failed: {}\n{}".format(command, str(e)))
+		fail(EC_STATUS_HMC)
 
 	return _normalize_status(status)
+
+def is_comanaged(conn, options):
+	conn.send("lscomgmt -m " + options["--managed"] + "\n" )
+	conn.readline()
+	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
+
+	try:
+		cm = re.compile(",curr_master_mtms=(.*?),", re.IGNORECASE).search(conn.before).group(1)
+	except AttributeError as e:
+		cm = False
+
+	return cm
 
 def set_power_status(conn, options):
 	if options["--hmc-version"] == "3":
@@ -64,11 +76,17 @@ def set_power_status(conn, options):
 		conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 	elif options["--hmc-version"] in ["4", "IVM"]:
 		if options["--action"] == "on":
-			conn.send("chsysstate -o on -r lpar -m " + options["--managed"] +
-				" -n " + options["--plug"] +
-				" -f `lssyscfg -r lpar -F curr_profile " +
+			if is_comanaged(conn, options):
+				profile = ""
+			else:
+				profile = " -f `lssyscfg -r lpar -F curr_profile " + \
+				    " -m " + options["--managed"] + \
+				    " --filter \"lpar_names=" + options["--plug"] + "\"`"
+			conn.send("chsysstate -o on -r lpar" +
 				" -m " + options["--managed"] +
-				" --filter \"lpar_names=" + options["--plug"] + "\"`\n")
+				" -n " + options["--plug"] +
+				profile +
+				"\n")
 		else:
 			conn.send("chsysstate -o shutdown -r lpar --immed" +
 				" -m " + options["--managed"] + " -n " + options["--plug"] + "\n")

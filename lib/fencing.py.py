@@ -322,6 +322,13 @@ all_opt = {
 		"help" : "-6, --inet6-only               Forces agent to use IPv6 addresses only",
 		"required" : "0",
 		"order" : 1},
+	"plug_separator" : {
+		"getopt" : ":",
+		"longopt" : "plug-separator",
+		"help" : "--plug-separator=[char]        Separator for plug parameter when specifying more than 1 plug",
+		"default" : ",",
+		"required" : "0",
+		"order" : 100},
 	"separator" : {
 		"getopt" : "C:",
 		"longopt" : "separator",
@@ -365,6 +372,14 @@ all_opt = {
 		"type" : "second",
 		"help" : "--power-wait=[seconds]         Wait X seconds after issuing ON/OFF",
 		"default" : "0",
+		"required" : "0",
+		"order" : 200},
+	"stonith_status_sleep" : {
+		"getopt" : ":",
+		"longopt" : "stonith-status-sleep",
+		"type" : "second",
+		"help" : "--stonith-status-sleep=[seconds]   Sleep X seconds between status calls during a STONITH action",
+		"default" : "1",
 		"required" : "0",
 		"order" : 200},
 	"missing_as_off" : {
@@ -478,7 +493,8 @@ DEPENDENCY_OPT = {
 		"default" : ["help", "debug", "verbose", "verbose_level",
 			 "version", "action", "agent", "power_timeout",
 			 "shell_timeout", "login_timeout", "disable_timeout",
-			 "power_wait", "retry_on", "delay", "quiet"],
+			 "power_wait", "stonith_status_sleep", "retry_on", "delay",
+			 "plug_separator", "quiet"],
 		"passwd" : ["passwd_script"],
 		"sudo" : ["sudo_path"],
 		"secure" : ["identity_file", "ssh_options", "ssh_path", "inet4_only", "inet6_only"],
@@ -632,7 +648,7 @@ def metadata(options, avail_opt, docs):
 			mixed = _encode_html_entities(mixed)
 
 			if not "shortdesc" in opt:
-				shortdesc = re.sub("\s\s+", " ", opt["help"][31:])
+				shortdesc = re.sub(".*\s\s+", "", opt["help"][31:])
 			else:
 				shortdesc = opt["shortdesc"]
 
@@ -780,6 +796,12 @@ def check_input(device_opt, opt, other_conditions = False):
 	if "--password-script" in options:
 		options["--password"] = os.popen(options["--password-script"]).read().rstrip()
 
+	if "--ssl-secure" in options or "--ssl-insecure" in options:
+		options["--ssl"] = ""
+
+	if "--ssl" in options and "--ssl-insecure" not in options:
+		options["--ssl-secure"] = ""
+
 	if os.environ.get("PCMK_service") == "pacemaker-fenced" and "--disable-timeout" not in options:
 		options["--disable-timeout"] = "1"
 
@@ -828,7 +850,7 @@ def async_set_multi_power_fn(connection, options, set_power_fn, get_power_fn, re
 
 		for _ in itertools.count(1):
 			if get_multi_power_fn(connection, options, get_power_fn) != options["--action"]:
-				time.sleep(1)
+				time.sleep(int(options["--stonith-status-sleep"]))
 			else:
 				return True
 
@@ -870,6 +892,27 @@ def set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set
 
 	return False
 
+def multi_reboot_cycle_fn(connection, options, reboot_cycle_fn, retry_attempts=1):
+	success = True
+	plugs = options["--plugs"] if "--plugs" in options else [""]
+
+	for plug in plugs:
+		try:
+			options["--uuid"] = str(uuid.UUID(plug))
+		except ValueError:
+			pass
+		except KeyError:
+			pass
+
+		options["--plug"] = plug
+		for retry in range(retry_attempts):
+			if reboot_cycle_fn(connection, options):
+				break
+			if retry == retry_attempts-1:
+				success = False
+		time.sleep(int(options["--power-wait"]))
+
+	return success
 
 def show_docs(options, docs=None):
 	device_opt = options["device_opt"]
@@ -898,7 +941,7 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 
 	try:
 		if "--plug" in options:
-			options["--plugs"] = options["--plug"].split(",")
+			options["--plugs"] = options["--plug"].split(options["--plug-separator"])
 
 		## Process options that manipulate fencing device
 		#####
@@ -928,9 +971,15 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 						status = status.upper()
 
 					if options["--action"] == "list":
-						print(outlet_id + options["--separator"] + alias)
+						try:
+							print(outlet_id + options["--separator"] + alias)
+						except UnicodeEncodeError as e:
+							print((outlet_id + options["--separator"] + alias).encode("utf-8"))
 					elif options["--action"] == "list-status":
-						print(outlet_id + options["--separator"] + alias + options["--separator"] + status)
+						try:
+							print(outlet_id + options["--separator"] + alias + options["--separator"] + status)
+						except UnicodeEncodeError as e:
+							print((outlet_id + options["--separator"] + alias).encode("utf-8") + options["--separator"] + status)
 
 			return
 
@@ -962,10 +1011,11 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 		elif options["--action"] == "reboot":
 			power_on = False
 			if options.get("--method", "").lower() == "cycle" and reboot_cycle_fn is not None:
-				for _ in range(1, 1 + int(options["--retry-on"])):
-					if reboot_cycle_fn(connection, options):
-						power_on = True
-						break
+				try:
+					power_on = multi_reboot_cycle_fn(connection, options, reboot_cycle_fn, 1 + int(options["--retry-on"]))
+				except Exception as ex:
+					# an error occured during reboot action
+					logging.warning("%s", str(ex))
 
 				if not power_on:
 					fail(EC_TIMED_OUT)
@@ -1045,6 +1095,115 @@ def is_executable(path):
 			return True
 	return False
 
+def run_commands(options, commands, timeout=None, env=None, log_command=None):
+	# inspired by psutils.wait_procs (BSD License)
+	def check_gone(proc, timeout):
+		try:
+			returncode = proc.wait(timeout=timeout)
+		except subprocess.TimeoutExpired:
+			pass
+		else:
+			if returncode is not None or not proc.is_running():
+				proc.returncode = returncode
+				gone.add(proc)
+
+	if timeout is None and "--power-timeout" in options:
+		timeout = options["--power-timeout"]
+	if timeout == 0:
+		timeout = None
+	if timeout is not None:
+		timeout = float(timeout)
+
+	time_start = time.time()
+	procs = []
+	status = None
+	pipe_stdout = ""
+	pipe_stderr = ""
+
+	for command in commands:
+		logging.info("Executing: %s\n", log_command or command)
+
+		try:
+			process = subprocess.Popen(shlex.split(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env,
+					# decodes newlines and in python3 also converts bytes to str
+					universal_newlines=(sys.version_info[0] > 2))
+		except OSError:
+			fail_usage("Unable to run %s\n" % command)
+
+		procs.append(process)
+
+	gone = set()
+	alive = set(procs)
+
+	while True:
+		if alive:
+			max_timeout = 2.0 / len(alive)
+			for proc in alive:
+				if timeout is not None:
+					if time.time()-time_start >= timeout:
+						# quickly go over the rest
+						max_timeout = 0
+				check_gone(proc, max_timeout)
+			alive = alive - gone
+
+		if not alive:
+			break
+
+		if time.time()-time_start < 5.0:
+			# give it at least 5s to get a complete answer
+			# afterwards we're OK with a quorate answer
+			continue
+
+		if len(gone) > len(alive):
+			good_cnt = 0
+			for proc in gone:
+				if proc.returncode == 0:
+					good_cnt += 1
+			# a positive result from more than half is fine
+			if good_cnt > len(procs)/2:
+				break
+
+		if timeout is not None:
+			if time.time() - time_start >= timeout:
+				logging.debug("Stop waiting after %s\n", str(timeout))
+				break
+
+	logging.debug("Done: %d gone, %d alive\n", len(gone), len(alive))
+
+	for proc in gone:
+		if (status != 0):
+			status = proc.returncode
+		# hand over the best status we have
+		# but still collect as much stdout/stderr feedback
+		# avoid communicate as we know already process
+		# is gone and it seems to block when there
+		# are D state children we don't get rid off
+		os.set_blocking(proc.stdout.fileno(), False)
+		os.set_blocking(proc.stderr.fileno(), False)
+		try:
+			pipe_stdout += proc.stdout.read()
+		except:
+			pass
+		try:
+			pipe_stderr += proc.stderr.read()
+		except:
+			pass
+		proc.stdout.close()
+		proc.stderr.close()
+
+	for proc in alive:
+		proc.kill()
+
+	if status is None:
+		fail(EC_TIMED_OUT, stop=(int(options.get("retry", 0)) < 1))
+		status = EC_TIMED_OUT
+		pipe_stdout = ""
+		pipe_stderr = "timed out"
+
+	logging.debug("%s %s %s\n", str(status), str(pipe_stdout), str(pipe_stderr))
+
+	return (status, pipe_stdout, pipe_stderr)
+
 def run_command(options, command, timeout=None, env=None, log_command=None):
 	if timeout is None and "--power-timeout" in options:
 		timeout = options["--power-timeout"]
@@ -1105,6 +1264,14 @@ def fence_logout(conn, logout_string, sleep=0):
 		pass
 	except pexpect.ExceptionPexpect:
 		pass
+
+def source_env(env_file):
+    # POSIX: name shall not contain '=', value doesn't contain '\0'
+    output = subprocess.check_output("source {} && env -0".format(env_file), shell=True,
+                          executable="/bin/sh")
+    # replace env
+    os.environ.clear()
+    os.environ.update(line.partition('=')[::2] for line in output.decode("utf-8").split('\0') if not re.match("^\s*$", line))
 
 # Convert array of format [[key1, value1], [key2, value2], ... [keyN, valueN]] to dict, where key is
 # in format a.b.c.d...z and returned dict has key only z
@@ -1389,11 +1556,6 @@ def _validate_input(options, stop = True):
 		valid_input = False
 		fail_usage("Failed: You have to enter plug number or machine identification", stop)
 
-	if "--plug" in options and len(options["--plug"].split(",")) > 1 and \
-			"--method" in options and options["--method"] == "cycle":
-		valid_input = False
-		fail_usage("Failed: Cannot use --method cycle for more than 1 plug", stop)
-
 	for failed_opt in _get_opts_with_invalid_choices(options):
 		valid_input = False
 		fail_usage("Failed: You have to enter a valid choice for %s from the valid values: %s" % \
@@ -1462,6 +1624,8 @@ def _parse_input_stdin(avail_opt):
 			opt["--"+all_opt[name]["longopt"].rstrip(":")] = value
 		elif value.lower() in ["1", "yes", "on", "true"]:
 			opt["--"+all_opt[name]["longopt"]] = "1"
+		elif value.lower() in ["0", "no", "off", "false"]:
+			opt["--"+all_opt[name]["longopt"]] = "0"
 		else:
 			logging.warning("Parse error: Ignoring option '%s' because it does not have value\n", name)
 

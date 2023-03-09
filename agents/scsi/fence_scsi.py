@@ -13,7 +13,7 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import fail_usage, run_command, atexit_handler, check_input, process_input, show_docs, fence_action, all_opt
 from fencing import run_delay
 
-STORE_PATH = "/var/run/cluster/fence_scsi"
+STORE_PATH = "@STORE_PATH@"
 
 
 def get_status(conn, options):
@@ -137,12 +137,41 @@ def register_dev(options, dev):
 		for slave in get_mpath_slaves(dev):
 			register_dev(options, slave)
 		return True
-	if get_reservation_key(options, dev, False) == options["--key"]:
-		return True
+
+	# Check if any registration exists for the key already. We track this in
+	# order to decide whether the existing registration needs to be cleared.
+	# This is needed since the previous registration could be for a
+	# different I_T nexus (different ISID).
+	registration_key_exists = False
+	if options["--key"] in get_registration_keys(options, dev):
+		registration_key_exists = True
+	if not register_helper(options, options["--key"], dev):
+		return False
+
+	if registration_key_exists:
+		# If key matches, make sure it matches with the connection that
+		# exists right now. To do this, we can issue a preempt with same key
+		# which should replace the old invalid entries from the target.
+		if not preempt(options, options["--key"], dev):
+			return False
+
+		# If there was no reservation, we need to issue another registration
+		# since the previous preempt would clear registration made above.
+		if get_reservation_key(options, dev, False) != options["--key"]:
+			return register_helper(options, options["--key"], dev)
+	return True
+
+# cancel registration without aborting tasks
+def preempt(options, host, dev):
+	reset_dev(options,dev)
+	cmd = options["--sg_persist-path"] + " -n -o -P -T 5 -K " + host + " -S " + options["--key"] + " -d " + dev
+	return not bool(run_cmd(options, cmd)["rc"])
+
+# helper function to send the register command
+def register_helper(options, host, dev):
 	reset_dev(options, dev)
 	cmd = options["--sg_persist-path"] + " -n -o -I -S " + options["--key"] + " -d " + dev
 	cmd += " -Z" if "--aptpl" in options else ""
-	#cmd return code != 0 but registration can be successful
 	return not bool(run_cmd(options, cmd)["rc"])
 
 
@@ -270,12 +299,13 @@ def dev_write(dev, options):
 	f.close()
 
 
-def dev_read(fail=True):
+def dev_read(fail=True, opt=None):
 	file_path = STORE_PATH + ".dev"
 	try:
 		f = open(file_path, "r")
 	except IOError:
-		fail_usage("Failed: Cannot open file \"" + file_path + "\"", fail)
+		if "--suppress-errors" not in opt:
+			fail_usage("Failed: Cannot open file \"" + file_path + "\"", fail)
 		if not fail:
 			return None
 	# get not empty lines from file
@@ -358,13 +388,21 @@ be removed from the device(s).",
 		"shortdesc" : "Open DEVICE read-only.",
 		"order": 4
 	}
+	all_opt["suppress-errors"] = {
+		"getopt" : "",
+		"longopt" : "suppress-errors",
+		"help" : "--suppress-errors              Suppress error log. Suppresses error logging when run from the watchdog service before pacemaker starts.",
+		"required" : "0",
+		"shortdesc" : "Error log suppression.",
+		"order": 5
+	}
 	all_opt["logfile"] = {
 		"getopt" : ":",
 		"longopt" : "logfile",
 		"help" : "-f, --logfile                  Log output (stdout and stderr) to file",
 		"required" : "0",
 		"shortdesc" : "Log output (stdout and stderr) to file",
-		"order": 5
+		"order": 6
 	}
 	all_opt["corosync_cmap_path"] = {
 		"getopt" : ":",
@@ -445,9 +483,10 @@ def scsi_check(hardreboot=False):
 	options = scsi_check_get_options(options)
 	if "verbose" in options and options["verbose"] == "yes":
 		logging.getLogger().setLevel(logging.DEBUG)
-	devs = dev_read(fail=False)
+	devs = dev_read(fail=False,opt=options)
 	if not devs:
-		logging.error("No devices found")
+		if "--suppress-errors" not in options:
+			logging.error("No devices found")
 		return 0
 	key = get_key(fail=False)
 	if not key:
@@ -480,7 +519,7 @@ def main():
 
 	device_opt = ["no_login", "no_password", "devices", "nodename", "port",\
 	"no_port", "key", "aptpl", "fabric_fencing", "on_target", "corosync_cmap_path",\
-	"sg_persist_path", "sg_turs_path", "readonly", "logfile", "vgs_path",\
+	"sg_persist_path", "sg_turs_path", "readonly", "suppress-errors", "logfile", "vgs_path",\
 	"force_on", "key_value"]
 
 	define_new_opts()
@@ -556,11 +595,12 @@ failing."
 	or ("--key" in options and options["--key"])):
 		fail_usage("Failed: nodename or key is required", stop_after_error)
 
-	if not ("--key" in options and options["--key"]):
-		options["--key"] = generate_key(options)
+	if options["--action"] != "validate-all":
+		if not ("--key" in options and options["--key"]):
+			options["--key"] = generate_key(options)
 
-	if options["--key"] == "0" or not options["--key"]:
-		fail_usage("Failed: key cannot be 0", stop_after_error)
+		if options["--key"] == "0" or not options["--key"]:
+			fail_usage("Failed: key cannot be 0", stop_after_error)
 
 	if "--key-value" in options\
 	and (options["--key-value"] != "id" and options["--key-value"] != "hash"):

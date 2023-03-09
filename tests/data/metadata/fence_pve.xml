@@ -66,25 +66,50 @@
 		<content type="string"  />
 		<shortdesc lang="en">Id of the virtual machine.</shortdesc>
 	</parameter>
+	<parameter name="ssl" unique="0" required="0">
+		<getopt mixed="-z, --ssl" />
+		<content type="boolean" default="1"  />
+		<shortdesc lang="en">Use SSL connection with verifying certificate</shortdesc>
+	</parameter>
+	<parameter name="ssl_insecure" unique="0" required="0">
+		<getopt mixed="--ssl-insecure" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Use SSL connection without verifying certificate</shortdesc>
+	</parameter>
+	<parameter name="ssl_secure" unique="0" required="0">
+		<getopt mixed="--ssl-secure" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Use SSL connection with verifying certificate</shortdesc>
+	</parameter>
 	<parameter name="username" unique="0" required="1" obsoletes="login">
 		<getopt mixed="-l, --username=[name]" />
 		<content type="string" default="root@pam"  />
 		<shortdesc lang="en">Login name</shortdesc>
 	</parameter>
-	<parameter name="node_name" unique="0" required="0" deprecated="1">
-		<getopt mixed="-N, --nodename" />
+	<parameter name="pve_node" unique="0" required="0">
+		<getopt mixed="-N, --pve-node=[node_name]" />
 		<content type="string"  />
-		<shortdesc lang="en">Node on which machine is located. (Optional, will be automatically determined)</shortdesc>
+		<shortdesc lang="en">Proxmox node name on which machine is located. (Must be specified if not using --pve-node-auto)</shortdesc>
 	</parameter>
-	<parameter name="nodename" unique="0" required="0" obsoletes="node_name">
-		<getopt mixed="-N, --nodename" />
-		<content type="string"  />
-		<shortdesc lang="en">Node on which machine is located. (Optional, will be automatically determined)</shortdesc>
+	<parameter name="pve_node_auto" unique="0" required="0">
+		<getopt mixed="-A, --pve-node-auto" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Automatically select proxmox node. (This option overrides --pve-node)</shortdesc>
 	</parameter>
 	<parameter name="vmtype" unique="0" required="1">
 		<getopt mixed="--vmtype" />
 		<content type="string" default="qemu"  />
 		<shortdesc lang="en">Virtual machine type lxc or qemu. (Default: qemu)</shortdesc>
+	</parameter>
+	<parameter name="node_name" unique="0" required="0" deprecated="1">
+		<getopt mixed="--nodename" />
+		<content type="string"  />
+		<shortdesc lang="en">Replaced by --pve-node</shortdesc>
+	</parameter>
+	<parameter name="nodename" unique="0" required="0" obsoletes="node_name">
+		<getopt mixed="--nodename" />
+		<content type="string"  />
+		<shortdesc lang="en">Replaced by --pve-node</shortdesc>
 	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
@@ -108,7 +133,6 @@
 	</parameter>
 	<parameter name="debug_file" unique="0" required="0" obsoletes="debug">
 		<getopt mixed="-D, --debug-file=[debugfile]" />
-		<content type="string"  />
 		<shortdesc lang="en">Write debug information to given file</shortdesc>
 	</parameter>
 	<parameter name="version" unique="0" required="0">
@@ -120,6 +144,11 @@
 		<getopt mixed="-h, --help" />
 		<content type="boolean"  />
 		<shortdesc lang="en">Display help and exit</shortdesc>
+	</parameter>
+	<parameter name="plug_separator" unique="0" required="0">
+		<getopt mixed="--plug-separator=[char]" />
+		<content type="string" default=","  />
+		<shortdesc lang="en">Separator for plug parameter when specifying more than 1 plug</shortdesc>
 	</parameter>
 	<parameter name="separator" unique="0" required="0">
 		<getopt mixed="-C, --separator=[char]" />
@@ -134,7 +163,7 @@
 	<parameter name="disable_timeout" unique="0" required="0">
 		<getopt mixed="--disable-timeout=[true/false]" />
 		<content type="string"  />
-		<shortdesc lang="en"> Disable timeout (true/false) (default: true when run from Pacemaker 2.0+)</shortdesc>
+		<shortdesc lang="en">Disable timeout (true/false) (default: true when run from Pacemaker 2.0+)</shortdesc>
 	</parameter>
 	<parameter name="login_timeout" unique="0" required="0">
 		<getopt mixed="--login-timeout=[seconds]" />
@@ -156,10 +185,19 @@
 		<content type="second" default="3"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
 	</parameter>
+	<parameter name="stonith_status_sleep" unique="0" required="0">
+		<getopt mixed="--stonith-status-sleep=[seconds]" />
+		<content type="second" default="1"  />
+		<shortdesc lang="en">Sleep X seconds between status calls during a STONITH action</shortdesc>
+	</parameter>
 	<parameter name="retry_on" unique="0" required="0">
 		<getopt mixed="--retry-on=[attempts]" />
 		<content type="integer" default="1"  />
 		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
+	</parameter>
+	<parameter name="gnutlscli_path" unique="0" required="0">
+		<getopt mixed="--gnutlscli-path=[path]" />
+		<shortdesc lang="en">Path to gnutls-cli binary</shortdesc>
 	</parameter>
 </parameters>
 <actions>

@@ -81,7 +81,10 @@ class APIClient(object):
         # default API port
         'port': 6794,
         # validate ssl certificates
-        'ssl_verify': False
+        'ssl_verify': False,
+        # load on activate is set in the HMC activation profile and therefore
+        # no additional load is executed by the fence agent
+        'load_on_activate': False
     }
     LABEL_BY_OP_MODE = {
         'classic': {
@@ -190,6 +193,8 @@ class APIClient(object):
                     'waiting for activate (timeout %s secs)', timeout)
                 self._wait_for_job('post', op_uri, job_resp['job-uri'],
                                    timeout=timeout)
+                if self._config['load_on_activate']:
+                    return
 
         # trigger the start job
         op_uri = '{}/operations/{}'.format(part_uri, label_map[action])
@@ -424,6 +429,7 @@ def set_opts():
         "read_retries",
         "read_timeout",
         "ssl_secure",
+        "load_on_activate",
     ]
 
     all_opt["ipport"]["default"] = APIClient.DEFAULT_CONFIG['port']
@@ -488,6 +494,14 @@ def set_opts():
         "shortdesc" : "How long to wait for server data",
         "order" : 2
     }
+    all_opt["load_on_activate"] = {
+        "getopt" : "",
+        "longopt" : "load-on-activate",
+        "help" : "--load-on-activate             Rely on the HMC to perform "
+                 "a load operation on activation",
+        "required" : "0",
+        "order" : 3
+    }
     return device_opt
 
 def main():
@@ -520,7 +534,7 @@ def main():
     requests_log.propagate = True
     if "--verbose" in options:
         requests_log.setLevel(logging.DEBUG)
-    if "--ssl-secure" not in options:
+    if "--ssl-insecure" in options:
         urllib3.disable_warnings(
             category=urllib3.exceptions.InsecureRequestWarning)
 
@@ -534,7 +548,8 @@ def main():
         'connect_timeout': int(options['--connect-timeout']),
         'read_timeout': int(options['--read-timeout']),
         'port': int(options['--ipport']),
-        'ssl_verify': bool('--ssl-secure' in options),
+        'ssl_verify': bool('--ssl-insecure' not in options),
+        'load_on_activate': bool('--load-on-activate' in options),
     }
     try:
         conn = APIClient(hmc_address, hmc_userid, hmc_password, config)

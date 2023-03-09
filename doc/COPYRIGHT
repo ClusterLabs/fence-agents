@@ -5,6 +5,10 @@ Copyright (C) 2004-2011 Red Hat, Inc.  All rights reserved.
 
 Exceptions:
 
+agents/raritan_px3/*:
+ Copyright (c) 2021 SUSE LLC
+ Contributed by Thomas Renninger <trenn@suse.de>
+
 agents/ibmz/*:
  Copyright (c) 2020 IBM Corp.
  Contributed by Paulo de Rezende Pinatti <ppinatti at linux.ibm.com>
@@ -38,6 +42,10 @@ agents/ipmilan/expect.{c,h}:
 agents/node_assassin/*
  Copyright (C) 2009-2011 Madison Kelly/Alteeve's Niche!
  Author: Digimer <digimer at alteeve.com>
+
+agents/ecloud/fence_ecloud.py:
+ Copyright (C) 2022 ANS Group Limited
+ Author: Dane Elwell <dane.elwell@ans.co.uk>
 
 man/fence_ifmib.8:
  Copyright (C) 2008-2011 Ross Vandegrift.

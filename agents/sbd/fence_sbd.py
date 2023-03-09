@@ -5,7 +5,7 @@ import logging
 import os
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
-from fencing import fail_usage, run_command, fence_action, all_opt
+from fencing import fail_usage, run_commands, fence_action, all_opt
 from fencing import atexit_handler, check_input, process_input, show_docs
 from fencing import run_delay
 import itertools
@@ -81,7 +81,7 @@ def check_sbd_device(options, device_path):
 
     cmd = "%s -d %s dump" % (options["--sbd-path"], device_path)
 
-    (return_code, out, err) = run_command(options, cmd)
+    (return_code, out, err) = run_commands(options, [ cmd ])
 
     for line in itertools.chain(out.split("\n"), err.split("\n")):
         if len(line) == 0:
@@ -94,21 +94,35 @@ def check_sbd_device(options, device_path):
 
     return DEVICE_INIT
 
+
 def generate_sbd_command(options, command, arguments=None):
     """Generates a sbd command based on given arguments.
 
     Return Value:
-    generated sbd command (string)
+    generated list of sbd commands (strings) depending
+    on command multiple commands with a device each
+    or a single command with multiple devices
     """
-    cmd = options["--sbd-path"]
+    cmds = []
 
-    # add "-d" for each sbd device
-    for device in parse_sbd_devices(options):
-        cmd += " -d %s" % device
+    if not command in ["list", "dump"]:
+        cmd = options["--sbd-path"]
 
-    cmd += " %s %s" % (command, arguments)
+        # add "-d" for each sbd device
+        for device in parse_sbd_devices(options):
+            cmd += " -d %s" % device
 
-    return cmd
+        cmd += " %s %s" % (command, arguments)
+        cmds.append(cmd)
+
+    else:
+        for device in parse_sbd_devices(options):
+            cmd = options["--sbd-path"]
+            cmd += " -d %s" % device
+            cmd += " %s %s" % (command, arguments)
+            cmds.append(cmd)
+
+    return cmds
 
 def send_sbd_message(conn, options, plug, message):
     """Sends a message to all sbd devices.
@@ -128,7 +142,7 @@ def send_sbd_message(conn, options, plug, message):
     arguments = "%s %s" % (plug, message)
     cmd = generate_sbd_command(options, "message", arguments)
 
-    (return_code, out, err) = run_command(options, cmd)
+    (return_code, out, err) = run_commands(options, cmd)
 
     return (return_code, out, err)
 
@@ -147,7 +161,7 @@ def get_msg_timeout(options):
 
     cmd = generate_sbd_command(options, "dump")
 
-    (return_code, out, err) = run_command(options, cmd)
+    (return_code, out, err) = run_commands(options, cmd)
 
     for line in itertools.chain(out.split("\n"), err.split("\n")):
         if len(line) == 0:
@@ -288,7 +302,7 @@ def get_node_list(conn, options):
 
     cmd = generate_sbd_command(options, "list")
 
-    (return_code, out, err) = run_command(options, cmd)
+    (return_code, out, err) = run_commands(options, cmd)
 
     for line in out.split("\n"):
         if len(line) == 0:
@@ -356,6 +370,7 @@ def main():
 
     all_opt["method"]["default"] = "cycle"
     all_opt["method"]["help"] = "-m, --method=[method]          Method to fence (onoff|cycle) (Default: cycle)"
+    all_opt["power_timeout"]["default"] = "30"
 
     options = check_input(device_opt, process_input(device_opt))
 
@@ -376,29 +391,33 @@ which can be used in environments where sbd can be used (shared storage)."
 
     # We need to check if the provided sbd_devices exists. We need to do
     # that for every given device.
-    for device_path in parse_sbd_devices(options):
-        logging.debug("check device \"%s\"", device_path)
+    # Just for the case we are really rebooting / powering off a device
+    # (pacemaker as well uses the list command to generate a dynamic list)
+    # we leave it to sbd to try and decide if it was successful
+    if not options["--action"] in ["reboot", "off", "list"]:
+        for device_path in parse_sbd_devices(options):
+            logging.debug("check device \"%s\"", device_path)
 
-        return_code = check_sbd_device(options, device_path)
-        if PATH_NOT_EXISTS == return_code:
-            logging.error("\"%s\" does not exist", device_path)
-        elif PATH_NOT_BLOCK == return_code:
-            logging.error("\"%s\" is not a valid block device", device_path)
-        elif DEVICE_NOT_INIT == return_code:
-            logging.error("\"%s\" is not initialized", device_path)
-        elif DEVICE_INIT != return_code:
-            logging.error("UNKNOWN error while checking \"%s\"", device_path)
+            return_code = check_sbd_device(options, device_path)
+            if PATH_NOT_EXISTS == return_code:
+                logging.error("\"%s\" does not exist", device_path)
+            elif PATH_NOT_BLOCK == return_code:
+                logging.error("\"%s\" is not a valid block device", device_path)
+            elif DEVICE_NOT_INIT == return_code:
+                logging.error("\"%s\" is not initialized", device_path)
+            elif DEVICE_INIT != return_code:
+                logging.error("UNKNOWN error while checking \"%s\"", device_path)
 
-        # If we get any error while checking the device we need to exit at this
-        # point.
-        if DEVICE_INIT != return_code:
-            exit(return_code)
+            # If we get any error while checking the device we need to exit at this
+            # point.
+            if DEVICE_INIT != return_code:
+                exit(return_code)
 
     # we check against the defined timeouts. If the pacemaker timeout is smaller
     # then that defined within sbd we should report this.
     power_timeout = int(options["--power-timeout"])
     sbd_msg_timeout = get_msg_timeout(options)
-    if power_timeout <= sbd_msg_timeout:
+    if 0 < power_timeout <= sbd_msg_timeout:
         logging.warn("power timeout needs to be \
                 greater then sbd message timeout")
 

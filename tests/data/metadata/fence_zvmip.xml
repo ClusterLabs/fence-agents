@@ -91,10 +91,30 @@ to access the system's directory manager.
 		<content type="string"  />
 		<shortdesc lang="en">Physical plug number on device, UUID or identification of machine</shortdesc>
 	</parameter>
+	<parameter name="ssl" unique="0" required="0">
+		<getopt mixed="-z, --ssl" />
+		<content type="boolean" default="1"  />
+		<shortdesc lang="en">Use SSL connection with verifying certificate (Default)</shortdesc>
+	</parameter>
+	<parameter name="ssl_insecure" unique="0" required="0">
+		<getopt mixed="--ssl-insecure" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Use SSL connection without verifying certificate</shortdesc>
+	</parameter>
+	<parameter name="ssl_secure" unique="0" required="0">
+		<getopt mixed="--ssl-secure" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Use SSL connection with verifying certificate</shortdesc>
+	</parameter>
 	<parameter name="username" unique="0" required="1" obsoletes="login">
 		<getopt mixed="-l, --username=[name]" />
 		<content type="string"  />
 		<shortdesc lang="en">Login name</shortdesc>
+	</parameter>
+	<parameter name="disable_ssl" unique="0" required="0">
+		<getopt mixed="--disable-ssl" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Don't use SSL</shortdesc>
 	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
@@ -118,7 +138,6 @@ to access the system's directory manager.
 	</parameter>
 	<parameter name="debug_file" unique="0" required="0" obsoletes="debug">
 		<getopt mixed="-D, --debug-file=[debugfile]" />
-		<content type="string"  />
 		<shortdesc lang="en">Write debug information to given file</shortdesc>
 	</parameter>
 	<parameter name="version" unique="0" required="0">
@@ -130,6 +149,11 @@ to access the system's directory manager.
 		<getopt mixed="-h, --help" />
 		<content type="boolean"  />
 		<shortdesc lang="en">Display help and exit</shortdesc>
+	</parameter>
+	<parameter name="plug_separator" unique="0" required="0">
+		<getopt mixed="--plug-separator=[char]" />
+		<content type="string" default=","  />
+		<shortdesc lang="en">Separator for plug parameter when specifying more than 1 plug</shortdesc>
 	</parameter>
 	<parameter name="separator" unique="0" required="0">
 		<getopt mixed="-C, --separator=[char]" />
@@ -144,7 +168,7 @@ to access the system's directory manager.
 	<parameter name="disable_timeout" unique="0" required="0">
 		<getopt mixed="--disable-timeout=[true/false]" />
 		<content type="string"  />
-		<shortdesc lang="en"> Disable timeout (true/false) (default: true when run from Pacemaker 2.0+)</shortdesc>
+		<shortdesc lang="en">Disable timeout (true/false) (default: true when run from Pacemaker 2.0+)</shortdesc>
 	</parameter>
 	<parameter name="login_timeout" unique="0" required="0">
 		<getopt mixed="--login-timeout=[seconds]" />
@@ -171,10 +195,19 @@ to access the system's directory manager.
 		<content type="second" default="5"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
 	</parameter>
+	<parameter name="stonith_status_sleep" unique="0" required="0">
+		<getopt mixed="--stonith-status-sleep=[seconds]" />
+		<content type="second" default="1"  />
+		<shortdesc lang="en">Sleep X seconds between status calls during a STONITH action</shortdesc>
+	</parameter>
 	<parameter name="retry_on" unique="0" required="0">
 		<getopt mixed="--retry-on=[attempts]" />
 		<content type="integer" default="1"  />
 		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
+	</parameter>
+	<parameter name="gnutlscli_path" unique="0" required="0">
+		<getopt mixed="--gnutlscli-path=[path]" />
+		<shortdesc lang="en">Path to gnutls-cli binary</shortdesc>
 	</parameter>
 </parameters>
 <actions>

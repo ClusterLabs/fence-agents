@@ -20,7 +20,7 @@
 	</parameter>
 	<parameter name="ipport" unique="0" required="0">
 		<getopt mixed="-u, --ipport=[port]" />
-		<content type="integer" default="80"  />
+		<content type="integer" default="443"  />
 		<shortdesc lang="en">TCP/UDP port to use for connection with device</shortdesc>
 	</parameter>
 	<parameter name="method" unique="0" required="0">
@@ -43,7 +43,7 @@
 	</parameter>
 	<parameter name="ssl" unique="0" required="0">
 		<getopt mixed="-z, --ssl" />
-		<content type="boolean"  />
+		<content type="boolean" default="1"  />
 		<shortdesc lang="en">Use SSL connection with verifying certificate</shortdesc>
 	</parameter>
 	<parameter name="ssl_insecure" unique="0" required="0">
@@ -98,7 +98,6 @@
 	</parameter>
 	<parameter name="debug_file" unique="0" required="0" obsoletes="debug">
 		<getopt mixed="-D, --debug-file=[debugfile]" />
-		<content type="string"  />
 		<shortdesc lang="en">Write debug information to given file</shortdesc>
 	</parameter>
 	<parameter name="version" unique="0" required="0">
@@ -110,6 +109,11 @@
 		<getopt mixed="-h, --help" />
 		<content type="boolean"  />
 		<shortdesc lang="en">Display help and exit</shortdesc>
+	</parameter>
+	<parameter name="plug_separator" unique="0" required="0">
+		<getopt mixed="--plug-separator=[char]" />
+		<content type="string" default=","  />
+		<shortdesc lang="en">Separator for plug parameter when specifying more than 1 plug</shortdesc>
 	</parameter>
 	<parameter name="separator" unique="0" required="0">
 		<getopt mixed="-C, --separator=[char]" />
@@ -124,7 +128,7 @@
 	<parameter name="disable_timeout" unique="0" required="0">
 		<getopt mixed="--disable-timeout=[true/false]" />
 		<content type="string"  />
-		<shortdesc lang="en"> Disable timeout (true/false) (default: true when run from Pacemaker 2.0+)</shortdesc>
+		<shortdesc lang="en">Disable timeout (true/false) (default: true when run from Pacemaker 2.0+)</shortdesc>
 	</parameter>
 	<parameter name="login_timeout" unique="0" required="0">
 		<getopt mixed="--login-timeout=[seconds]" />
@@ -145,6 +149,11 @@
 		<getopt mixed="--shell-timeout=[seconds]" />
 		<content type="second" default="3"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
+	</parameter>
+	<parameter name="stonith_status_sleep" unique="0" required="0">
+		<getopt mixed="--stonith-status-sleep=[seconds]" />
+		<content type="second" default="1"  />
+		<shortdesc lang="en">Sleep X seconds between status calls during a STONITH action</shortdesc>
 	</parameter>
 	<parameter name="retry_on" unique="0" required="0">
 		<getopt mixed="--retry-on=[attempts]" />

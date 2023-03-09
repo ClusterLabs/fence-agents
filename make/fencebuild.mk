@@ -8,6 +8,7 @@ define gen_agent_from_py
 		-e 's#@''LOGDIR@#${LOGDIR}#g' \
 		-e 's#@''SBINDIR@#${sbindir}#g' \
 		-e 's#@''LIBEXECDIR@#${libexecdir}#g' \
+		-e 's#@''FENCETMPDIR@#${FENCETMPDIR}#g' \
 		-e 's#@''IPMITOOL_PATH@#${IPMITOOL_PATH}#g' \
 		-e 's#@''OPENSTACK_PATH@#${OPENSTACK_PATH}#g' \
 		-e 's#@''AMTTOOL_PATH@#${AMTTOOL_PATH}#g' \
@@ -50,14 +51,12 @@ $(foreach t,$(TARGET),$(eval $(t) : $(t:=.py)))
 $(TARGET): $(abs_top_builddir)/config.status
 	$(call gen_agent_from_py)
 
-clean: clean-man
+clean-local: clean-man
 	rm -f $(CLEAN_TARGET:%.8=%) $(CLEAN_TARGET_ADDITIONAL) $(mpathdata_SCRIPTS) $(scsidata_SCRIPTS) */*.pyc *.pyc */*.wiki
 
 	if [ "$(abs_builddir)" = "$(abs_top_builddir)/lib" ]; then \
 		rm -rf $(TARGET) __pycache__; \
 	fi
-
-clean-local: clean
 
 install-exec-hook: $(TARGET)
 	if [ -n "$(man8dir)" ]; then \

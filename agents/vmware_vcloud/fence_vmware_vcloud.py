@@ -60,7 +60,7 @@ def connect(opt):
         conn = pycurl.Curl()
 
         ## setup correct URL
-        if "--ssl" in opt or "--ssl-secure" in opt or "--ssl-insecure" in opt:
+        if "--ssl-secure" in opt or "--ssl-insecure" in opt:
                 conn.base_url = "https:"
         else:
                 conn.base_url = "http:"
@@ -76,7 +76,7 @@ def connect(opt):
         conn.setopt(pycurl.USERPWD, opt["--username"] + ":" + opt["--password"])
 
         conn.setopt(pycurl.TIMEOUT, int(opt["--shell-timeout"]))
-        if "--ssl" in opt or "--ssl-secure" in opt:
+        if "--ssl-secure" in opt:
                 conn.setopt(pycurl.SSL_VERIFYPEER, 1)
                 conn.setopt(pycurl.SSL_VERIFYHOST, 2)
         elif "--ssl-insecure" in opt:

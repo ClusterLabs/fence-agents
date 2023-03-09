@@ -26,12 +26,13 @@ make/stamp-h1
 # ignore "libtoolized" m4 files, but keep our (enumerated) ones
 /m4/*
 !/m4/ac_python_module.m4
+!/m4/ax*.m4
 
 # make/release.mk related litter
 /.tarball-version
 /tag-*
 
-make/clusterautoconfig.h*
+make/config.h*
 missing
 *.pc
 .deps
@@ -55,3 +56,20 @@ agents/*/.dirstamp
 fence-agents*
 .version
 tests/devices.d/*
+
+y.tab.*
+*.o
+*.lo
+*.la
+.deps
+.libs
+.*version
+*.swp
+agents/virt/client/fence_virt
+agents/virt/client/fence_xvm
+agents/virt/common/libfence_virt.a
+agents/virt/config/config.c
+agents/virt/config/libsimpleconfig.a
+agents/virt/fence_virtd.service
+agents/virt/server/fence_virtd
+fence-virt-*

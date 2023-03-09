@@ -2,10 +2,14 @@
 
 import sys, re, os
 import atexit
-from pipes import quote
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail_usage, is_executable, run_command, run_delay
+
+try:
+	from shlex import quote
+except ImportError:
+	from pipes import quote
 
 def get_power_status(_, options):
 	output = _run_command(options, "status")

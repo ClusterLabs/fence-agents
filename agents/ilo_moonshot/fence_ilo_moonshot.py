@@ -1,6 +1,7 @@
 #!@PYTHON@ -tt
 
 import sys
+import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
@@ -21,7 +22,8 @@ def get_power_status(conn, options):
 		try:
 			(_, status) = nodes[options["--plug"]]
 			return status.lower()
-		except KeyError:
+		except KeyError as e:
+			logging.error("Failed: {}".format(str(e)))
 			fail(EC_STATUS)
 
 def set_power_status(conn, options):

@@ -56,7 +56,8 @@ def eps_run_command(options, params):
 		conn.close()
 	except socket.timeout:
 		fail(EC_TIMED_OUT)
-	except socket.error:
+	except socket.error as e:
+		logging.error("Failed: {}".format(str(e)))
 		fail(EC_LOGIN_DENIED)
 
 	return result

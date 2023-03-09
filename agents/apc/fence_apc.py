@@ -15,6 +15,7 @@
 #####
 
 import sys, re, time
+import logging
 import atexit
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
@@ -90,7 +91,8 @@ def get_power_status(conn, options):
 		try:
 			(_, status) = outlets[options["--plug"]]
 			return status.lower().strip()
-		except KeyError:
+		except KeyError as e:
+			logging.error("Failed: {}".format(str(e)))
 			fail(EC_STATUS)
 
 def set_power_status(conn, options):
@@ -199,7 +201,8 @@ def get_power_status5(conn, options):
 		try:
 			(_, status) = outlets[options["--plug"]]
 			return status.lower().strip()
-		except KeyError:
+		except KeyError as e:
+			logging.error("Failed: {}".format(str(e)))
 			fail(EC_STATUS)
 
 def set_power_status5(conn, options):
@@ -248,7 +251,7 @@ will block any necessary fencing actions."
 	####
 	result = -1
 	firmware_version = re.compile(r'\s*v(\d)*\.').search(conn.before)
-	if (firmware_version != None) and (firmware_version.group(1) in [ "5", "6" ]):
+	if (firmware_version != None) and (firmware_version.group(1) in [ "5", "6", "7" ]):
 		result = fence_action(conn, options, set_power_status5, get_power_status5, get_power_status5)
 	else:
 		result = fence_action(conn, options, set_power_status, get_power_status, get_power_status)

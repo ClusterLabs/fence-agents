@@ -6,9 +6,6 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fspawn, fail, EC_LOGIN_DENIED, run_delay
 
-# --plug should include path to the outlet # such as port 1:
-# /system1/outlet1
-
 def get_power_status(conn, options):
 	conn.send_eol("show -d properties=powerState %s" % options["--plug"])
 	re_status = re.compile(".*powerState is [12].*")
@@ -54,6 +51,12 @@ block any necessary fencing actions."
 	#  add support also for delay before login which is very useful for 2-node clusters
 	run_delay(options)
 
+        # Convert pure port/plug number to /system1/outlet${plug}
+	try:
+		plug_int = int(options["--plug"])
+		options["--plug"] = "/system1/outlet" + str(plug_int)
+	except ValueError:
+		pass
 	##
 	## Operate the fencing device
 	## We can not use fence_login(), username and passwd are sent on one line

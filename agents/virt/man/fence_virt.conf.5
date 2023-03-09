@@ -1,0 +1,335 @@
+.TH fence_virt.conf 5
+
+.SH NAME
+fence_virt.conf - configuration file for fence_virtd
+
+.SH DESCRIPTION
+
+The fence_virt.conf file contains configuration information for fence_virtd,
+a fencing request routing daemon for clusters of virtual machines.
+
+The file is tree-structured.  There are parent/child relationships and sibling
+relationships between the nodes.
+
+  foo {
+    bar {
+      baz = "1";
+    }
+  }
+
+There are three primary sections of fence_virt.conf.
+
+.SH SECTIONS
+.SS fence_virtd
+
+This section contains global information about how fence_virtd is to operate.
+The most important pieces of information are as follows:
+
+.TP
+.B listener
+.
+the listener plugin for receiving fencing requests from clients
+
+.TP
+.B backend
+.
+the plugin to be used to carry out fencing requests
+
+.TP
+.B foreground
+.
+do not fork into the background.
+
+.TP
+.B wait_for_init
+.
+wait for the frontend and backends to become available rather than giving up immediately.
+This replaces wait_for_backend in 0.2.x.
+
+.TP
+.B module_path
+.
+the module path to search for plugins
+
+.SS listeners
+
+This section contains listener-specific configuration information; see the
+section about listeners below.
+
+.SS backends
+
+This section contains listener-specific configuration information; see the
+section about listeners below.
+
+.SS groups
+
+This section contains static maps of which virtual machines
+may fence which other virtual machines; see the section
+about groups below.
+
+
+.SH LISTENERS
+
+There are various listeners available for fence_virtd, each one handles
+decoding and authentication of a given fencing request.  The following 
+configuration blocks belong in the \fBlisteners\fP section of fence_virt.conf
+
+.SS multicast
+.TP
+.B key_file
+.
+the shared key file to use (default: /etc/cluster/fence_xvm.key).
+
+.TP
+.B hash
+.
+the weakest hashing algorithm allowed for client requests.  Clients may send packets with stronger hashes than the one specified, but not weaker ones.  (default: sha256, but could
+be sha1, sha512, or none)
+
+.TP
+.B auth
+.
+the hashing algorithm to use for the simplistic challenge-response authentication
+(default: sha256, but could be sha1, sha512, or none)
+
+.TP
+.B family
+.
+the IP family to use (default: ipv4, but may be ipv6)
+
+.TP
+.B address
+.
+the multicast address to listen on (default: 225.0.0.12)
+
+.TP
+.B port
+.
+the multicast port to listen on (default: 1229)
+
+.TP
+.B interface
+.
+interface to listen on.  By default, fence_virtd listens on all interfaces.
+However, this causes problems in some environments where the host computer
+is used as a gateway.
+
+.SS serial
+
+The serial listener plugin utilizes libvirt's serial (or VMChannel)
+mapping to listen for requests.  When using the serial listener, it is
+necessary to add a serial port (preferably pointing to /dev/ttyS1) or
+a channel (preferably pointing to 10.0.2.179:1229) to the
+libvirt domain description.  Note that only type
+.B unix
+, mode 
+.B bind
+serial ports and channels are supported and each VM should have a
+separate unique socket.  Example libvirt XML:
+
+.in 8
+  <\fBserial\fP type='unix'>
+    <source mode='bind' path='/sandbox/guests/fence_socket_molly'/>
+    <target port='1'/>
+  </serial>
+  <\fBchannel\fP type='unix'>
+    <source mode='bind' path='/sandbox/guests/fence_molly_vmchannel'/>
+    <target type='guestfwd' address='10.0.2.179' port='1229'/>
+  </channel>
+.in 0
+
+.TP
+.B uri
+.
+the URI to use when connecting to libvirt by the serial plugin (optional).
+
+.TP
+.B path
+.
+The same directory that is defined for the domain serial port path (From example above: /sandbox/guests). Sockets must reside in this directory in order to be considered valid. This can be used to prevent fence_virtd from using the wrong sockets.
+
+.TP
+.B mode
+.
+This selects the type of sockets to register.  Valid values are "serial"
+(default) and "vmchannel".
+
+.SS tcp
+The tcp listener operates similarly to the multicast listener but uses TCP sockets for communication instead of using multicast packets.
+
+.TP
+.B key_file
+.
+the shared key file to use (default: /etc/cluster/fence_xvm.key).
+
+.TP
+.B hash
+.
+the hashing algorithm to use for packet signing (default: sha256, but could
+be sha1, sha512, or none)
+
+.TP
+.B auth
+.
+the hashing algorithm to use for the simplistic challenge-response authentication
+(default: sha256, but could be sha1, sha512, or none)
+
+.TP
+.B family
+.
+the IP family to use (default: ipv4, but may be ipv6)
+
+.TP
+.B address
+.
+the IP address to listen on (default: 127.0.0.1 for IPv4, ::1 for IPv6)
+
+.TP
+.B port
+.
+the TCP port to listen on (default: 1229)
+
+.SS vsock
+The vsock listener operates similarly to the multicast listener but uses virtual machine sockets (AF_VSOCK) for communication instead of using multicast packets.
+
+.TP
+.B key_file
+.
+the shared key file to use (default: /etc/cluster/fence_xvm.key).
+
+.TP
+.B hash
+.
+the hashing algorithm to use for packet signing (default: sha256, but could
+be sha1, sha512, or none)
+
+.TP
+.B auth
+.
+the hashing algorithm to use for the simplistic challenge-response authentication
+(default: sha256, but could be sha1, sha512, or none)
+
+.TP
+.B port
+.
+the vsock port to listen on (default: 1229)
+
+.SH BACKENDS
+
+There are various backends available for fence_virtd, each one handles
+routing a fencing request to a hypervisor or management tool.  The following 
+configuration blocks belong in the \fBbackends\fP section of fence_virt.conf
+
+.SS libvirt
+
+The libvirt plugin is the simplest plugin.  It is used in environments where
+routing fencing requests between multiple hosts is not required, for example
+by a user running a cluster of virtual machines on a single desktop computer.
+
+.TP
+.B uri
+.
+the URI to use when connecting to libvirt.
+
+All libvirt URIs are accepted and passed as-is.
+
+See https://libvirt.org/uri.html#remote-uris for examples.
+
+NOTE: When VMs are run as non-root user the socket path must be set as part
+of the URI.
+
+Example: qemu:///session?socket=/run/user/<UID>/libvirt/virtqemud-sock
+
+.SS cpg
+
+The cpg plugin uses corosync CPG and libvirt to track virtual
+machines and route fencing requests to the appropriate computer.
+
+.TP
+.B uri
+.
+the URI to use when connecting to libvirt by the cpg plugin.
+
+.TP
+.B name_mode
+.
+The cpg plugin, in order to retain compatibility with fence_xvm,
+stores virtual machines in a certain way.  The
+default was to use 'name' when using fence_xvm and fence_xvmd, and so this
+is still the default.  However, it is strongly recommended to use 'uuid'
+instead of 'name' in all cluster environments involving more than one
+physical host in order to avoid the potential for name collisions.
+
+.SH GROUPS
+
+Fence_virtd supports static maps which allow grouping of VMs.  The
+groups are arbitrary and are checked at fence time.  Any member of
+a group may fence any other member.  Hosts may be assigned to multiple
+groups if desired.
+
+.SS group
+
+This defines a group.
+
+.TP
+.B name
+.
+Optionally define the name of the group. Useful only for configuration
+readability and debugging of configuration parsing.
+
+.TP
+.B uuid
+.
+Defines UUID as a member of a group.  It can be used multiple times
+to specify both node name and UUID values that can be fenced.
+When using the serial listener, the vm uuid is required and it is
+recommended to add also the vm name.
+
+.TP
+.B ip
+.
+Defines an IP which is allowed to send fencing requests
+for members of this group (e.g. for multicast).  It can be used
+multiple times to allow more than 1 IP to send fencing requests to
+the group.  It is highly recommended that this be used in conjunction
+with a key file.
+When using the vsock listener, ip should contain the CID value assigned
+by libvirt to the vm.
+When using the serial listener, ip value is not used and can be omitted.
+
+
+.SH EXAMPLE
+
+ fence_virtd {
+  listener = "multicast";
+  backend = "cpg";
+ }
+
+ # this is the listeners section
+
+ listeners {
+  multicast {
+   key_file = "/etc/cluster/fence_xvm.key";
+  }
+ }
+
+ backends {
+  libvirt { 
+   uri = "qemu:///system";
+  }
+ }
+ 
+ groups {
+  group {
+   name = "cluster1";
+   ip = "192.168.1.1";
+   ip = "192.168.1.2";
+   uuid = "44179d3f-6c63-474f-a212-20c8b4b25b16";
+   uuid = "1ce02c4b-dfa1-42cb-b5b1-f0b1091ece60";
+   uuid = "node1";
+   uuid = "node2";
+  }
+ }
+
+.SH SEE ALSO
+fence_virtd(8), fence_virt(8), fence_xvm(8), fence(8)

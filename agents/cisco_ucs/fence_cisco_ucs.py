@@ -99,7 +99,7 @@ def get_list(conn, options):
 
 def send_command(opt, command, timeout):
 	## setup correct URL
-	if "--ssl" in opt or "--ssl-secure" in opt or "--ssl-insecure" in opt:
+	if "--ssl-secure" in opt or "--ssl-insecure" in opt:
 		url = "https:"
 	else:
 		url = "http:"
@@ -114,13 +114,14 @@ def send_command(opt, command, timeout):
 	conn.setopt(pycurl.POSTFIELDS, command.encode("ascii"))
 	conn.setopt(pycurl.WRITEFUNCTION, web_buffer.write)
 	conn.setopt(pycurl.TIMEOUT, timeout)
-	if "--ssl" in opt or "--ssl-secure" in opt:
+
+	if "--ssl-secure" in opt:
 		conn.setopt(pycurl.SSL_VERIFYPEER, 1)
 		conn.setopt(pycurl.SSL_VERIFYHOST, 2)
-
-	if "--ssl-insecure" in opt:
+	elif "--ssl-insecure" in opt:
 		conn.setopt(pycurl.SSL_VERIFYPEER, 0)
 		conn.setopt(pycurl.SSL_VERIFYHOST, 0)
+
 	conn.perform()
 	result = web_buffer.getvalue().decode()
 
@@ -174,7 +175,8 @@ used with Cisco UCS to fence machines."
 		if result == None:
 			## Cookie is absenting in response
 			fail(EC_LOGIN_DENIED)
-	except Exception:
+	except Exception as e:
+		logging.error("Failed: {}".format(str(e)))
 		fail(EC_LOGIN_DENIED)
 
 	options_global["cookie"] = result.group(1)

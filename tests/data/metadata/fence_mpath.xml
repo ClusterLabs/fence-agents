@@ -1,7 +1,9 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_mpath" shortdesc="Fence agent for multipath persistent reservation" >
 <longdesc>fence_mpath is an I/O fencing agent that uses SCSI-3 persistent reservations to control access multipath devices. Underlying devices must support SCSI-3 persistent reservations (SPC-3 or greater) as well as the "preempt-and-abort" subcommand.
-The fence_mpath agent works by having a unique key for each node that has to be set in /etc/multipath.conf. Once registered, a single node will become the reservation holder by creating a "write exclusive, registrants only" reservation on the device(s). The result is that only registered nodes may write to the device(s). When a node failure occurs, the fence_mpath agent will remove the key belonging to the failed node from the device(s). The failed node will no longer be able to write to the device(s). A manual reboot is required.</longdesc>
+The fence_mpath agent works by having a unique key for each node that has to be set in /etc/multipath.conf. Once registered, a single node will become the reservation holder by creating a "write exclusive, registrants only" reservation on the device(s). The result is that only registered nodes may write to the device(s). When a node failure occurs, the fence_mpath agent will remove the key belonging to the failed node from the device(s). The failed node will no longer be able to write to the device(s). A manual reboot is required.
+
+When used as a watchdog device you can define e.g. retry=1, retry-sleep=2 and verbose=yes parameters in /etc/sysconfig/stonith if you have issues with it failing.</longdesc>
 <vendor-url>https://www.sourceware.org/dm/</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
@@ -29,6 +31,16 @@ The fence_mpath agent works by having a unique key for each node that has to be 
 		<content type="string"  />
 		<shortdesc lang="en">Key to use for the current operation. This key should be unique to a node and have to be written in /etc/multipath.conf. For the "on" action, the key specifies the key use to register the local node. For the "off" action, this key specifies the key to be removed from the device(s).</shortdesc>
 	</parameter>
+	<parameter name="suppress-errors" unique="0" required="0" deprecated="1">
+		<getopt mixed="--suppress-errors" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Error log suppression.</shortdesc>
+	</parameter>
+	<parameter name="suppress_errors" unique="0" required="0" obsoletes="suppress-errors">
+		<getopt mixed="--suppress-errors" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Error log suppression.</shortdesc>
+	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
 		<content type="boolean"  />
@@ -51,7 +63,6 @@ The fence_mpath agent works by having a unique key for each node that has to be 
 	</parameter>
 	<parameter name="debug_file" unique="0" required="0" obsoletes="debug">
 		<getopt mixed="-D, --debug-file=[debugfile]" />
-		<content type="string"  />
 		<shortdesc lang="en">Write debug information to given file</shortdesc>
 	</parameter>
 	<parameter name="version" unique="0" required="0">
@@ -64,6 +75,11 @@ The fence_mpath agent works by having a unique key for each node that has to be 
 		<content type="boolean"  />
 		<shortdesc lang="en">Display help and exit</shortdesc>
 	</parameter>
+	<parameter name="plug_separator" unique="0" required="0">
+		<getopt mixed="--plug-separator=[char]" />
+		<content type="string" default=","  />
+		<shortdesc lang="en">Separator for plug parameter when specifying more than 1 plug</shortdesc>
+	</parameter>
 	<parameter name="delay" unique="0" required="0">
 		<getopt mixed="--delay=[seconds]" />
 		<content type="second" default="0"  />
@@ -72,7 +88,7 @@ The fence_mpath agent works by having a unique key for each node that has to be 
 	<parameter name="disable_timeout" unique="0" required="0">
 		<getopt mixed="--disable-timeout=[true/false]" />
 		<content type="string"  />
-		<shortdesc lang="en"> Disable timeout (true/false) (default: true when run from Pacemaker 2.0+)</shortdesc>
+		<shortdesc lang="en">Disable timeout (true/false) (default: true when run from Pacemaker 2.0+)</shortdesc>
 	</parameter>
 	<parameter name="login_timeout" unique="0" required="0">
 		<getopt mixed="--login-timeout=[seconds]" />
@@ -97,6 +113,11 @@ The fence_mpath agent works by having a unique key for each node that has to be 
 		<getopt mixed="--shell-timeout=[seconds]" />
 		<content type="second" default="3"  />
 		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
+	</parameter>
+	<parameter name="stonith_status_sleep" unique="0" required="0">
+		<getopt mixed="--stonith-status-sleep=[seconds]" />
+		<content type="second" default="1"  />
+		<shortdesc lang="en">Sleep X seconds between status calls during a STONITH action</shortdesc>
 	</parameter>
 	<parameter name="store_path" unique="0" required="0">
 		<getopt mixed="--store-path=[path]" />
