@@ -1,4 +1,4 @@
-#!@PYTHON@ -tt
+#!/usr/libexec/platform-python -tt
 
 import atexit
 import logging
@@ -7,7 +7,7 @@ import os
 
 import urllib3
 
-sys.path.append("@FENCEAGENTSLIBDIR@")
+sys.path.append("/usr/share/fence")
 from fencing import *
 from fencing import fail_usage, run_delay, source_env
 
@@ -113,7 +113,7 @@ def set_power_status(conn, options):
 
 
 def nova_login(username, password, projectname, auth_url, user_domain_name,
-               project_domain_name, ssl_insecure, cacert, apitimeout):
+               project_domain_name, ssl_insecure, cacert, apitimeout, auth_plugin):
     legacy_import = False
 
     try:
@@ -129,8 +129,15 @@ def nova_login(username, password, projectname, auth_url, user_domain_name,
             legacy_import = True
         except ImportError:
             fail_usage("Failed: Keystone client not found or not accessible")
+    if auth_plugin == "v3applicationcredential":
+        loader = loading.get_plugin_loader("v3applicationcredential")
+        auth = loader.load_from_options(
+            auth_url=auth_url,
+            application_credential_id=username,
+            application_credential_secret=password,
+        )
 
-    if not legacy_import:
+    elif not legacy_import:
         loader = loading.get_plugin_loader("password")
         auth = loader.load_from_options(
             auth_url=auth_url,
@@ -251,6 +258,15 @@ def define_new_opts():
         "default": 60,
         "order": 10,
     }
+    all_opt["auth_plugin"] = {
+        "getopt": ":",
+        "longopt": "auth_plugin",
+        "help": "--auth_plugin=[PLUGIN]              Plugin name to use (default password)",
+        "required": "0",
+        "default": "password",
+        "shortdesc": "Specify what auth plugin to use. One from v2password, v3applicationcredential, v3totp, v3oidcpassword, v3oauth2clientcredential, token, v3oidcauthcode, v3multifactor, v3tokenlessauth, v3oidcclientcredentials, v3oidcaccesstoken, v3password, v3token, password, admin_token, http_basic, noauth, v2token",
+        "order": 11,
+    }
 
 
 def main():
@@ -273,6 +289,7 @@ def main():
         "ssl_insecure",
         "cacert",
         "apitimeout",
+        "auth_plugin",
     ]
 
     atexit.register(atexit_handler)
@@ -309,18 +326,29 @@ This agent calls the python-novaclient and it is mandatory to be installed "
 
     run_delay(options)
 
+    auth_plugin = options["--auth_plugin"]
+    projectname = None
+    user_domain_name = None
+    project_domain_name = None
+
     if options.get("--cloud"):
         cloud = get_cloud(options)
-        username = cloud.get("auth").get("username")
-        password = cloud.get("auth").get("password")
-        projectname = cloud.get("auth").get("project_name")
+        if auth_plugin == "v3applicationcredential":
+            username = cloud.get("auth").get("application_credential_id")
+            password = cloud.get("auth").get("application_credential_secret")
+        else:
+            username = cloud.get("auth").get("username")
+            password = cloud.get("auth").get("password")
+            projectname = cloud.get("auth").get("project_name")
+            user_domain_name = cloud.get("auth").get("user_domain_name")
+            project_domain_name = cloud.get("auth").get("project_domain_name")
         auth_url = None
+
         try:
             auth_url = cloud.get("auth").get("auth_url")
         except KeyError:
             fail_usage("Failed: You have to set the Keystone service endpoint for authorization")
-        user_domain_name = cloud.get("auth").get("user_domain_name")
-        project_domain_name = cloud.get("auth").get("project_domain_name")
+
         caverify = cloud.get("verify")
         if caverify in [True, False]:
                 options["--ssl-insecure"] = caverify
@@ -368,6 +396,7 @@ This agent calls the python-novaclient and it is mandatory to be installed "
             ssl_insecure,
             cacert,
             apitimeout,
+            auth_plugin,
         )
     except Exception as e:
         fail_usage("Failed: Unable to connect to Nova: " + str(e))
