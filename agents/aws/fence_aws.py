@@ -16,13 +16,13 @@ try:
 except ImportError:
 	pass
 
-logger = logging.getLogger("fence_aws")
+logger = logging.getLogger()
 logger.propagate = False
 logger.setLevel(logging.INFO)
 logger.addHandler(SyslogLibHandler())
 logging.getLogger('botocore.vendored').propagate = False
 
-def get_instance_id():
+def get_instance_id(options):
 	try:
 		token = requests.put('http://169.254.169.254/latest/api/token', headers={"X-aws-ec2-metadata-token-ttl-seconds" : "21600"}).content.decode("UTF-8")
 		r = requests.get('http://169.254.169.254/latest/meta-data/instance-id', headers={"X-aws-ec2-metadata-token" : token}).content.decode("UTF-8")
@@ -30,12 +30,15 @@ def get_instance_id():
 	except HTTPError as http_err:
 		logger.error('HTTP error occurred while trying to access EC2 metadata server: %s', http_err)
 	except Exception as err:
-		logger.error('A fatal error occurred while trying to access EC2 metadata server: %s', err)
+		if "--skip-race-check" not in options:
+			logger.error('A fatal error occurred while trying to access EC2 metadata server: %s', err)
+		else:
+			logger.debug('A fatal error occurred while trying to access EC2 metadata server: %s', err)
 	return None
-	
+
 
 def get_nodes_list(conn, options):
-	logger.info("Starting monitor operation")
+	logger.debug("Starting monitor operation")
 	result = {}
 	try:
 		if "--filter" in options:
@@ -63,7 +66,7 @@ def get_power_status(conn, options):
 	try:
 		instance = conn.instances.filter(Filters=[{"Name": "instance-id", "Values": [options["--plug"]]}])
 		state = list(instance)[0].state["Name"]
-		logger.info("Status operation for EC2 instance %s returned state: %s",options["--plug"],state.upper())
+		logger.debug("Status operation for EC2 instance %s returned state: %s",options["--plug"],state.upper())
 		if state == "running":
 			return "on"
 		elif state == "stopped":
@@ -78,7 +81,7 @@ def get_power_status(conn, options):
 	except IndexError:
 		fail(EC_STATUS)
 	except Exception as e:
-		logging.error("Failed to get power status: %s", e)
+		logger.error("Failed to get power status: %s", e)
 		fail(EC_STATUS)
 
 def get_self_power_status(conn, instance_id):
@@ -86,10 +89,10 @@ def get_self_power_status(conn, instance_id):
 		instance = conn.instances.filter(Filters=[{"Name": "instance-id", "Values": [instance_id]}])
 		state = list(instance)[0].state["Name"]
 		if state == "running":
-			logging.debug("Captured my (%s) state and it %s - returning OK - Proceeding with fencing",instance_id,state.upper())
+			logger.debug("Captured my (%s) state and it %s - returning OK - Proceeding with fencing",instance_id,state.upper())
 			return "ok"
 		else:
-			logging.debug("Captured my (%s) state it is %s - returning Alert - Unable to fence other nodes",instance_id,state.upper())
+			logger.debug("Captured my (%s) state it is %s - returning Alert - Unable to fence other nodes",instance_id,state.upper())
 			return "alert"
 	
 	except ClientError:
@@ -100,18 +103,18 @@ def get_self_power_status(conn, instance_id):
 		return "fail"
 
 def set_power_status(conn, options):
-	my_instance = get_instance_id()
+	my_instance = get_instance_id(options)
 	try:
 		if (options["--action"]=="off"):
-			if (get_self_power_status(conn,my_instance) == "ok"):
+			if "--skip-race-check" in options or get_self_power_status(conn,my_instance) == "ok":
 				conn.instances.filter(InstanceIds=[options["--plug"]]).stop(Force=True)
-				logger.info("Called StopInstance API call for %s", options["--plug"])
+				logger.debug("Called StopInstance API call for %s", options["--plug"])
 			else:
-				logger.info("Skipping fencing as instance is not in running status")
+				logger.debug("Skipping fencing as instance is not in running status")
 		elif (options["--action"]=="on"):
 			conn.instances.filter(InstanceIds=[options["--plug"]]).start()
 	except Exception as e:
-		logger.error("Failed to power %s %s: %s", \
+		logger.debug("Failed to power %s %s: %s", \
 				options["--action"], options["--plug"], e)
 
 def define_new_opts():
@@ -156,12 +159,20 @@ def define_new_opts():
 		"default": "False",
 		"order": 6
 	}
+	all_opt["skip_race_check"] = {
+		"getopt" : "",
+		"longopt" : "skip-race-check",
+		"help" : "--skip-race-check              Skip race condition check",
+		"shortdesc": "Skip race condition check",
+		"required": "0",
+		"order": 7
+	}
 
 # Main agent method
 def main():
 	conn = None
 
-	device_opt = ["port", "no_password", "region", "access_key", "secret_key", "filter", "boto3_debug"]
+	device_opt = ["port", "no_password", "region", "access_key", "secret_key", "filter", "boto3_debug", "skip_race_check"]
 
 	atexit.register(atexit_handler)
 
@@ -183,12 +194,15 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 
 	run_delay(options)
 
-	if options.get("--verbose") is not None:
-		lh = logging.FileHandler('/var/log/fence_aws_debug.log')
+	if "--debug-file" in options:
+		for handler in logger.handlers:
+			if isinstance(handler, logging.FileHandler):
+				logger.removeHandler(handler)
+		lh = logging.FileHandler(options["--debug-file"])
 		logger.addHandler(lh)
 		lhf = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 		lh.setFormatter(lhf)
-		logger.setLevel(logging.DEBUG)
+		lh.setLevel(logging.DEBUG)
 	
 	if options["--boto3_debug"].lower() not in ["1", "yes", "on", "true"]:
 		boto3.set_stream_logger('boto3',logging.INFO)
