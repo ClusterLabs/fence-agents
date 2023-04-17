@@ -116,6 +116,7 @@ def set_power_status(conn, options):
 	except Exception as e:
 		logger.debug("Failed to power %s %s: %s", \
 				options["--action"], options["--plug"], e)
+		fail(EC_STATUS)
 
 def define_new_opts():
 	all_opt["region"] = {
