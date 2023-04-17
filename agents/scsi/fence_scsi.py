@@ -314,7 +314,7 @@ def dev_read(fail=True, opt=None):
 	return devs
 
 
-def get_clvm_devices(options):
+def get_shared_devices(options):
 	devs = []
 	cmd = options["--vgs-path"] + " " +\
 	"--noheadings " +\
@@ -324,10 +324,11 @@ def get_clvm_devices(options):
 	"--config 'global { locking_type = 0 } devices { preferred_names = [ \"^/dev/dm\" ] }'"
 	out = run_cmd(options, cmd)
 	if out["rc"]:
-		fail_usage("Failed: Cannot get clvm devices")
-	for line in out["out"].split("\n"):
-		if 'c' in line.split(":")[0]:
-			devs.append(line.split(":")[1])
+		fail_usage("Failed: Cannot get shared devices")
+	for line in out["out"].splitlines():
+		vg_attr, pv_name = line.strip().split(":")
+		if vg_attr[5] in "cs":
+			devs.append(pv_name)
 	return devs
 
 
@@ -612,7 +613,7 @@ failing."
 	options["--key"] = options["--key"].lstrip('0')
 
 	if not ("--devices" in options and options["--devices"].split(",")):
-		options["devices"] = get_clvm_devices(options)
+		options["devices"] = get_shared_devices(options)
 	else:
 		options["devices"] = options["--devices"].split(",")
 
