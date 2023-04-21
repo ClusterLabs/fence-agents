@@ -91,7 +91,7 @@ For instructions see: https://cloud.google.com/compute/docs/tutorials/python-gui
 	<parameter name="earlyexit" unique="0" required="0">
 		<getopt mixed="--earlyexit" />
 		<content type="boolean"  />
-		<shortdesc lang="en">If an existing reset operation is detected, the fence agent will return before the operation completes with a 0 return code.</shortdesc>
+		<shortdesc lang="en">If running set_power_status and existing reset operation is detected or runnning power_cycle, the fence agent will return before the operation completes with a 0 return code.</shortdesc>
 	</parameter>
 	<parameter name="warntimeout" unique="0" required="0">
 		<getopt mixed="--warntimeout=[warn_timeout]" />
