@@ -76,6 +76,14 @@ def get_nodes_list(conn, options):
 	result = {}
 	request = DescribeInstancesRequest()
 	request.set_PageSize(100)
+
+	if "--filter" in options:
+		filter_key = options["--filter"].split("=")[0].strip()
+		filter_value = options["--filter"].split("=")[1].strip()
+		params = request.get_query_params()
+		params[filter_key] = filter_value
+		request.set_query_params(params)
+
 	response = _send_request(conn, request)
 	if response is not None:
 		instance_list = response.get('Instances').get('Instance')
@@ -137,17 +145,25 @@ def define_new_opts():
 	all_opt["ram_role"] = {
 		"getopt": ":",
 		"longopt": "ram-role",
-		"help": "--ram-role=[name]        Ram Role",
+		"help": "--ram-role=[name]              Ram Role",
 		"shortdesc": "Ram Role.",
 		"required": "0",
 		"order": 5
+	}
+	all_opt["filter"] = {
+		"getopt": ":",
+		"longopt": "filter",
+		"help": "--filter=[key=value]           Filter (e.g. InstanceIds=[\"i-XXYYZZAA1\",\"i-XXYYZZAA2\"]",
+		"shortdesc": "Filter for list-action.",
+		"required": "0",
+		"order": 6
 	}
 
 # Main agent method
 def main():
 	conn = None
 
-	device_opt = ["port", "no_password", "region", "access_key", "secret_key", "ram_role"]
+	device_opt = ["port", "no_password", "region", "access_key", "secret_key", "ram_role", "filter"]
 
 	atexit.register(atexit_handler)
 

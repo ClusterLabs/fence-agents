@@ -38,6 +38,11 @@
 		<content type="string"  />
 		<shortdesc lang="en">Ram Role.</shortdesc>
 	</parameter>
+	<parameter name="filter" unique="0" required="0">
+		<getopt mixed="--filter=[key=value]" />
+		<content type="string"  />
+		<shortdesc lang="en">Filter for list-action.</shortdesc>
+	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
 		<content type="boolean"  />
