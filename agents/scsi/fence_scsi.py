@@ -350,8 +350,8 @@ def define_new_opts():
 		"help" : "-d, --devices=[devices]        List of devices to use for current operation",
 		"required" : "0",
 		"shortdesc" : "List of devices to use for current operation. Devices can \
-be comma-separated list of raw devices (eg. /dev/sdc). Each device must support SCSI-3 \
-persistent reservations.",
+be comma or space separated list of raw devices (eg. /dev/sdc). Each device must support SCSI-3 \
+persistent reservations. Optional if cluster is configured with clvm or lvmlockd.",
 		"order": 1
 	}
 	all_opt["nodename"] = {
@@ -612,10 +612,10 @@ failing."
 
 	options["--key"] = options["--key"].lstrip('0')
 
-	if not ("--devices" in options and options["--devices"].split(",")):
+	if not ("--devices" in options and [d for d in re.split("\s*,\s*|\s+", options["--devices"].strip()) if d]):
 		options["devices"] = get_shared_devices(options)
 	else:
-		options["devices"] = options["--devices"].split(",")
+		options["devices"] = [d for d in re.split("\s*,\s*|\s+", options["--devices"].strip()) if d]
 
 	if not options["devices"]:
 		fail_usage("Failed: No devices found")
