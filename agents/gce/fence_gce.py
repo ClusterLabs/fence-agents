@@ -304,9 +304,6 @@ def power_cycle_instance(conn, options, instance, zone):
 			operation = retry_api_execute(
 					options,
 					conn.instances().reset(project=project, zone=zone, instance=instance))
-			if operation and "--earlyexit" in options:
-				logging.info("Reset command sent, returning early and not waiting for the operation to complete")
-				return True
 		logging.info("Reset command sent, waiting for the operation to complete")
 		if wait_for_operation(conn, options, zone, operation):
 			logging.info("Reset of %s in zone %s complete", instance, zone)
@@ -457,8 +454,8 @@ def define_new_opts():
 	all_opt["earlyexit"] = {
 		"getopt" : "",
 		"longopt" : "earlyexit",
-		"help" : "--earlyexit                    Return early from set_power_status if reset is already in progress, if power_cycle then do not wait for the reset",
-		"shortdesc" : "If running set_power_status and existing reset operation is detected or runnning power_cycle, the fence agent will return before the operation completes with a 0 return code.",
+		"help" : "--earlyexit                    Return early if reset is already in progress",
+		"shortdesc" : "If an existing reset operation is detected, the fence agent will return before the operation completes with a 0 return code.",
 		"required" : "0",
 		"order" : 13
 	}
