@@ -1268,7 +1268,7 @@ def fence_logout(conn, logout_string, sleep=0):
 def source_env(env_file):
     # POSIX: name shall not contain '=', value doesn't contain '\0'
     output = subprocess.check_output("source {} && env -0".format(env_file), shell=True,
-                          executable="/bin/sh")
+                          executable="/bin/bash")
     # replace env
     os.environ.clear()
     os.environ.update(line.partition('=')[::2] for line in output.decode("utf-8").split('\0') if not re.match("^\s*$", line))
