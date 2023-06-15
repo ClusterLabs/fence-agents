@@ -12,6 +12,8 @@ from fencing import fail, run_delay, EC_LOGIN_DENIED, EC_STATUS
 state = {
 	 "ACTIVE": "on",
 	 "SHUTOFF": "off",
+	 "HARD_REBOOT": "on",
+	 "SOFT_REBOOT": "on",
 	 "ERROR": "unknown"
 }
 
@@ -37,21 +39,30 @@ def get_list(conn, options):
 		return outlets
 
 	for r in res["pvmInstances"]:
-		if "--verbose" in options:
+		if options["--verbose-level"] > 1:
 			logging.debug(json.dumps(r, indent=2))
 		outlets[r["pvmInstanceID"]] = (r["serverName"], state[r["status"]])
 
 	return outlets
 
 def get_power_status(conn, options):
+	outlets = {}
+	logging.debug("Info: getting power status for LPAR " + options["--plug"] + " instance " + options["--instance"])
 	try:
 		command = "cloud-instances/{}/pvm-instances/{}".format(
 				options["--instance"], options["--plug"])
 		res = send_command(conn, command)
-		result = get_list(conn, options)[options["--plug"]][1]
+		outlets[res["pvmInstanceID"]] = (res["serverName"], state[res["status"]])
+		if options["--verbose-level"] > 1:
+			logging.debug(json.dumps(res, indent=2))
+		result = outlets[options["--plug"]][1]
+		logging.debug("Info: Status: {}".format(result))
 	except KeyError as e:
-		logging.debug("Failed: Unable to get status for {}".format(e))
-		fail(EC_STATUS)
+		try:
+			result = get_list(conn, options)[options["--plug"]][1]
+		except KeyError as ex:
+			logging.debug("Failed: Unable to get status for {}".format(ex))
+			fail(EC_STATUS)
 
 	return result
 
@@ -61,12 +72,32 @@ def set_power_status(conn, options):
 		"off" : '{"action" : "immediate-shutdown"}',
 	}[options["--action"]]
 
+	logging.debug("Info: set power status to " + options["--action"] + " for LPAR " + options["--plug"] + " instance " + options["--instance"])
 	try:
 		send_command(conn, "cloud-instances/{}/pvm-instances/{}/action".format(
 				options["--instance"], options["--plug"]), "POST", action)
 	except Exception as e:
 		logging.debug("Failed: Unable to set power to {} for {}".format(options["--action"], e))
 		fail(EC_STATUS)
+
+def reboot_cycle(conn, options):
+	action = {
+		"reboot" :  '{"action" : "hard-reboot"}',
+	}[options["--action"]]
+
+	logging.debug("Info: start reboot cycle with action " + options["--action"] + " for LPAR " + options["--plug"] + " instance " + options["--instance"])
+	try:
+		send_command(conn, "cloud-instances/{}/pvm-instances/{}/action".format(
+				options["--instance"], options["--plug"]), "POST", action)
+	except Exception as e:
+		result = get_power_status(conn, options)
+		logging.debug("Info: Status {}".format(result))
+		if result == "off":
+			return True
+		else:
+			logging.debug("Failed: Unable to cycle with {} for {}".format(options["--action"], e))
+			fail(EC_STATUS)
+	return True 
 
 def connect(opt, token):
 	conn = pycurl.Curl()
@@ -200,21 +231,21 @@ def define_new_opts():
 		"order" : 0
 	}
 	all_opt["api-type"] = {
-                "getopt" : ":",
-                "longopt" : "api-type",
-                "help" : "--api-type=[public|private]          API-type: 'public' (default) or 'private'",
-                "required" : "0",
-                "shortdesc" : "API-type (public|private)",
-                "order" : 0
-        }
+		"getopt" : ":",
+		"longopt" : "api-type",
+		"help" : "--api-type=[public|private]          API-type: 'public' (default) or 'private'",
+		"required" : "0",
+		"shortdesc" : "API-type (public|private)",
+		"order" : 0
+	}
 	all_opt["proxy"] = {
-                "getopt" : ":",
-                "longopt" : "proxy",
-                "help" : "--proxy=[http://<URL>:<PORT>]          Proxy: 'http://<URL>:<PORT>'",
-                "required" : "0",
-                "shortdesc" : "Network proxy",
-                "order" : 0
-        }
+		"getopt" : ":",
+		"longopt" : "proxy",
+		"help" : "--proxy=[http://<URL>:<PORT>]          Proxy: 'http://<URL>:<PORT>'",
+		"required" : "0",
+		"shortdesc" : "Network proxy",
+		"order" : 0
+	}
 
 
 def main():
@@ -227,6 +258,7 @@ def main():
 		"proxy",
 		"port",
 		"no_password",
+		"method",
 	]
 
 	atexit.register(atexit_handler)
@@ -259,7 +291,7 @@ used with IBM PowerVS to fence virtual machines."""
 	conn = connect(options, token)
 	atexit.register(disconnect, conn)
 
-	result = fence_action(conn, options, set_power_status, get_power_status, get_list)
+	result = fence_action(conn, options, set_power_status, get_power_status, get_list, reboot_cycle)
 
 	sys.exit(result)
 
