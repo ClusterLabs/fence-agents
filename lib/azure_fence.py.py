@@ -353,11 +353,19 @@ def get_azure_compute_client(config):
                 fail_usage("metadata-endpoint not specified")
 
         try:
+            from azure.profiles import KnownProfiles
+            if (config.Cloud.lower() == "stack"):
+                client_profile = KnownProfiles.v2020_09_01_hybrid
+                credential_scope = cloud_environment.endpoints.active_directory_resource_id + "/.default"
+            else:
+                client_profile = KnownProfiles.default
+                credential_scope = cloud_environment.endpoints.resource_manager + "/.default"
             compute_client = ComputeManagementClient(
                 credentials,
                 config.SubscriptionId,
                 base_url=cloud_environment.endpoints.resource_manager,
-                credential_scopes=[cloud_environment.endpoints.resource_manager + "/.default"]
+                profile=client_profile,
+                credential_scopes=[credential_scope],
             )
         except TypeError:
             compute_client = ComputeManagementClient(
@@ -383,11 +391,19 @@ def get_azure_network_client(config):
                 fail_usage("metadata-endpoint not specified")
 
         try:
+            from azure.profiles import KnownProfiles
+            if (config.Cloud.lower() == "stack"):
+                client_profile = KnownProfiles.v2020_09_01_hybrid
+                credential_scope = cloud_environment.endpoints.active_directory_resource_id + "/.default"
+            else:
+                client_profile = KnownProfiles.default
+                credential_scope = cloud_environment.endpoints.resource_manager + "/.default"
             network_client = NetworkManagementClient(
                 credentials,
                 config.SubscriptionId,
                 base_url=cloud_environment.endpoints.resource_manager,
-                credential_scopes=[cloud_environment.endpoints.resource_manager + "/.default"]
+                profile=client_profile,
+                credential_scopes=[credential_scope],
             )
         except TypeError:
             network_client = NetworkManagementClient(
