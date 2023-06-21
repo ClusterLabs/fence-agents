@@ -183,12 +183,20 @@ def define_new_opts():
         "getopt" : ":",
         "longopt" : "cloud",
         "help" : "--cloud=[name]                 Name of the cloud you want to use. Supported\n\
-                                  values are china, germany or usgov. Do not use\n\
-                                  this parameter if you want to use public\n\
-                                  Azure.",
+                                  values are china, germany, usgov, or stack. Do\n\
+                                  not use this parameter if you want to use\n\
+                                  public Azure.",
         "shortdesc" : "Name of the cloud you want to use.",
         "required" : "0",
         "order" : 7
+    }
+    all_opt["metadata-endpoint"] = {
+        "getopt" : ":",
+        "longopt" : "metadata-endpoint",
+        "help" : "--metadata-endpoint=[URL]      URL to metadata endpoint (used when cloud=stack).",
+        "shortdesc" : "URL to metadata endpoint (used when cloud=stack).",
+        "required" : "0",
+        "order" : 8
     }
 
 # Main agent method
@@ -196,7 +204,9 @@ def main():
     compute_client = None
     network_client = None
 
-    device_opt = ["login", "no_login", "no_password", "passwd", "port", "resourceGroup", "tenantId", "subscriptionId", "network-fencing", "msi", "cloud"]
+    device_opt = ["login", "no_login", "no_password", "passwd", "port",
+		  "resourceGroup", "tenantId", "subscriptionId",
+		  "network-fencing", "msi", "cloud", "metadata-endpoint"]
 
     atexit.register(atexit_handler)
 
