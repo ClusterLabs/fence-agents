@@ -55,6 +55,7 @@ fence-agents-docker \\
 fence-agents-drac \\
 fence-agents-drac5 \\
 fence-agents-eaton-snmp \\
+fence-agents-eaton-ssh \\
 fence-agents-ecloud \\
 fence-agents-emerson \\
 fence-agents-eps \\
@@ -630,6 +631,18 @@ via the SNMP protocol.
 %files eaton-snmp
 %{_sbindir}/fence_eaton_snmp
 %{_mandir}/man8/fence_eaton_snmp.8*
+
+%package eaton-ssh
+License: GPL-2.0-or-later AND LGPL-2.0-or-later
+Summary: Fence agent for Eaton network power switches
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description eaton-ssh
+Fence agent for Eaton network power switches that are accessed
+via the serial protocol tunnel over SSH.
+%files eaton-ssh
+%{_sbindir}/fence_eaton_ssh
+%{_mandir}/man8/fence_eaton_ssh.8*
 
 %package ecloud
 License: GPL-2.0-or-later AND LGPL-2.0-or-later
