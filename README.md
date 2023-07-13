@@ -19,7 +19,8 @@ for further development. Creating or modifying a new fence agent should be quite
 ## Where can I find more information?
 
 * [ClusterLabs website](http://www.clusterlabs.org/)
-* [User and developer documentation](https://github.com/ClusterLabs/fence-agents/tree/master/doc/FenceAgentAPI.md)
+* [Fence Agent Developer's Guide](https://github.com/ClusterLabs/fence-agents/tree/main/doc/fa-dev-guide.md)
+* [User and developer documentation](https://github.com/ClusterLabs/fence-agents/tree/main/doc/FenceAgentAPI.md)
 * Mailing lists for [users](http://oss.clusterlabs.org/mailman/listinfo/users) and
   [developers](http://oss.clusterlabs.org/mailman/listinfo/developers)
 * #clusterlabs IRC channel on [freenode](http://freenode.net/)
