@@ -75,6 +75,7 @@ fence-agents-lpar \\
 fence-agents-mpath \\
 fence-agents-netio \\
 fence-agents-ovh \\
+fence-agents-ovm \\
 fence-agents-redfish \\
 fence-agents-rhevm \\
 fence-agents-rsa \\
@@ -959,6 +960,18 @@ Fence agent for OVH hosting provider.
 %files ovh
 %{_sbindir}/fence_ovh
 %{_mandir}/man8/fence_ovh.8*
+
+%package ovm
+License: GPL-2.0-or-later AND LGPL-2.0-or-later
+Summary: Fence agent for Oracle VM provider
+Requires: python3-requests
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description ovm
+Fence agent for Oracle VM provider.
+%files ovm
+%{_sbindir}/fence_ovm
+%{_mandir}/man8/fence_ovm.8*
 
 # skipped from allfenceagents
 %package pve
