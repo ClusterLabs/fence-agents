@@ -203,8 +203,8 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for IPMI"
-	docs["longdesc"] = "fence_ipmilan is an I/O Fencing agent\
-which can be used with machines controlled by IPMI.\
+	docs["longdesc"] = "fence_ipmilan is an I/O Fencing agent \
+which can be used with machines controlled by IPMI. \
 This agent calls support software ipmitool (http://ipmitool.sf.net/). \
 WARNING! This fence agent might report success before the node is powered off. \
 You should use -m/method onoff if your fence device works correctly with that option."
