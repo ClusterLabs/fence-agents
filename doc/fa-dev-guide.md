@@ -127,6 +127,31 @@ def get_list(conn, options):
 	return outlets
 ```
 
+### reboot_cycle()
+***The reboot cycle method is not recommended as it might report success before the node is powered off.***
+- fence_ipmilan contains a minimal reboot_cycle() approach.
+- Add "method" to the device_opt list.
+- Update all_opt["method"]["help"] with a warning that it might report success before the node is powered off.
+- Add reboot_cycle function to fence_action() call in main().
+
+Example:
+```
+def reboot_cycle(_, options):
+        output = _run_command(options, "cycle")
+        return bool(re.search('chassis power control: cycle', str(output).lower()))
+...
+
+def main():
+...
+        device_opt = [ ..., "method" ]
+...
+        all_opt["method"]["help"] = "-m, --method=[method]          Method to fence (onoff|cycle) (Default: onoff)\n" \
+                                    "WARNING! This fence agent might report success before the node is powered off. " \
+                                    "You should use -m/method onoff if your fence device works correctly with that option."
+...
+        result = fence_action(None, options, set_power_status, get_power_status, None, reboot_cycle)
+```
+
 ### define_new_opts()
 Specifies device specific parameters with defaults.
 - getopt is ":" for parameters that require a value and "" for parameters that get set without a value (e.g. -v)
