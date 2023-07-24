@@ -938,7 +938,7 @@ def show_docs(options, docs=None):
 		sys.exit(0)
 
 def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_list=None, reboot_cycle_fn=None, sync_set_power_fn=None):
-	result = 0
+	result = EC_OK
 
 	try:
 		if "--plug" in options:
@@ -982,11 +982,11 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 						except UnicodeEncodeError as e:
 							print((outlet_id + options["--separator"] + alias).encode("utf-8") + options["--separator"] + status)
 
-			return
+			return result
 
 		if options["--action"] == "monitor" and not "port" in options["device_opt"] and "no_status" in options["device_opt"]:
 			# Unable to do standard monitoring because 'status' action is not available
-			return 0
+			return result
 
 		status = None
 		if not "no_status" in options["device_opt"]:
@@ -997,7 +997,7 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 		if options["--action"] == status:
 			if not (status == "on" and "force_on" in options["device_opt"]):
 				print("Success: Already %s" % (status.upper()))
-				return 0
+				return result
 
 		if options["--action"] == "on":
 			if set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set_power_fn, 1 + int(options["--retry-on"])):
