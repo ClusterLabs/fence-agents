@@ -12,6 +12,14 @@ Good choices for existing agents to use as base for new agents:
 
 
 ## git
+### General
+- Commit messages should start with "fence_<name>: ", "fencing: " (or other library name), "build: ".\
+  If in doubt run `git log` to find examples.
+- PRs without correct prefix will get squashed to correct it as part of the merge process.
+- If any parameters or descriptions has been updated you'll have to run `./autogen.sh && ./configure` followed by `make xml-upload`.
+- Build requirements can be easily installed on Fedora by running `sudo dnf builddep fence-agents-all`.
+
+
 ### Add agent
 - Go to <https://github.com/ClusterLabs/fence-agents> and click Fork to create your own Fork.
 
