@@ -573,6 +573,7 @@ def fail_usage(message="", stop=True):
 
 def fail(error_code, stop=True):
 	message = {
+		EC_GENERIC_ERROR : "Failed: Generic error",
 		EC_LOGIN_DENIED : "Unable to connect/login to fencing device",
 		EC_CONNECTION_LOST : "Connection lost",
 		EC_TIMED_OUT : "Connection timed out",
