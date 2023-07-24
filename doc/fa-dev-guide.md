@@ -91,9 +91,11 @@ Use logging.error(), logging.warn(), logging.debug(), and logging.info() to log 
 - logging.debug() is good for debugging (shown when you use -v or set verbose=1).
 - `if options["--verbose-level"] > 1:` can be used to only print additional logging.debug() messages when -vv (or more v's) or verbose=2 or higher.
 
-Use `fail(<error-code>)` or `fail_usage("Failed: <error message>")` to exit with error-code or log Failed: <error message> with generic error code.
+Use `fail(<error-code>)` or `fail_usage("Failed: <error message>")` to exit with error code message or log Failed: <error message> with generic error code.
+- fail() logs the specified error message from <https://github.com/ClusterLabs/fence-agents/blob/main/lib/fencing.py.py#L574> and exit with generic error code.
 - EC_* error codes can be imported from the fencing library:\
   <https://github.com/ClusterLabs/fence-agents/blob/main/lib/fencing.py.py#L20>
+- To exit with specific error codes either use logging.error() followed by sys.exit(<error-code>) or fail(<error-code>, stop=False), which allows you to return or sys.exit() with other error codes.
 
 ### get_power_status() / set_power_status() / get_list()
 - These functions defines the code to get or set status, and get list of nodes, which are run by the fencing library to turn off/on nodes or get a list of nodes available.
@@ -146,7 +148,7 @@ def main():
         device_opt = [ ..., "method" ]
 ...
         all_opt["method"]["help"] = "-m, --method=[method]          Method to fence (onoff|cycle) (Default: onoff)\n" \
-                                    "WARNING! This fence agent might report success before the node is powered off. " \
+                                    "WARNING! This fence agent might report success before the node is powered off, when cycle method is used. " \
                                     "You should use -m/method onoff if your fence device works correctly with that option."
 ...
         result = fence_action(None, options, set_power_status, get_power_status, None, reboot_cycle)
