@@ -12,6 +12,14 @@ Good choices for existing agents to use as base for new agents:
 
 
 ## git
+### General
+- Commit messages should start with "fence_<name>: ", "fencing: " (or other library name), "build: ".\
+  If in doubt run `git log` to find examples.
+- PRs without correct prefix will get squashed to correct it as part of the merge process.
+- If any parameters or descriptions has been updated you'll have to run `./autogen.sh && ./configure` followed by `make xml-upload`.
+- Build requirements can be easily installed on Fedora by running `sudo dnf builddep fence-agents-all`.
+
+
 ### Add agent
 - Go to <https://github.com/ClusterLabs/fence-agents> and click Fork to create your own Fork.
 
@@ -83,9 +91,11 @@ Use logging.error(), logging.warn(), logging.debug(), and logging.info() to log 
 - logging.debug() is good for debugging (shown when you use -v or set verbose=1).
 - `if options["--verbose-level"] > 1:` can be used to only print additional logging.debug() messages when -vv (or more v's) or verbose=2 or higher.
 
-Use `fail(<error-code>)` or `fail_usage("Failed: <error message>")` to exit with error-code or log Failed: <error message> with generic error code.
+Use `fail(<error-code>)` or `fail_usage("Failed: <error message>")` to exit with error code message or log Failed: <error message> with generic error code.
+- fail() logs the specified error message from <https://github.com/ClusterLabs/fence-agents/blob/main/lib/fencing.py.py#L574> and exit with generic error code.
 - EC_* error codes can be imported from the fencing library:\
   <https://github.com/ClusterLabs/fence-agents/blob/main/lib/fencing.py.py#L20>
+- To exit with specific error codes either use logging.error() followed by sys.exit(<error-code>) or fail(<error-code>, stop=False), which allows you to return or sys.exit() with other error codes.
 
 ### get_power_status() / set_power_status() / get_list()
 - These functions defines the code to get or set status, and get list of nodes, which are run by the fencing library to turn off/on nodes or get a list of nodes available.
@@ -117,6 +127,31 @@ def get_list(conn, options):
 		outlets[r["name"]] = ("", state[r["power_state"]])
 
 	return outlets
+```
+
+### reboot_cycle()
+***The reboot cycle method is not recommended as it might report success before the node is powered off.***
+- fence_ipmilan contains a minimal reboot_cycle() approach.
+- Add "method" to the device_opt list.
+- Update all_opt["method"]["help"] with a warning that it might report success before the node is powered off.
+- Add reboot_cycle function to fence_action() call in main().
+
+Example:
+```
+def reboot_cycle(_, options):
+        output = _run_command(options, "cycle")
+        return bool(re.search('chassis power control: cycle', str(output).lower()))
+...
+
+def main():
+...
+        device_opt = [ ..., "method" ]
+...
+        all_opt["method"]["help"] = "-m, --method=[method]          Method to fence (onoff|cycle) (Default: onoff)\n" \
+                                    "WARNING! This fence agent might report success before the node is powered off, when cycle method is used. " \
+                                    "You should use -m/method onoff if your fence device works correctly with that option."
+...
+        result = fence_action(None, options, set_power_status, get_power_status, None, reboot_cycle)
 ```
 
 ### define_new_opts()
