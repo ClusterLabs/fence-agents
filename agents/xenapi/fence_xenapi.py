@@ -127,9 +127,14 @@ def connect_and_login(options):
 	username = options["--username"]
 	password = options["--password"]
 
+	# Allow bypassing SSL verification for hosts without SSL certificates
+	skipVerification = False
+	if "--ssl-insecure" in options:
+		skipVerification = True
+	
 	try:
 		# Create the XML RPC session to the specified URL.
-		session = XenAPI.Session(url)
+		session = XenAPI.Session(url, None, None, 0, 1, skipVerification)
 		# Login using the supplied credentials.
 		session.xenapi.login_with_password(username, password)
 	except Exception as exn:
@@ -191,23 +196,42 @@ def return_vm_reference(session, options):
 	# to the VM).
 	raise Exception("VM_LOGIC_ERROR")
 
+def define_new_opts():
+	all_opt["uuid"] = {
+		"getopt" : ":",
+		"longopt" : "uuid",
+		"help" : "--uuid=[VM UUID]              The VM UUID.",
+		"default" : "",
+		"required" : "0",
+		"shortdesc" : "The VM UUID",
+		"order" : 2}
+	all_opt["plug-separator"] = {
+		"getopt" : ":",
+		"longopt" : "plug-separator",
+		"help" : "--plug-separator=separator              The saparator for multiple plugs.",
+		"default" : ":",
+		"required" : "0",
+		"shortdesc" : "The saparator for multiple plugs",
+		"order" : 3}
+
 def main():
 
-	device_opt = ["login", "passwd", "port", "no_login", "no_password", "session_url", "web"]
+	device_opt = ["login", "passwd", "port", "no_login", "no_password", "session_url", "web", "ssl", "uuid", "plug_separator"]
 
 	atexit.register(atexit_handler)
+	define_new_opts()
 
 	options = check_input(device_opt, process_input(device_opt))
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for Citrix XenServer over XenAPI"
 	docs["longdesc"] = "\
-fence_cxs is an I/O Fencing agent used on Citrix XenServer hosts. \
+fence_xenapi is an I/O Fencing agent used on Citrix XenServer and XCP-ng hosts. \
 It uses the XenAPI, supplied by Citrix, to establish an XML-RPC session \
 to a XenServer host. Once the session is established, further XML-RPC \
 commands are issued in order to switch on, switch off, restart and query \
 the status of virtual machines running on the host."
-	docs["vendorurl"] = "http://www.xenproject.org"
+	docs["vendorurl"] = "https://xenproject.org"
 	show_docs(options, docs)
 
 	run_delay(options)
