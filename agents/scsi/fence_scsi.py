@@ -41,7 +41,7 @@ def set_status(conn, options):
 		for dev in options["devices"]:
 			is_block_device(dev)
 
-			register_dev(options, dev)
+			register_dev(options, dev, options["--key"])
 			if options["--key"] not in get_registration_keys(options, dev):
 				count += 1
 				logging.debug("Failed to register key "\
@@ -62,7 +62,7 @@ def set_status(conn, options):
 			fail_usage("Failed: keys cannot be same. You can not fence yourself.")
 		for dev in options["devices"]:
 			is_block_device(dev)
-
+			register_dev(options, dev, host_key)
 			if options["--key"] in get_registration_keys(options, dev):
 				preempt_abort(options, host_key, dev)
 
@@ -131,11 +131,11 @@ def reset_dev(options, dev):
 	return run_cmd(options, options["--sg_turs-path"] + " " + dev)["rc"]
 
 
-def register_dev(options, dev):
+def register_dev(options, dev, key):
 	dev = os.path.realpath(dev)
 	if re.search(r"^dm", dev[5:]):
 		for slave in get_mpath_slaves(dev):
-			register_dev(options, slave)
+			register_dev(options, slave, key)
 		return True
 
 	# Check if any registration exists for the key already. We track this in
@@ -143,34 +143,35 @@ def register_dev(options, dev):
 	# This is needed since the previous registration could be for a
 	# different I_T nexus (different ISID).
 	registration_key_exists = False
-	if options["--key"] in get_registration_keys(options, dev):
+	if key in get_registration_keys(options, dev):
+		logging.debug("Registration key exists for device " + dev)
 		registration_key_exists = True
-	if not register_helper(options, options["--key"], dev):
+	if not register_helper(options, dev, key):
 		return False
 
 	if registration_key_exists:
 		# If key matches, make sure it matches with the connection that
 		# exists right now. To do this, we can issue a preempt with same key
 		# which should replace the old invalid entries from the target.
-		if not preempt(options, options["--key"], dev):
+		if not preempt(options, key, dev, key):
 			return False
 
 		# If there was no reservation, we need to issue another registration
 		# since the previous preempt would clear registration made above.
-		if get_reservation_key(options, dev, False) != options["--key"]:
-			return register_helper(options, options["--key"], dev)
+		if get_reservation_key(options, dev, False) != key:
+			return register_helper(options, dev, key)
 	return True
 
-# cancel registration without aborting tasks
-def preempt(options, host, dev):
+# helper function to preempt host with 'key' using 'host_key' without aborting tasks
+def preempt(options, host_key, dev, key):
 	reset_dev(options,dev)
-	cmd = options["--sg_persist-path"] + " -n -o -P -T 5 -K " + host + " -S " + options["--key"] + " -d " + dev
+	cmd = options["--sg_persist-path"] + " -n -o -P -T 5 -K " + host_key + " -S " + key + " -d " + dev
 	return not bool(run_cmd(options, cmd)["rc"])
 
 # helper function to send the register command
-def register_helper(options, host, dev):
+def register_helper(options, dev, key):
 	reset_dev(options, dev)
-	cmd = options["--sg_persist-path"] + " -n -o -I -S " + options["--key"] + " -d " + dev
+	cmd = options["--sg_persist-path"] + " -n -o -I -S " + key + " -d " + dev
 	cmd += " -Z" if "--aptpl" in options else ""
 	return not bool(run_cmd(options, cmd)["rc"])
 
