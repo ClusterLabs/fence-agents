@@ -3,7 +3,7 @@ AWK_VAL='BEGIN {store=-1} /name=".*_path"/ || /name=".*_file"/ {store=2} {if (st
 
 TEST_TARGET=$(filter-out $(TEST_TARGET_SKIP),$(TARGET))
 
-check: $(TEST_TARGET:%=%.xml-check) $(SYMTARGET:%=%.xml-check) $(TEST_TARGET:%=%.delay-check) $(TEST_TARGET:%=%.rng-check)
+check: $(TEST_TARGET:%=%.xml-check) $(SYMTARGET:%=%.xml-check) $(TEST_TARGET:%=%.delay-check) $(TEST_TARGET:%=%.rng-check) test-fencing
 delay-check: $(TEST_TARGET:%=%.delay-check) $(SYMTARGET:%=%.delay-check)
 xml-check: $(TEST_TARGET:%=%.xml-check) $(SYMTARGET:%=%.xml-check)
 xml-upload: $(TEST_TARGET:%=%.xml-upload) $(SYMTARGET:%=%.xml-upload)
@@ -42,3 +42,6 @@ xml-upload: $(TEST_TARGET:%=%.xml-upload) $(SYMTARGET:%=%.xml-upload)
 		sed -e 's/ rha:description=/ description=/g' -e 's/ rha:name=/ name=/g' | \
 		xmllint --nsclean --noout -; \
 	done
+
+test-fencing:
+	PYTHONPATH=$(abs_top_builddir)/lib $(PYTHON) $(abs_top_srcdir)/lib/tests/test_fencing.py
