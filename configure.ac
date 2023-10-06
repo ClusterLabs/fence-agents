@@ -278,7 +278,7 @@ if test "x$XSLTPROC" = "x"; then
 fi
 AC_SUBST(XSLTPROC)
 
-AM_PATH_PYTHON
+AM_PATH_PYTHON([3.6])
 if test -z "$PYTHON"; then
     echo "*** Essential program python not found" 1>&2
     exit 1
