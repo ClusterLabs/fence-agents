@@ -23,4 +23,4 @@ for further development. Creating or modifying a new fence agent should be quite
 * [User and developer documentation](https://github.com/ClusterLabs/fence-agents/tree/main/doc/FenceAgentAPI.md)
 * Mailing lists for [users](http://oss.clusterlabs.org/mailman/listinfo/users) and
   [developers](http://oss.clusterlabs.org/mailman/listinfo/developers)
-* #clusterlabs IRC channel on [freenode](http://freenode.net/)
+* [ClusterLabs IRC channel](https://wiki.clusterlabs.org/wiki/ClusterLabs_IRC_channel)
