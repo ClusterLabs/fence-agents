@@ -14,6 +14,8 @@ FASRNG			= fence.rng.head fence.rng.tail metadata.rng
 
 EXTRA_DIST		= $(SRC) $(XSL) $(FASRNG)
 
+SUBDIRS 		= tests
+
 fencelibdir		= ${FENCEAGENTSLIBDIR}
 
 fencelib_DATA		= $(TARGET)
@@ -30,5 +32,6 @@ include $(top_srcdir)/make/fencebuild.mk
 
 xml-check: all
 xml-upload: all
+test-fencing: all
 
 clean-man:

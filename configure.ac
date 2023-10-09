@@ -278,7 +278,7 @@ if test "x$XSLTPROC" = "x"; then
 fi
 AC_SUBST(XSLTPROC)
 
-AM_PATH_PYTHON
+AM_PATH_PYTHON([3.6])
 if test -z "$PYTHON"; then
     echo "*** Essential program python not found" 1>&2
     exit 1
@@ -519,7 +519,7 @@ AC_SUBST([AM_CFLAGS])
 CPPFLAGS="-I\$(top_builddir)/make -I\$(top_srcdir)/make -I. $ENV_CPPFLAGS"
 LDFLAGS="$ENV_LDFLAGS"
 
-AM_EXTRA_RECURSIVE_TARGETS([delay-check xml-check xml-upload])
+AM_EXTRA_RECURSIVE_TARGETS([delay-check xml-check xml-upload test-fencing])
 
 AX_PROG_DATE
 AS_IF([test "$ax_cv_prog_date_gnu_date:$ax_cv_prog_date_gnu_utc" = yes:yes],
@@ -579,6 +579,7 @@ AC_CONFIG_FILES([Makefile
 		 fence-agents.pc
 		 agents/Makefile
 		 lib/Makefile
+		 lib/tests/Makefile
 		 doc/Makefile
 		 systemd/Makefile
 		 systemd/fence-agents.conf
