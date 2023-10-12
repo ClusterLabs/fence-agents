@@ -72,7 +72,7 @@ def get_power_status(clients, options):
 
         powerState = "unknown"
         try:
-            vmStatus = compute_client.virtual_machines.get(rgName, vmName, "instanceView")
+            vmStatus = compute_client.virtual_machines.get(rgName, vmName, expand="instanceView")
         except Exception as e:
             fail_usage("Failed: %s" % e)
 
