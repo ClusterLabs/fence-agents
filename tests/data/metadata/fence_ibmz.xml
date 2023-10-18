@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_ibmz" shortdesc="Fence agent for IBM z LPARs" >
-<longdesc>fence_ibmz is a power fencing agent which uses the HMC Web Services API to fence IBM z LPARs.</longdesc>
+<longdesc>fence_ibmz is a Power Fencing agent which uses the HMC Web Services API to fence IBM z LPARs.</longdesc>
 <vendor-url>http://www.ibm.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

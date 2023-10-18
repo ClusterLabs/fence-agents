@@ -39,8 +39,8 @@ def main():
 	options = check_input(device_opt, opt)
 
 	docs = {}
-	docs["shortdesc"] = "I/O Fencing agent for Raritan Dominion PX"
-	docs["longdesc"] = "fence_raritan is an I/O Fencing agent which can be \
+	docs["shortdesc"] = "Power Fencing agent for Raritan Dominion PX"
+	docs["longdesc"] = "fence_raritan is a Power Fencing agent which can be \
 used with the Raritan DPXS12-20 Power Distribution Unit. It logs into \
 device via telnet and reboots a specified outlet. Lengthy telnet connections \
 should be avoided while a GFS cluster is running because the connection will \

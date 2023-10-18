@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_powerman" shortdesc="Fence Agent for Powerman" >
-<longdesc>This is a Pacemaker Fence Agent for the Powerman management utility that was designed for LLNL systems.</longdesc>
+<longdesc>fence_powerman is a Power Fence Agent for the Powerman management utility that was designed for LLNL systems.</longdesc>
 <vendor-url>https://github.com/chaos/powerman</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

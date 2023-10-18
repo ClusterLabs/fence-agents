@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_xenapi" shortdesc="Fence agent for Citrix XenServer over XenAPI" >
-<longdesc>fence_cxs is an I/O Fencing agent used on Citrix XenServer hosts. It uses the XenAPI, supplied by Citrix, to establish an XML-RPC session to a XenServer host. Once the session is established, further XML-RPC commands are issued in order to switch on, switch off, restart and query the status of virtual machines running on the host.</longdesc>
+<longdesc>fence_xenapi is a Power Fencing agent used on Citrix XenServer hosts. It uses the XenAPI, supplied by Citrix, to establish an XML-RPC session to a XenServer host. Once the session is established, further XML-RPC commands are issued in order to switch on, switch off, restart and query the status of virtual machines running on the host.</longdesc>
 <vendor-url>http://www.xenproject.org</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

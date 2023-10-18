@@ -214,7 +214,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for Eaton over SNMP"
-	docs["longdesc"] = "fence_eaton_snmp is an I/O Fencing agent \
+	docs["longdesc"] = "fence_eaton_snmp is a Power Fencing agent \
 which can be used with the Eaton network power switch. It logs \
 into a device via SNMP and reboots a specified outlet. It supports \
 SNMP v1 and v3 with all combinations of  authenticity/privacy settings."

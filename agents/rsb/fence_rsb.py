@@ -49,8 +49,8 @@ def main():
 	options = check_input(device_opt, opt)
 
 	docs = {}
-	docs["shortdesc"] = "I/O Fencing agent for Fujitsu-Siemens RSB"
-	docs["longdesc"] = "fence_rsb is an I/O Fencing agent \
+	docs["shortdesc"] = "Power Fencing agent for Fujitsu-Siemens RSB"
+	docs["longdesc"] = "fence_rsb is a Power Fencing agent \
 which can be used with the Fujitsu-Siemens RSB management interface. It logs \
 into device via telnet/ssh  and reboots a specified outlet. Lengthy telnet/ssh \
 connections should be avoided while a GFS cluster is running because the connection \

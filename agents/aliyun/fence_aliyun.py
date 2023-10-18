@@ -175,7 +175,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for Aliyun (Aliyun Web Services)"
-	docs["longdesc"] = "fence_aliyun is an I/O Fencing agent for Aliyun"
+	docs["longdesc"] = "fence_aliyun is a Power Fencing agent for Aliyun."
 	docs["vendorurl"] = "http://www.aliyun.com"
 	show_docs(options, docs)
 

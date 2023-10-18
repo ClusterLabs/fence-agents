@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_gce" shortdesc="Fence agent for GCE (Google Cloud Engine)" >
-<longdesc>fence_gce is an I/O Fencing agent for GCE (Google Cloud Engine). It uses the googleapiclient library to connect to GCE.
+<longdesc>fence_gce is a Power Fencing agent for GCE (Google Cloud Engine). It uses the googleapiclient library to connect to GCE.
 googleapiclient can be configured with Google SDK CLI or by executing 'gcloud auth application-default login'.
 For instructions see: https://cloud.google.com/compute/docs/tutorials/python-guide</longdesc>
 <vendor-url>http://cloud.google.com</vendor-url>

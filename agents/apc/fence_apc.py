@@ -227,7 +227,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for APC over telnet/ssh"
-	docs["longdesc"] = "fence_apc is an I/O Fencing agent \
+	docs["longdesc"] = "fence_apc is a Power Fencing agent \
 which can be used with the APC network power switch. It logs into device \
 via telnet/ssh  and reboots a specified outlet. Lengthy telnet/ssh connections \
 should be avoided while a GFS cluster  is  running  because  the  connection \

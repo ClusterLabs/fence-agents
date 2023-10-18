@@ -546,7 +546,7 @@ ignored when used with the -k option."
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for SCSI persistent reservation"
-	docs["longdesc"] = "fence_scsi is an I/O fencing agent that uses SCSI-3 \
+	docs["longdesc"] = "fence_scsi is an I/O Fencing agent that uses SCSI-3 \
 persistent reservations to control access to shared storage devices. These \
 devices must support SCSI-3 persistent reservations (SPC-3 or greater) as \
 well as the \"preempt-and-abort\" subcommand.\nThe fence_scsi agent works by \

@@ -125,7 +125,7 @@ def main():
 
     docs = {}
     docs["shortdesc"] = "Fence agent for KubeVirt"
-    docs["longdesc"] = "fence_kubevirt is an I/O Fencing agent for KubeVirt."
+    docs["longdesc"] = "fence_kubevirt is a Power Fencing agent for KubeVirt."
     docs["vendorurl"] = "https://kubevirt.io/"
     show_docs(options, docs)
 

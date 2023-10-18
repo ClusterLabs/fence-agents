@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_azure_arm" shortdesc="Fence agent for Azure Resource Manager" >
-<longdesc>fence_azure_arm is an I/O Fencing agent for Azure Resource Manager. It uses Azure SDK for Python to connect to Azure.
+<longdesc>fence_azure_arm is a Power Fencing agent for Azure Resource Manager. It uses Azure SDK for Python to connect to Azure.
 
 For instructions to setup credentials see: https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal
 

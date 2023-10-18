@@ -138,7 +138,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for iPDU over SNMP"
-	docs["longdesc"] = "fence_ipdu is an I/O Fencing agent \
+	docs["longdesc"] = "fence_ipdu is a Power Fencing agent \
 which can be used with the IBM iPDU network power switch. It logs \
 into a device via SNMP and reboots a specified outlet. It supports \
 SNMP v3 with all combinations of authenticity/privacy settings."

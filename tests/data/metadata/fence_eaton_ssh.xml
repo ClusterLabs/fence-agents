@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_eaton_ssh" shortdesc="Fence agent for Eaton ePDU G3 over SSH" >
-<longdesc>fence_eaton_ssh is a fence agent that connects to Eaton ePDU devices. It logs into device via ssh and reboot a specified outlet.</longdesc>
+<longdesc>fence_eaton_ssh is a Power Fencing agent that connects to Eaton ePDU devices. It logs into device via ssh and reboot a specified outlet.</longdesc>
 <vendor-url>https://www.eaton.com/</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

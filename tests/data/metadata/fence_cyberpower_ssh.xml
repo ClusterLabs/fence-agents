@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_cyberpower_ssh" shortdesc="Fence agent for CyberPower over ssh" >
-<longdesc>fence_cyberpower_ssh is an I/O Fencing agent which can be used with the CyberPower network power switch. It logs into device via ssh and reboots a specified outlet. Lengthy ssh connections should be avoided while a GFS cluster is running because the connection will block any necessary fencing actions.</longdesc>
+<longdesc>fence_cyberpower_ssh is a Power Fencing agent which can be used with the CyberPower network power switch. It logs into device via ssh and reboots a specified outlet. Lengthy ssh connections should be avoided while a GFS cluster is running because the connection will block any necessary fencing actions.</longdesc>
 <vendor-url>http://www.cyberpower.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

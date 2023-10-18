@@ -304,7 +304,7 @@ be removed from the device(s)."
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for multipath persistent reservation"
-	docs["longdesc"] = "fence_mpath is an I/O fencing agent that uses SCSI-3 \
+	docs["longdesc"] = "fence_mpath is an I/O Fencing agent that uses SCSI-3 \
 persistent reservations to control access multipath devices. Underlying \
 devices must support SCSI-3 persistent reservations (SPC-3 or greater) as \
 well as the \"preempt-and-abort\" subcommand.\nThe fence_mpath agent works by \

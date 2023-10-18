@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_ibm_vpc" shortdesc="Fence agent for IBM Cloud VPC" >
-<longdesc>fence_ibm_vpc is an I/O Fencing agent which can be used with IBM Cloud VPC to fence virtual machines.</longdesc>
+<longdesc>fence_ibm_vpc is a Power Fencing agent which can be used with IBM Cloud VPC to fence virtual machines.</longdesc>
 <vendor-url>https://www.ibm.com</vendor-url>
 <parameters>
 	<parameter name="apikey" unique="0" required="1">

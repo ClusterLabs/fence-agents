@@ -147,8 +147,8 @@ def main():
 	options = check_input(device_opt, opt)
 
 	docs = {}
-	docs["shortdesc"] = "I/O Fencing agent for Raritan Dominion PX2 and PX3"
-	docs["longdesc"] = "fence_raritan is an I/O Fencing agent which can be \
+	docs["shortdesc"] = "Power Fencing agent for Raritan Dominion PX2 and PX3"
+	docs["longdesc"] = "fence_raritan_px3 is a Power Fencing agent which can be \
 used with the Raritan PX2 and PX3 Power Distribution Unit series. It logs into \
 device via telnet or ssh and reboots a specified outlet. Single outlets and \
 grouped outlets are supported. The fence is tested on this model: PX3-5466V. \

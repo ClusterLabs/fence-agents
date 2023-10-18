@@ -38,8 +38,8 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for Sun ALOM"
-	docs["longdesc"] = "fence_alom is an I/O Fencing \
-agent which can be used with ALOM connected machines."
+	docs["longdesc"] = "fence_alom is a Power Fencing agent \
+which can be used with ALOM connected machines."
 	docs["vendorurl"] = "http://www.sun.com"
 	show_docs(options, docs)
 

@@ -115,7 +115,7 @@ def main():
 
     docs = {}
     docs["shortdesc"] = "Fence agent for OpenStack's Ironic (Bare Metal as a service) service"
-    docs["longdesc"] = "fence_ironic is a Fencing agent \
+    docs["longdesc"] = "fence_ironic is a Power Fencing agent \
 which can be used with machines controlled by the Ironic service. \
 This agent calls the openstack CLI. \
 WARNING! This fence agent is not intended for production use. Relying on a functional ironic service for fencing is not a good design choice."

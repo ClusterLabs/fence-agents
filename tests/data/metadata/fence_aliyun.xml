@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_aliyun" shortdesc="Fence agent for Aliyun (Aliyun Web Services)" >
-<longdesc>fence_aliyun is an I/O Fencing agent for Aliyun</longdesc>
+<longdesc>fence_aliyun is a Power Fencing agent for Aliyun.</longdesc>
 <vendor-url>http://www.aliyun.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

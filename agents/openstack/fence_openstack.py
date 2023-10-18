@@ -301,7 +301,7 @@ def main():
 
     docs = {}
     docs["shortdesc"] = "Fence agent for OpenStack's Nova service"
-    docs["longdesc"] = "fence_openstack is a Fencing agent \
+    docs["longdesc"] = "fence_openstack is a Power Fencing agent \
 which can be used with machines controlled by the Openstack's Nova service. \
 This agent calls the python-novaclient and it is mandatory to be installed "
     docs["vendorurl"] = "https://wiki.openstack.org/wiki/Nova"

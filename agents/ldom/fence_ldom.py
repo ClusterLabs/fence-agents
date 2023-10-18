@@ -75,7 +75,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for Sun LDOM"
-	docs["longdesc"] = "fence_ldom is an I/O Fencing agent \
+	docs["longdesc"] = "fence_ldom is a Power Fencing agent \
 which can be used with LDoms virtual machines. This agent works \
 so, that run ldm command on host machine. So ldm must be directly \
 runnable.\

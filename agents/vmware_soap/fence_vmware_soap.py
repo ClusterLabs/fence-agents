@@ -235,7 +235,7 @@ def main():
 	#####
 	docs = {}
 	docs["shortdesc"] = "Fence agent for VMWare over SOAP API"
-	docs["longdesc"] = "fence_vmware_soap is an I/O Fencing agent \
+	docs["longdesc"] = "fence_vmware_soap is a Power Fencing agent \
 which can be used with the virtual machines managed by VMWare products \
 that have SOAP API v4.1+. \
 \n.P\n\

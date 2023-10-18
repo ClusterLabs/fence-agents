@@ -57,7 +57,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for IBM BladeCenter over SNMP"
-	docs["longdesc"] = "fence_ibmblade is an I/O Fencing agent \
+	docs["longdesc"] = "fence_ibmblade is a Power Fencing agent \
 which can be used with IBM BladeCenter chassis. It issues SNMP Set \
 request to BladeCenter chassis, rebooting, powering up or down \
 the specified Blade Server."

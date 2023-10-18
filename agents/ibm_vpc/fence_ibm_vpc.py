@@ -295,7 +295,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for IBM Cloud VPC"
-	docs["longdesc"] = """fence_ibm_vpc is an I/O Fencing agent which can be \
+	docs["longdesc"] = """fence_ibm_vpc is a Power Fencing agent which can be \
 used with IBM Cloud VPC to fence virtual machines."""
 	docs["vendorurl"] = "https://www.ibm.com"
 	show_docs(options, docs)

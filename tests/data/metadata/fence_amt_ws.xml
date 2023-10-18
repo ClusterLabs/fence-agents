@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_amt_ws" shortdesc="Fence agent for AMT (WS)" >
-<longdesc>fence_amt_ws is an I/O Fencing agent which can be used with Intel AMT (WS). This agent requires the pywsman Python library which is included in OpenWSMAN. (http://openwsman.github.io/).</longdesc>
+<longdesc>fence_amt_ws is a Power Fencing agent which can be used with Intel AMT (WS). This agent requires the pywsman Python library which is included in OpenWSMAN. (http://openwsman.github.io/).</longdesc>
 <vendor-url>http://www.intel.com/</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

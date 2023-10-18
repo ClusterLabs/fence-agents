@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_cisco_ucs" shortdesc="Fence agent for Cisco UCS" >
-<longdesc>fence_cisco_ucs is an I/O Fencing agent which can be used with Cisco UCS to fence machines.</longdesc>
+<longdesc>fence_cisco_ucs is a Power Fencing agent which can be used with Cisco UCS to fence machines.</longdesc>
 <vendor-url>http://www.cisco.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

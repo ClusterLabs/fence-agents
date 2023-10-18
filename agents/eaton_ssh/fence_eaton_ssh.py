@@ -303,7 +303,7 @@ def main():
 
     docs = {}
     docs["shortdesc"] = "Fence agent for Eaton ePDU G3 over SSH"
-    docs["longdesc"] = "fence_eaton_ssh is a fence agent that connects to Eaton ePDU devices. It logs into \
+    docs["longdesc"] = "fence_eaton_ssh is a Power Fencing agent that connects to Eaton ePDU devices. It logs into \
 device via ssh and reboot a specified outlet."
     docs["vendorurl"] = "https://www.eaton.com/"
     show_docs(options, docs)
