@@ -175,7 +175,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for IBM LPAR"
-	docs["longdesc"] = ""
+	docs["longdesc"] = "fence_lpar is a Power Fencing agent for IBM LPAR."
 	docs["vendorurl"] = "http://www.ibm.com"
 	show_docs(options, docs)
 

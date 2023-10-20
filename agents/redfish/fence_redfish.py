@@ -132,8 +132,8 @@ def main():
     options = check_input(device_opt, opt)
 
     docs = {}
-    docs["shortdesc"] = "I/O Fencing agent for Redfish"
-    docs["longdesc"] = "fence_redfish is an I/O Fencing agent which can be used with \
+    docs["shortdesc"] = "Power Fencing agent for Redfish"
+    docs["longdesc"] = "fence_redfish is a Power Fencing agent which can be used with \
 Out-of-Band controllers that support Redfish APIs. These controllers provide remote \
 access to control power on a server."
     docs["vendorurl"] = "http://www.dmtf.org"

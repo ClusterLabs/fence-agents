@@ -185,7 +185,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for AWS (Amazon Web Services)"
-	docs["longdesc"] = "fence_aws is an I/O Fencing agent for AWS (Amazon Web\
+	docs["longdesc"] = "fence_aws is a Power Fencing agent for AWS (Amazon Web\
 Services). It uses the boto3 library to connect to AWS.\
 \n.P\n\
 boto3 can be configured with AWS CLI or by creating ~/.aws/credentials.\n\

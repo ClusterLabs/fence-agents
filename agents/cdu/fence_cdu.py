@@ -136,7 +136,7 @@ def main():
 
     docs = { }
     docs["shortdesc"] = "Fence agent for a Sentry Switch CDU over telnet"
-    docs["longdesc"] = "fence_cdu is an I/O Fencing agent \
+    docs["longdesc"] = "fence_cdu is a Power Fencing agent \
 which can be used with the Sentry Switch CDU. It logs into the device \
 via telnet and power's on/off an outlet."
     docs["vendorurl"] = "http://www.servertech.com"

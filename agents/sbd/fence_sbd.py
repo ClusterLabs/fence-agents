@@ -377,7 +377,7 @@ def main():
     # fill the needed variables to generate metadata and help text output
     docs = {}
     docs["shortdesc"] = "Fence agent for sbd"
-    docs["longdesc"] = "fence_sbd is I/O Fencing agent \
+    docs["longdesc"] = "fence_sbd is an I/O Fencing agent \
 which can be used in environments where sbd can be used (shared storage)."
     docs["vendorurl"] = ""
     show_docs(options, docs)

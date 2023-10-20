@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
-<resource-agent name="fence_raritan_px3" shortdesc="I/O Fencing agent for Raritan Dominion PX2 and PX3" >
-<longdesc>fence_raritan is an I/O Fencing agent which can be used with the Raritan PX2 and PX3 Power Distribution Unit series. It logs into device via telnet or ssh and reboots a specified outlet. Single outlets and grouped outlets are supported. The fence is tested on this model: PX3-5466V. There have been issues seen with the telnet prompt on 3.4.x and 3.5.x Raritan firmware versions. It's recommended to update to at least version 3.6.x</longdesc>
+<resource-agent name="fence_raritan_px3" shortdesc="Power Fencing agent for Raritan Dominion PX2 and PX3" >
+<longdesc>fence_raritan_px3 is a Power Fencing agent which can be used with the Raritan PX2 and PX3 Power Distribution Unit series. It logs into device via telnet or ssh and reboots a specified outlet. Single outlets and grouped outlets are supported. The fence is tested on this model: PX3-5466V. There have been issues seen with the telnet prompt on 3.4.x and 3.5.x Raritan firmware versions. It's recommended to update to at least version 3.6.x</longdesc>
 <vendor-url>http://www.raritan.com/</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

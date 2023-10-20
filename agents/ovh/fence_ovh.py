@@ -86,7 +86,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for OVH"
-	docs["longdesc"] = "fence_ovh is an Power Fencing agent \
+	docs["longdesc"] = "fence_ovh is a Power Fencing agent \
 which can be used within OVH datecentre. \
 Poweroff is simulated with a reboot into rescue-pro mode."
 

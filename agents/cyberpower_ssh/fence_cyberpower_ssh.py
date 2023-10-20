@@ -48,7 +48,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for CyberPower over ssh"
-	docs["longdesc"] = "fence_cyberpower_ssh is an I/O Fencing agent \
+	docs["longdesc"] = "fence_cyberpower_ssh is a Power Fencing agent \
 which can be used with the CyberPower network power switch. It logs into \
 device via ssh and reboots a specified outlet. Lengthy ssh connections \
 should be avoided while a GFS cluster is running because the connection \

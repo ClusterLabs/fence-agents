@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_lpar" shortdesc="Fence agent for IBM LPAR" >
-<longdesc></longdesc>
+<longdesc>fence_lpar is a Power Fencing agent for IBM LPAR.</longdesc>
 <vendor-url>http://www.ibm.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

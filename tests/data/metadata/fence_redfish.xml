@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
-<resource-agent name="fence_redfish" shortdesc="I/O Fencing agent for Redfish" >
-<longdesc>fence_redfish is an I/O Fencing agent which can be used with Out-of-Band controllers that support Redfish APIs. These controllers provide remote access to control power on a server.</longdesc>
+<resource-agent name="fence_redfish" shortdesc="Power Fencing agent for Redfish" >
+<longdesc>fence_redfish is a Power Fencing agent which can be used with Out-of-Band controllers that support Redfish APIs. These controllers provide remote access to control power on a server.</longdesc>
 <vendor-url>http://www.dmtf.org</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

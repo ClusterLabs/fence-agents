@@ -40,7 +40,8 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for HP iLO MP"
-	docs["longdesc"] = ""
+	docs["longdesc"] = "fence_ilo_mp is a Power Fencing agent \
+for HP iLO MP."
 	docs["vendorurl"] = "http://www.hp.com"
 	show_docs(options, docs)
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_alom" shortdesc="Fence agent for Sun ALOM" >
-<longdesc>fence_alom is an I/O Fencing agent which can be used with ALOM connected machines.</longdesc>
+<longdesc>fence_alom is a Power Fencing agent which can be used with ALOM connected machines.</longdesc>
 <vendor-url>http://www.sun.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

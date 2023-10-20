@@ -520,7 +520,7 @@ def main():
     docs = {
         "shortdesc": "Fence agent for IBM z LPARs",
         "longdesc": (
-            "fence_ibmz is a power fencing agent which uses the HMC Web "
+            "fence_ibmz is a Power Fencing agent which uses the HMC Web "
             "Services API to fence IBM z LPARs."),
         "vendorurl": "http://www.ibm.com"
     }

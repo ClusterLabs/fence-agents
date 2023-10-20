@@ -222,7 +222,7 @@ def main():
 
     docs = {}
     docs["shortdesc"] = "Fence agent for AMT (WS)"
-    docs["longdesc"] = "fence_amt_ws is an I/O Fencing agent \
+    docs["longdesc"] = "fence_amt_ws is a Power Fencing agent \
 which can be used with Intel AMT (WS). This agent requires \
 the pywsman Python library which is included in OpenWSMAN. \
 (http://openwsman.github.io/)."

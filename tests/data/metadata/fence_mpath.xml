@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_mpath" shortdesc="Fence agent for multipath persistent reservation" >
-<longdesc>fence_mpath is an I/O fencing agent that uses SCSI-3 persistent reservations to control access multipath devices. Underlying devices must support SCSI-3 persistent reservations (SPC-3 or greater) as well as the "preempt-and-abort" subcommand.
+<longdesc>fence_mpath is an I/O Fencing agent that uses SCSI-3 persistent reservations to control access multipath devices. Underlying devices must support SCSI-3 persistent reservations (SPC-3 or greater) as well as the "preempt-and-abort" subcommand.
 The fence_mpath agent works by having a unique key for each node that has to be set in /etc/multipath.conf. Once registered, a single node will become the reservation holder by creating a "write exclusive, registrants only" reservation on the device(s). The result is that only registered nodes may write to the device(s). When a node failure occurs, the fence_mpath agent will remove the key belonging to the failed node from the device(s). The failed node will no longer be able to write to the device(s). A manual reboot is required.
 
 When used as a watchdog device you can define e.g. retry=1, retry-sleep=2 and verbose=yes parameters in /etc/sysconfig/stonith if you have issues with it failing.</longdesc>

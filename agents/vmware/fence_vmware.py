@@ -292,7 +292,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for VMWare"
-	docs["longdesc"] = "fence_vmware is an I/O Fencing agent \
+	docs["longdesc"] = "fence_vmware is a Power Fencing agent \
 which can be used with the VMware ESX, VMware ESXi or VMware Server \
 to fence virtual machines.\
 \n.P\n\

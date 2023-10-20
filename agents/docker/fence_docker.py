@@ -143,7 +143,7 @@ TLS authentication.  Required if --ssl option is used.",
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for Docker"
-	docs["longdesc"] = "fence_docker is I/O fencing agent which \
+	docs["longdesc"] = "fence_docker is a Power Fencing agent which \
 can be used with the Docker Engine containers. You can use this \
 fence-agent without any authentication, or you can use TLS authentication \
 (use --ssl option, more info about TLS authentication in docker: \

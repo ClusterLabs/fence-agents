@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
-<resource-agent name="fence_raritan" shortdesc="I/O Fencing agent for Raritan Dominion PX" >
-<longdesc>fence_raritan is an I/O Fencing agent which can be used with the Raritan DPXS12-20 Power Distribution Unit. It logs into device via telnet and reboots a specified outlet. Lengthy telnet connections should be avoided while a GFS cluster is running because the connection will block any necessary fencing actions.</longdesc>
+<resource-agent name="fence_raritan" shortdesc="Power Fencing agent for Raritan Dominion PX" >
+<longdesc>fence_raritan is a Power Fencing agent which can be used with the Raritan DPXS12-20 Power Distribution Unit. It logs into device via telnet and reboots a specified outlet. Lengthy telnet connections should be avoided while a GFS cluster is running because the connection will block any necessary fencing actions.</longdesc>
 <vendor-url>http://www.raritan.com/</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

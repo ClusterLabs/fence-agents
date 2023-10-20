@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_ecloud" shortdesc="Fence Agent for ANS eCloud" >
-<longdesc>fence_ecloud is a fence agent for use with the ANS eCloud platform which is compatible with eCloud VPC and eCloud v1.</longdesc>
+<longdesc>fence_ecloud is a Power Fencing agent for use with the ANS eCloud platform which is compatible with eCloud VPC and eCloud v1.</longdesc>
 <vendor-url>https://www.ans.co.uk</vendor-url>
 <parameters>
 	<parameter name="apikey" unique="0" required="1">

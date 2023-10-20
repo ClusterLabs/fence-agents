@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
-<resource-agent name="fence_netio" shortdesc="I/O Fencing agent for Koukaam NETIO-230B" >
-<longdesc>fence_netio is an I/O Fencing agent which can be used with the Koukaam NETIO-230B Power Distribution Unit. It logs into device via telnet and reboots a specified outlet. Lengthy telnet connections should be avoided while a GFS cluster is running because the connection will block any necessary fencing actions.</longdesc>
+<resource-agent name="fence_netio" shortdesc="Power Fencing agent for Koukaam NETIO-230B" >
+<longdesc>fence_netio is a Power Fencing agent which can be used with the Koukaam NETIO-230B Power Distribution Unit. It logs into device via telnet and reboots a specified outlet. Lengthy telnet connections should be avoided while a GFS cluster is running because the connection will block any necessary fencing actions.</longdesc>
 <vendor-url>http://www.koukaam.se/</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

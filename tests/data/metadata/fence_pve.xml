@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_pve" shortdesc="Fencing agent for the Proxmox Virtual Environment" >
-<longdesc>The fence_pve agent can be used to fence virtual machines acting as nodes in a virtualized cluster.</longdesc>
+<longdesc>fence_pve is a Power Fencing agent for virtual machines acting as nodes in a virtualized cluster.</longdesc>
 <vendor-url>http://www.proxmox.com/</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

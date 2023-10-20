@@ -191,7 +191,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for Lindy over SNMP"
-	docs["longdesc"] = "fence_lindypdu is an I/O Fencing agent \
+	docs["longdesc"] = "fence_lindypdu is a Power Fencing agent \
 which can be used with the Lindy PDU network power switch. It logs \
 into a device via SNMP and reboots a specified outlet. It supports \
 SNMP v1 with all combinations of authenticity/privacy settings."

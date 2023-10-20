@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_kubevirt" shortdesc="Fence agent for KubeVirt" >
-<longdesc>fence_kubevirt is an I/O Fencing agent for KubeVirt.</longdesc>
+<longdesc>fence_kubevirt is a Power Fencing agent for KubeVirt.</longdesc>
 <vendor-url>https://kubevirt.io/</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

@@ -76,7 +76,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for virsh"
-	docs["longdesc"] = "fence_virsh is an I/O Fencing agent \
+	docs["longdesc"] = "fence_virsh is a Power Fencing agent \
 which can be used with the virtual machines managed by libvirt. \
 It logs via ssh to a dom0 and there run virsh command, which does \
 all work. \

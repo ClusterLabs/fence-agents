@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
-<resource-agent name="fence_rsb" shortdesc="I/O Fencing agent for Fujitsu-Siemens RSB" >
-<longdesc>fence_rsb is an I/O Fencing agent which can be used with the Fujitsu-Siemens RSB management interface. It logs into device via telnet/ssh  and reboots a specified outlet. Lengthy telnet/ssh connections should be avoided while a GFS cluster is running because the connection will block any necessary fencing actions.</longdesc>
+<resource-agent name="fence_rsb" shortdesc="Power Fencing agent for Fujitsu-Siemens RSB" >
+<longdesc>fence_rsb is a Power Fencing agent which can be used with the Fujitsu-Siemens RSB management interface. It logs into device via telnet/ssh  and reboots a specified outlet. Lengthy telnet/ssh connections should be avoided while a GFS cluster is running because the connection will block any necessary fencing actions.</longdesc>
 <vendor-url>http://www.fujitsu.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

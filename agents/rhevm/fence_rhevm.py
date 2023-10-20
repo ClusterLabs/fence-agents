@@ -232,7 +232,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for RHEV-M REST API"
-	docs["longdesc"] = "fence_rhevm is an I/O Fencing agent which can be \
+	docs["longdesc"] = "fence_rhevm is a Power Fencing agent which can be \
 used with RHEV-M REST API to fence virtual machines."
 	docs["vendorurl"] = "http://www.redhat.com"
 	show_docs(options, docs)

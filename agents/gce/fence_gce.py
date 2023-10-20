@@ -515,7 +515,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for GCE (Google Cloud Engine)"
-	docs["longdesc"] = "fence_gce is an I/O Fencing agent for GCE (Google Cloud " \
+	docs["longdesc"] = "fence_gce is a Power Fencing agent for GCE (Google Cloud " \
 			   "Engine). It uses the googleapiclient library to connect to GCE.\n" \
 			   "googleapiclient can be configured with Google SDK CLI or by " \
 			   "executing 'gcloud auth application-default login'.\n" \

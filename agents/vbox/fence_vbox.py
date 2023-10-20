@@ -115,7 +115,7 @@ def main():
 
     docs = {}
     docs["shortdesc"] = "Fence agent for VirtualBox"
-    docs["longdesc"] = "fence_vbox is an I/O Fencing agent \
+    docs["longdesc"] = "fence_vbox is a Power Fencing agent \
 which can be used with the virtual machines managed by VirtualBox. \
 It logs via ssh to a dom0 where it runs VBoxManage to do all of \
 the work. \

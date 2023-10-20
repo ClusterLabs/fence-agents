@@ -108,7 +108,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for ePowerSwitch"
-	docs["longdesc"] = "fence_eps  is an I/O Fencing agent \
+	docs["longdesc"] = "fence_eps is a Power Fencing agent \
 which can be used with the ePowerSwitch 8M+ power switch to fence \
 connected machines. Fence agent works ONLY on 8M+ device, because \
 this is only one, which has support for hidden page feature. \

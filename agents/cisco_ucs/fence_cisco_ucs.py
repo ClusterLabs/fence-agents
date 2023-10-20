@@ -161,7 +161,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for Cisco UCS"
-	docs["longdesc"] = "fence_cisco_ucs is an I/O Fencing agent which can be \
+	docs["longdesc"] = "fence_cisco_ucs is a Power Fencing agent which can be \
 used with Cisco UCS to fence machines."
 	docs["vendorurl"] = "http://www.cisco.com"
 	show_docs(options_global, docs)

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_ilo_mp" shortdesc="Fence agent for HP iLO MP" >
-<longdesc></longdesc>
+<longdesc>fence_ilo_mp is a Power Fencing agent for HP iLO MP.</longdesc>
 <vendor-url>http://www.hp.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

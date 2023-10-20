@@ -66,7 +66,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for Intel Modular"
-	docs["longdesc"] = "fence_intelmodular is an I/O Fencing agent \
+	docs["longdesc"] = "fence_intelmodular is a Power Fencing agent \
 which can be used with Intel Modular device (tested on Intel MFSYS25, should \
 work with MFSYS35 as well). \
 \n.P\n\

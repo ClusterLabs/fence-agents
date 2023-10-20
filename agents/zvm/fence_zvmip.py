@@ -199,8 +199,8 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for use with z/VM Virtual Machines"
-	docs["longdesc"] = """The fence_zvmip agent is intended to be used with the
-z/VM SMAPI service via TCP/IP.
+	docs["longdesc"] = """fence_zvmip is a Power Fencing agent for z/VM \
+SMAPI service via TCP/IP.
 
 The z/VM SMAPI service must be configured so that the virtual machine running
 the agent can connect to the service, access the system's directory manager,

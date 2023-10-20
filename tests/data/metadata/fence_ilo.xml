@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_ilo" shortdesc="Fence agent for HP iLO" >
 <symlink name="fence_ilo2" shortdesc="Fence agent for HP iLO2"/>
-<longdesc>fence_ilo is an I/O Fencing agent used for HP servers with the Integrated Light Out (iLO) PCI card.The agent opens an SSL connection to the iLO card. Once the SSL connection is established, the agent is able to communicate with the iLO card through an XML stream.</longdesc>
+<longdesc>fence_ilo is a Power Fencing agent used for HP servers with the Integrated Light Out (iLO) PCI card.The agent opens an SSL connection to the iLO card. Once the SSL connection is established, the agent is able to communicate with the iLO card through an XML stream.</longdesc>
 <vendor-url>http://www.hp.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

@@ -149,7 +149,7 @@ def main():
 
     docs = {}
     docs["shortdesc"] = "Fence Agent for ANS eCloud"
-    docs["longdesc"] = "fence_ecloud is a fence agent for use with the ANS \
+    docs["longdesc"] = "fence_ecloud is a Power Fencing agent for use with the ANS \
 eCloud platform which is compatible with eCloud VPC and eCloud v1."
     docs["vendorurl"] = "https://www.ans.co.uk"
     show_docs(options, docs)

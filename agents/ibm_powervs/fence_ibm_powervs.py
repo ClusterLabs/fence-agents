@@ -275,7 +275,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for IBM PowerVS"
-	docs["longdesc"] = """fence_ibm_powervs is an I/O Fencing agent which can be \
+	docs["longdesc"] = """fence_ibm_powervs is a Power Fencing agent which can be \
 used with IBM PowerVS to fence virtual machines."""
 	docs["vendorurl"] = "https://www.ibm.com"
 	show_docs(options, docs)

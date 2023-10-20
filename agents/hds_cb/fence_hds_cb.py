@@ -113,7 +113,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for Hitachi Compute Blade systems"
-	docs["longdesc"] = "fence_hds_cb is an I/O Fencing agent \
+	docs["longdesc"] = "fence_hds_cb is a Power Fencing agent \
 which can be used with Hitachi Compute Blades with recent enough firmware that \
 includes telnet support."
 	docs["vendorurl"] = "http://www.hds.com"

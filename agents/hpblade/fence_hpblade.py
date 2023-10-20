@@ -110,7 +110,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for HP BladeSystem"
-	docs["longdesc"] = "fence_hpblade is an I/O Fencing agent \
+	docs["longdesc"] = "fence_hpblade is a Power Fencing agent \
 which can be used with HP BladeSystem and HP Integrity Superdome X. \
 It logs into the onboard administrator of an enclosure via telnet or \
 ssh and uses the command line interface to power blades or partitions \
