@@ -47,6 +47,10 @@ agents/ecloud/fence_ecloud.py:
  Copyright (C) 2022 ANS Group Limited
  Author: Dane Elwell <dane.elwell@ans.co.uk>
 
+agents/ovm/fence_ovm.py
+ Copyright (C) 2023 NTT COMWARE
+ Author: Teruyoshi Kaneko <kaneko.teruyoshi at nttcom.co.jp>
+
 man/fence_ifmib.8:
  Copyright (C) 2008-2011 Ross Vandegrift.
  Written by Ross Vandegrift <ross at kallisti.us>
