@@ -63,11 +63,7 @@
 		<content type="boolean"  />
 		<shortdesc lang="en">Use SSL connection with verifying certificate</shortdesc>
 	</parameter>
-	<parameter name="ssl_client_cert_file" unique="0" required="0" deprecated="1">
-		<getopt mixed="--ssl-client-certificate-file=[filename]" />
-		<shortdesc lang="en">SSL client certificate file</shortdesc>
-	</parameter>
-	<parameter name="ssl_client_certificate_file" unique="0" required="0" obsoletes="ssl_client_cert_file">
+	<parameter name="ssl_client_certificate_file" unique="0" required="0">
 		<getopt mixed="--ssl-client-certificate-file=[filename]" />
 		<shortdesc lang="en">SSL client certificate file</shortdesc>
 	</parameter>
