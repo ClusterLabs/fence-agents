@@ -127,7 +127,7 @@ def send_command(connection, options, resources_path, method="GET"):
 	return result
 
 def define_new_opts():
-	all_opt["ssl_client_cert_file"] = {
+	all_opt["ssl_client_certificate_file"] = {
 		"getopt" : ":",
 		"longopt" : "ssl-client-certificate-file",
 		"help" : "--ssl-client-certificate-file=[filename]   SSL client certificate file",
@@ -158,7 +158,7 @@ def validate_input(opt, stop=True):
 	return valid_input
 
 def main():
-	device_opt = ["ipaddr", "ipport", "login", "no_login", "passwd", "no_password", "port", "ssl", "ssl_client_cert_file"]
+	device_opt = ["ipaddr", "ipport", "login", "no_login", "passwd", "no_password", "port", "ssl", "ssl_client_certificate_file"]
 
 	atexit.register(atexit_handler)
 
