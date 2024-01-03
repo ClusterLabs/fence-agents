@@ -210,12 +210,12 @@ updating the VSMWORK1 NAMELIST and VSMWORK1 AUTHLIST VMSYS:VSMWORK1 files.
 The NAMELIST entry assigns all the required functions to one nick and should
 look similar to this:
 
-:nick.ZVM_FENCE
-:list.
-IMAGE_ACTIVATE
-IMAGE_DEACTIVATE
-IMAGE_STATUS_QUERY
-CHECK_AUTHENTICATION
+:nick.ZVM_FENCE\n.br\n\
+:list.\n.br\n\
+IMAGE_ACTIVATE\n.br\n\
+IMAGE_DEACTIVATE\n.br\n\
+IMAGE_STATUS_QUERY\n.br\n\
+CHECK_AUTHENTICATION\n.br\n\
 IMAGE_NAME_QUERY_DM
 
 
@@ -224,7 +224,7 @@ with the nick, and should look similar to this:
 
 Column 1                   Column 66                Column 131
 
-|                          |                        |
+|                          |                        |\n.br\n\
 V                          V                        V
 
 XXXXXXXX                   ALL                      ZVM_FENCE
