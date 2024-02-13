@@ -60,6 +60,9 @@ def get_list(conn, options):
 		else:
 			fail(EC_STATUS)
 
+	if options.get("--original-action") == "monitor" and not res["value"]:
+		logging.error("API user does not have sufficient rights to manage the power status.")
+		fail(EC_STATUS)
 	for r in res["value"]:
 		outlets[r["name"]] = ("", state[r["power_state"]])
 
