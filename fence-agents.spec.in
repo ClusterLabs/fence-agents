@@ -596,8 +596,8 @@ BuildArch: noarch
 Fence agent for ePowerSwitch 8M+ power switches that are accessed
 via the HTTP(s) protocol.
 %files eps
-%{_sbindir}/fence_eps
-%{_mandir}/man8/fence_eps.8*
+%{_sbindir}/fence_eps*
+%{_mandir}/man8/fence_eps*.8*
 
 %package gce
 License: GPL-2.0-or-later AND LGPL-2.0-or-later
