@@ -614,7 +614,7 @@ def metadata(options, avail_opt, docs):
 	sorted_list.sort(key=lambda x: (x[1]["order"], x[0]))
 
 	if options["--action"] == "metadata":
-               docs["longdesc"] = re.sub("\\\\f[BPIR]|\.P|\.TP|\.br\n", "", docs["longdesc"])
+               docs["longdesc"] = re.sub(r"\\f[BPIR]|\.P|\.TP|\.br\n", r"", docs["longdesc"])
 
 	print("<?xml version=\"1.0\" ?>")
 	print("<resource-agent name=\"" + os.path.basename(sys.argv[0]) + \
@@ -649,7 +649,7 @@ def metadata(options, avail_opt, docs):
 			mixed = _encode_html_entities(mixed)
 
 			if not "shortdesc" in opt:
-				shortdesc = re.sub(".*\s\s+", "", opt["help"][31:])
+				shortdesc = re.sub(r".*\s\s+", r"", opt["help"][31:])
 			else:
 				shortdesc = opt["shortdesc"]
 
@@ -1272,7 +1272,7 @@ def source_env(env_file):
                           executable="/bin/sh")
     # replace env
     os.environ.clear()
-    os.environ.update(line.partition('=')[::2] for line in output.decode("utf-8").split('\0') if not re.match("^\s*$", line))
+    os.environ.update(line.partition('=')[::2] for line in output.decode("utf-8").split('\0') if not re.match(r"^\s*$", line))
 
 # Convert array of format [[key1, value1], [key2, value2], ... [keyN, valueN]] to dict, where key is
 # in format a.b.c.d...z and returned dict has key only z
@@ -1359,7 +1359,7 @@ def _login_ssh_with_identity_file(options):
 
 def _login_telnet(options, re_login_string):
 	re_login = re.compile(re_login_string, re.IGNORECASE)
-	re_pass = re.compile("(password)|(pass phrase)", re.IGNORECASE)
+	re_pass = re.compile(r"(password)|(pass phrase)", re.IGNORECASE)
 
 	conn = fspawn(options, options["--telnet-path"])
 	conn.send("set binary\n")
@@ -1400,7 +1400,7 @@ def _login_telnet(options, re_login_string):
 
 def _login_ssh_with_password(options, re_login_string):
 	re_login = re.compile(re_login_string, re.IGNORECASE)
-	re_pass = re.compile("(password)|(pass phrase)", re.IGNORECASE)
+	re_pass = re.compile(r"(password)|(pass phrase)", re.IGNORECASE)
 
 	if "--inet6-only" in options:
 		force_ipvx = "-6 "
@@ -1608,7 +1608,7 @@ def _parse_input_stdin(avail_opt):
 
 		(name, value) = (line + "=").split("=", 1)
 		value = value[:-1]
-		value = re.sub("^\"(.*)\"$", "\\1", value)
+		value = re.sub(r"^\"(.*)\"$", r"\1", value)
 
 		if name.replace("-", "_") in mapping_longopt_names:
 			name = mapping_longopt_names[name.replace("-", "_")]

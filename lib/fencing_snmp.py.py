@@ -91,7 +91,7 @@ class FencingSnmp:
 
 			logging.debug("%s\n", res_output)
 
-			if (res_code != 0) or (re.search("^Error ", res_output, re.MULTILINE) != None):
+			if (res_code != 0) or (re.search(r"^Error ", res_output, re.MULTILINE) != None):
 				fail_usage("Returned %d: %s"% (res_code, res_output))
 		except pexpect.ExceptionPexpect:
 			fail_usage("Cannot run command %s"%(command))

@@ -36,21 +36,21 @@ def get_power_status(conn, options):
 	admin = 0
 	switch = 0
 
-	if None != re.compile('.* MasterSwitch plus.*', re.IGNORECASE | re.S).match(conn.before):
+	if None != re.compile(r'.* MasterSwitch plus.*', re.IGNORECASE | re.S).match(conn.before):
 		switch = 1
-		if None != re.compile('.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before):
+		if None != re.compile(r'.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before):
 			if "--switch" not in options:
 				fail_usage("Failed: You have to enter physical switch number")
 		else:
 			if "--switch" not in options:
 				options["--switch"] = "1"
 
-	if None == re.compile('.*Outlet Management.*', re.IGNORECASE | re.S).match(conn.before):
+	if None == re.compile(r'.*Outlet Management.*', re.IGNORECASE | re.S).match(conn.before):
 		version = 2
 	else:
 		version = 3
 
-	if None == re.compile('.*Outlet Control/Configuration.*', re.IGNORECASE | re.S).match(conn.before):
+	if None == re.compile(r'.*Outlet Control/Configuration.*', re.IGNORECASE | re.S).match(conn.before):
 		admin = 0
 	else:
 		admin = 1
@@ -109,26 +109,26 @@ def set_power_status(conn, options):
 	admin3 = 0
 	switch = 0
 
-	if None != re.compile('.* MasterSwitch plus.*', re.IGNORECASE | re.S).match(conn.before):
+	if None != re.compile(r'.* MasterSwitch plus.*', re.IGNORECASE | re.S).match(conn.before):
 		switch = 1
 		## MasterSwitch has different schema for on/off actions
 		action = {
 			'on' : "1",
 			'off': "3"
 		}[options["--action"]]
-		if None != re.compile('.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before):
+		if None != re.compile(r'.* MasterSwitch plus 2', re.IGNORECASE | re.S).match(conn.before):
 			if "--switch" not in options:
 				fail_usage("Failed: You have to enter physical switch number")
 		else:
 			if "--switch" not in options:
 				options["--switch"] = 1
 
-	if None == re.compile('.*Outlet Management.*', re.IGNORECASE | re.S).match(conn.before):
+	if None == re.compile(r'.*Outlet Management.*', re.IGNORECASE | re.S).match(conn.before):
 		version = 2
 	else:
 		version = 3
 
-	if None == re.compile('.*Outlet Control/Configuration.*', re.IGNORECASE | re.S).match(conn.before):
+	if None == re.compile(r'.*Outlet Control/Configuration.*', re.IGNORECASE | re.S).match(conn.before):
 		admin2 = 0
 	else:
 		admin2 = 1
@@ -142,7 +142,7 @@ def set_power_status(conn, options):
 		else:
 			conn.send_eol("2")
 			conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
-			if None == re.compile('.*2- Outlet Restriction.*', re.IGNORECASE | re.S).match(conn.before):
+			if None == re.compile(r'.*2- Outlet Restriction.*', re.IGNORECASE | re.S).match(conn.before):
 				admin3 = 0
 			else:
 				admin3 = 1

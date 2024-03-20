@@ -49,7 +49,7 @@ def get_from_metadata(parameter):
     return None
 
 def get_azure_resource(id):
-    match = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))?((/([^/]*)/([^/]*))*)', id)
+    match = re.match(r'(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))?((/([^/]*)/([^/]*))*)', id)
     if not match:
         fail_usage("{get_azure_resource} cannot parse resource id %s" % id)
 

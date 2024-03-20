@@ -16,7 +16,7 @@ def get_power_status(conn, options):
 	conn.send_eol("power state")
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
-	match = re.compile("Power: (.*)", re.IGNORECASE).search(conn.before)
+	match = re.compile(r"Power: (.*)", re.IGNORECASE).search(conn.before)
 	if match != None:
 		status = match.group(1)
 	else:

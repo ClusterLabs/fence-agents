@@ -8,7 +8,7 @@ from fencing import fspawn, fail, EC_LOGIN_DENIED, run_delay
 
 def get_power_status(conn, options):
 	conn.send_eol("show -d properties=powerState %s" % options["--plug"])
-	re_status = re.compile(".*powerState is [12].*")
+	re_status = re.compile(r".*powerState is [12].*")
 	conn.log_expect(re_status, int(options["--shell-timeout"]))
 	status = {
 		#"0" : "off",

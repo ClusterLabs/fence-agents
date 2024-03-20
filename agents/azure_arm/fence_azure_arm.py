@@ -251,7 +251,7 @@ When using network fencing the reboot-action will cause a quick-return once the 
     except ImportError:
         fail_usage("Azure Resource Manager Python SDK not found or not accessible")
     except Exception as e:
-        fail_usage("Failed: %s" % re.sub("^, ", "", str(e)))
+        fail_usage("Failed: %s" % re.sub(r"^, ", r"", str(e)))
 
     if "--network-fencing" in options:
         # use  off-action to quickly return off once network is fenced instead of

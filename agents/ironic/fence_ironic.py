@@ -20,7 +20,7 @@ def get_name_or_uuid(options):
 def get_power_status(_, options):
     output = ironic_run_command(options, "status")
     stdout = output[1]
-    match = re.search('power[\\s]*([a-zA-Z]{2,3})', str(stdout))
+    match = re.search(r'power[\s]*([a-zA-Z]{2,3})', str(stdout))
     status = match.group(1) if match else None
     return status
 
@@ -40,7 +40,7 @@ def get_devices_list(_, options):
             pass
         if "UUID" in uuid:
             continue # skip line header
-        match = re.search('power[\\s]*([a-zA-Z]{2,3})', state)
+        match = re.search(r'power[\s]*([a-zA-Z]{2,3})', state)
         status = match.group(1) if match else None
         nodes[uuid] = (name, status)
 
