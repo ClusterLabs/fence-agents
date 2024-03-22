@@ -13,7 +13,7 @@ from fencing import *
 def get_power_status(conn, options):
 	conn.send_eol("showplatform")
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
-	status = re.search("standby", conn.before.lower())
+	status = re.search(r"standby", conn.before.lower())
 	result = (status != None and "off" or "on")
 
 	return result

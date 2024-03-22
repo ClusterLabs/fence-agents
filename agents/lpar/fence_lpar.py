@@ -44,10 +44,10 @@ def get_power_status(conn, options):
 
 	try:
 		if options["--hmc-version"] == "3":
-			status = re.compile("^" + options["--plug"] + ",(.*?),.*$",
+			status = re.compile(r"^" + options["--plug"] + r",(.*?),.*$",
 					    re.IGNORECASE | re.MULTILINE).search(conn.before).group(1)
 		elif options["--hmc-version"] in ["4", "IVM"]:
-			status = re.compile(",state=(.*?),", re.IGNORECASE).search(conn.before).group(1)
+			status = re.compile(r",state=(.*?),", re.IGNORECASE).search(conn.before).group(1)
 	except AttributeError as e:
 		logging.debug("Command on HMC failed: {}\n{}".format(command, str(e)))
 		fail(EC_STATUS_HMC)
@@ -60,7 +60,7 @@ def is_comanaged(conn, options):
 	conn.log_expect(options["--command-prompt"], int(options["--power-timeout"]))
 
 	try:
-		cm = re.compile(",curr_master_mtms=(.*?),", re.IGNORECASE).search(conn.before).group(1)
+		cm = re.compile(r",curr_master_mtms=(.*?),", re.IGNORECASE).search(conn.before).group(1)
 	except AttributeError as e:
 		cm = False
 
@@ -106,7 +106,7 @@ def get_lpar_list(conn, options):
 
 		## We have to remove next 2 lines (header) and last line (part of new prompt)
 		####
-		res = re.search("^(.+?\n){2}(.*)\n.*$", conn.before, re.S)
+		res = re.search(r"^(.+?\n){2}(.*)\n.*$", conn.before, re.S)
 
 		if res == None:
 			fail_usage("Unable to parse output of list command")
@@ -126,7 +126,7 @@ def get_lpar_list(conn, options):
 
 		## We have to remove last line (part of new prompt)
 		####
-		res = re.search("^(.*)\n.*$", conn.before, re.S)
+		res = re.search(r"^(.*)\n.*$", conn.before, re.S)
 
 		if res == None:
 			fail_usage("Unable to parse output of list command")

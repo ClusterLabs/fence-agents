@@ -13,7 +13,7 @@ except ImportError:
 
 def get_power_status(_, options):
 	output = amt_run_command(options, create_command(options, "status"))
-	match = re.search('Powerstate:[\\s]*(..)', str(output))
+	match = re.search(r'Powerstate:[\s]*(..)', str(output))
 	status = match.group(1) if match else None
 
 	if status == None:

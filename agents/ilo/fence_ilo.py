@@ -106,7 +106,7 @@ the iLO card through an XML stream.".format(os.path.basename(__file__))
 			fail(EC_LOGIN_DENIED)
 
 	try:
-		version = re.compile("<RIBCL VERSION=\"(.*?)\"", re.IGNORECASE).search(conn.before).group(1)
+		version = re.compile(r"<RIBCL VERSION=\"(.*?)\"", re.IGNORECASE).search(conn.before).group(1)
 		if "--ribcl-version" not in options:
 			options["--ribcl-version"] = float(version)
 

@@ -8,7 +8,7 @@ from fencing import *
 def get_power_status(conn, options):
 	conn.send_eol("show /system1")
 
-	re_state = re.compile('EnabledState=(.*)', re.IGNORECASE)
+	re_state = re.compile(r'EnabledState=(.*)', re.IGNORECASE)
 	conn.log_expect(re_state, int(options["--shell-timeout"]))
 
 	status = conn.match.group(1).lower()

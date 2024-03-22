@@ -13,7 +13,7 @@ except ImportError:
 
 def get_power_status(_, options):
 	output = _run_command(options, "status")
-	match = re.search('[Cc]hassis [Pp]ower is [\\s]*([a-zA-Z]{2,3})', str(output))
+	match = re.search(r'[Cc]hassis [Pp]ower is [\s]*([a-zA-Z]{2,3})', str(output))
 	status = match.group(1) if match else None
 	return status
 
@@ -23,11 +23,11 @@ def set_power_status(_, options):
 
 def reboot_cycle(_, options):
 	output = _run_command(options, "cycle")
-	return bool(re.search('chassis power control: cycle', str(output).lower()))
+	return bool(re.search(r'chassis power control: cycle', str(output).lower()))
 
 def reboot_diag(_, options):
 	output = _run_command(options, "diag")
-	return bool(re.search('chassis power control: diag', str(output).lower()))
+	return bool(re.search(r'chassis power control: diag', str(output).lower()))
 
 def _run_command(options, action):
 	cmd, log_cmd = create_command(options, action)

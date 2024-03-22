@@ -85,8 +85,8 @@ def replace_api_uri(options, http_request):
 		uri_replacements.append(
 			{
 				"matchlength": 4,
-				"match": "https://compute.googleapis.com/compute/v1/projects/(.*)/zones/(.*)/instances/(.*)/reset(.*)",
-				"replace": "https://baremetalsolution.googleapis.com/v1/projects/\\1/locations/\\2/instances/\\3:resetInstance\\4"
+				"match": r"https://compute.googleapis.com/compute/v1/projects/(.*)/zones/(.*)/instances/(.*)/reset(.*)",
+				"replace": r"https://baremetalsolution.googleapis.com/v1/projects/\1/locations/\2/instances/\3:resetInstance\4"
 			})
 	for uri_replacement in uri_replacements:
 		# each uri_replacement should have matchlength, match, and replace
@@ -97,7 +97,7 @@ def replace_api_uri(options, http_request):
 		if match is None or len(match.groups()) != uri_replacement["matchlength"]:
 			continue
 		replaced_uri = re.sub(uri_replacement["match"], uri_replacement["replace"], http_request.uri)
-		match = re.match("https:\/\/.*.googleapis.com", replaced_uri)
+		match = re.match(r"https:\/\/.*.googleapis.com", replaced_uri)
 		if match is None or match.start() != 0:
 			logging.warning("FENCE_GCE_URI_REPLACEMENTS replace is not "
 				"targeting googleapis.com, ignoring it: %s" % replaced_uri)
