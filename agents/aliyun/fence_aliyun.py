@@ -165,7 +165,7 @@ def define_new_opts():
 		"shortdesc": "Credentials file profile",
 		"required": "0",
 		"default": "default",
-		"order": 6
+		"order": 7
 	}
 	all_opt["filter"] = {
 		"getopt": ":",
@@ -173,7 +173,7 @@ def define_new_opts():
 		"help": "--filter=[key=value]           Filter (e.g. InstanceIds=[\"i-XXYYZZAA1\",\"i-XXYYZZAA2\"]",
 		"shortdesc": "Filter for list-action.",
 		"required": "0",
-		"order": 7
+		"order": 8
 	}
 
 # Main agent method
