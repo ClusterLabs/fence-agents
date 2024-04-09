@@ -381,15 +381,11 @@ Fence agent for Amazon AWS instances.
 License: GPL-2.0-or-later AND LGPL-2.0-or-later
 Summary: Fence agent for Azure Resource Manager
 Requires: fence-agents-common = %{version}-%{release}
-%if 0%{?fedora} > 34
 Requires: python3-azure-common
 Requires: python3-azure-identity
 Requires: python3-azure-mgmt-compute
 Requires: python3-azure-mgmt-network
 Requires: python3-msrestazure
-%else
-Requires: python3-azure-sdk
-%endif
 BuildArch: noarch
 Obsoletes: fence-agents < 3.1.13
 %description azure-arm
