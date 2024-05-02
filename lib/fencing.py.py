@@ -603,7 +603,7 @@ def usage(avail_opt):
 		if len(value["help"]) != 0:
 			print("   " + _join_wrap([value["help"]], first_indent=3))
 
-def metadata(options, avail_opt, docs):
+def metadata(options, avail_opt, docs, agent_name=os.path.basename(sys.argv[0])):
 	# avail_opt has to be unique, if there are duplicities then they should be removed
 	sorted_list = [(key, all_opt[key]) for key in list(set(avail_opt)) if "longopt" in all_opt[key]]
 	# Find keys that are going to replace inconsistent names
@@ -617,7 +617,7 @@ def metadata(options, avail_opt, docs):
                docs["longdesc"] = re.sub(r"\\f[BPIR]|\.P|\.TP|\.br\n", r"", docs["longdesc"])
 
 	print("<?xml version=\"1.0\" ?>")
-	print("<resource-agent name=\"" + os.path.basename(sys.argv[0]) + \
+	print("<resource-agent name=\"" + agent_name + \
 			"\" shortdesc=\"" + docs["shortdesc"] + "\" >")
 	for (symlink, desc) in docs.get("symlink", []):
 		print("<symlink name=\"" + symlink + "\" shortdesc=\"" + desc + "\"/>")
@@ -928,9 +928,15 @@ def show_docs(options, docs=None):
 		sys.exit(0)
 
 	if options.get("--action", "") in ["metadata", "manpage"]:
+		if options["--action"] == "metadata" or "agent_name" not in docs:
+			agent_name=os.path.basename(sys.argv[0])
+		else:
+			agent_name=docs["agent_name"]
+
+
 		if "port_as_ip" in device_opt:
 			device_opt.remove("separator")
-		metadata(options, device_opt, docs)
+		metadata(options, device_opt, docs, agent_name)
 		sys.exit(0)
 
 	if "--version" in options:

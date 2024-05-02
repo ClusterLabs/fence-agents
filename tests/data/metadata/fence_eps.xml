@@ -1,9 +1,12 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_eps" shortdesc="Fence agent for ePowerSwitch" >
-<longdesc>fence_eps is a Power Fencing agent which can be used with the ePowerSwitch 8M+ power switch to fence connected machines. Fence agent works ONLY on 8M+ device, because this is only one, which has support for hidden page feature. 
+<symlink name="fence_epsr2" shortdesc="Fence agent for ePowerSwitch R2 and newer"/>
+<longdesc>fence_eps is a Power Fencing agent which can be used with the ePowerSwitch 8M+ power switch to fence connected machines. It ONLY works on 8M+ devices, as they support the hidden page feature. 
 
-Agent basically works by connecting to hidden page and pass appropriate arguments to GET request. This means, that hidden page feature must be enabled and properly configured.</longdesc>
-<vendor-url>http://www.epowerswitch.com</vendor-url>
+The agent works by connecting to the hidden page and pass the appropriate arguments to GET request. This means, that the hidden page feature must be enabled and properly configured. 
+
+NOTE: In most cases you want to use fence_epsr2, as fence_eps only works with older hardware.</longdesc>
+<vendor-url>https://www.neol.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
 		<getopt mixed="-o, --action=[action]" />
