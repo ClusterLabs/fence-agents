@@ -331,7 +331,7 @@ failing."
 	if not ("--devices" in options and options["--devices"]):
 		fail_usage("Failed: No devices found")
 
-	options["devices"] = [d for d in re.split("\s*,\s*|\s+", options["--devices"].strip()) if d]
+	options["devices"] = [d for d in re.split(r"\s*,\s*|\s+", options["--devices"].strip()) if d]
 	# Input control END
 
 	result = fence_action(None, options, set_status, get_status)

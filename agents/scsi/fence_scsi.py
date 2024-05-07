@@ -236,11 +236,11 @@ def get_node_id(options):
 	cmd = options["--corosync-cmap-path"] + " nodelist"
 	out = run_cmd(options, cmd)["out"]
 
-	match = re.search(r".(\d+).name \(str\) = " + options["--plug"] + "\n", out)
+	match = re.search(r".(\d+).name \(str\) = " + options["--plug"] + r"\n", out)
 
 	# try old format before failing
 	if not match:
-		match = re.search(r".(\d+).ring._addr \(str\) = " + options["--plug"] + "\n", out)
+		match = re.search(r".(\d+).ring._addr \(str\) = " + options["--plug"] + r"\n", out)
 
 	return match.group(1) if match else fail_usage("Failed: unable to parse output of corosync-cmapctl or node does not exist")
 
@@ -295,7 +295,7 @@ def dev_write(dev, options):
 		fail_usage("Failed: Cannot open file \""+ file_path + "\"")
 	f.seek(0)
 	out = f.read()
-	if not re.search(r"^" + dev + "\s+", out, flags=re.MULTILINE):
+	if not re.search(r"^" + dev + r"\s+", out, flags=re.MULTILINE):
 		f.write(dev + "\n")
 	f.close()
 
@@ -613,10 +613,10 @@ failing."
 
 	options["--key"] = options["--key"].lstrip('0')
 
-	if not ("--devices" in options and [d for d in re.split("\s*,\s*|\s+", options["--devices"].strip()) if d]):
+	if not ("--devices" in options and [d for d in re.split(r"\s*,\s*|\s+", options["--devices"].strip()) if d]):
 		options["devices"] = get_shared_devices(options)
 	else:
-		options["devices"] = [d for d in re.split("\s*,\s*|\s+", options["--devices"].strip()) if d]
+		options["devices"] = [d for d in re.split(r"\s*,\s*|\s+", options["--devices"].strip()) if d]
 
 	if not options["devices"]:
 		fail_usage("Failed: No devices found")
