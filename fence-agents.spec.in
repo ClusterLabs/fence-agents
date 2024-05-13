@@ -24,11 +24,7 @@ Group: System Environment/Base
 URL: https://github.com/ClusterLabs/fence-agents
 Source0: %{name}-%{version}%{?rcver:%{rcver}}%{?numcomm:.%{numcomm}}%{?alphatag:-%{alphatag}}%{?dirty:-%{dirty}}.tar.bz2
 
-%if 0%{?rhel} == 9
-%ifarch ppc64le s390x
-%define rhel9_ppc64le_s390x 1
-%endif
-%endif
+%define boto3_br @boto3_br@
 
 # skipped: pve, raritan, rcd-serial, virsh
 %global allfenceagents %(cat <<EOF
@@ -124,11 +120,14 @@ BuildRequires: python3-suds
 %endif
 %if 0%{?fedora} || 0%{?centos} || 0%{?rhel}
 BuildRequires: openwsman-python3
-%if ! %{defined rhel9_ppc64le_s390x}
+%if %{boto3_br}
 BuildRequires: python3-boto3
 %endif
 %else
-BuildRequires: python3-openwsman python3-boto3
+BuildRequires: python3-openwsman
+%if %{boto3_br}
+BuildRequires: python3-boto3
+%endif
 %endif
 
 # fence-virt

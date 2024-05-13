@@ -25,6 +25,12 @@ ACLOCAL_AMFLAGS		= -I m4
 
 SUBDIRS			= lib agents doc systemd
 
+if HAVE_BOTO3
+HAVE_BOTO3 = 1
+else
+HAVE_BOTO3 = 0
+endif
+
 .PHONY: $(SUBDIRS)
 
 agents: lib
@@ -77,6 +83,7 @@ $(SPEC): $(SPEC).in
 	alphatag="" && \
 	numcomm="" && \
 	ver="$(VERSION)" && \
+	boto3_br="$(HAVE_BOTO3)" && \
 	if echo $$ver | grep -q -- "-dirty$$"; then \
 		dirty="dirty" && \
 		echo VERSION IS DIRTY && \
@@ -113,6 +120,7 @@ $(SPEC): $(SPEC).in
 		-e "s#@rgmanager@#$(RGMANAGER)#g" \
 		-e "s#@linux-ha@#$(LINUX_HA)#g" \
 		-e "s#@compat-habindir@#$(COMPAT_HABINDIR)#g" \
+		-e "s#@boto3_br@#$$boto3_br#g" \
 	$< > $@-t; \
 	if [ -z "$$dirty" ]; then sed -i -e "s#%glo.*dirty.*##g" $@-t; fi; \
 	if [ -z "$$alphatag" ]; then sed -i -e "s#%glo.*alphatag.*##g" $@-t; fi; \
