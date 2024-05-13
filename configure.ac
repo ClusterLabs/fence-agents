@@ -291,6 +291,9 @@ AC_PYTHON_MODULE(pexpect, 1)
 AC_PYTHON_MODULE(pycurl, 1)
 AC_PYTHON_MODULE(requests, 1)
 
+AC_PYTHON_MODULE(boto3)
+AM_CONDITIONAL(HAVE_BOTO3, [test "x$HAVE_PYMOD_BOTO3" == xyes ])
+
 if echo "$AGENTS_LIST" | grep -q amt_ws; then
 	AC_PYTHON_MODULE(pywsman)
 	if test "x${HAVE_PYMOD_PYWSMAN}" != xyes; then

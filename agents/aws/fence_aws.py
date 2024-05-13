@@ -228,7 +228,10 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 				      aws_access_key_id=access_key,
 				      aws_secret_access_key=secret_key)
 	except Exception as e:
-		fail_usage("Failed: Unable to connect to AWS: " + str(e))
+		if not options.get("--action", "") in ["metadata", "manpage", "validate-all"]:
+			fail_usage("Failed: Unable to connect to AWS: " + str(e))
+		else:
+			pass
 
 	# Operate the fencing device
 	result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list)
