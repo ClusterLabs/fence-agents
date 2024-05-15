@@ -33,10 +33,10 @@ def get_enclosure_type(conn, options):
 def get_power_status(conn, options):
 	if options["enc_type"] == "superdome":
 		cmd_send = "parstatus -M -p " + options["--plug"]
-		powrestr = "^partition:\\d\\s+:\\w+\\s+/(\\w+)\\s.*$"
+		powrestr = r"^partition:\d\s+:\w+\s+/(\w+)\s.*$"
 	else:
 		cmd_send = "show server status " + options["--plug"]
-		powrestr = "^\\s*Power: (.*?)\\s*$"
+		powrestr = r"^\s*Power: (.*?)\s*$"
 
 	conn.send_eol(cmd_send)
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
@@ -78,10 +78,10 @@ def get_instances_list(conn, options):
 	outlets = {}
 	if options["enc_type"] == "superdome":
 		cmd_send = "parstatus -P -M"
-		listrestr = "^partition:(\\d+)\\s+:\\w+\\s+/(\\w+)\\s+:OK.*?:(\\w+)\\s*$"
+		listrestr = r"^partition:(\d+)\s+:\w+\s+/(\w+)\s+:OK.*?:(\w+)\s*$"
 	else:
 		cmd_send = "show server list"
-		listrestr = "^\\s*(\\d+)\\s+(.*?)\\s+(.*?)\\s+OK\\s+(.*?)\\s+(.*?)\\s*$"
+		listrestr = r"^\s*(\d+)\s+(.*?)\s+(.*?)\s+OK\s+(.*?)\s+(.*?)\s*$"
 
 	conn.send_eol(cmd_send)
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
