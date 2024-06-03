@@ -48,6 +48,8 @@ def send_cmd(options, cmd, post = False):
 	output_buffer = io.BytesIO()
 	if logging.getLogger().getEffectiveLevel() < logging.WARNING:
 		conn.setopt(pycurl.VERBOSE, True)
+	if "--unix-socket" in options:
+		conn.setopt(pycurl.UNIX_SOCKET_PATH, options["--unix-socket"])
 	conn.setopt(pycurl.HTTPGET, 1)
 	conn.setopt(pycurl.URL, url.encode("ascii"))
 	if post:
@@ -135,11 +137,34 @@ TLS authentication.  Required if --ssl option is used.",
 		"default" : "1.11",
 	}
 
-	device_opt = ["ipaddr", "no_password", "no_login", "port", "method", "web", "tlscert", "tlskey", "tlscacert", "ssl", "api_version"]
+	all_opt["unix_socket"] = {
+		"getopt" : ":",
+		"longopt" : "unix-socket",
+		"help" : "--unix-socket                  "
+			"Path to Docker's unix socket. Use this with --disable-ssl.",
+		"required" : "0",
+		"order" : 2,
+	}
 
+	all_opt["disable_ssl"] = {
+		"getopt" : "",
+		"longopt" : "disable-ssl",
+		"help" : "--disable-ssl                  Don't use SSL connection",
+		"required" : "0",
+		"shortdesc" : "Don't use SSL",
+		"order": 2,
+	}
+
+	device_opt = ["ipaddr", "no_password", "no_login", "port", "method", "web",
+		"tlscert", "tlskey", "tlscacert", "ssl", "api_version", "unix_socket",
+		"disable_ssl"]
 	all_opt["ssl"]["default"] = "1"
-
 	options = check_input(device_opt, process_input(device_opt))
+
+	if "--disable-ssl" in options or options["--ssl"] == "0":
+		for k in ["--ssl", "--ssl-secure", "--ssl-insecure"]:
+			if k in options:
+				del options[k]
 
 	docs = { }
 	docs["shortdesc"] = "Fence agent for Docker"
