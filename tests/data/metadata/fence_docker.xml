@@ -61,6 +61,11 @@
 		<content type="string" default="1.11"  />
 		<shortdesc lang="en">Version of Docker Remote API (default: 1.11)</shortdesc>
 	</parameter>
+	<parameter name="disable_ssl" unique="0" required="0">
+		<getopt mixed="--disable-ssl" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Don't use SSL</shortdesc>
+	</parameter>
 	<parameter name="tlscacert" unique="0" required="0">
 		<getopt mixed="--tlscacert" />
 		<content type="string"  />
@@ -75,6 +80,11 @@
 		<getopt mixed="--tlskey" />
 		<content type="string"  />
 		<shortdesc lang="en">Path to client key (PEM format) for TLS authentication.  Required if --ssl option is used.</shortdesc>
+	</parameter>
+	<parameter name="unix_socket" unique="0" required="0">
+		<getopt mixed="--unix-socket" />
+		<content type="string"  />
+		<shortdesc lang="en">Path to Docker's unix socket. Use this with --disable-ssl.</shortdesc>
 	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
