@@ -14,6 +14,8 @@ FENCE_TAG_IP = "FENCE_TAG_IP"
 IP_TYPE_DYNAMIC = "Dynamic"
 MAX_RETRY = 10
 RETRY_WAIT = 5
+COMPUTE_CLIENT_API_VERSION = "2021-11-01"
+NETWORK_MGMT_CLIENT_API_VERSION = "2021-05-01"
 
 class AzureSubResource:
     Type = None
@@ -366,17 +368,20 @@ def get_azure_compute_client(config):
                 base_url=cloud_environment.endpoints.resource_manager,
                 profile=client_profile,
                 credential_scopes=[credential_scope],
+                api_version=COMPUTE_CLIENT_API_VERSION
             )
         except TypeError:
             compute_client = ComputeManagementClient(
                 credentials,
                 config.SubscriptionId,
-                base_url=cloud_environment.endpoints.resource_manager
+                base_url=cloud_environment.endpoints.resource_manager,
+                api_version=COMPUTE_CLIENT_API_VERSION
             )
     else:
         compute_client = ComputeManagementClient(
             credentials,
-            config.SubscriptionId
+            config.SubscriptionId,
+            api_version=COMPUTE_CLIENT_API_VERSION
         )
     return compute_client
 
@@ -404,16 +409,19 @@ def get_azure_network_client(config):
                 base_url=cloud_environment.endpoints.resource_manager,
                 profile=client_profile,
                 credential_scopes=[credential_scope],
+                api_version=NETWORK_MGMT_CLIENT_API_VERSION
             )
         except TypeError:
             network_client = NetworkManagementClient(
                 credentials,
                 config.SubscriptionId,
-                base_url=cloud_environment.endpoints.resource_manager
+                base_url=cloud_environment.endpoints.resource_manager,
+                api_version=NETWORK_MGMT_CLIENT_API_VERSION
             )
     else:
         network_client = NetworkManagementClient(
             credentials,
-            config.SubscriptionId
+            config.SubscriptionId,
+            api_version=NETWORK_MGMT_CLIENT_API_VERSION
         )
     return network_client
