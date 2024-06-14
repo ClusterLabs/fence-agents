@@ -979,14 +979,14 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 
 					if options["--action"] == "list":
 						try:
-							print(outlet_id + options["--separator"] + alias)
+							print("{}{}{}".format(outlet_id, options["--separator"], alias))
 						except UnicodeEncodeError as e:
-							print((outlet_id + options["--separator"] + alias).encode("utf-8"))
+							print("{}{}{}".format(outlet_id, options["--separator"], alias).encode("utf-8"))
 					elif options["--action"] == "list-status":
 						try:
-							print(outlet_id + options["--separator"] + alias + options["--separator"] + status)
+							print("{}{}{}{}{}".format(outlet_id, options["--separator"], alias, options["--separator"], status))
 						except UnicodeEncodeError as e:
-							print((outlet_id + options["--separator"] + alias).encode("utf-8") + options["--separator"] + status)
+							print("{}{}{}{}{}".format(outlet_id, options["--separator"], alias, options["--separator"], status).encode("utf-8"))
 
 			return result
 
