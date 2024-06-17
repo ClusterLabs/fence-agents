@@ -22,6 +22,15 @@ logger.setLevel(logging.INFO)
 logger.addHandler(SyslogLibHandler())
 logging.getLogger('botocore.vendored').propagate = False
 
+status = {
+		"running": "on",
+		"stopped": "off",
+		"pending": "unknown",
+		"stopping": "unknown",
+		"shutting-down": "unknown",
+		"terminated": "unknown"
+}
+
 def get_instance_id(options):
 	try:
 		token = requests.put('http://169.254.169.254/latest/api/token', headers={"X-aws-ec2-metadata-token-ttl-seconds" : "21600"}).content.decode("UTF-8")
@@ -45,11 +54,14 @@ def get_nodes_list(conn, options):
 			filter_key   = options["--filter"].split("=")[0].strip()
 			filter_value = options["--filter"].split("=")[1].strip()
 			filter = [{ "Name": filter_key, "Values": [filter_value] }]
-			for instance in conn.instances.filter(Filters=filter):
-				result[instance.id] = ("", None)
-		else:
-			for instance in conn.instances.all():
-				result[instance.id] = ("", None)
+			logging.debug("Filter: {}".format(filter))
+
+		for instance in conn.instances.filter(Filters=filter if 'filter' in vars() else []):
+			instance_name = ""
+			for tag in instance.tags or []:
+				if tag.get("Key") == "Name":
+					instance_name = tag["Value"]
+			result[instance.id] = (instance_name, status[instance.state["Name"]])
 	except ClientError:
 		fail_usage("Failed: Incorrect Access Key or Secret Key.")
 	except EndpointConnectionError:
@@ -67,12 +79,7 @@ def get_power_status(conn, options):
 		instance = conn.instances.filter(Filters=[{"Name": "instance-id", "Values": [options["--plug"]]}])
 		state = list(instance)[0].state["Name"]
 		logger.debug("Status operation for EC2 instance %s returned state: %s",options["--plug"],state.upper())
-		if state == "running":
-			return "on"
-		elif state == "stopped":
-			return "off"
-		else:
-			return "unknown"
+		return status[state]
 
 	except ClientError:
 		fail_usage("Failed: Incorrect Access Key or Secret Key.")
@@ -146,7 +153,7 @@ def define_new_opts():
 	all_opt["filter"] = {
 		"getopt" : ":",
 		"longopt" : "filter",
-		"help" : "--filter=[key=value]           Filter (e.g. vpc-id=[vpc-XXYYZZAA]",
+		"help" : "--filter=[key=value]           Filter (e.g. vpc-id=[vpc-XXYYZZAA])",
 		"shortdesc": "Filter for list-action",
 		"required": "0",
 		"order": 5
