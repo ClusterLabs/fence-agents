@@ -61,7 +61,12 @@ def get_nodes_list(conn, options):
 			for tag in instance.tags or []:
 				if tag.get("Key") == "Name":
 					instance_name = tag["Value"]
-			result[instance.id] = (instance_name, status[instance.state["Name"]])
+			try:
+				result[instance.id] = (instance_name, status[instance.state["Name"]])
+			except KeyError as e:
+				if options.get("--original-action") == "list-status":
+					logger.error("Unknown status \"{}\" returned for {} ({})".format(instance.state["Name"], instance.id, instance_name))
+				result[instance.id] = (instance_name, "unknown")
 	except ClientError:
 		fail_usage("Failed: Incorrect Access Key or Secret Key.")
 	except EndpointConnectionError:
@@ -79,8 +84,11 @@ def get_power_status(conn, options):
 		instance = conn.instances.filter(Filters=[{"Name": "instance-id", "Values": [options["--plug"]]}])
 		state = list(instance)[0].state["Name"]
 		logger.debug("Status operation for EC2 instance %s returned state: %s",options["--plug"],state.upper())
-		return status[state]
-
+		try:
+			return status[state]
+		except KeyError as e:
+			logger.error("Unknown status \"{}\" returned".format(state))
+			return "unknown"
 	except ClientError:
 		fail_usage("Failed: Incorrect Access Key or Secret Key.")
 	except EndpointConnectionError:
