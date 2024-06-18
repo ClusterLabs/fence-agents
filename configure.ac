@@ -262,6 +262,10 @@ LOGDIR=${localstatedir}/log/cluster
 CLUSTERVARRUN=${localstatedir}/run/cluster
 CLUSTERDATA=${datadir}/cluster
 
+## Program Paths
+PATH="$PATH:/sbin:/usr/sbin:/usr/local/sbin:/usr/local/bin"
+export PATH
+
 AC_PATH_PROGS(XMLLINT, xmllint)
 AM_CONDITIONAL(BUILD_DOC, test "x$XMLLINT" != "x" )
 if test "x$XMLLINT" = "x"; then
