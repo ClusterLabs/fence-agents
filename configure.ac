@@ -262,6 +262,10 @@ LOGDIR=${localstatedir}/log/cluster
 CLUSTERVARRUN=${localstatedir}/run/cluster
 CLUSTERDATA=${datadir}/cluster
 
+## Program Paths
+PATH="$PATH:/sbin:/usr/sbin:/usr/local/sbin:/usr/local/bin"
+export PATH
+
 AC_PATH_PROGS(XMLLINT, xmllint)
 AM_CONDITIONAL(BUILD_DOC, test "x$XMLLINT" != "x" )
 if test "x$XMLLINT" = "x"; then
@@ -325,7 +329,7 @@ AC_PATH_PROG([SUDO_PATH], [sudo], [/usr/bin/sudo])
 AC_PATH_PROG([SSH_PATH], [ssh], [/usr/bin/ssh])
 AC_PATH_PROG([TELNET_PATH], [telnet], [/usr/bin/telnet])
 AC_PATH_PROG([MPATH_PATH], [mpathpersist], [/usr/sbin/mpathpersist])
-AC_PATH_PROG([SBD_PATH], [sbd], [/sbin/sbd])
+AC_PATH_PROG([SBD_PATH], [sbd], [/usr/sbin/sbd])
 AC_PATH_PROG([SUDO_PATH], [sudo], [/usr/bin/sudo])
 AC_PATH_PROG([SNMPWALK_PATH], [snmpwalk], [/usr/bin/snmpwalk])
 AC_PATH_PROG([SNMPSET_PATH], [snmpset], [/usr/bin/snmpset])
