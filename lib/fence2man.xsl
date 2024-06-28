@@ -60,9 +60,9 @@
 .P
 <xsl:value-of select="longdesc"/>
 .P
-<xsl:value-of select="@name" /> accepts options on the command line as well
+The fence agent accepts options on the command line as well
 as from stdin. Fenced sends parameters through stdin when it execs the
-agent. <xsl:value-of select="@name" /> can be run by itself with command
+agent. The agent can be run by itself with command
 line options.  This is useful for testing and for turning outlets on or off
 from scripts.
 <xsl:if test="vendor-url">
