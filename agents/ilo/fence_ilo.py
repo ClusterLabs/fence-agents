@@ -72,6 +72,7 @@ def main():
 	options = check_input(device_opt, process_input(device_opt))
 
 	docs = {}
+	docs["agent_name"] = "fence_ilo"
 	docs["shortdesc"] = "Fence agent for HP iLO"
 	docs["longdesc"] = "{} is a Power Fencing agent \
 used for HP servers with the Integrated Light Out (iLO) PCI card.\

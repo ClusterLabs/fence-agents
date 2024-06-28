@@ -202,10 +202,12 @@ def main():
 	options = check_input(device_opt, process_input(device_opt))
 
 	docs = {}
+	docs["agent_name"] = "fence_ipmilan"
 	docs["shortdesc"] = "Fence agent for IPMI"
 	docs["longdesc"] = "{} is a Power Fencing agent \
 which can be used with machines controlled by IPMI. \
-This agent calls support software ipmitool (http://ipmitool.sf.net/). \
+This agent calls support software ipmitool (http://ipmitool.sf.net/).\
+\n.P\n\
 WARNING! This fence agent might report success before the node is powered off. \
 You should use -m/method onoff if your fence device works correctly with that option.".format(os.path.basename(__file__))
 	docs["vendorurl"] = ""
