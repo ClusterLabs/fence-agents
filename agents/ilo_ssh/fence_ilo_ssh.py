@@ -49,6 +49,7 @@ def main():
 	options = check_input(device_opt, process_input(device_opt))
 
 	docs = {}
+	docs["agent_name"] = "fence_ilo_ssh"
 	docs["shortdesc"] = "Fence agent for HP iLO over SSH"
 	docs["longdesc"] = "{} is a Power Fencing agent that connects to iLO device. It logs into \
 device via ssh and reboot a specified outlet.\
