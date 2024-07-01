@@ -15,7 +15,7 @@ try:
 	from aliyunsdkcore.auth.credentials import EcsRamRoleCredential
 	from aliyunsdkcore.profile import region_provider
 except ImportError as e:
-	logging.warn("The 'aliyunsdkcore' module has been not installed or is unavailable, try to execute the command 'pip install aliyun-python-sdk-core --upgrade' to solve. error: %s" % e)
+	logging.warning("The 'aliyunsdkcore' module has been not installed or is unavailable, try to execute the command 'pip install aliyun-python-sdk-core --upgrade' to solve. error: %s" % e)
 
 
 try:
@@ -24,7 +24,7 @@ try:
 	from aliyunsdkecs.request.v20140526.StopInstanceRequest import StopInstanceRequest
 	from aliyunsdkecs.request.v20140526.RebootInstanceRequest import RebootInstanceRequest
 except ImportError as e:
-	logging.warn("The 'aliyunsdkecs' module has been not installed or is unavailable, try to execute the command 'pip install aliyun-python-sdk-ecs --upgrade' to solve. error: %s" % e)
+	logging.warning("The 'aliyunsdkecs' module has been not installed or is unavailable, try to execute the command 'pip install aliyun-python-sdk-ecs --upgrade' to solve. error: %s" % e)
 
 
 def _send_request(conn, request):
@@ -225,7 +225,7 @@ def main():
 		try:
 			region_provider.modify_point('Ecs', region, 'ecs.%s.aliyuncs.com' % region)
 		except Exception as e:
-			logging.warn("Failed: failed to modify endpoint to 'ecs.%s.aliyuncs.com': %s" % (region, e))
+			logging.warning("Failed: failed to modify endpoint to 'ecs.%s.aliyuncs.com': %s" % (region, e))
 
 	# Operate the fencing device
 	result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list)
