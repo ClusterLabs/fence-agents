@@ -98,7 +98,7 @@ def set_power_status_on(connection, options):
 			# Since it's about forcing back to a default value, there is
 			# no real worries to just consider it's still okay even if the
 			# command failed
-			logging.warn("Exception from attempt to force "
+			logging.warning("Exception from attempt to force "
 				      "host back up via nova API: "
 				      "%s: %s" % (e.__class__.__name__, e))
 

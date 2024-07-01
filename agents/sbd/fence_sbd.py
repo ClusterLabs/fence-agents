@@ -170,7 +170,7 @@ def get_msg_timeout(options):
         if "msgwait" in line:
             tmp_msg_timeout = int(line.split(':')[1])
             if -1 != msg_timeout and tmp_msg_timeout != msg_timeout:
-                logging.warn(\
+                logging.warning(\
                         "sbd message timeouts differ in different devices")
             # we only save the highest timeout
             if tmp_msg_timeout > msg_timeout:
@@ -418,7 +418,7 @@ which can be used in environments where sbd can be used (shared storage)."
     power_timeout = int(options["--power-timeout"])
     sbd_msg_timeout = get_msg_timeout(options)
     if 0 < power_timeout <= sbd_msg_timeout:
-        logging.warn("power timeout needs to be \
+        logging.warning("power timeout needs to be \
                 greater then sbd message timeout")
 
     result = fence_action(\
