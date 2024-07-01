@@ -215,6 +215,7 @@ def main():
 		options["--switch"] = "1"
 
 	docs = {}
+	docs["agent_name"] = "fence_apc_snmp"
 	docs["shortdesc"] = "Fence agent for APC, Tripplite PDU over SNMP"
 	docs["longdesc"] = "{} is a Power Fencing agent \
 which can be used with the APC network power switch or Tripplite PDU devices.\
