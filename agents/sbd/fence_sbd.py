@@ -15,6 +15,8 @@ DEVICE_NOT_INIT = -3
 PATH_NOT_EXISTS = -1
 PATH_NOT_BLOCK = -2
 
+SYSCONFIG_SBD = "/etc/sysconfig/sbd"
+
 def is_block_device(filename):
     """Checks if a given path is a valid block device
 
@@ -342,7 +344,7 @@ def define_new_opts():
         "longopt" : "devices",
         "help":"--devices=[device_a,device_b] \
 Comma separated list of sbd devices",
-        "required" : "1",
+        "required" : "0",
         "shortdesc" : "SBD Device",
         "order": 1
         }
@@ -355,6 +357,35 @@ Comma separated list of sbd devices",
         "default" : "@SBD_PATH@",
         "order": 200
         }
+
+
+def get_sbd_devices_from_sysconfig():
+    """Reads the SBD_DEVICE from /etc/sysconfig/sbd
+    The possible values:
+    SBD_DEVICE="/dev/sdb;/dev/sdc"
+    SBD_DEVICE=/dev/sda
+    SBD_DEVICE=
+
+    Returns:
+    A list of device paths, or an empty list if SBD_DEVICE is not set or empty.
+    """
+    sbd_device_line_prefix = "SBD_DEVICE="
+    devices = []
+
+    try:
+        with open(SYSCONFIG_SBD, "r") as sbd_file:
+            for line in sbd_file:
+                if line.startswith(sbd_device_line_prefix):
+                    # Extract the value after the prefix, strip quotes and whitespace
+                    device_str = line[len(sbd_device_line_prefix):].strip().strip('"')
+                    if device_str:
+                        devices = device_str.split(';')
+                    break
+    except FileNotFoundError:
+        logging.error("File %s not found", SYSCONFIG_SBD)
+
+    return devices
+
 
 def main():
     """Main function
@@ -382,10 +413,14 @@ which can be used in environments where sbd can be used (shared storage)."
     docs["vendorurl"] = ""
     show_docs(options, docs)
 
-    # We need to check if --devices is given and not empty.
+    # If not specified then read SBD_DEVICE from /etc/sysconfig/sbd
     if "--devices" not in options:
-        fail_usage("No SBD devices specified. \
-                At least one SBD device is required.")
+        dev_list = get_sbd_devices_from_sysconfig()
+        if dev_list:
+            options["--devices"] = ",".join(dev_list)
+        else:
+            fail_usage("No SBD devices specified. \
+                    At least one SBD device is required.")
 
     run_delay(options)
 
