@@ -332,6 +332,7 @@ failing."
 		fail_usage("Failed: No devices found")
 
 	options["devices"] = [d for d in re.split(r"\s*,\s*|\s+", options["--devices"].strip()) if d]
+	options["--plug"] = re.sub(r"^0x0*|^0+", "", options["--plug"])
 	# Input control END
 
 	result = fence_action(None, options, set_status, get_status)
