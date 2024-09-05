@@ -131,11 +131,13 @@ def reset_dev(options, dev):
 	return run_cmd(options, options["--sg_turs-path"] + " " + dev)["rc"]
 
 
-def register_dev(options, dev, key):
+def register_dev(options, dev, key, do_preempt=True):
 	dev = os.path.realpath(dev)
 	if re.search(r"^dm", dev[5:]):
-		for slave in get_mpath_slaves(dev):
-			register_dev(options, slave, key)
+		devices = get_mpath_slaves(dev)
+		register_dev(options, devices[0], key)
+		for device in devices[1:]:
+			register_dev(options, device, key, False)
 		return True
 
 	# Check if any registration exists for the key already. We track this in
@@ -153,7 +155,7 @@ def register_dev(options, dev, key):
 		# If key matches, make sure it matches with the connection that
 		# exists right now. To do this, we can issue a preempt with same key
 		# which should replace the old invalid entries from the target.
-		if not preempt(options, key, dev, key):
+		if do_preempt and not preempt(options, key, dev, key):
 			return False
 
 		# If there was no reservation, we need to issue another registration
