@@ -157,7 +157,7 @@ firmware versions. It's recommended to update to at least version 3.6.x"
 	docs["vendorurl"] = "http://www.raritan.com/"
 	show_docs(options, docs)
 
-	conn = fence_login(options, re_login_string="Username.*")
+	conn = fence_login(options, re_login_string=r"Username.*")
 
 	px3_get_outlet_list(conn, options)
 	try:
