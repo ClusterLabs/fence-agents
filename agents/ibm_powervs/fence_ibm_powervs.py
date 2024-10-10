@@ -1,13 +1,14 @@
 #!@PYTHON@ -tt
 
 import sys
-import pycurl, io, json
+import pycurl
+import io
+import json
 import logging
 import atexit
-import time
+
 sys.path.append("@FENCEAGENTSLIBDIR@")
-from fencing import *
-from fencing import fail, run_delay, EC_LOGIN_DENIED, EC_STATUS
+from fencing import all_opt, atexit_handler, check_input, process_input, show_docs, fence_action, fail, run_delay, EC_STATUS
 
 state = {
 	 "ACTIVE": "on",
@@ -18,15 +19,35 @@ state = {
 }
 
 def get_token(conn, options):
-        try:
-                command = "identity/token"
-                action = "grant_type=urn%3Aibm%3Aparams%3Aoauth%3Agrant-type%3Aapikey&apikey={}".format(options["--token"])
-                res = send_command(conn, command, "POST", action, printResult=False)
-        except Exception as e:
-                logging.debug("Failed: {}".format(e))
-                return "TOKEN_IS_MISSING_OR_WRONG"
-
-        return res["access_token"]
+	try:
+		if options["--token"][0] == '@':
+			key_file = options["--token"][1:]
+			try:
+				with open(key_file, "r") as f:
+				# read the API key from a file
+					try:
+						keys = json.loads(f.read())
+						# data seems to be in json format
+						# return the value of the item with the key 'Apikey'
+						api_key = keys.get("Apikey", "")
+						if not api_key:
+							# backward compatibility: former key name was 'apikey'
+							api_key = keys.get("apikey", "")
+					except ValueError:
+					# data is text, return as is
+						api_key = f.read().strip()
+			except FileNotFoundError:
+				logging.debug("Failed: Cannot open file {}".format(key_file))
+				return "TOKEN_IS_MISSING_OR_WRONG"
+		else:
+			api_key = options["--token"]
+		command = "identity/token"
+		action = "grant_type=urn%3Aibm%3Aparams%3Aoauth%3Agrant-type%3Aapikey&apikey={}".format(api_key)
+		res = send_command(conn, command, "POST", action, printResult=False)
+	except Exception as e:
+		logging.debug("Failed: {}".format(e))
+		return "TOKEN_IS_MISSING_OR_WRONG"
+	return res["access_token"]
 
 def get_list(conn, options):
 	outlets = {}
@@ -41,7 +62,7 @@ def get_list(conn, options):
 	for r in res["pvmInstances"]:
 		if options["--verbose-level"] > 1:
 			logging.debug(json.dumps(r, indent=2))
-		outlets[r["pvmInstanceID"]] = (r["serverName"], state[r["status"]])
+		outlets[r["pvmInstanceID"]] = (r["serverName"], state.get(r["status"], "unknown"))
 
 	return outlets
 
@@ -97,7 +118,7 @@ def reboot_cycle(conn, options):
 		else:
 			logging.debug("Failed: Unable to cycle with {} for {}".format(options["--action"], e))
 			fail(EC_STATUS)
-	return True 
+	return True
 
 def connect(opt, token):
 	conn = pycurl.Curl()
@@ -130,7 +151,10 @@ def auth_connect(opt):
 	conn = pycurl.Curl()
 
 	# setup correct URL
-	conn.base_url = "https://iam.cloud.ibm.com/"
+	if opt["--api-type"] == "private":
+		conn.base_url = "https://private.iam.cloud.ibm.com/"
+	else:
+		conn.base_url = "https://iam.cloud.ibm.com/"
 
 	if opt["--verbose-level"] > 1:
 		conn.setopt(pycurl.VERBOSE, 1)
@@ -265,9 +289,9 @@ def main():
 	define_new_opts()
 
 	all_opt["shell_timeout"]["default"] = "500"
-	all_opt["power_timeout"]["default"] = "30"
-	all_opt["power_wait"]["default"] = "1"
-	all_opt["stonith_status_sleep"]["default"] = "2"
+	all_opt["power_timeout"]["default"] = "120"
+	all_opt["power_wait"]["default"] = "15"
+	all_opt["stonith_status_sleep"]["default"] = "10"
 	all_opt["api-type"]["default"] = "private"
 	all_opt["proxy"]["default"] = ""
 
@@ -275,8 +299,8 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for IBM PowerVS"
-	docs["longdesc"] = """fence_ibm_powervs is a Power Fencing agent which can be \
-used with IBM PowerVS to fence virtual machines."""
+	docs["longdesc"] = """fence_ibm_powervs is a fencing agent for \
+IBM Power Virtual Server (IBM PowerVS) to fence virtual server instances."""
 	docs["vendorurl"] = "https://www.ibm.com"
 	show_docs(options, docs)
 
