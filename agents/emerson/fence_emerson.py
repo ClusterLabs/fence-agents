@@ -49,8 +49,8 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for Emerson over SNMP"
-	docs["longdesc"] = "fence_emerson is an I/O Fencing agent \
-	which can be used with MPX and MPH2 managed rack PDU."
+	docs["longdesc"] = "fence_emerson is a Power Fencing agent \
+which can be used with MPX and MPH2 managed rack PDU."
 	docs["vendorurl"] = "http://www.emersonnetworkpower.com"
 	show_docs(options, docs)
 

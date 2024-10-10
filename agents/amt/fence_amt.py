@@ -13,7 +13,7 @@ except ImportError:
 
 def get_power_status(_, options):
 	output = amt_run_command(options, create_command(options, "status"))
-	match = re.search('Powerstate:[\\s]*(..)', str(output))
+	match = re.search(r'Powerstate:[\s]*(..)', str(output))
 	status = match.group(1) if match else None
 
 	if status == None:
@@ -113,7 +113,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for AMT"
-	docs["longdesc"] = "fence_amt is an I/O Fencing agent \
+	docs["longdesc"] = "fence_amt is a Power Fencing agent \
 which can be used with Intel AMT. This agent calls support software amttool\
 (http://www.kraxel.org/cgit/amtterm/)."
 	docs["vendorurl"] = "http://www.intel.com/"

@@ -262,6 +262,10 @@ LOGDIR=${localstatedir}/log/cluster
 CLUSTERVARRUN=${localstatedir}/run/cluster
 CLUSTERDATA=${datadir}/cluster
 
+## Program Paths
+PATH="$PATH:/sbin:/usr/sbin:/usr/local/sbin:/usr/local/bin"
+export PATH
+
 AC_PATH_PROGS(XMLLINT, xmllint)
 AM_CONDITIONAL(BUILD_DOC, test "x$XMLLINT" != "x" )
 if test "x$XMLLINT" = "x"; then
@@ -278,7 +282,7 @@ if test "x$XSLTPROC" = "x"; then
 fi
 AC_SUBST(XSLTPROC)
 
-AM_PATH_PYTHON
+AM_PATH_PYTHON([3.6])
 if test -z "$PYTHON"; then
     echo "*** Essential program python not found" 1>&2
     exit 1
@@ -290,6 +294,9 @@ AC_PATH_PROG([PYTHON], [$PYTHON])
 AC_PYTHON_MODULE(pexpect, 1)
 AC_PYTHON_MODULE(pycurl, 1)
 AC_PYTHON_MODULE(requests, 1)
+
+AC_PYTHON_MODULE(boto3)
+AM_CONDITIONAL(HAVE_BOTO3, [test "x$HAVE_PYMOD_BOTO3" == xyes ])
 
 if echo "$AGENTS_LIST" | grep -q amt_ws; then
 	AC_PYTHON_MODULE(pywsman)
@@ -322,7 +329,7 @@ AC_PATH_PROG([SUDO_PATH], [sudo], [/usr/bin/sudo])
 AC_PATH_PROG([SSH_PATH], [ssh], [/usr/bin/ssh])
 AC_PATH_PROG([TELNET_PATH], [telnet], [/usr/bin/telnet])
 AC_PATH_PROG([MPATH_PATH], [mpathpersist], [/usr/sbin/mpathpersist])
-AC_PATH_PROG([SBD_PATH], [sbd], [/sbin/sbd])
+AC_PATH_PROG([SBD_PATH], [sbd], [/usr/sbin/sbd])
 AC_PATH_PROG([SUDO_PATH], [sudo], [/usr/bin/sudo])
 AC_PATH_PROG([SNMPWALK_PATH], [snmpwalk], [/usr/bin/snmpwalk])
 AC_PATH_PROG([SNMPSET_PATH], [snmpset], [/usr/bin/snmpset])
@@ -519,7 +526,7 @@ AC_SUBST([AM_CFLAGS])
 CPPFLAGS="-I\$(top_builddir)/make -I\$(top_srcdir)/make -I. $ENV_CPPFLAGS"
 LDFLAGS="$ENV_LDFLAGS"
 
-AM_EXTRA_RECURSIVE_TARGETS([delay-check xml-check xml-upload])
+AM_EXTRA_RECURSIVE_TARGETS([delay-check xml-check xml-upload test-fencing])
 
 AX_PROG_DATE
 AS_IF([test "$ax_cv_prog_date_gnu_date:$ax_cv_prog_date_gnu_utc" = yes:yes],
@@ -567,7 +574,7 @@ if test "x$VERSION" = "xUNKNOWN"; then
   configure was unable to determine the source tree's current version. This
   generally happens when using git archive (or the github download button)
   generated tarball/zip file. In order to workaround this issue, either use git
-  clone https://github.com/ClusterLabs/fence-virt.git or use an official release
+  clone https://github.com/ClusterLabs/fence-agents.git or use an official release
   tarball. Alternatively you can add a compatible version in a .tarball-version
   file at the top of the source tree, wipe your autom4te.cache dir and generated
   configure, and rerun autogen.sh.
@@ -579,6 +586,7 @@ AC_CONFIG_FILES([Makefile
 		 fence-agents.pc
 		 agents/Makefile
 		 lib/Makefile
+		 lib/tests/Makefile
 		 doc/Makefile
 		 systemd/Makefile
 		 systemd/fence-agents.conf

@@ -8,7 +8,7 @@ from fencing import fspawn, fail, EC_LOGIN_DENIED, run_delay
 
 def get_power_status(conn, options):
 	conn.send_eol("show -d properties=powerState %s" % options["--plug"])
-	re_status = re.compile(".*powerState is [12].*")
+	re_status = re.compile(r".*powerState is [12].*")
 	conn.log_expect(re_status, int(options["--shell-timeout"]))
 	status = {
 		#"0" : "off",
@@ -39,8 +39,8 @@ def main():
 	options = check_input(device_opt, opt)
 
 	docs = {}
-	docs["shortdesc"] = "I/O Fencing agent for Raritan Dominion PX"
-	docs["longdesc"] = "fence_raritan is an I/O Fencing agent which can be \
+	docs["shortdesc"] = "Power Fencing agent for Raritan Dominion PX"
+	docs["longdesc"] = "fence_raritan is a Power Fencing agent which can be \
 used with the Raritan DPXS12-20 Power Distribution Unit. It logs into \
 device via telnet and reboots a specified outlet. Lengthy telnet connections \
 should be avoided while a GFS cluster is running because the connection will \

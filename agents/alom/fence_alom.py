@@ -13,7 +13,7 @@ from fencing import *
 def get_power_status(conn, options):
 	conn.send_eol("showplatform")
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
-	status = re.search("standby", conn.before.lower())
+	status = re.search(r"standby", conn.before.lower())
 	result = (status != None and "off" or "on")
 
 	return result
@@ -38,8 +38,8 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for Sun ALOM"
-	docs["longdesc"] = "fence_alom is an I/O Fencing \
-agent which can be used with ALOM connected machines."
+	docs["longdesc"] = "fence_alom is a Power Fencing agent \
+which can be used with ALOM connected machines."
 	docs["vendorurl"] = "http://www.sun.com"
 	show_docs(options, docs)
 

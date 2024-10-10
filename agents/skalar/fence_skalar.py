@@ -192,7 +192,7 @@ def main():
 
     docs = {}
     docs["shortdesc"] = "Skala-R Fence agent"
-    docs["longdesc"] = "A fence agent for Skala-R."
+    docs["longdesc"] = "fence_skalar is a Power Fencing agent for Skala-R."
     docs["vendorurl"] = "https://www.skala-r.ru/"
     show_docs(options, docs)
     options["eol"] = "\r"

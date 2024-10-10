@@ -199,21 +199,40 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for use with z/VM Virtual Machines"
-	docs["longdesc"] = """The fence_zvm agent is intended to be used with with z/VM SMAPI service via TCP/IP
+	docs["longdesc"] = """fence_zvmip is a Power Fencing agent for z/VM \
+SMAPI service via TCP/IP.
 
-To  use this agent the z/VM SMAPI service needs to be configured to allow the virtual machine running this agent to connect to it and issue
-the image_recycle operation.  This involves updating the VSMWORK1 AUTHLIST VMSYS:VSMWORK1. file. The entry should look something similar to
-this:
+The z/VM SMAPI service must be configured so that the virtual machine running
+the agent can connect to the service, access the system's directory manager,
+and shortly thereafter run image_deactivate and image_activate. This involves
+updating the VSMWORK1 NAMELIST and VSMWORK1 AUTHLIST VMSYS:VSMWORK1 files.
+
+The NAMELIST entry assigns all the required functions to one nick and should
+look similar to this:
+
+:nick.ZVM_FENCE\n.br\n\
+:list.\n.br\n\
+IMAGE_ACTIVATE\n.br\n\
+IMAGE_DEACTIVATE\n.br\n\
+IMAGE_STATUS_QUERY\n.br\n\
+CHECK_AUTHENTICATION\n.br\n\
+IMAGE_NAME_QUERY_DM
+
+
+The AUTHLIST entry authorizes the user to perform all the functions associated
+with the nick, and should look similar to this:
 
 Column 1                   Column 66                Column 131
 
-   |                          |                        |
-   V                          V                        V
+|                          |                        |\n.br\n\
+V                          V                        V
 
-XXXXXXXX                      ALL                      IMAGE_CHARACTERISTICS
+XXXXXXXX                   ALL                      ZVM_FENCE
 
-Where XXXXXXX is the name of the virtual machine used in the authuser field of the request. This virtual machine also has to be authorized
-to access the system's directory manager.
+where XXXXXXXX is the name of the user in the authuser field of the request.
+
+Refer to the official z/VM documentation for complete instructions and
+reference materials.
 """
 	docs["vendorurl"] = "http://www.ibm.com"
 	show_docs(options, docs)

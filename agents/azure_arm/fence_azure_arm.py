@@ -72,7 +72,7 @@ def get_power_status(clients, options):
 
         powerState = "unknown"
         try:
-            vmStatus = compute_client.virtual_machines.get(rgName, vmName, "instanceView")
+            vmStatus = compute_client.virtual_machines.get(rgName, vmName, expand="instanceView")
         except Exception as e:
             fail_usage("Failed: %s" % e)
 
@@ -183,12 +183,20 @@ def define_new_opts():
         "getopt" : ":",
         "longopt" : "cloud",
         "help" : "--cloud=[name]                 Name of the cloud you want to use. Supported\n\
-                                  values are china, germany or usgov. Do not use\n\
-                                  this parameter if you want to use public\n\
-                                  Azure.",
+                                  values are china, germany, usgov, or stack. Do\n\
+                                  not use this parameter if you want to use\n\
+                                  public Azure.",
         "shortdesc" : "Name of the cloud you want to use.",
         "required" : "0",
         "order" : 7
+    }
+    all_opt["metadata-endpoint"] = {
+        "getopt" : ":",
+        "longopt" : "metadata-endpoint",
+        "help" : "--metadata-endpoint=[URL]      URL to metadata endpoint (used when cloud=stack).",
+        "shortdesc" : "URL to metadata endpoint (used when cloud=stack).",
+        "required" : "0",
+        "order" : 8
     }
 
 # Main agent method
@@ -196,7 +204,9 @@ def main():
     compute_client = None
     network_client = None
 
-    device_opt = ["login", "no_login", "no_password", "passwd", "port", "resourceGroup", "tenantId", "subscriptionId", "network-fencing", "msi", "cloud"]
+    device_opt = ["login", "no_login", "no_password", "passwd", "port",
+		  "resourceGroup", "tenantId", "subscriptionId",
+		  "network-fencing", "msi", "cloud", "metadata-endpoint"]
 
     atexit.register(atexit_handler)
 
@@ -211,7 +221,7 @@ def main():
 
     docs = {}
     docs["shortdesc"] = "Fence agent for Azure Resource Manager"
-    docs["longdesc"] = "fence_azure_arm is an I/O Fencing agent for Azure Resource Manager. It uses Azure SDK for Python to connect to Azure.\
+    docs["longdesc"] = "fence_azure_arm is a Power Fencing agent for Azure Resource Manager. It uses Azure SDK for Python to connect to Azure.\
 \n.P\n\
 For instructions to setup credentials see: https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-create-service-principal-portal\
 \n.P\n\
@@ -241,7 +251,7 @@ When using network fencing the reboot-action will cause a quick-return once the 
     except ImportError:
         fail_usage("Azure Resource Manager Python SDK not found or not accessible")
     except Exception as e:
-        fail_usage("Failed: %s" % re.sub("^, ", "", str(e)))
+        fail_usage("Failed: %s" % re.sub(r"^, ", r"", str(e)))
 
     if "--network-fencing" in options:
         # use  off-action to quickly return off once network is fenced instead of

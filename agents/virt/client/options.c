@@ -765,7 +765,7 @@ args_metadata(char *progname, const char *optstr)
 
 	printf("<?xml version=\"1.0\" ?>\n");
 	printf("<resource-agent name=\"%s\" shortdesc=\"Fence agent for virtual machines\">\n", basename(progname));
-	printf("<longdesc>%s is an I/O Fencing agent which can be used with "
+	printf("<longdesc>%s is a Power Fencing agent which can be used with "
 	       "virtual machines.\n\nNOTE: reboot-action does not power on nodes that are powered off."
 	       "</longdesc>\n", basename(progname));
 	printf("<vendor-url>https://libvirt.org</vendor-url>\n");

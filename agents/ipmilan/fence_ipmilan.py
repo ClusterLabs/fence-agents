@@ -13,7 +13,7 @@ except ImportError:
 
 def get_power_status(_, options):
 	output = _run_command(options, "status")
-	match = re.search('[Cc]hassis [Pp]ower is [\\s]*([a-zA-Z]{2,3})', str(output))
+	match = re.search(r'[Cc]hassis [Pp]ower is [\s]*([a-zA-Z]{2,3})', str(output))
 	status = match.group(1) if match else None
 	return status
 
@@ -23,11 +23,11 @@ def set_power_status(_, options):
 
 def reboot_cycle(_, options):
 	output = _run_command(options, "cycle")
-	return bool(re.search('chassis power control: cycle', str(output).lower()))
+	return bool(re.search(r'chassis power control: cycle', str(output).lower()))
 
 def reboot_diag(_, options):
 	output = _run_command(options, "diag")
-	return bool(re.search('chassis power control: diag', str(output).lower()))
+	return bool(re.search(r'chassis power control: diag', str(output).lower()))
 
 def _run_command(options, action):
 	cmd, log_cmd = create_command(options, action)
@@ -202,12 +202,14 @@ def main():
 	options = check_input(device_opt, process_input(device_opt))
 
 	docs = {}
+	docs["agent_name"] = "fence_ipmilan"
 	docs["shortdesc"] = "Fence agent for IPMI"
-	docs["longdesc"] = "fence_ipmilan is an I/O Fencing agent\
-which can be used with machines controlled by IPMI.\
-This agent calls support software ipmitool (http://ipmitool.sf.net/). \
+	docs["longdesc"] = "{} is a Power Fencing agent \
+which can be used with machines controlled by IPMI. \
+This agent calls support software ipmitool (http://ipmitool.sf.net/).\
+\n.P\n\
 WARNING! This fence agent might report success before the node is powered off. \
-You should use -m/method onoff if your fence device works correctly with that option."
+You should use -m/method onoff if your fence device works correctly with that option.".format(os.path.basename(__file__))
 	docs["vendorurl"] = ""
 	docs["symlink"] = [("fence_ilo3", "Fence agent for HP iLO3"),
 		("fence_ilo4", "Fence agent for HP iLO4"),

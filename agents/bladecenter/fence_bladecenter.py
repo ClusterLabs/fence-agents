@@ -86,7 +86,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for IBM BladeCenter"
-	docs["longdesc"] = "fence_bladecenter is an I/O Fencing agent \
+	docs["longdesc"] = "fence_bladecenter is a Power Fencing agent \
 which can be used with IBM Bladecenters with recent enough firmware that \
 includes telnet support. It logs into a Brocade chasis via telnet or ssh \
 and uses the command line interface to power on and off blades."
@@ -96,7 +96,7 @@ and uses the command line interface to power on and off blades."
 	##
 	## Operate the fencing device
 	######
-	conn = fence_login(options, "(username\s*:\s*)")
+	conn = fence_login(options, r"(username\s*:\s*)")
 	result = fence_action(conn, options, set_power_status, get_power_status, get_blades_list)
 	fence_logout(conn, "exit")
 	sys.exit(result)

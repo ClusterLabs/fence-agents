@@ -40,7 +40,7 @@ def set_status(conn, options):
 			if options["--plug"] not in get_registration_keys(options, dev):
 				count += 1
 				logging.debug("Failed to register key "\
-					+ options["--plug"] + "on device " + dev + "\n")
+					+ options["--plug"] + " on device " + dev + "\n")
 				continue
 			dev_write(options, dev)
 
@@ -147,8 +147,9 @@ def dev_write(options, dev):
 		store_fh = open(file_path, "a+")
 	except IOError:
 		fail_usage("Failed: Cannot open file \""+ file_path + "\"")
+	store_fh.seek(0)
 	out = store_fh.read()
-	if not re.search(r"^" + dev + r"\s+", out):
+	if not re.search(r"^{}\s+{}$".format(dev, options["--plug"]), out, flags=re.MULTILINE):
 		store_fh.write(dev + "\t" + options["--plug"] + "\n")
 	store_fh.close()
 
@@ -304,7 +305,7 @@ be removed from the device(s)."
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for multipath persistent reservation"
-	docs["longdesc"] = "fence_mpath is an I/O fencing agent that uses SCSI-3 \
+	docs["longdesc"] = "fence_mpath is an I/O Fencing agent that uses SCSI-3 \
 persistent reservations to control access multipath devices. Underlying \
 devices must support SCSI-3 persistent reservations (SPC-3 or greater) as \
 well as the \"preempt-and-abort\" subcommand.\nThe fence_mpath agent works by \
@@ -331,7 +332,8 @@ failing."
 	if not ("--devices" in options and options["--devices"]):
 		fail_usage("Failed: No devices found")
 
-	options["devices"] = [d for d in re.split("\s*,\s*|\s+", options["--devices"].strip()) if d]
+	options["devices"] = [d for d in re.split(r"\s*,\s*|\s+", options["--devices"].strip()) if d]
+	options["--plug"] = re.sub(r"^0x0*|^0+", "", options.get("--plug", ""))
 	# Input control END
 
 	result = fence_action(None, options, set_status, get_status)

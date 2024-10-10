@@ -13,7 +13,7 @@
 # - Tripplite PDUMH20HVNET 12.04.0055 - SNMP v1, v2c, v3
 # - Tripplite PDU15NETLX 15.5.4 - SNMP v1, v2c, v3
 
-import sys
+import sys, os
 import atexit
 import logging
 sys.path.append("@FENCEAGENTSLIBDIR@")
@@ -215,11 +215,12 @@ def main():
 		options["--switch"] = "1"
 
 	docs = {}
+	docs["agent_name"] = "fence_apc_snmp"
 	docs["shortdesc"] = "Fence agent for APC, Tripplite PDU over SNMP"
-	docs["longdesc"] = "fence_apc_snmp is an I/O Fencing agent \
+	docs["longdesc"] = "{} is a Power Fencing agent \
 which can be used with the APC network power switch or Tripplite PDU devices.\
 It logs into a device via SNMP and reboots a specified outlet. It supports \
-SNMP v1, v2c, v3 with all combinations of  authenticity/privacy settings."
+SNMP v1, v2c, v3 with all combinations of  authenticity/privacy settings.".format(os.path.basename(__file__))
 	docs["vendorurl"] = "http://www.apc.com"
 	docs["symlink"] = [("fence_tripplite_snmp", "Fence agent for Tripplife over SNMP")]
 	show_docs(options, docs)

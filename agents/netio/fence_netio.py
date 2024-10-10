@@ -8,7 +8,7 @@ from fencing import fspawn, fail, EC_LOGIN_DENIED, run_delay
 
 def get_power_status(conn, options):
 	conn.send_eol("port %s" % options["--plug"])
-	re_status = re.compile("250 [01imt]")
+	re_status = re.compile(r"250 [01imt]")
 	conn.log_expect(re_status, int(options["--shell-timeout"]))
 	status = {
 		"0" : "off",
@@ -58,8 +58,8 @@ def main():
 	options = check_input(device_opt, opt)
 
 	docs = {}
-	docs["shortdesc"] = "I/O Fencing agent for Koukaam NETIO-230B"
-	docs["longdesc"] = "fence_netio is an I/O Fencing agent which can be \
+	docs["shortdesc"] = "Power Fencing agent for Koukaam NETIO-230B"
+	docs["longdesc"] = "fence_netio is a Power Fencing agent which can be \
 used with the Koukaam NETIO-230B Power Distribution Unit. It logs into \
 device via telnet and reboots a specified outlet. Lengthy telnet connections \
 should be avoided while a GFS cluster is running because the connection will \

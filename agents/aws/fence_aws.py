@@ -22,6 +22,15 @@ logger.setLevel(logging.INFO)
 logger.addHandler(SyslogLibHandler())
 logging.getLogger('botocore.vendored').propagate = False
 
+status = {
+		"running": "on",
+		"stopped": "off",
+		"pending": "unknown",
+		"stopping": "unknown",
+		"shutting-down": "unknown",
+		"terminated": "unknown"
+}
+
 def get_instance_id(options):
 	try:
 		token = requests.put('http://169.254.169.254/latest/api/token', headers={"X-aws-ec2-metadata-token-ttl-seconds" : "21600"}).content.decode("UTF-8")
@@ -45,11 +54,19 @@ def get_nodes_list(conn, options):
 			filter_key   = options["--filter"].split("=")[0].strip()
 			filter_value = options["--filter"].split("=")[1].strip()
 			filter = [{ "Name": filter_key, "Values": [filter_value] }]
-			for instance in conn.instances.filter(Filters=filter):
-				result[instance.id] = ("", None)
-		else:
-			for instance in conn.instances.all():
-				result[instance.id] = ("", None)
+			logging.debug("Filter: {}".format(filter))
+
+		for instance in conn.instances.filter(Filters=filter if 'filter' in vars() else []):
+			instance_name = ""
+			for tag in instance.tags or []:
+				if tag.get("Key") == "Name":
+					instance_name = tag["Value"]
+			try:
+				result[instance.id] = (instance_name, status[instance.state["Name"]])
+			except KeyError as e:
+				if options.get("--original-action") == "list-status":
+					logger.error("Unknown status \"{}\" returned for {} ({})".format(instance.state["Name"], instance.id, instance_name))
+				result[instance.id] = (instance_name, "unknown")
 	except ClientError:
 		fail_usage("Failed: Incorrect Access Key or Secret Key.")
 	except EndpointConnectionError:
@@ -67,13 +84,11 @@ def get_power_status(conn, options):
 		instance = conn.instances.filter(Filters=[{"Name": "instance-id", "Values": [options["--plug"]]}])
 		state = list(instance)[0].state["Name"]
 		logger.debug("Status operation for EC2 instance %s returned state: %s",options["--plug"],state.upper())
-		if state == "running":
-			return "on"
-		elif state == "stopped":
-			return "off"
-		else:
+		try:
+			return status[state]
+		except KeyError as e:
+			logger.error("Unknown status \"{}\" returned".format(state))
 			return "unknown"
-
 	except ClientError:
 		fail_usage("Failed: Incorrect Access Key or Secret Key.")
 	except EndpointConnectionError:
@@ -146,7 +161,7 @@ def define_new_opts():
 	all_opt["filter"] = {
 		"getopt" : ":",
 		"longopt" : "filter",
-		"help" : "--filter=[key=value]           Filter (e.g. vpc-id=[vpc-XXYYZZAA]",
+		"help" : "--filter=[key=value]           Filter (e.g. vpc-id=[vpc-XXYYZZAA])",
 		"shortdesc": "Filter for list-action",
 		"required": "0",
 		"order": 5
@@ -185,7 +200,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for AWS (Amazon Web Services)"
-	docs["longdesc"] = "fence_aws is an I/O Fencing agent for AWS (Amazon Web\
+	docs["longdesc"] = "fence_aws is a Power Fencing agent for AWS (Amazon Web\
 Services). It uses the boto3 library to connect to AWS.\
 \n.P\n\
 boto3 can be configured with AWS CLI or by creating ~/.aws/credentials.\n\
@@ -228,7 +243,10 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 				      aws_access_key_id=access_key,
 				      aws_secret_access_key=secret_key)
 	except Exception as e:
-		fail_usage("Failed: Unable to connect to AWS: " + str(e))
+		if not options.get("--action", "") in ["metadata", "manpage", "validate-all"]:
+			fail_usage("Failed: Unable to connect to AWS: " + str(e))
+		else:
+			pass
 
 	# Operate the fencing device
 	result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list)

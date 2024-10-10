@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_virt" shortdesc="Fence agent for virtual machines">
-<longdesc>fence_virt is an I/O Fencing agent which can be used with virtual machines.
+<longdesc>fence_virt is a Power Fencing agent which can be used with virtual machines.
 
 NOTE: reboot-action does not power on nodes that are powered off.</longdesc>
 <vendor-url>https://libvirt.org</vendor-url>

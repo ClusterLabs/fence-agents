@@ -51,11 +51,11 @@ def get_power_status(conn, options):
         if options["api-version"] == "8":
             #  AA13  Arm-Console3                     Wake On        On     Normal
             #  AA14  Master_Outlet_14                 Wake On        On     Normal
-            show_re = re.compile('(\w+)\s+(\S+)\s+(On|Idle On|Off|Wake On)\s+(On|Off)')
+            show_re = re.compile(r'(\w+)\s+(\S+)\s+(On|Idle On|Off|Wake On)\s+(On|Off)')
         else:
             #    .A12     TowerA_Outlet12           On         Idle On
             #    .A12     test-01                   On         Idle On
-            show_re = re.compile('(\.\w+)\s+(\w+|\w+\W\w+)\s+(On|Off)\s+(On|Idle On|Off|Wake On)')
+            show_re = re.compile(r'(\.\w+)\s+(\w+|\w+\W\w+)\s+(On|Off)\s+(On|Idle On|Off|Wake On)')
         for line in lines:
             res = show_re.search(line)
             if res != None:
@@ -89,7 +89,7 @@ def set_power_status(conn, options):
             # else:
             #    .A12     TowerA_Outlet12
             #    .A12     test-01
-            show_re = re.compile('(\S+)\s+(\w+|\w+\W\w+)\s+')
+            show_re = re.compile(r'(\S+)\s+(\w+|\w+\W\w+)\s+')
             for line in lines:
                 res = show_re.search(line)
                 if res != None:
@@ -112,7 +112,7 @@ def get_version(conn, options):
     conn.send("VERSION\r\n")
     conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
     lines = conn.before.split("\n")
-    show_re = re.compile('Sentry Switched [PC]DU Version (\d)(.\d|)(\w)\r')
+    show_re = re.compile(r'Sentry Switched [PC]DU Version (\d)(.\d|)(\w)\r')
     for line in lines:
         res = show_re.search(line)
         if res != None:
@@ -136,7 +136,7 @@ def main():
 
     docs = { }
     docs["shortdesc"] = "Fence agent for a Sentry Switch CDU over telnet"
-    docs["longdesc"] = "fence_cdu is an I/O Fencing agent \
+    docs["longdesc"] = "fence_cdu is a Power Fencing agent \
 which can be used with the Sentry Switch CDU. It logs into the device \
 via telnet and power's on/off an outlet."
     docs["vendorurl"] = "http://www.servertech.com"

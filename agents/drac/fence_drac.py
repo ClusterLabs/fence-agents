@@ -34,8 +34,8 @@ def main():
 	options = check_input(device_opt, opt)
 
 	docs = {}
-	docs["shortdesc"] = "I/O Fencing agent for Dell DRAC IV"
-	docs["longdesc"] = "fence_drac is an I/O Fencing agent which can be used with \
+	docs["shortdesc"] = "Power Fencing agent for Dell DRAC IV"
+	docs["longdesc"] = "fence_drac is a Power Fencing agent which can be used with \
 the Dell Remote Access Card (DRAC). This card provides remote access to controlling \
 power to a server. It logs into the DRAC through the telnet interface of the card. By \
 default, the telnet interface is not enabled. To enable the interface, you will need \

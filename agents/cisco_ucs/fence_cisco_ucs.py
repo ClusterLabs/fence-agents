@@ -8,13 +8,13 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, EC_STATUS, EC_LOGIN_DENIED, run_delay
 
-RE_COOKIE = re.compile("<aaaLogin .* outCookie=\"(.*?)\"", re.IGNORECASE)
-RE_STATUS = re.compile("<lsPower .*? state=\"(.*?)\"", re.IGNORECASE)
-RE_GET_DN = re.compile(" dn=\"(.*?)\"", re.IGNORECASE)
-RE_GET_PNDN = re.compile(" pndn=\"(.*?)\"", re.IGNORECASE)
-RE_GET_DESC = re.compile(" descr=\"(.*?)\"", re.IGNORECASE)
-RE_GET_OPERPOWER = re.compile(" operPower=\"(.*?)\"", re.IGNORECASE)
-RE_GET_PRESENCE = re.compile(" presence=\"(.*?)\"", re.IGNORECASE)
+RE_COOKIE = re.compile(r"<aaaLogin .* outCookie=\"(.*?)\"", re.IGNORECASE)
+RE_STATUS = re.compile(r"<lsPower .*? state=\"(.*?)\"", re.IGNORECASE)
+RE_GET_DN = re.compile(r" dn=\"(.*?)\"", re.IGNORECASE)
+RE_GET_PNDN = re.compile(r" pndn=\"(.*?)\"", re.IGNORECASE)
+RE_GET_DESC = re.compile(r" descr=\"(.*?)\"", re.IGNORECASE)
+RE_GET_OPERPOWER = re.compile(r" operPower=\"(.*?)\"", re.IGNORECASE)
+RE_GET_PRESENCE = re.compile(r" presence=\"(.*?)\"", re.IGNORECASE)
 
 options_global = None
 
@@ -161,7 +161,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for Cisco UCS"
-	docs["longdesc"] = "fence_cisco_ucs is an I/O Fencing agent which can be \
+	docs["longdesc"] = "fence_cisco_ucs is a Power Fencing agent which can be \
 used with Cisco UCS to fence machines."
 	docs["vendorurl"] = "http://www.cisco.com"
 	show_docs(options_global, docs)

@@ -8,7 +8,7 @@ from fencing import *
 def get_power_status(conn, options):
 	conn.send_eol("show /system1")
 
-	re_state = re.compile('EnabledState=(.*)', re.IGNORECASE)
+	re_state = re.compile(r'EnabledState=(.*)', re.IGNORECASE)
 	conn.log_expect(re_state, int(options["--shell-timeout"]))
 
 	status = conn.match.group(1).lower()
@@ -40,7 +40,8 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for HP iLO MP"
-	docs["longdesc"] = ""
+	docs["longdesc"] = "fence_ilo_mp is a Power Fencing agent \
+for HP iLO MP."
 	docs["vendorurl"] = "http://www.hp.com"
 	show_docs(options, docs)
 

@@ -14,6 +14,8 @@ FENCE_TAG_IP = "FENCE_TAG_IP"
 IP_TYPE_DYNAMIC = "Dynamic"
 MAX_RETRY = 10
 RETRY_WAIT = 5
+COMPUTE_CLIENT_API_VERSION = "2021-11-01"
+NETWORK_MGMT_CLIENT_API_VERSION = "2021-05-01"
 
 class AzureSubResource:
     Type = None
@@ -49,7 +51,7 @@ def get_from_metadata(parameter):
     return None
 
 def get_azure_resource(id):
-    match = re.match('(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))?((/([^/]*)/([^/]*))*)', id)
+    match = re.match(r'(/subscriptions/([^/]*)/resourceGroups/([^/]*))(/providers/([^/]*/[^/]*)/([^/]*))?((/([^/]*)/([^/]*))*)', id)
     if not match:
         fail_usage("{get_azure_resource} cannot parse resource id %s" % id)
 
@@ -251,6 +253,7 @@ def get_azure_config(options):
     config.VMName = options.get("--plug")
     config.SubscriptionId = options.get("--subscriptionId")
     config.Cloud = options.get("--cloud")
+    config.MetadataEndpoint = options.get("--metadata-endpoint")
     config.UseMSI = "--msi" in options
     config.Tenantid = options.get("--tenantId")
     config.ApplicationId = options.get("--username")
@@ -279,6 +282,9 @@ def get_azure_cloud_environment(config):
         elif (config.Cloud.lower() == "usgov"):
             from msrestazure.azure_cloud import AZURE_US_GOV_CLOUD
             cloud_environment = AZURE_US_GOV_CLOUD
+        elif (config.Cloud.lower() == "stack"):
+            from msrestazure.azure_cloud import get_cloud_from_metadata_endpoint
+            cloud_environment = get_cloud_from_metadata_endpoint(config.MetadataEndpoint)
 
     return cloud_environment
 
@@ -345,23 +351,37 @@ def get_azure_compute_client(config):
     credentials = get_azure_credentials(config)
 
     if cloud_environment:
+        if (config.Cloud.lower() == "stack") and not config.MetadataEndpoint:
+                fail_usage("metadata-endpoint not specified")
+
         try:
+            from azure.profiles import KnownProfiles
+            if (config.Cloud.lower() == "stack"):
+                client_profile = KnownProfiles.v2020_09_01_hybrid
+                credential_scope = cloud_environment.endpoints.active_directory_resource_id + "/.default"
+            else:
+                client_profile = KnownProfiles.default
+                credential_scope = cloud_environment.endpoints.resource_manager + "/.default"
             compute_client = ComputeManagementClient(
                 credentials,
                 config.SubscriptionId,
                 base_url=cloud_environment.endpoints.resource_manager,
-                credential_scopes=[cloud_environment.endpoints.resource_manager + "/.default"]
+                profile=client_profile,
+                credential_scopes=[credential_scope],
+                api_version=COMPUTE_CLIENT_API_VERSION
             )
         except TypeError:
             compute_client = ComputeManagementClient(
                 credentials,
                 config.SubscriptionId,
-                base_url=cloud_environment.endpoints.resource_manager
+                base_url=cloud_environment.endpoints.resource_manager,
+                api_version=COMPUTE_CLIENT_API_VERSION
             )
     else:
         compute_client = ComputeManagementClient(
             credentials,
-            config.SubscriptionId
+            config.SubscriptionId,
+            api_version=COMPUTE_CLIENT_API_VERSION
         )
     return compute_client
 
@@ -372,22 +392,36 @@ def get_azure_network_client(config):
     credentials = get_azure_credentials(config)
 
     if cloud_environment:
+        if (config.Cloud.lower() == "stack") and not config.MetadataEndpoint:
+                fail_usage("metadata-endpoint not specified")
+
         try:
+            from azure.profiles import KnownProfiles
+            if (config.Cloud.lower() == "stack"):
+                client_profile = KnownProfiles.v2020_09_01_hybrid
+                credential_scope = cloud_environment.endpoints.active_directory_resource_id + "/.default"
+            else:
+                client_profile = KnownProfiles.default
+                credential_scope = cloud_environment.endpoints.resource_manager + "/.default"
             network_client = NetworkManagementClient(
                 credentials,
                 config.SubscriptionId,
                 base_url=cloud_environment.endpoints.resource_manager,
-                credential_scopes=[cloud_environment.endpoints.resource_manager + "/.default"]
+                profile=client_profile,
+                credential_scopes=[credential_scope],
+                api_version=NETWORK_MGMT_CLIENT_API_VERSION
             )
         except TypeError:
             network_client = NetworkManagementClient(
                 credentials,
                 config.SubscriptionId,
-                base_url=cloud_environment.endpoints.resource_manager
+                base_url=cloud_environment.endpoints.resource_manager,
+                api_version=NETWORK_MGMT_CLIENT_API_VERSION
             )
     else:
         network_client = NetworkManagementClient(
             credentials,
-            config.SubscriptionId
+            config.SubscriptionId,
+            api_version=NETWORK_MGMT_CLIENT_API_VERSION
         )
     return network_client

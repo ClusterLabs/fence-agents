@@ -77,11 +77,12 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "rcd_serial fence agent"
-	docs["longdesc"] = "fence_rcd_serial operates a serial cable that toggles a \
-reset of an opposing server using the reset switch on its motherboard. The \
-cable itself is simple with no power, network or moving parts. An example of \
-the cable is available here: https://smcleod.net/rcd-stonith/ and the circuit \
-design is available in the fence-agents src as SVG"
+	docs["longdesc"] = "fence_rcd_serial is a Power Fencing agent that \
+operates a serial cable that toggles a reset of an opposing server using the \
+reset switch on its motherboard. The cable itself is simple with no power, \
+network or moving parts. An example of the cable is available here: \
+https://smcleod.net/rcd-stonith/ and the circuit design is available in the \
+fence-agents src as SVG"
 	docs["vendorurl"] = "https://github.com/sammcj/fence_rcd_serial"
 	show_docs(options, docs)
 

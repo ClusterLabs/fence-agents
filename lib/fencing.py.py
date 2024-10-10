@@ -573,6 +573,7 @@ def fail_usage(message="", stop=True):
 
 def fail(error_code, stop=True):
 	message = {
+		EC_GENERIC_ERROR : "Failed: Generic error",
 		EC_LOGIN_DENIED : "Unable to connect/login to fencing device",
 		EC_CONNECTION_LOST : "Connection lost",
 		EC_TIMED_OUT : "Connection timed out",
@@ -602,7 +603,7 @@ def usage(avail_opt):
 		if len(value["help"]) != 0:
 			print("   " + _join_wrap([value["help"]], first_indent=3))
 
-def metadata(options, avail_opt, docs):
+def metadata(options, avail_opt, docs, agent_name=os.path.basename(sys.argv[0])):
 	# avail_opt has to be unique, if there are duplicities then they should be removed
 	sorted_list = [(key, all_opt[key]) for key in list(set(avail_opt)) if "longopt" in all_opt[key]]
 	# Find keys that are going to replace inconsistent names
@@ -613,10 +614,10 @@ def metadata(options, avail_opt, docs):
 	sorted_list.sort(key=lambda x: (x[1]["order"], x[0]))
 
 	if options["--action"] == "metadata":
-               docs["longdesc"] = re.sub("\\\\f[BPIR]|\.P|\.TP|\.br\n", "", docs["longdesc"])
+               docs["longdesc"] = re.sub(r"\\f[BPIR]|\.P|\.TP|\.br\n", r"", docs["longdesc"])
 
 	print("<?xml version=\"1.0\" ?>")
-	print("<resource-agent name=\"" + os.path.basename(sys.argv[0]) + \
+	print("<resource-agent name=\"" + agent_name + \
 			"\" shortdesc=\"" + docs["shortdesc"] + "\" >")
 	for (symlink, desc) in docs.get("symlink", []):
 		print("<symlink name=\"" + symlink + "\" shortdesc=\"" + desc + "\"/>")
@@ -648,7 +649,7 @@ def metadata(options, avail_opt, docs):
 			mixed = _encode_html_entities(mixed)
 
 			if not "shortdesc" in opt:
-				shortdesc = re.sub(".*\s\s+", "", opt["help"][31:])
+				shortdesc = re.sub(r".*\s\s+", r"", opt["help"][31:])
 			else:
 				shortdesc = opt["shortdesc"]
 
@@ -927,9 +928,15 @@ def show_docs(options, docs=None):
 		sys.exit(0)
 
 	if options.get("--action", "") in ["metadata", "manpage"]:
+		if options["--action"] == "metadata" or "agent_name" not in docs:
+			agent_name=os.path.basename(sys.argv[0])
+		else:
+			agent_name=docs["agent_name"]
+
+
 		if "port_as_ip" in device_opt:
 			device_opt.remove("separator")
-		metadata(options, device_opt, docs)
+		metadata(options, device_opt, docs, agent_name)
 		sys.exit(0)
 
 	if "--version" in options:
@@ -937,7 +944,7 @@ def show_docs(options, docs=None):
 		sys.exit(0)
 
 def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_list=None, reboot_cycle_fn=None, sync_set_power_fn=None):
-	result = 0
+	result = EC_OK
 
 	try:
 		if "--plug" in options:
@@ -972,20 +979,20 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 
 					if options["--action"] == "list":
 						try:
-							print(outlet_id + options["--separator"] + alias)
+							print("{}{}{}".format(outlet_id, options["--separator"], alias))
 						except UnicodeEncodeError as e:
-							print((outlet_id + options["--separator"] + alias).encode("utf-8"))
+							print("{}{}{}".format(outlet_id, options["--separator"], alias).encode("utf-8"))
 					elif options["--action"] == "list-status":
 						try:
-							print(outlet_id + options["--separator"] + alias + options["--separator"] + status)
+							print("{}{}{}{}{}".format(outlet_id, options["--separator"], alias, options["--separator"], status))
 						except UnicodeEncodeError as e:
-							print((outlet_id + options["--separator"] + alias).encode("utf-8") + options["--separator"] + status)
+							print("{}{}{}{}{}".format(outlet_id, options["--separator"], alias, options["--separator"], status).encode("utf-8"))
 
-			return
+			return result
 
 		if options["--action"] == "monitor" and not "port" in options["device_opt"] and "no_status" in options["device_opt"]:
 			# Unable to do standard monitoring because 'status' action is not available
-			return 0
+			return result
 
 		status = None
 		if not "no_status" in options["device_opt"]:
@@ -996,7 +1003,7 @@ def fence_action(connection, options, set_power_fn, get_power_fn, get_outlet_lis
 		if options["--action"] == status:
 			if not (status == "on" and "force_on" in options["device_opt"]):
 				print("Success: Already %s" % (status.upper()))
-				return 0
+				return result
 
 		if options["--action"] == "on":
 			if set_multi_power_fn(connection, options, set_power_fn, get_power_fn, sync_set_power_fn, 1 + int(options["--retry-on"])):
@@ -1271,7 +1278,7 @@ def source_env(env_file):
                           executable="/bin/sh")
     # replace env
     os.environ.clear()
-    os.environ.update(line.partition('=')[::2] for line in output.decode("utf-8").split('\0') if not re.match("^\s*$", line))
+    os.environ.update(line.partition('=')[::2] for line in output.decode("utf-8").split('\0') if not re.match(r"^\s*$", line))
 
 # Convert array of format [[key1, value1], [key2, value2], ... [keyN, valueN]] to dict, where key is
 # in format a.b.c.d...z and returned dict has key only z
@@ -1358,7 +1365,7 @@ def _login_ssh_with_identity_file(options):
 
 def _login_telnet(options, re_login_string):
 	re_login = re.compile(re_login_string, re.IGNORECASE)
-	re_pass = re.compile("(password)|(pass phrase)", re.IGNORECASE)
+	re_pass = re.compile(r"(password)|(pass phrase)", re.IGNORECASE)
 
 	conn = fspawn(options, options["--telnet-path"])
 	conn.send("set binary\n")
@@ -1399,7 +1406,7 @@ def _login_telnet(options, re_login_string):
 
 def _login_ssh_with_password(options, re_login_string):
 	re_login = re.compile(re_login_string, re.IGNORECASE)
-	re_pass = re.compile("(password)|(pass phrase)", re.IGNORECASE)
+	re_pass = re.compile(r"(password)|(pass phrase)", re.IGNORECASE)
 
 	if "--inet6-only" in options:
 		force_ipvx = "-6 "
@@ -1607,7 +1614,7 @@ def _parse_input_stdin(avail_opt):
 
 		(name, value) = (line + "=").split("=", 1)
 		value = value[:-1]
-		value = re.sub("^\"(.*)\"$", "\\1", value)
+		value = re.sub(r"^\"(.*)\"$", r"\1", value)
 
 		if name.replace("-", "_") in mapping_longopt_names:
 			name = mapping_longopt_names[name.replace("-", "_")]

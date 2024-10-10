@@ -16,7 +16,7 @@ def get_power_status(conn, options):
 	conn.send_eol("power state")
 	conn.log_expect(options["--command-prompt"], int(options["--shell-timeout"]))
 
-	match = re.compile("Power: (.*)", re.IGNORECASE).search(conn.before)
+	match = re.compile(r"Power: (.*)", re.IGNORECASE).search(conn.before)
 	if match != None:
 		status = match.group(1)
 	else:
@@ -42,7 +42,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for IBM RSA"
-	docs["longdesc"] = "fence_rsa is an I/O Fencing agent \
+	docs["longdesc"] = "fence_rsa is a Power Fencing agent \
 which can be used with the IBM RSA II management interface. It \
 logs into an RSA II device via telnet and reboots the associated \
 machine. Lengthy telnet connections to the RSA II device should \

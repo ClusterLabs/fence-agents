@@ -195,8 +195,8 @@ def main():
 	options = check_input(device_opt, process_input(device_opt))
 	docs = {}
 	docs["shortdesc"] = "Fencing agent for the Proxmox Virtual Environment"
-	docs["longdesc"] = "The fence_pve agent can be used to fence virtual \
-machines acting as nodes in a virtualized cluster."
+	docs["longdesc"] = "fence_pve is a Power Fencing agent for virtual machines \
+acting as nodes in a virtualized cluster."
 	docs["vendorurl"] = "http://www.proxmox.com/"
 
 	show_docs(options, docs)

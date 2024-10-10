@@ -3,7 +3,7 @@
 <symlink name="fence_ilo3_ssh" shortdesc="Fence agent for HP iLO3 over SSH"/>
 <symlink name="fence_ilo4_ssh" shortdesc="Fence agent for HP iLO4 over SSH"/>
 <symlink name="fence_ilo5_ssh" shortdesc="Fence agent for HP iLO5 over SSH"/>
-<longdesc>fence_ilo_ssh is a fence agent that connects to iLO device. It logs into device via ssh and reboot a specified outlet.
+<longdesc>fence_ilo3_ssh is a Power Fencing agent that connects to iLO device. It logs into device via ssh and reboot a specified outlet.
 
 WARNING: The monitor-action is prone to timeouts. Use the fence_ilo-equivalent to avoid this issue.</longdesc>
 <vendor-url>http://www.hp.com</vendor-url>

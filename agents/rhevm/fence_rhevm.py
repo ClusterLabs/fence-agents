@@ -9,10 +9,10 @@ sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
 from fencing import fail, EC_FETCH_VM_UUID, run_delay
 
-RE_GET_ID = re.compile("<vm( .*)? id=\"(.*?)\"", re.IGNORECASE)
-RE_STATUS = re.compile("<status>(.*?)</status>", re.IGNORECASE)
-RE_STATE = re.compile("<state>(.*?)</state>", re.IGNORECASE)
-RE_GET_NAME = re.compile("<name>(.*?)</name>", re.IGNORECASE)
+RE_GET_ID = re.compile(r"<vm( .*)? id=\"(.*?)\"", re.IGNORECASE)
+RE_STATUS = re.compile(r"<status>(.*?)</status>", re.IGNORECASE)
+RE_STATE = re.compile(r"<state>(.*?)</state>", re.IGNORECASE)
+RE_GET_NAME = re.compile(r"<name>(.*?)</name>", re.IGNORECASE)
 
 def get_power_status(conn, options):
 	del conn
@@ -80,7 +80,7 @@ def send_command(opt, command, method="GET"):
 	if opt["--api-version"] == "auto":
 		opt["--api-version"] = "4"
 		res = send_command(opt, "")
-		if re.search("<title>Error</title>", res):
+		if re.search(r"<title>Error</title>", res):
 			opt["--api-version"] = "3"
 		logging.debug("auto-detected API version: " + opt["--api-version"])
 
@@ -232,7 +232,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for RHEV-M REST API"
-	docs["longdesc"] = "fence_rhevm is an I/O Fencing agent which can be \
+	docs["longdesc"] = "fence_rhevm is a Power Fencing agent which can be \
 used with RHEV-M REST API to fence virtual machines."
 	docs["vendorurl"] = "http://www.redhat.com"
 	show_docs(options, docs)

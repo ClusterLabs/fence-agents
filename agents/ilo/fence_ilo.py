@@ -11,7 +11,7 @@
 ##  iLO2 / firmware 1.50 / RIBCL 2.22
 #####
 
-import sys, re, pexpect
+import sys, os, re, pexpect
 import atexit
 from xml.sax.saxutils import quoteattr
 sys.path.append("@FENCEAGENTSLIBDIR@")
@@ -72,12 +72,13 @@ def main():
 	options = check_input(device_opt, process_input(device_opt))
 
 	docs = {}
+	docs["agent_name"] = "fence_ilo"
 	docs["shortdesc"] = "Fence agent for HP iLO"
-	docs["longdesc"] = "fence_ilo is an I/O Fencing agent \
+	docs["longdesc"] = "{} is a Power Fencing agent \
 used for HP servers with the Integrated Light Out (iLO) PCI card.\
 The agent opens an SSL connection to the iLO card. Once the SSL \
 connection is established, the agent is able to communicate with \
-the iLO card through an XML stream."
+the iLO card through an XML stream.".format(os.path.basename(__file__))
 	docs["vendorurl"] = "http://www.hp.com"
 	docs["symlink"] = [("fence_ilo2", "Fence agent for HP iLO2")]
 	show_docs(options, docs)
@@ -106,7 +107,7 @@ the iLO card through an XML stream."
 			fail(EC_LOGIN_DENIED)
 
 	try:
-		version = re.compile("<RIBCL VERSION=\"(.*?)\"", re.IGNORECASE).search(conn.before).group(1)
+		version = re.compile(r"<RIBCL VERSION=\"(.*?)\"", re.IGNORECASE).search(conn.before).group(1)
 		if "--ribcl-version" not in options:
 			options["--ribcl-version"] = float(version)
 

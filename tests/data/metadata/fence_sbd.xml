@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_sbd" shortdesc="Fence agent for sbd" >
-<longdesc>fence_sbd is I/O Fencing agent which can be used in environments where sbd can be used (shared storage).</longdesc>
+<longdesc>fence_sbd is an I/O Fencing agent which can be used in environments where sbd can be used (shared storage).</longdesc>
 <vendor-url></vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

@@ -60,6 +60,9 @@ def get_list(conn, options):
 		else:
 			fail(EC_STATUS)
 
+	if options.get("--original-action") == "monitor" and not res["value"]:
+		logging.error("API user does not have sufficient rights to manage the power status.")
+		fail(EC_STATUS)
 	for r in res["value"]:
 		outlets[r["name"]] = ("", state[r["power_state"]])
 
@@ -204,7 +207,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for VMware REST API"
-	docs["longdesc"] = """fence_vmware_rest is an I/O Fencing agent which can be \
+	docs["longdesc"] = """fence_vmware_rest is a Power Fencing agent which can be \
 used with VMware API to fence virtual machines.
 
 NOTE: If there's more than 1000 VMs there is a filter parameter to work around \

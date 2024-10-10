@@ -1,6 +1,6 @@
 #!@PYTHON@ -tt
 
-import sys, re
+import sys, os, re
 import atexit
 import logging
 sys.path.append("@FENCEAGENTSLIBDIR@")
@@ -9,7 +9,7 @@ from fencing import *
 def get_power_status(conn, options):
 	conn.send_eol("show /system1")
 
-	re_state = re.compile('EnabledState=(.*)', re.IGNORECASE)
+	re_state = re.compile(r'EnabledState=(.*)', re.IGNORECASE)
 	conn.log_expect(re_state, int(options["--shell-timeout"]))
 
 	status = conn.match.group(1).lower()
@@ -49,12 +49,13 @@ def main():
 	options = check_input(device_opt, process_input(device_opt))
 
 	docs = {}
+	docs["agent_name"] = "fence_ilo_ssh"
 	docs["shortdesc"] = "Fence agent for HP iLO over SSH"
-	docs["longdesc"] = "fence_ilo_ssh is a fence agent that connects to iLO device. It logs into \
+	docs["longdesc"] = "{} is a Power Fencing agent that connects to iLO device. It logs into \
 device via ssh and reboot a specified outlet.\
 \n.P\n\
 WARNING: The monitor-action is prone to timeouts. Use the fence_ilo-equivalent \
-to avoid this issue."
+to avoid this issue.".format(os.path.basename(__file__))
 	docs["vendorurl"] = "http://www.hp.com"
 	docs["symlink"] = [("fence_ilo3_ssh", "Fence agent for HP iLO3 over SSH"),
 		("fence_ilo4_ssh", "Fence agent for HP iLO4 over SSH"),

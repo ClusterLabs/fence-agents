@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_vmware_rest" shortdesc="Fence agent for VMware REST API" >
-<longdesc>fence_vmware_rest is an I/O Fencing agent which can be used with VMware API to fence virtual machines.
+<longdesc>fence_vmware_rest is a Power Fencing agent which can be used with VMware API to fence virtual machines.
 
 NOTE: If there's more than 1000 VMs there is a filter parameter to work around the API limit. See https://code.vmware.com/apis/62/vcenter-management#/VM%20/get_vcenter_vm for full list of filters.</longdesc>
 <vendor-url>https://www.vmware.com</vendor-url>

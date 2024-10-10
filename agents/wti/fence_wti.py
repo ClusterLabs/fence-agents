@@ -27,7 +27,7 @@ def get_listing(conn, options, listing_command):
 		re_all = list(options["--command-prompt"])
 	else:
 		re_all = [options["--command-prompt"]]
-	re_next = re.compile("Enter: ", re.IGNORECASE)
+	re_next = re.compile(r"Enter: ", re.IGNORECASE)
 	re_all.append(re_next)
 
 	result = conn.log_expect(re_all, int(options["--shell-timeout"]))
@@ -184,7 +184,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for WTI"
-	docs["longdesc"] = "fence_wti is an I/O Fencing agent \
+	docs["longdesc"] = "fence_wti is a Power Fencing agent \
 which can be used with the WTI Network Power Switch (NPS). It logs \
 into an NPS via telnet or ssh and boots a specified plug. \
 Lengthy telnet connections to the NPS should be avoided while a GFS cluster \
@@ -208,8 +208,8 @@ is running because the connection will block any necessary fencing actions."
 			conn.send("set binary\n")
 			conn.send("open %s -%s\n"%(options["--ip"], options["--ipport"]))
 
-			re_login = re.compile("(login: )|(Login Name:  )|(username: )|(User Name :)", re.IGNORECASE)
-			re_prompt = re.compile("|".join(["(" + x + ")" for x in options["--command-prompt"]]), re.IGNORECASE)
+			re_login = re.compile(r"(login: )|(Login Name:  )|(username: )|(User Name :)", re.IGNORECASE)
+			re_prompt = re.compile(r"|".join(["(" + x + ")" for x in options["--command-prompt"]]), re.IGNORECASE)
 
 			result = conn.log_expect([re_login, "Password: ", re_prompt], int(options["--shell-timeout"]))
 			if result == 0:

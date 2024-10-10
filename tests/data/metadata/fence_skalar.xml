@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_skalar" shortdesc="Skala-R Fence agent" >
-<longdesc>A fence agent for Skala-R.</longdesc>
+<longdesc>fence_skalar is a Power Fencing agent for Skala-R.</longdesc>
 <vendor-url>https://www.skala-r.ru/</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

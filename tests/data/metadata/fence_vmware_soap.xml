@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_vmware_soap" shortdesc="Fence agent for VMWare over SOAP API" >
-<longdesc>fence_vmware_soap is an I/O Fencing agent which can be used with the virtual machines managed by VMWare products that have SOAP API v4.1+. 
+<longdesc>fence_vmware_soap is a Power Fencing agent which can be used with the virtual machines managed by VMWare products that have SOAP API v4.1+. 
 
 Name of virtual machine (-n / port) has to be used in inventory path format (e.g. /datacenter/vm/Discovered virtual machine/myMachine). In the cases when name of yours VM is unique you can use it instead. Alternatively you can always use UUID to access virtual machine.</longdesc>
 <vendor-url>http://www.vmware.com</vendor-url>

@@ -147,8 +147,8 @@ def main():
 	options = check_input(device_opt, opt)
 
 	docs = {}
-	docs["shortdesc"] = "I/O Fencing agent for Raritan Dominion PX2 and PX3"
-	docs["longdesc"] = "fence_raritan is an I/O Fencing agent which can be \
+	docs["shortdesc"] = "Power Fencing agent for Raritan Dominion PX2 and PX3"
+	docs["longdesc"] = "fence_raritan_px3 is a Power Fencing agent which can be \
 used with the Raritan PX2 and PX3 Power Distribution Unit series. It logs into \
 device via telnet or ssh and reboots a specified outlet. Single outlets and \
 grouped outlets are supported. The fence is tested on this model: PX3-5466V. \
@@ -157,7 +157,7 @@ firmware versions. It's recommended to update to at least version 3.6.x"
 	docs["vendorurl"] = "http://www.raritan.com/"
 	show_docs(options, docs)
 
-	conn = fence_login(options, re_login_string="Username.*")
+	conn = fence_login(options, re_login_string=r"Username.*")
 
 	px3_get_outlet_list(conn, options)
 	try:

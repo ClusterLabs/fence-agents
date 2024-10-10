@@ -41,7 +41,7 @@ def set_status(conn, options):
 		for dev in options["devices"]:
 			is_block_device(dev)
 
-			register_dev(options, dev)
+			register_dev(options, dev, options["--key"])
 			if options["--key"] not in get_registration_keys(options, dev):
 				count += 1
 				logging.debug("Failed to register key "\
@@ -62,7 +62,7 @@ def set_status(conn, options):
 			fail_usage("Failed: keys cannot be same. You can not fence yourself.")
 		for dev in options["devices"]:
 			is_block_device(dev)
-
+			register_dev(options, dev, host_key)
 			if options["--key"] in get_registration_keys(options, dev):
 				preempt_abort(options, host_key, dev)
 
@@ -131,11 +131,13 @@ def reset_dev(options, dev):
 	return run_cmd(options, options["--sg_turs-path"] + " " + dev)["rc"]
 
 
-def register_dev(options, dev):
+def register_dev(options, dev, key, do_preempt=True):
 	dev = os.path.realpath(dev)
 	if re.search(r"^dm", dev[5:]):
-		for slave in get_mpath_slaves(dev):
-			register_dev(options, slave)
+		devices = get_mpath_slaves(dev)
+		register_dev(options, devices[0], key)
+		for device in devices[1:]:
+			register_dev(options, device, key, False)
 		return True
 
 	# Check if any registration exists for the key already. We track this in
@@ -143,34 +145,35 @@ def register_dev(options, dev):
 	# This is needed since the previous registration could be for a
 	# different I_T nexus (different ISID).
 	registration_key_exists = False
-	if options["--key"] in get_registration_keys(options, dev):
+	if key in get_registration_keys(options, dev):
+		logging.debug("Registration key exists for device " + dev)
 		registration_key_exists = True
-	if not register_helper(options, options["--key"], dev):
+	if not register_helper(options, dev, key):
 		return False
 
 	if registration_key_exists:
 		# If key matches, make sure it matches with the connection that
 		# exists right now. To do this, we can issue a preempt with same key
 		# which should replace the old invalid entries from the target.
-		if not preempt(options, options["--key"], dev):
+		if do_preempt and not preempt(options, key, dev, key):
 			return False
 
 		# If there was no reservation, we need to issue another registration
 		# since the previous preempt would clear registration made above.
-		if get_reservation_key(options, dev, False) != options["--key"]:
-			return register_helper(options, options["--key"], dev)
+		if get_reservation_key(options, dev, False) != key:
+			return register_helper(options, dev, key)
 	return True
 
-# cancel registration without aborting tasks
-def preempt(options, host, dev):
+# helper function to preempt host with 'key' using 'host_key' without aborting tasks
+def preempt(options, host_key, dev, key):
 	reset_dev(options,dev)
-	cmd = options["--sg_persist-path"] + " -n -o -P -T 5 -K " + host + " -S " + options["--key"] + " -d " + dev
+	cmd = options["--sg_persist-path"] + " -n -o -P -T 5 -K " + host_key + " -S " + key + " -d " + dev
 	return not bool(run_cmd(options, cmd)["rc"])
 
 # helper function to send the register command
-def register_helper(options, host, dev):
+def register_helper(options, dev, key):
 	reset_dev(options, dev)
-	cmd = options["--sg_persist-path"] + " -n -o -I -S " + options["--key"] + " -d " + dev
+	cmd = options["--sg_persist-path"] + " -n -o -I -S " + key + " -d " + dev
 	cmd += " -Z" if "--aptpl" in options else ""
 	return not bool(run_cmd(options, cmd)["rc"])
 
@@ -235,11 +238,11 @@ def get_node_id(options):
 	cmd = options["--corosync-cmap-path"] + " nodelist"
 	out = run_cmd(options, cmd)["out"]
 
-	match = re.search(r".(\d+).name \(str\) = " + options["--plug"] + "\n", out)
+	match = re.search(r".(\d+).name \(str\) = " + options["--plug"] + r"\n", out)
 
 	# try old format before failing
 	if not match:
-		match = re.search(r".(\d+).ring._addr \(str\) = " + options["--plug"] + "\n", out)
+		match = re.search(r".(\d+).ring._addr \(str\) = " + options["--plug"] + r"\n", out)
 
 	return match.group(1) if match else fail_usage("Failed: unable to parse output of corosync-cmapctl or node does not exist")
 
@@ -294,7 +297,7 @@ def dev_write(dev, options):
 		fail_usage("Failed: Cannot open file \""+ file_path + "\"")
 	f.seek(0)
 	out = f.read()
-	if not re.search(r"^" + dev + "\s+", out, flags=re.MULTILINE):
+	if not re.search(r"^" + dev + r"\s+", out, flags=re.MULTILINE):
 		f.write(dev + "\n")
 	f.close()
 
@@ -545,7 +548,7 @@ ignored when used with the -k option."
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for SCSI persistent reservation"
-	docs["longdesc"] = "fence_scsi is an I/O fencing agent that uses SCSI-3 \
+	docs["longdesc"] = "fence_scsi is an I/O Fencing agent that uses SCSI-3 \
 persistent reservations to control access to shared storage devices. These \
 devices must support SCSI-3 persistent reservations (SPC-3 or greater) as \
 well as the \"preempt-and-abort\" subcommand.\nThe fence_scsi agent works by \
@@ -612,10 +615,10 @@ failing."
 
 	options["--key"] = options["--key"].lstrip('0')
 
-	if not ("--devices" in options and [d for d in re.split("\s*,\s*|\s+", options["--devices"].strip()) if d]):
+	if not ("--devices" in options and [d for d in re.split(r"\s*,\s*|\s+", options["--devices"].strip()) if d]):
 		options["devices"] = get_shared_devices(options)
 	else:
-		options["devices"] = [d for d in re.split("\s*,\s*|\s+", options["--devices"].strip()) if d]
+		options["devices"] = [d for d in re.split(r"\s*,\s*|\s+", options["--devices"].strip()) if d]
 
 	if not options["devices"]:
 		fail_usage("Failed: No devices found")

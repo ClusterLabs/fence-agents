@@ -231,7 +231,7 @@ def main():
 	options = check_input(device_opt, process_input(device_opt))
 	docs = {}
 	docs["shortdesc"] = "Fence Agent for Powerman"
-	docs["longdesc"] = "This is a Pacemaker Fence Agent for the \
+	docs["longdesc"] = "fence_powerman is a Power Fence Agent for the \
 Powerman management utility that was designed for LLNL systems."
 	docs["vendorurl"] = "https://github.com/chaos/powerman"
 	show_docs(options, docs)

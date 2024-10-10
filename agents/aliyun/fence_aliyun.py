@@ -15,7 +15,7 @@ try:
 	from aliyunsdkcore.auth.credentials import EcsRamRoleCredential
 	from aliyunsdkcore.profile import region_provider
 except ImportError as e:
-	logging.warn("The 'aliyunsdkcore' module has been not installed or is unavailable, try to execute the command 'pip install aliyun-python-sdk-core --upgrade' to solve. error: %s" % e)
+	logging.warning("The 'aliyunsdkcore' module has been not installed or is unavailable, try to execute the command 'pip install aliyun-python-sdk-core --upgrade' to solve. error: %s" % e)
 
 
 try:
@@ -24,7 +24,7 @@ try:
 	from aliyunsdkecs.request.v20140526.StopInstanceRequest import StopInstanceRequest
 	from aliyunsdkecs.request.v20140526.RebootInstanceRequest import RebootInstanceRequest
 except ImportError as e:
-	logging.warn("The 'aliyunsdkecs' module has been not installed or is unavailable, try to execute the command 'pip install aliyun-python-sdk-ecs --upgrade' to solve. error: %s" % e)
+	logging.warning("The 'aliyunsdkecs' module has been not installed or is unavailable, try to execute the command 'pip install aliyun-python-sdk-ecs --upgrade' to solve. error: %s" % e)
 
 
 def _send_request(conn, request):
@@ -150,20 +150,37 @@ def define_new_opts():
 		"required": "0",
 		"order": 5
 	}
+	all_opt["credentials_file"] = {
+		"getopt": ":",
+		"longopt": "credentials-file",
+		"help": "--credentials-file=[path]            Path to aliyun-cli credentials file",
+		"shortdesc": "Path to credentials file",
+		"required": "0",
+		"order": 6
+	}
+	all_opt["credentials_file_profile"] = {
+		"getopt": ":",
+		"longopt": "credentials-file-profile",
+		"help": "--credentials-file-profile=[profile] Credentials file profile",
+		"shortdesc": "Credentials file profile",
+		"required": "0",
+		"default": "default",
+		"order": 7
+	}
 	all_opt["filter"] = {
 		"getopt": ":",
 		"longopt": "filter",
 		"help": "--filter=[key=value]           Filter (e.g. InstanceIds=[\"i-XXYYZZAA1\",\"i-XXYYZZAA2\"]",
 		"shortdesc": "Filter for list-action.",
 		"required": "0",
-		"order": 6
+		"order": 8
 	}
 
 # Main agent method
 def main():
 	conn = None
 
-	device_opt = ["port", "no_password", "region", "access_key", "secret_key", "ram_role", "filter"]
+	device_opt = ["port", "no_password", "region", "access_key", "secret_key", "ram_role", "credentials_file", "credentials_file_profile", "filter"]
 
 	atexit.register(atexit_handler)
 
@@ -175,7 +192,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for Aliyun (Aliyun Web Services)"
-	docs["longdesc"] = "fence_aliyun is an I/O Fencing agent for Aliyun"
+	docs["longdesc"] = "fence_aliyun is a Power Fencing agent for Aliyun."
 	docs["vendorurl"] = "http://www.aliyun.com"
 	show_docs(options, docs)
 
@@ -191,6 +208,16 @@ def main():
 			ram_role = options["--ram-role"]
 			role = EcsRamRoleCredential(ram_role)
 			conn = client.AcsClient(region_id=region, credential=role)
+		elif "--credentials-file" in options and "--credentials-file-profile" in options:
+			import os, configparser
+			try:
+				config = configparser.ConfigParser()
+				config.read(os.path.expanduser(options["--credentials-file"]))
+				access_key = config.get(options["--credentials-file-profile"], "aliyun_access_key_id")
+				secret_key = config.get(options["--credentials-file-profile"], "aliyun_access_key_secret")
+				conn = client.AcsClient(access_key, secret_key, region)
+			except Exception as e:
+				fail_usage("Failed: failed to read credentials file: %s" % e)
 		else:
 			fail_usage("Failed: User credentials are not set. Please set the Access Key and the Secret Key, or configure the RAM role.")
 
@@ -198,7 +225,7 @@ def main():
 		try:
 			region_provider.modify_point('Ecs', region, 'ecs.%s.aliyuncs.com' % region)
 		except Exception as e:
-			logging.warn("Failed: failed to modify endpoint to 'ecs.%s.aliyuncs.com': %s" % (region, e))
+			logging.warning("Failed: failed to modify endpoint to 'ecs.%s.aliyuncs.com': %s" % (region, e))
 
 	# Operate the fencing device
 	result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list)

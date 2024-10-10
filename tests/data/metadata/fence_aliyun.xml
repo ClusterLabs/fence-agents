@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_aliyun" shortdesc="Fence agent for Aliyun (Aliyun Web Services)" >
-<longdesc>fence_aliyun is an I/O Fencing agent for Aliyun</longdesc>
+<longdesc>fence_aliyun is a Power Fencing agent for Aliyun.</longdesc>
 <vendor-url>http://www.aliyun.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
@@ -37,6 +37,15 @@
 		<getopt mixed="--ram-role=[name]" />
 		<content type="string"  />
 		<shortdesc lang="en">Ram Role.</shortdesc>
+	</parameter>
+	<parameter name="credentials_file" unique="0" required="0">
+		<getopt mixed="--credentials-file=[path]" />
+		<shortdesc lang="en">Path to credentials file</shortdesc>
+	</parameter>
+	<parameter name="credentials_file_profile" unique="0" required="0">
+		<getopt mixed="--credentials-file-profile=[profile]" />
+		<content type="string" default="default"  />
+		<shortdesc lang="en">Credentials file profile</shortdesc>
 	</parameter>
 	<parameter name="filter" unique="0" required="0">
 		<getopt mixed="--filter=[key=value]" />

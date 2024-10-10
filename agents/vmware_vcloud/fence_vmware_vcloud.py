@@ -194,7 +194,8 @@ def main():
 
         docs = {}
         docs["shortdesc"] = "Fence agent for VMware vCloud Director API"
-        docs["longdesc"] = "fence_vmware_vcloud is an I/O Fencing agent which can be used with VMware vCloud Director API to fence virtual machines."
+        docs["longdesc"] = "fence_vmware_vcloud is a Power Fencing agent which \
+can be used with VMware vCloud Director API to fence virtual machines."
         docs["vendorurl"] = "https://www.vmware.com"
         show_docs(options, docs)
 

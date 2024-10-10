@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_hds_cb" shortdesc="Fence agent for Hitachi Compute Blade systems" >
-<longdesc>fence_hds_cb is an I/O Fencing agent which can be used with Hitachi Compute Blades with recent enough firmware that includes telnet support.</longdesc>
+<longdesc>fence_hds_cb is a Power Fencing agent which can be used with Hitachi Compute Blades with recent enough firmware that includes telnet support.</longdesc>
 <vendor-url>http://www.hds.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
