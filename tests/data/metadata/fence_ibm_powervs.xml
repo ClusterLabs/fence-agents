@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_ibm_powervs" shortdesc="Fence agent for IBM PowerVS" >
-<longdesc>fence_ibm_powervs is a Power Fencing agent which can be used with IBM PowerVS to fence virtual machines.</longdesc>
+<longdesc>fence_ibm_powervs is a fencing agent for IBM Power Virtual Server (IBM PowerVS) to fence virtual server instances.</longdesc>
 <vendor-url>https://www.ibm.com</vendor-url>
 <parameters>
 	<parameter name="api-type" unique="0" required="0" deprecated="1">
@@ -122,12 +122,12 @@
 	</parameter>
 	<parameter name="power_timeout" unique="0" required="0">
 		<getopt mixed="--power-timeout=[seconds]" />
-		<content type="second" default="30"  />
+		<content type="second" default="120"  />
 		<shortdesc lang="en">Test X seconds for status change after ON/OFF</shortdesc>
 	</parameter>
 	<parameter name="power_wait" unique="0" required="0">
 		<getopt mixed="--power-wait=[seconds]" />
-		<content type="second" default="1"  />
+		<content type="second" default="15"  />
 		<shortdesc lang="en">Wait X seconds after issuing ON/OFF</shortdesc>
 	</parameter>
 	<parameter name="shell_timeout" unique="0" required="0">
@@ -137,7 +137,7 @@
 	</parameter>
 	<parameter name="stonith_status_sleep" unique="0" required="0">
 		<getopt mixed="--stonith-status-sleep=[seconds]" />
-		<content type="second" default="2"  />
+		<content type="second" default="10"  />
 		<shortdesc lang="en">Sleep X seconds between status calls during a STONITH action</shortdesc>
 	</parameter>
 	<parameter name="retry_on" unique="0" required="0">
