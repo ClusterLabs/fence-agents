@@ -342,7 +342,7 @@ def define_new_opts():
         "longopt" : "devices",
         "help":"--devices=[device_a,device_b] \
 Comma separated list of sbd devices",
-        "required" : "1",
+        "required" : "0",
         "shortdesc" : "SBD Device",
         "order": 1
         }
@@ -382,10 +382,14 @@ which can be used in environments where sbd can be used (shared storage)."
     docs["vendorurl"] = ""
     show_docs(options, docs)
 
-    # We need to check if --devices is given and not empty.
+    # If not specified then read SBD_DEVICE from environment
     if "--devices" not in options:
-        fail_usage("No SBD devices specified. \
-                At least one SBD device is required.")
+        dev_list = os.getenv("SBD_DEVICE")
+        if dev_list:
+            options["--devices"] = ",".join(dev_list.split(";"))
+        else:
+            fail_usage("No SBD devices specified. \
+                    At least one SBD device is required.")
 
     run_delay(options)
 
