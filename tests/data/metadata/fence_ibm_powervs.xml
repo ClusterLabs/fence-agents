@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_ibm_powervs" shortdesc="Fence agent for IBM PowerVS" >
-<longdesc>fence_ibm_powervs is a fencing agent for IBM Power Virtual Server (IBM PowerVS) to fence virtual server instances.</longdesc>
+<longdesc>fence_ibm_powervs is a power fencing agent for IBM Power Virtual Server (IBM PowerVS) to fence virtual server instances.</longdesc>
 <vendor-url>https://www.ibm.com</vendor-url>
 <parameters>
 	<parameter name="api-type" unique="0" required="0" deprecated="1">
