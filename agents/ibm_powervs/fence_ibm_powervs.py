@@ -23,8 +23,8 @@ def get_token(conn, options):
 		if options["--token"][0] == '@':
 			key_file = options["--token"][1:]
 			try:
-				with open(key_file, "r") as f:
 				# read the API key from a file
+				with open(key_file, "r") as f:
 					try:
 						keys = json.loads(f.read())
 						# data seems to be in json format
@@ -33,8 +33,8 @@ def get_token(conn, options):
 						if not api_key:
 							# backward compatibility: former key name was 'apikey'
 							api_key = keys.get("apikey", "")
-					except ValueError:
 					# data is text, return as is
+					except ValueError:
 						api_key = f.read().strip()
 			except FileNotFoundError:
 				logging.debug("Failed: Cannot open file {}".format(key_file))
@@ -299,7 +299,7 @@ def main():
 
 	docs = {}
 	docs["shortdesc"] = "Fence agent for IBM PowerVS"
-	docs["longdesc"] = """fence_ibm_powervs is a fencing agent for \
+	docs["longdesc"] = """fence_ibm_powervs is a power fencing agent for \
 IBM Power Virtual Server (IBM PowerVS) to fence virtual server instances."""
 	docs["vendorurl"] = "https://www.ibm.com"
 	show_docs(options, docs)
