@@ -124,7 +124,7 @@ all_opt = {
 		"getopt" : "l:",
 		"longopt" : "username",
 		"help" : "-l, --username=[name]          Login name",
-		"required" : "?",
+		"required" : "0",
 		"order" : 1},
 	"no_login" : {
 		"getopt" : "",
