@@ -70,6 +70,7 @@ fence-agents-ldom \\
 fence-agents-lpar \\
 fence-agents-mpath \\
 fence-agents-netio \\
+fence-agents-nutanix-ahv \\
 fence-agents-ovh \\
 fence-agents-ovm \\
 fence-agents-redfish \\
@@ -929,6 +930,18 @@ via telnet or SSH.
 %files netio
 %{_sbindir}/fence_netio
 %{_mandir}/man8/fence_netio.8*
+
+%package nutanix-ahv
+License: GPL-2.0-or-later AND LGPL-2.0-or-later
+Summary: Fence agent for Nutanix AHV
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+Obsoletes: fence-agents < 3.1.13
+%description nutanix-ahv
+Fence agent for Nutanix AHV clusters.
+%files nutanix-ahv
+%{_sbindir}/fence_nutanix_ahv
+%{_mandir}/man8/fence_nutanix_ahv.8*
 
 %ifarch x86_64 ppc64le
 %package openstack

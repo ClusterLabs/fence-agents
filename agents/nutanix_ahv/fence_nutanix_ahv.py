@@ -13,13 +13,13 @@ import requests
 
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, EC_LOGIN_DENIED, EC_GENERIC_ERROR, EC_TIMED_OUT, run_delay
+from fencing import fail, EC_LOGIN_DENIED, EC_GENERIC_ERROR, EC_TIMED_OUT, run_delay, EC_BAD_ARGS
 
 
 V4_VERSION = '4.0'
 MIN_TIMEOUT = 60
 PC_PORT = 9440
-POWER_STATES = {"ON": "on", "OFF": "off", "PAUSED": "off", "UNKNOWN": "off"}
+POWER_STATES = {"ON": "on", "OFF": "off", "PAUSED": "off", "UNKNOWN": "unknown"}
 
 
 class NutanixClientException(Exception):
@@ -29,7 +29,12 @@ class NutanixClientException(Exception):
 class AHVFenceAgentException(Exception):
     pass
 
+
 class TaskTimedOutException(Exception):
+    pass
+
+
+class InvalidArgsException(Exception):
     pass
 
 
@@ -78,7 +83,7 @@ class NutanixClient:
 
 class NutanixV4Client(NutanixClient):
     def __init__(self, host=None, username=None, password=None,
-                 verify=False, disable_warnings=False):
+                 verify=True, disable_warnings=False):
         self.host = host
         self.username = username
         self.password = password
@@ -147,7 +152,7 @@ class NutanixV4Client(NutanixClient):
 
         if not resp or not isinstance(resp, dict):
             logging.error("Failed to retrieve VM UUID for VM %s", vm_name)
-            raise AHVFenceAgentException from err
+            raise AHVFenceAgentException(f"Failed to get VM UUID for {vm_name}")
 
         if 'data' not in resp:
             err = f"Error: Unsuccessful match for VM name: {vm_name}"
@@ -167,7 +172,7 @@ class NutanixV4Client(NutanixClient):
             raise AHVFenceAgentException("VM UUID not provided")
 
         vm_url = self.vm_url + f"/{vm_uuid}"
-        logging.info("Getting config information for VM, %s", vm_uuid)
+        logging.debug("Getting config information for VM, %s", vm_uuid)
 
         try:
             header_str = self._get_headers()
@@ -175,7 +180,7 @@ class NutanixV4Client(NutanixClient):
                                 headers=header_str, verify=self.verify)
         except NutanixClientException as err:
             logging.error("Failed to retrieve VM details "
-                          "for VM UUID: vm_uuid")
+                          "for VM UUID: %s", vm_uuid)
             raise AHVFenceAgentException from err
         except AHVFenceAgentException as err:
             logging.error("Failed to retrieve etag from headers")
@@ -183,15 +188,28 @@ class NutanixV4Client(NutanixClient):
 
         return resp
 
-    def _power_off_vm(self, vm_uuid):
+    def _power_on_off_vm(self, power_state=None, vm_uuid=None):
         resp = None
+        vm_url = None
 
         if not vm_uuid:
             logging.error("VM UUID was not provided")
             raise AHVFenceAgentException("VM UUID not provided")
+        if not power_state:
+            logging.error("Requested VM power state is None")
+            raise InvalidArgsException
 
-        vm_url = self.vm_url + f"/{vm_uuid}/$actions/power-off"
-        logging.info("Sending request to power off VM, %s", vm_uuid)
+        power_state = power_state.lower()
+
+        if power_state == 'on':
+            vm_url = self.vm_url + f"/{vm_uuid}/$actions/power-on"
+            logging.debug("Sending request to power on VM, %s", vm_uuid)
+        elif power_state == 'off':
+            vm_url = self.vm_url + f"/{vm_uuid}/$actions/power-off"
+            logging.debug("Sending request to power off VM, %s", vm_uuid)
+        else:
+            logging.error("Invalid power state specified: %s", power_state)
+            raise InvalidArgsException
 
         try:
             headers_str = self._get_headers(vm_uuid)
@@ -206,28 +224,6 @@ class NutanixV4Client(NutanixClient):
 
         return resp
 
-    def _power_on_vm(self, vm_uuid):
-        if not vm_uuid:
-            logging.error("VM UUID was not provided")
-            raise AHVFenceAgentException("VM UUID not provided")
-
-        resp = None
-        vm_url = self.vm_url + f"/{vm_uuid}/$actions/power-on"
-        logging.info("Sending request to power on VM, %s", vm_uuid)
-
-        try:
-            header_str = self._get_headers(vm_uuid)
-            resp = self.request(url=vm_url, method='POST',
-                                headers=header_str, verify=self.verify)
-        except NutanixClientException as err:
-            logging.error("Failed to power on VM %s", vm_uuid)
-            raise AHVFenceAgentException from err
-        except AHVFenceAgentException as err:
-            logging.error("Failed to retrieve etag from headers")
-            raise AHVFenceAgentException from err
-
-        return resp
-
     def _power_cycle_vm(self, vm_uuid):
         if not vm_uuid:
             logging.error("VM UUID was not provided")
@@ -235,7 +231,7 @@ class NutanixV4Client(NutanixClient):
 
         resp = None
         vm_url = self.vm_url + f"/{vm_uuid}/$actions/power-cycle"
-        logging.info("Sending request to power cycle VM, %s", vm_uuid)
+        logging.debug("Sending request to power cycle VM, %s", vm_uuid)
 
         try:
             header_str = self._get_headers(vm_uuid)
@@ -266,7 +262,7 @@ class NutanixV4Client(NutanixClient):
         else:
             try:
                 timeout = int(timeout)
-            except ValueError as err:
+            except ValueError:
                 timeout = MIN_TIMEOUT
 
         while task_status != 'SUCCEEDED':
@@ -288,10 +284,11 @@ class NutanixV4Client(NutanixClient):
                 raise AHVFenceAgentException from err
 
             if task_status == 'FAILED':
-                raise AHVFenceException(f"Task failed, task uuid: {task_uuid}")
+                raise AHVFenceAgentException(f"Task failed, task uuid: {task_uuid}")
 
     def list_vms(self, filter_str=None, limit=None):
         vms = None
+        vm_list = {}
 
         try:
             vms = self._get_all_vms(filter_str, limit)
@@ -301,20 +298,17 @@ class NutanixV4Client(NutanixClient):
 
         if not vms or not isinstance(vms, dict):
             logging.error("Failed to retrieve VM list")
-            raise AHVFenceAgentException from err
+            raise AHVFenceAgentException("Unable to get VM list")
 
         if 'data' not in vms:
-            err = "Error: No VMs listed in response"
-            logging.error("Failed to retrieve VM list")
-            raise AHVFenceAgentException(err)
-
-        vm_list = {}
-
-        for vm in vms['data']:
-            vm_name = vm['name']
-            ext_id = vm['extId']
-            power_state = vm['powerState']
-            vm_list[vm_name] = (ext_id, power_state)
+            err = "Got invalid or empty VM list"
+            logging.debug(err)
+        else:
+            for vm in vms['data']:
+                vm_name = vm['name']
+                ext_id = vm['extId']
+                power_state = vm['powerState']
+                vm_list[vm_name] = (ext_id, power_state)
 
         return vm_list
 
@@ -324,7 +318,7 @@ class NutanixV4Client(NutanixClient):
 
         if not vm_name and not vm_uuid:
             logging.error("Require at least one of VM name or VM UUID")
-            raise AHVFenceAgentException("No arguments provided")
+            raise InvalidArgsException("No arguments provided")
 
         if not vm_uuid:
             try:
@@ -343,22 +337,22 @@ class NutanixV4Client(NutanixClient):
             power_state = resp.json()['data']['powerState']
         except AHVFenceAgentException as err:
             logging.error("Failed to retrieve power state of VM %s", vm_uuid)
-            raise AHVFenceAgent_exception from err
+            raise AHVFenceAgentException from err
 
         return POWER_STATES[power_state]
 
     def set_power_state(self, vm_name=None, vm_uuid=None,
                         power_state='off', timeout=None):
         resp = None
-        status = None
         current_power_state = None
+        power_state = power_state.lower()
 
         if not timeout:
             timeout = MIN_TIMEOUT
 
         if not vm_name and not vm_uuid:
             logging.error("Require at least one of VM name or VM UUID")
-            raise AHVFenceAgentException("No arguments provided")
+            raise InvalidArgsException("No arguments provided")
 
         if not vm_uuid:
             vm_uuid = self._get_vm_uuid(vm_name)
@@ -373,9 +367,9 @@ class NutanixV4Client(NutanixClient):
             return
 
         if power_state.lower() == 'on':
-            resp = self._power_on_vm(vm_uuid)
+            resp = self._power_on_off_vm(power_state, vm_uuid)
         elif power_state.lower() == 'off':
-            resp = self._power_off_vm(vm_uuid)
+            resp = self._power_on_off_vm(power_state, vm_uuid)
 
         task_id = resp.json()['data']['extId']
 
@@ -383,8 +377,7 @@ class NutanixV4Client(NutanixClient):
             self._wait_for_task(task_id, timeout)
         except AHVFenceAgentException as err:
             logging.error("Failed to power %s VM", power_state.lower())
-            logging.error("VM power %s task failed with status, %s",
-                            power_state.lower(), status)
+            logging.error("VM power %s task failed", power_state.lower())
             raise AHVFenceAgentException from err
         except TaskTimedOutException as err:
             logging.error("Timed out powering %s VM %s",
@@ -403,7 +396,7 @@ class NutanixV4Client(NutanixClient):
 
         if not vm_name and not vm_uuid:
             logging.error("Require at least one of VM name or VM UUID")
-            raise AHVFenceAgentException("No arguments provided")
+            raise InvalidArgsException("No arguments provided")
 
         if not vm_uuid:
             vm_uuid = self._get_vm_uuid(vm_name)
@@ -450,14 +443,9 @@ def connect(options):
 
 def get_list(client, options):
     vm_list = None
-    limit = None
-    filter_str =  None
 
-    if "--filter" in options:
-        filter_str = options["--filter"]
-
-    if "--limit" in options:
-        limit = options["limit"]
+    filter_str = options.get("--filter", None)
+    limit = options.get("--limit", None)
 
     try:
         vm_list = client.list_vms(filter_str, limit)
@@ -473,44 +461,30 @@ def get_power_status(client, options):
     name = None
     power_state = None
 
-    if "--uuid" in options:
-        vmid = options["--uuid"]
-    else:
-        name = options["--plug"]
+    vmid = options.get("--uuid", None)
+    name = options.get("--plug", None)
 
     if not vmid and not name:
         logging.error("Need VM name or VM UUID for power op")
-        fail(EC_GENERIC_ERROR)
+        fail(EC_BAD_ARGS)
     try:
         power_state = client.get_power_state(vm_name=name, vm_uuid=vmid)
     except AHVFenceAgentException:
         fail(EC_GENERIC_ERROR)
+    except InvalidArgsException:
+        fail(EC_BAD_ARGS)
 
     return power_state
 
 def set_power_status(client, options):
-    vmid = None
-    name = None
-    action = None
-    timeout = None
-
-    if "--action" not in options:
-        logging.error("No power op action specified")
-        fail(EC_GENERIC_ERROR)
-
     action = options["--action"].lower()
-
-    if "--power-timeout" in options:
-        timeout = options["--power-timeout"]
-
-    if "--uuid" in options:
-        vmid = options["--uuid"]
-    else:
-        name = options["--plug"]
+    timeout = options.get("--power-timeout", None)
+    vmid = options.get("--uuid", None)
+    name = options.get("--plug", None)
 
     if not name and not vmid:
         logging.error("Need VM name or VM UUID to set power state of a VM")
-        fail(EC_GENERIC_ERROR)
+        fail(EC_BAD_ARGS)
 
     try:
         client.set_power_state(vm_name=name, vm_uuid=vmid,
@@ -521,23 +495,17 @@ def set_power_status(client, options):
     except TaskTimedOutException as err:
         logging.error(err)
         fail(EC_TIMED_OUT)
+    except InvalidArgsException:
+        fail(EC_BAD_ARGS)
 
 def power_cycle(client, options):
-    vmid = None
-    name = None
-    timeout = None
-
-    if "--power-timeout" in options:
-        timeout = options["--power-timeout"]
-
-    if "--uuid" in options:
-        vmid = options["--uuid"]
-    else:
-        name = options["--plug"]
+    timeout = options.get("--power-timeout", None)
+    vmid = options.get("--uuid", None)
+    name = options.get("--plug", None)
 
     if not name and not vmid:
         logging.error("Need VM name or VM UUID to set power cycling a VM")
-        fail(EC_GENERIC_ERROR)
+        fail(EC_BAD_ARGS)
 
     try:
         client.power_cycle_vm(vm_name=name, vm_uuid=vmid, timeout=timeout)
@@ -547,6 +515,8 @@ def power_cycle(client, options):
     except TaskTimedOutException as err:
         logging.error(err)
         fail(EC_TIMED_OUT)
+    except InvalidArgsException:
+        fail(EC_BAD_ARGS)
 
 def define_new_opts():
     all_opt["filter"] = {
@@ -581,8 +551,6 @@ def main():
     atexit.register(atexit_handler)
     define_new_opts()
 
-    all_opt["method"]["default"] = "onoff"
-    all_opt["disable_timeout"]["default"] = "false"
     all_opt["power_timeout"]["default"] = str(MIN_TIMEOUT)
     options = check_input(device_opt, process_input(device_opt))
     docs = {}
