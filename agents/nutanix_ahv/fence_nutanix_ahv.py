@@ -363,7 +363,7 @@ class NutanixV4Client(NutanixClient):
             raise AHVFenceAgentException from err
 
         if current_power_state.lower() == power_state.lower():
-            logging.info("VM already powered %s", power_state.lower())
+            logging.debug("VM already powered %s", power_state.lower())
             return
 
         if power_state.lower() == 'on':
@@ -384,7 +384,7 @@ class NutanixV4Client(NutanixClient):
                           power_state.lower(), vm_uuid)
             raise TaskTimedOutException from err
 
-        logging.info("Powered %s VM, %s successfully",
+        logging.debug("Powered %s VM, %s successfully",
                      power_state.lower(), vm_uuid)
 
     def power_cycle_vm(self, vm_name=None, vm_uuid=None, timeout=None):
@@ -415,7 +415,7 @@ class NutanixV4Client(NutanixClient):
             raise TaskTimedOutException from err
 
 
-        logging.info("Power-cycled VM, %s", vm_uuid)
+        logging.debug("Power-cycled VM, %s", vm_uuid)
 
 
 def connect(options):
@@ -555,11 +555,9 @@ def main():
     options = check_input(device_opt, process_input(device_opt))
     docs = {}
     docs["shortdesc"] = "Fencing agent for Nutanix AHV Cluster VMs."
-    docs["longdesc"] = """
-                        fence_ahv is a fencing agent for nodes
-                        deployed on Nutanix AHV cluster with AHV cluster
-                        being managed by Prism Central.
-                        """
+    docs["longdesc"] = """fence_ahv is a power fencing agent for \
+virtual machines deployed on Nutanix AHV cluster with the AHV cluster \
+being managed by Prism Central."""
     docs["vendorurl"] = "https://www.nutanix.com"
     show_docs(options, docs)
     run_delay(options)
