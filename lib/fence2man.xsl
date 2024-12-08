@@ -19,7 +19,13 @@
 	<xsl:text>)</xsl:text>
 </xsl:if>
 <xsl:if test="not(content/@default)"><xsl:if test="@required = 1"> This parameter is always required.</xsl:if></xsl:if>
-<xsl:if test="content/@default"> (Default Value: <xsl:value-of select="content/@default"/>)</xsl:if>
+<xsl:if test="content/@default">
+	<xsl:text> (Default Value: </xsl:text>
+	<xsl:call-template name="escape_sequence">
+		<xsl:with-param name="replace" select="content/@default"/>
+	</xsl:call-template>
+	<xsl:text>)</xsl:text>
+</xsl:if>
 <xsl:if test="$show = 'stdin'">
 <xsl:if test="@obsoletes"> Obsoletes: <xsl:value-of select="@obsoletes" /></xsl:if>
 </xsl:if>
@@ -74,5 +80,21 @@ Vendor URL: <xsl:value-of select="vendor-url" />
 <xsl:apply-templates select="actions"/>
 .SH STDIN PARAMETERS
 <xsl:apply-templates select="parameters"><xsl:with-param name="show">stdin</xsl:with-param></xsl:apply-templates>
+</xsl:template>
+
+<xsl:template name="escape_sequence">
+	<xsl:param name="replace"/>
+	<xsl:choose>
+		<xsl:when test="contains($replace,'\')">
+			<xsl:value-of select="substring-before($replace,'\')"/>
+			<xsl:text>\\</xsl:text>
+			<xsl:call-template name="escape_sequence">
+				<xsl:with-param name="replace" select="substring-after($replace,'\')"/>
+			</xsl:call-template>
+		</xsl:when>
+		<xsl:otherwise>
+			<xsl:value-of select="$replace"/>
+		</xsl:otherwise>
+	</xsl:choose>
 </xsl:template>
 </xsl:stylesheet>
