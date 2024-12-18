@@ -183,7 +183,7 @@ def define_new_opts():
         "getopt" : ":",
         "longopt" : "cloud",
         "help" : "--cloud=[name]                 Name of the cloud you want to use. Supported\n\
-                                  values are china, germany, usgov, or stack. Do\n\
+                                  values are china, usgov, or stack. Do\n\
                                   not use this parameter if you want to use\n\
                                   public Azure.",
         "shortdesc" : "Name of the cloud you want to use.",
