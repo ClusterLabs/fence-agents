@@ -139,7 +139,7 @@ def main():
 	atexit.register(atexit_handler)
 
 	opt = process_input(device_opt)
-	all_opt["cmd_prompt"]["default"] = ".*\[My PDU\] #"
+	all_opt["cmd_prompt"]["default"] = r".*\[My PDU\] #"
 	all_opt["ipport"]["default"] = "23"
 	all_opt["shell_timeout"]["default"] = "8"
 
