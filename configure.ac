@@ -145,6 +145,8 @@ eval FENCETMPDIR="`eval echo ${FENCETMPDIR}`"
 AC_DEFINE_UNQUOTED(FENCETMPDIR,"$FENCETMPDIR", Where Fence agents keep state files)
 AC_SUBST(FENCETMPDIR)
 
+SBDPID_PATH=${localstatedir}/run/sbd.pid
+AC_SUBST(SBDPID_PATH)
 
 if test "x$AGENTS_LIST" = x; then
 	AC_ERROR([No agents selected])

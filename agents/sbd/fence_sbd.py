@@ -14,6 +14,7 @@ DEVICE_INIT = 1
 DEVICE_NOT_INIT = -3
 PATH_NOT_EXISTS = -1
 PATH_NOT_BLOCK = -2
+SBD_PID_FILE = "@SBDPID_PATH@"
 
 def is_block_device(filename):
     """Checks if a given path is a valid block device
@@ -342,7 +343,7 @@ def define_new_opts():
         "longopt" : "devices",
         "help":"--devices=[device_a,device_b] \
 Comma separated list of sbd devices",
-        "required" : "1",
+        "required" : "0",
         "shortdesc" : "SBD Device",
         "order": 1
         }
@@ -355,6 +356,34 @@ Comma separated list of sbd devices",
         "default" : "@SBD_PATH@",
         "order": 200
         }
+
+
+def sbd_daemon_is_running():
+    """Check if the sbd daemon is running
+    """
+    if not os.path.exists(SBD_PID_FILE):
+        logging.info("SBD PID file %s does not exist", SBD_PID_FILE)
+        return False
+
+    try:
+        with open(SBD_PID_FILE, "r") as pid_file:
+            pid = int(pid_file.read().strip())
+    except Exception as e:
+        logging.error("Failed to read PID file %s: %s", SBD_PID_FILE, e)
+        return False
+
+    try:
+        # send signal 0 to check if the process is running
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        logging.info("SBD daemon is not running")
+        return False
+    except Exception as e:
+        logging.error("Failed to send signal 0 to PID %d: %s", pid, e)
+        return False
+
+    return True
+
 
 def main():
     """Main function
@@ -382,10 +411,14 @@ which can be used in environments where sbd can be used (shared storage)."
     docs["vendorurl"] = ""
     show_docs(options, docs)
 
-    # We need to check if --devices is given and not empty.
+    # If not specified then read SBD_DEVICE from environment
     if "--devices" not in options:
-        fail_usage("No SBD devices specified. \
-                At least one SBD device is required.")
+        dev_list = os.getenv("SBD_DEVICE")
+        if dev_list and sbd_daemon_is_running():
+            options["--devices"] = ",".join(dev_list.split(";"))
+        else:
+            fail_usage("No SBD devices specified. \
+                    At least one SBD device is required.")
 
     run_delay(options)
 
