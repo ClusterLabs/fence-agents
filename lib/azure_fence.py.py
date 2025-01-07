@@ -273,18 +273,18 @@ def get_azure_config(options):
 def get_azure_cloud_environment(config):
     cloud_environment = None
     if config.Cloud:
-	try:
-	    from azure.identity import AzureAuthorityHosts
+        try:
+            from azure.identity import AzureAuthorityHosts
             if (config.Cloud.lower() == "china"):
-	        cloud_environment = AzureAuthorityHosts.AZURE_CHINA
+                cloud_environment = AzureAuthorityHosts.AZURE_CHINA
             elif (config.Cloud.lower() == "usgov"):
-	        cloud_environment = AzureAuthorityHosts.AZURE_GOVERNMENT
+                cloud_environment = AzureAuthorityHosts.AZURE_GOVERNMENT
             elif (config.Cloud.lower() == "stack"):
-	        cloud_environment = get_cloud_from_metadata_endpoint(config.MetadataEndpoint)
-	except ImportError:
+                cloud_environment = get_cloud_from_metadata_endpoint(config.MetadataEndpoint)
+        except ImportError:
             if (config.Cloud.lower() == "china"):
-                 from msrestazure.azure_cloud import AZURE_CHINA_CLOUD
-                 cloud_environment = AZURE_CHINA_CLOUD
+                from msrestazure.azure_cloud import AZURE_CHINA_CLOUD
+                cloud_environment = AZURE_CHINA_CLOUD
             elif (config.Cloud.lower() == "germany"):
                 from msrestazure.azure_cloud import AZURE_GERMAN_CLOUD
                 cloud_environment = AZURE_GERMAN_CLOUD
