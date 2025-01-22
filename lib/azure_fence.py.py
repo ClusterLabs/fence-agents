@@ -16,6 +16,10 @@ MAX_RETRY = 10
 RETRY_WAIT = 5
 COMPUTE_CLIENT_API_VERSION = "2021-11-01"
 NETWORK_MGMT_CLIENT_API_VERSION = "2021-05-01"
+AZURE_CORE_LIB_VERSION = "1.31.0"
+AZURE_IDENTITY_LIB_VERSION = "1.19.0"
+AZURE_REL8_COMPUTE_VERSION = "5.0.0"
+AZURE_SUSE_COMPUTE_VERSION = "34.0.0"
 
 class AzureSubResource:
     Type = None
@@ -88,6 +92,16 @@ def get_azure_resource(id):
 
     return resource
 
+def get_vm_resource(compute_client, rgName, vmName):
+    from azure.mgmt.compute import __version__
+
+    # use different implementation call based on used version
+    if (__version__ <= AZURE_REL8_COMPUTE_VERSION):
+        return compute_client.virtual_machines.get(rgName, vmName, "instanceView")
+
+    return compute_client.virtual_machines.get(resource_group_name=rgName, vm_name=vmName,expand="instanceView")
+
+
 def get_fence_subnet_for_config(ipConfig, network_client):
     subnetResource = get_azure_resource(ipConfig.subnet.id)
     logging.debug("{get_fence_subnet_for_config} testing virtual network %s in resource group %s for a fence subnet" %(subnetResource.ResourceName, subnetResource.ResourceGroupName))
@@ -154,7 +168,7 @@ def get_network_state(compute_client, network_client, rgName, vmName):
     result = FENCE_STATE_ON
 
     try:
-        vm = compute_client.virtual_machines.get(rgName, vmName, "instanceView")
+        vm = get_vm_resource(compute_client, rgName, vmName)
 
         allNICOK = True
         for nicRef in vm.network_profile.network_interfaces:
@@ -181,7 +195,7 @@ def set_network_state(compute_client, network_client, rgName, vmName, operation)
     import msrestazure.azure_exceptions
     logging.info("{set_network_state} Setting state %s for  %s in resource group %s" % (operation, vmName, rgName))
 
-    vm = compute_client.virtual_machines.get(rgName, vmName, "instanceView")
+    vm = get_vm_resource(compute_client,rgName, vmName)
 
     operations = []
     for nicRef in vm.network_profile.network_interfaces:
@@ -282,6 +296,7 @@ def get_cloud_from_arm_metadata_endpoint(arm_endpoint):
             return {
                 "resource_manager": arm_endpoint,
                 "credential_scopes": [metadata.get("graphEndpoint") + "/.default"],
+                "authority_hosts":  metadata['authentication'].get('loginEndpoint').replace("https://","")
             }
         else:
             fail_usage("Failed to get cloud from metadata endpoint: %s - %s" % arm_endpoint, e)
@@ -293,21 +308,29 @@ def get_azure_cloud_environment(config):
         config.Cloud = "public"
 
     try:
-        from azure.mgmt.core import tools
-        import azure.core.settings as settings
+        from azure.core import __version__
+        if (__version__ >= AZURE_CORE_LIB_VERSION):
+            from azure.mgmt.core import tools
+            import azure.core.settings as settings
+            from azure.identity import AzureAuthorityHosts
 
-        azureCloudName = "AZURE_PUBLIC_CLOUD"
-        if (config.Cloud.lower() == "china"):
-            azureCloudName = "AZURE_CHINA_CLOUD"
-        elif (config.Cloud.lower() == "usgov"):
-            azureCloudName = "AZURE_US_GOV_CLOUD"
-        elif (config.Cloud.lower() == "stack"):
-            # use custom function to call the azuer stack metadata endpoint to get required configuration.
-            return get_cloud_from_arm_metadata_endpoint(config.MetadataEndpoint)
+            azureCloudName = "AZURE_PUBLIC_CLOUD"
+            authorityHosts = AzureAuthorityHosts.AZURE_PUBLIC_CLOUD
+            if (config.Cloud.lower() == "china"):
+                azureCloudName = "AZURE_CHINA_CLOUD"
+                authorityHosts = AzureAuthorityHosts.AZURE_CHINA
+            elif (config.Cloud.lower() == "usgov"):
+                azureCloudName = "AZURE_US_GOV_CLOUD"
+                authorityHosts = AzureAuthorityHosts.AZURE_GOVERNMENT
+            elif (config.Cloud.lower() == "stack"):
+                # use custom function to call the azuer stack metadata endpoint to get required configuration.
+                return get_cloud_from_arm_metadata_endpoint(config.MetadataEndpoint)
 
-        azureCloud = settings.convert_azure_cloud(azureCloudName)
-        return tools.get_arm_endpoints(azureCloud)
+            azureCloud = settings.convert_azure_cloud(azureCloudName)
+            cloud_environment = tools.get_arm_endpoints(azureCloud)
+            cloud_environment["authority_hosts"] = authorityHosts
 
+            return cloud_environment
     except ImportError:
         if (config.Cloud.lower() == "public"):
             from msrestazure.azure_cloud import AZURE_PUBLIC_CLOUD
@@ -325,9 +348,12 @@ def get_azure_cloud_environment(config):
             from msrestazure.azure_cloud import get_cloud_from_metadata_endpoint
             cloud_environment = get_cloud_from_metadata_endpoint(config.MetadataEndpoint)
 
+        authority_hosts = cloud_environment.endpoints.active_directory.replace("http://","")
         return {
             "resource_manager": cloud_environment.endpoints.resource_manager,
             "credential_scopes": [cloud_environment.endpoints.active_directory_resource_id + "/.default"],
+            "authority_hosts": authority_hosts,
+            "cloud_environment": cloud_environment,
         }
 
 def get_azure_credentials(config):
@@ -339,46 +365,27 @@ def get_azure_credentials(config):
             credentials = ManagedIdentityCredential(identity_config={"resource_id": cloud_environment["resource_manager"]})
         except ImportError:
             from msrestazure.azure_active_directory import MSIAuthentication
-            if config.UseMSI and cloud_environment:
-                credentials = MSIAuthentication(cloud_environment=cloud_environment)
-            else:
-                credentials = MSIAuthentication()
-    elif cloud_environment:
-        try:
-            # try to use new libraries ClientSecretCredential (azure.identity, based on azure.core)
-            from azure.identity import ClientSecretCredential
-            credentials = ClientSecretCredential(
-                client_id = config.ApplicationId,
-                client_secret = config.ApplicationKey,
-                tenant_id = config.Tenantid,
-                cloud_environment=cloud_environment
-            )
-        except ImportError:
-             # use old libraries ServicePrincipalCredentials (azure.common) if new one is not available
-            from azure.common.credentials import ServicePrincipalCredentials
-            credentials = ServicePrincipalCredentials(
-                client_id = config.ApplicationId,
-                secret = config.ApplicationKey,
-                tenant = config.Tenantid,
-                cloud_environment=cloud_environment
-            )
-    else:
-        try:
-            # try to use new libraries ClientSecretCredential (azure.identity, based on azure.core)
-            from azure.identity import ClientSecretCredential
-            credentials = ClientSecretCredential(
-                client_id = config.ApplicationId,
-                client_secret = config.ApplicationKey,
-                tenant_id = config.Tenantid
-            )
-        except ImportError:
-             # use old libraries ServicePrincipalCredentials (azure.common) if new one is not available
-            from azure.common.credentials import ServicePrincipalCredentials
-            credentials = ServicePrincipalCredentials(
-                client_id = config.ApplicationId,
-                secret = config.ApplicationKey,
-                tenant = config.Tenantid
-            )
+            credentials = MSIAuthentication(cloud_environment=cloud_environment["cloud_environment"])
+        return
+
+    try:
+        # try to use new libraries ClientSecretCredential (azure.identity, based on azure.core)
+        from azure.identity import ClientSecretCredential
+        credentials = ClientSecretCredential(
+            client_id = config.ApplicationId,
+            client_secret = config.ApplicationKey,
+            tenant_id = config.Tenantid,
+            authority=cloud_environment["authority_hosts"]
+        )
+    except ImportError:
+         # use old libraries ServicePrincipalCredentials (azure.common) if new one is not available
+        from azure.common.credentials import ServicePrincipalCredentials
+        credentials = ServicePrincipalCredentials(
+            client_id = config.ApplicationId,
+            secret = config.ApplicationKey,
+            tenant = config.Tenantid,
+            cloud_environment=cloud_environment["cloud_environment"]
+        )
 
     return credentials
 
@@ -388,38 +395,42 @@ def get_azure_compute_client(config):
     cloud_environment = get_azure_cloud_environment(config)
     credentials = get_azure_credentials(config)
 
-    if cloud_environment:
-        if (config.Cloud.lower() == "stack") and not config.MetadataEndpoint:
-                fail_usage("metadata-endpoint not specified")
+    from azure.mgmt.compute import __version__
 
-        try:
-            from azure.profiles import KnownProfiles
-            if (config.Cloud.lower() == "stack"):
-                client_profile = KnownProfiles.v2020_09_01_hybrid
-            else:
-                client_profile = KnownProfiles.default
+    # change compute api versions based on the installed version
+    compute_api_version = COMPUTE_CLIENT_API_VERSION
+    if (__version__ <= AZURE_REL8_COMPUTE_VERSION):
+        compute_api_version = ComputeManagementClient.DEFAULT_API_VERSION
+    if (__version__ >= AZURE_SUSE_COMPUTE_VERSION):
+        compute_api_version = ComputeManagementClient.LATEST_PROFILE.get_profile_dict()["azure.mgmt.compute.ComputeManagementClient"]["virtual_machines"]
 
-            compute_client = ComputeManagementClient(
-                credentials,
-                config.SubscriptionId,
-                base_url=cloud_environment["resource_manager"],
-                profile=client_profile,
-                credential_scopes=cloud_environment["credential_scopes"],
-                api_version=COMPUTE_CLIENT_API_VERSION
-            )
-        except TypeError:
-            compute_client = ComputeManagementClient(
-                credentials,
-                config.SubscriptionId,
-                base_url=cloud_environment["resource_manager"],
-                api_version=COMPUTE_CLIENT_API_VERSION
-            )
-    else:
+    logging.debug("{get_azure_compute_client} use virtual_machine api version: %s" %(compute_api_version))
+
+    if (config.Cloud.lower() == "stack") and not config.MetadataEndpoint:
+            fail_usage("metadata-endpoint not specified")
+
+    try:
+        from azure.profiles import KnownProfiles
+        if (config.Cloud.lower() == "stack"):
+            client_profile = KnownProfiles.v2020_09_01_hybrid
+        else:
+            client_profile = KnownProfiles.default
         compute_client = ComputeManagementClient(
             credentials,
             config.SubscriptionId,
-            api_version=COMPUTE_CLIENT_API_VERSION
+            base_url=cloud_environment["resource_manager"],
+            profile=client_profile,
+            credential_scopes=cloud_environment["credential_scopes"],
+            api_version=compute_api_version
         )
+    except TypeError:
+        compute_client = ComputeManagementClient(
+            credentials,
+            config.SubscriptionId,
+            base_url=cloud_environment["resource_manager"],
+            api_version=compute_api_version
+        )
+
     return compute_client
 
 def get_azure_network_client(config):
@@ -428,37 +439,32 @@ def get_azure_network_client(config):
     cloud_environment = get_azure_cloud_environment(config)
     credentials = get_azure_credentials(config)
 
-    if cloud_environment:
-        if (config.Cloud.lower() == "stack") and not config.MetadataEndpoint:
-                fail_usage("metadata-endpoint not specified")
+    if (config.Cloud.lower() == "stack") and not config.MetadataEndpoint:
+        fail_usage("metadata-endpoint not specified")
 
-        try:
-            from azure.profiles import KnownProfiles
 
-            if (config.Cloud.lower() == "stack"):
-                client_profile = KnownProfiles.v2020_09_01_hybrid
-            else:
-                client_profile = KnownProfiles.default
+    from azure.profiles import KnownProfiles
 
-            network_client = NetworkManagementClient(
-                credentials,
-                config.SubscriptionId,
-                base_url=cloud_environment["resource_manager"],
-                profile=client_profile,
-                credential_scopes=cloud_environment["credential_scopes"],
-                api_version=NETWORK_MGMT_CLIENT_API_VERSION
-            )
-        except TypeError:
-            network_client = NetworkManagementClient(
-                credentials,
-                config.SubscriptionId,
-                base_url=cloud_environment["resource_manager"],
-                api_version=NETWORK_MGMT_CLIENT_API_VERSION
-            )
+    if (config.Cloud.lower() == "stack"):
+        client_profile = KnownProfiles.v2020_09_01_hybrid
     else:
+        client_profile = KnownProfiles.default
+
+    try:
         network_client = NetworkManagementClient(
             credentials,
             config.SubscriptionId,
+            base_url=cloud_environment["resource_manager"],
+            profile=client_profile,
+            credential_scopes=cloud_environment["credential_scopes"],
+            api_version=NETWORK_MGMT_CLIENT_API_VERSION
+        )
+    except TypeError:
+        network_client = NetworkManagementClient(
+            credentials,
+            config.SubscriptionId,
+            base_url=cloud_environment["resource_manager"],
             api_version=NETWORK_MGMT_CLIENT_API_VERSION
         )
     return network_client
+
