@@ -18,7 +18,7 @@ COMPUTE_CLIENT_API_VERSION = "2021-11-01"
 NETWORK_MGMT_CLIENT_API_VERSION = "2021-05-01"
 AZURE_CORE_LIB_VERSION = "1.31.0"
 AZURE_IDENTITY_LIB_VERSION = "1.19.0"
-AZURE_REL8_COMPUTE_VERSION = "5.0.0"
+AZURE_RHEL8_COMPUTE_VERSION = "5.0.0"
 AZURE_SUSE_COMPUTE_VERSION = "34.0.0"
 
 class AzureSubResource:
@@ -92,11 +92,14 @@ def get_azure_resource(id):
 
     return resource
 
+def azure_dep_versions(v):
+    return tuple(map(int, (v.split("."))))
+
 def get_vm_resource(compute_client, rgName, vmName):
     from azure.mgmt.compute import __version__
 
     # use different implementation call based on used version
-    if (__version__ <= AZURE_REL8_COMPUTE_VERSION):
+    if (azure_dep_versions(__version__) <= azure_dep_versions(AZURE_RHEL8_COMPUTE_VERSION)):
         return compute_client.virtual_machines.get(rgName, vmName, "instanceView")
 
     return compute_client.virtual_machines.get(resource_group_name=rgName, vm_name=vmName,expand="instanceView")
@@ -303,34 +306,48 @@ def get_cloud_from_arm_metadata_endpoint(arm_endpoint):
     except Exception as e:
         fail_usage("Failed to get cloud from metadata endpoint: %s - %s" % arm_endpoint, e)
 
+def get_azure_arm_endpoints(cloudName, authority):
+    cloudEnvironment = {
+        "authority_hosts": authority
+    }
+
+    if cloudName == "AZURE_CHINA_CLOUD":
+        cloudEnvironment["resource_manager"] = "https://management.chinacloudapi.cn/"
+        cloudEnvironment["credential_scopes"] = ["https://management.chinacloudapi.cn/.default"]
+        return cloudEnvironment
+
+    if cloudName == "AZURE_US_GOV_CLOUD":
+        cloudEnvironment["resource_manager"] = "https://management.usgovcloudapi.net/"
+        cloudEnvironment["credential_scopes"] = ["https://management.core.usgovcloudapi.net/.default"]
+        return cloudEnvironment
+
+    if cloudName == "AZURE_PUBLIC_CLOUD":
+        cloudEnvironment["resource_manager"] = "https://management.azure.com/"
+        cloudEnvironment["credential_scopes"] = ["https://management.azure.com/.default"]
+        return cloudEnvironment
+
+
 def get_azure_cloud_environment(config):
     if (config.Cloud is None):
         config.Cloud = "public"
 
     try:
-        from azure.core import __version__
-        if (__version__ >= AZURE_CORE_LIB_VERSION):
-            from azure.mgmt.core import tools
-            import azure.core.settings as settings
-            from azure.identity import AzureAuthorityHosts
+        from azure.identity import AzureAuthorityHosts
 
-            azureCloudName = "AZURE_PUBLIC_CLOUD"
-            authorityHosts = AzureAuthorityHosts.AZURE_PUBLIC_CLOUD
-            if (config.Cloud.lower() == "china"):
-                azureCloudName = "AZURE_CHINA_CLOUD"
-                authorityHosts = AzureAuthorityHosts.AZURE_CHINA
-            elif (config.Cloud.lower() == "usgov"):
-                azureCloudName = "AZURE_US_GOV_CLOUD"
-                authorityHosts = AzureAuthorityHosts.AZURE_GOVERNMENT
-            elif (config.Cloud.lower() == "stack"):
-                # use custom function to call the azuer stack metadata endpoint to get required configuration.
-                return get_cloud_from_arm_metadata_endpoint(config.MetadataEndpoint)
+        azureCloudName = "AZURE_PUBLIC_CLOUD"
+        authorityHosts = AzureAuthorityHosts.AZURE_PUBLIC_CLOUD
+        if (config.Cloud.lower() == "china"):
+            azureCloudName = "AZURE_CHINA_CLOUD"
+            authorityHosts = AzureAuthorityHosts.AZURE_CHINA
+        elif (config.Cloud.lower() == "usgov"):
+            azureCloudName = "AZURE_US_GOV_CLOUD"
+            authorityHosts = AzureAuthorityHosts.AZURE_GOVERNMENT
+        elif (config.Cloud.lower() == "stack"):
+            # use custom function to call the azuer stack metadata endpoint to get required configuration.
+            return get_cloud_from_arm_metadata_endpoint(config.MetadataEndpoint)
 
-            azureCloud = settings.convert_azure_cloud(azureCloudName)
-            cloud_environment = tools.get_arm_endpoints(azureCloud)
-            cloud_environment["authority_hosts"] = authorityHosts
+        return get_azure_arm_endpoints(azureCloudName, authorityHosts)
 
-            return cloud_environment
     except ImportError:
         if (config.Cloud.lower() == "public"):
             from msrestazure.azure_cloud import AZURE_PUBLIC_CLOUD
@@ -399,9 +416,10 @@ def get_azure_compute_client(config):
 
     # change compute api versions based on the installed version
     compute_api_version = COMPUTE_CLIENT_API_VERSION
-    if (__version__ <= AZURE_REL8_COMPUTE_VERSION):
+    if (azure_dep_versions(__version__) <= azure_dep_versions(AZURE_RHEL8_COMPUTE_VERSION)):
         compute_api_version = ComputeManagementClient.DEFAULT_API_VERSION
-    if (__version__ >= AZURE_SUSE_COMPUTE_VERSION):
+
+    if (azure_dep_versions(__version__) >= azure_dep_versions(AZURE_SUSE_COMPUTE_VERSION)):
         compute_api_version = ComputeManagementClient.LATEST_PROFILE.get_profile_dict()["azure.mgmt.compute.ComputeManagementClient"]["virtual_machines"]
 
     logging.debug("{get_azure_compute_client} use virtual_machine api version: %s" %(compute_api_version))
@@ -467,4 +485,3 @@ def get_azure_network_client(config):
             api_version=NETWORK_MGMT_CLIENT_API_VERSION
         )
     return network_client
-
