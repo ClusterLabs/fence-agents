@@ -16,10 +16,7 @@ MAX_RETRY = 10
 RETRY_WAIT = 5
 COMPUTE_CLIENT_API_VERSION = "2021-11-01"
 NETWORK_MGMT_CLIENT_API_VERSION = "2021-05-01"
-AZURE_CORE_LIB_VERSION = "1.31.0"
-AZURE_IDENTITY_LIB_VERSION = "1.19.0"
-AZURE_RHEL8_COMPUTE_VERSION = "5.0.0"
-AZURE_SUSE_COMPUTE_VERSION = "34.0.0"
+AZURE_RHEL8_COMPUTE_VERSION = "27.2.0"
 
 class AzureSubResource:
     Type = None
@@ -96,7 +93,11 @@ def azure_dep_versions(v):
     return tuple(map(int, (v.split("."))))
 
 def get_vm_resource(compute_client, rgName, vmName):
-    from azure.mgmt.compute import __version__
+    try:
+        # Version is not available in azure-mgmt-compute version 14.0.0 until 27.2.0
+        from azure.mgmt.compute import __version__
+    except ImportError:
+        __version__ = "0.0.0"
 
     # use different implementation call based on used version
     if (azure_dep_versions(__version__) <= azure_dep_versions(AZURE_RHEL8_COMPUTE_VERSION)):
@@ -412,15 +413,12 @@ def get_azure_compute_client(config):
     cloud_environment = get_azure_cloud_environment(config)
     credentials = get_azure_credentials(config)
 
-    from azure.mgmt.compute import __version__
-
-    # change compute api versions based on the installed version
-    compute_api_version = COMPUTE_CLIENT_API_VERSION
-    if (azure_dep_versions(__version__) <= azure_dep_versions(AZURE_RHEL8_COMPUTE_VERSION)):
-        compute_api_version = ComputeManagementClient.DEFAULT_API_VERSION
-
-    if (azure_dep_versions(__version__) >= azure_dep_versions(AZURE_SUSE_COMPUTE_VERSION)):
+    # Try to read the default used api version from the installed package.
+    try:
         compute_api_version = ComputeManagementClient.LATEST_PROFILE.get_profile_dict()["azure.mgmt.compute.ComputeManagementClient"]["virtual_machines"]
+    except Exception as e:
+        logging.debug("{get_azure_compute_client} Failed to get the latest profile: %s using the default api version %s" % (e, COMPUTE_CLIENT_API_VERSION))
+        compute_api_version = COMPUTE_CLIENT_API_VERSION
 
     logging.debug("{get_azure_compute_client} use virtual_machine api version: %s" %(compute_api_version))
 
