@@ -16,6 +16,7 @@ MAX_RETRY = 10
 RETRY_WAIT = 5
 NETWORK_MGMT_CLIENT_API_VERSION = "2021-05-01"
 AZURE_RHEL8_COMPUTE_VERSION = "27.2.0"
+AZURE_COMPUTE_VERSION_5 = "5.0.0"
 
 class AzureSubResource:
     Type = None
@@ -90,6 +91,42 @@ def get_azure_resource(id):
 
 def azure_dep_versions(v):
     return tuple(map(int, (v.split("."))))
+
+# Do azure API call to list all virtual machines in a resource group
+def get_vm_list(compute_client,rgName):
+    return compute_client.virtual_machines.list(rgName)
+
+# Do azue API call to shutdown a virtual machine
+def do_vm_power_off(compute_client,rgName,vmName, skipShutdown):
+    try:
+        # Version is not available in azure-mgmt-compute version 14.0.0 until 27.2.0
+        from azure.mgmt.compute import __version__
+    except ImportError:
+        __version__ = "0.0.0"
+
+    # use different implementation call based on used version
+    if (azure_dep_versions(__version__) == azure_dep_versions(AZURE_COMPUTE_VERSION_5)):
+        logging.debug("{do_vm_power_off} azure.mgtm.compute version is to old to use 'begin_power_off' use 'power_off' function")
+        compute_client.virtual_machines.power_off(rgName, vmName, skip_shutdown=skipShutdown)
+        return
+
+    compute_client.virtual_machines.begin_power_off(rgName, vmName, skip_shutdown=skipShutdown)
+
+# Do azure API call to start a virtual machine
+def do_vm_start(compute_client,rgName,vmName):
+    try:
+        # Version is not available in azure-mgmt-compute version 14.0.0 until 27.2.0
+        from azure.mgmt.compute import __version__
+    except ImportError:
+        __version__ = "0.0.0"
+
+    # use different implementation call based on used version
+    if (azure_dep_versions(__version__) == azure_dep_versions(AZURE_COMPUTE_VERSION_5)):
+        logging.debug("{do_vm_start} azure.mgtm.compute version is to old to use 'begin_start' use 'start' function")
+        compute_client.virtual_machines.start(rgName, vmName)
+        return
+
+    compute_client.virtual_machines.begin_start(rgName, vmName)
 
 def get_vm_resource(compute_client, rgName, vmName):
     try:
