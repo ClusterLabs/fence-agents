@@ -14,7 +14,6 @@ FENCE_TAG_IP = "FENCE_TAG_IP"
 IP_TYPE_DYNAMIC = "Dynamic"
 MAX_RETRY = 10
 RETRY_WAIT = 5
-COMPUTE_CLIENT_API_VERSION = "2021-11-01"
 NETWORK_MGMT_CLIENT_API_VERSION = "2021-05-01"
 AZURE_RHEL8_COMPUTE_VERSION = "27.2.0"
 
@@ -417,8 +416,8 @@ def get_azure_compute_client(config):
     try:
         compute_api_version = ComputeManagementClient.LATEST_PROFILE.get_profile_dict()["azure.mgmt.compute.ComputeManagementClient"]["virtual_machines"]
     except Exception as e:
-        logging.debug("{get_azure_compute_client} Failed to get the latest profile: %s using the default api version %s" % (e, COMPUTE_CLIENT_API_VERSION))
-        compute_api_version = COMPUTE_CLIENT_API_VERSION
+        compute_api_version = ComputeManagementClient.DEFAULT_API_VERSION
+        logging.debug("{get_azure_compute_client} Failed to get the latest profile: %s using the default api version %s" % (e, compute_api_version))
 
     logging.debug("{get_azure_compute_client} use virtual_machine api version: %s" %(compute_api_version))
 
