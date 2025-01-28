@@ -15,7 +15,7 @@ def get_nodes_list(clients, options):
     if clients:
         compute_client = clients[0]
         rgName = options["--resourceGroup"]
-        vms = compute_client.virtual_machines.list(rgName)
+        vms = azure_fence.get_vm_list(compute_client,rgName)
         try:
             for vm in vms:
                 result[vm.name] = ("", None)
@@ -31,7 +31,7 @@ def check_unfence(clients, options):
         rgName = options["--resourceGroup"]
 
         try:
-            vms = compute_client.virtual_machines.list(rgName)
+            vms = azure_fence.get_vm_list(compute_client,rgName)
         except Exception as e:
             fail_usage("Failed: %s" % e)
 
@@ -72,7 +72,7 @@ def get_power_status(clients, options):
 
         powerState = "unknown"
         try:
-            vmStatus = compute_client.virtual_machines.get(rgName, vmName, expand="instanceView")
+            vmStatus = azure_fence.get_vm_resource(compute_client, rgName, vmName)
         except Exception as e:
             fail_usage("Failed: %s" % e)
 
@@ -115,23 +115,10 @@ def set_power_status(clients, options):
 
         if (options["--action"]=="off"):
             logging.info("Poweroff " + vmName + " in resource group " + rgName)
-            try:
-                # try new API version first
-                compute_client.virtual_machines.begin_power_off(rgName, vmName, skip_shutdown=True)
-            except AttributeError:
-                # use older API verson if it fails
-                logging.debug("Poweroff " + vmName + " did not work via 'virtual_machines.begin_power_off. Trying virtual_machines.power_off'.")
-                compute_client.virtual_machines.power_off(rgName, vmName, skip_shutdown=True)
+            azure_fence.do_vm_power_off(compute_client, rgName, vmName, True)
         elif (options["--action"]=="on"):
             logging.info("Starting " + vmName + " in resource group " + rgName)
-            try:
-                # try new API version first
-                compute_client.virtual_machines.begin_start(rgName, vmName)
-            except AttributeError:
-                # use older API verson if it fails
-                logging.debug("Starting " + vmName + " did not work via 'virtual_machines.begin_start. Trying virtual_machines.start'.")
-                compute_client.virtual_machines.start(rgName, vmName)
-
+            azure_fence.do_vm_start(compute_client, rgName, vmName)
 
 def define_new_opts():
     all_opt["resourceGroup"] = {
