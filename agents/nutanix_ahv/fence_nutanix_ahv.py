@@ -10,6 +10,8 @@ import sys
 import time
 import uuid
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
@@ -20,6 +22,7 @@ V4_VERSION = '4.0'
 MIN_TIMEOUT = 60
 PC_PORT = 9440
 POWER_STATES = {"ON": "on", "OFF": "off", "PAUSED": "off", "UNKNOWN": "unknown"}
+MAX_RETRIES = 5
 
 
 class NutanixClientException(Exception):
@@ -44,22 +47,28 @@ class NutanixClient:
         self.password = password
         self.valid_status_codes = [200, 202]
         self.disable_warnings = disable_warnings
+        self.session = requests.Session()
+        self.session.auth = (self.username, self.password)
+
+        retry_strategy = Retry(total=MAX_RETRIES,
+                               backoff_factor=1,
+                               status_forcelist=[429, 500, 503])
+
+        self.session.mount("https://", HTTPAdapter(max_retries=retry_strategy))
 
     def request(self, url, method='GET', headers=None, **kwargs):
-        session = requests.Session()
-        session.auth = (self.username, self.password)
 
         if self.disable_warnings:
             requests.packages.urllib3.disable_warnings()
 
         if headers:
-            session.headers.update(headers)
+            self.session.headers.update(headers)
 
         response = None
 
         try:
             logging.debug("Sending %s request to %s", method, url)
-            response = session.request(method, url, **kwargs)
+            response = self.session.request(method, url, **kwargs)
             response.raise_for_status()
         except requests.exceptions.SSLError as err:
             logging.error("Secure connection failed, verify SSL certificate")
