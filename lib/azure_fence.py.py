@@ -416,11 +416,11 @@ def get_azure_credentials(config):
     if config.UseMSI:
         try:
             from azure.identity import ManagedIdentityCredential
-            credentials = ManagedIdentityCredential(identity_config={"resource_id": cloud_environment["resource_manager"]})
+            credentials = ManagedIdentityCredential(authority=cloud_environment["authority_hosts"])
         except ImportError:
             from msrestazure.azure_active_directory import MSIAuthentication
             credentials = MSIAuthentication(cloud_environment=cloud_environment["cloud_environment"])
-        return
+        return credentials
 
     try:
         # try to use new libraries ClientSecretCredential (azure.identity, based on azure.core)
