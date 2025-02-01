@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+<resource-agent name="fence_aws_vpc" shortdesc="Fence agent for AWS VPC" >
+<longdesc>fence_aws_vpc is a Power Fencing agent for AWS VPC that works by manipulating security groups. It uses the boto3 library to connect to AWS.
+
+boto3 can be configured with AWS CLI or by creating ~/.aws/credentials.
+For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.html#configuration</longdesc>
+<vendor-url>http://www.amazon.com</vendor-url>
+<parameters>
+        <parameter name="action" unique="0" required="1">
+                <getopt mixed="-o, --action=[action]" />
+                <content type="string" default="reboot"  />
+                <shortdesc lang="en">Fencing action</shortdesc>
+        </parameter>
+        <parameter name="region" unique="0" required="0">
+                <getopt mixed="-r, --region=[region]" />
+                <content type="string"  />
+                <shortdesc lang="en">AWS Region.</shortdesc>
+        </parameter>
+        <parameter name="access_key" unique="0" required="0">
+                <getopt mixed="-a, --access-key=[key]" />
+                <content type="string"  />
+                <shortdesc lang="en">AWS Access Key.</shortdesc>
+        </parameter>
+        <parameter name="secret_key" unique="0" required="0">
+                <getopt mixed="-s, --secret-key=[key]" />
+                <content type="string"  />
+                <shortdesc lang="en">AWS Secret Key.</shortdesc>
+        </parameter>
+        <parameter name="secg" unique="0" required="0">
+                <getopt mixed="-g --secg=[sg1,sg2,...]" />
+                <content type="string"  />
+                <shortdesc lang="en">Security Groups to remove.</shortdesc>
+        </parameter>
+        <parameter name="plug" unique="0" required="1">
+                <getopt mixed="-n, --plug=[id]" />
+                <content type="string"  />
+                <shortdesc lang="en">Target instance identifier.</shortdesc>
+        </parameter>
+        <parameter name="skip_race_check" unique="0" required="0">
+                <getopt mixed="--skip-race-check" />
+                <content type="boolean"  />
+                <shortdesc lang="en">Skip race condition check.</shortdesc>
+        </parameter>
+
