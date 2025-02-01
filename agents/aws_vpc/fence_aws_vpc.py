@@ -8,7 +8,7 @@ import time
 import requests
 from requests import HTTPError
 from requests.exceptions import HTTPError
-from botocore.exceptions import ClientError, EndpointConnectionError, NoRegionError
+
 
 try:
 	import boto3
