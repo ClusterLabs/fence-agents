@@ -5,11 +5,16 @@ import json
 import atexit
 import logging
 import time
-import boto3
 import requests
 from requests import HTTPError
 from requests.exceptions import HTTPError
 from botocore.exceptions import ClientError, EndpointConnectionError, NoRegionError
+
+try:
+	import boto3
+	from botocore.exceptions import ConnectionError, ClientError, EndpointConnectionError, NoRegionError
+except ImportError:
+	pass
 
 sys.path.append("@FENCEAGENTSLIBDIR@")
 #sys.path.append("/usr/share/fence")
