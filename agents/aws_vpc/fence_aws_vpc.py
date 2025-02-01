@@ -124,11 +124,11 @@ def get_instance_id():
     """Retrieve the instance ID of the current EC2 instance."""
     try:
         token = requests.put(
-            "http://169.254.169.254/latest/api/token",
+            "https://169.254.169.254/latest/api/token",
             headers={"X-aws-ec2-metadata-token-ttl-seconds": "21600"},
         ).content.decode("UTF-8")
         instance_id = requests.get(
-            "http://169.254.169.254/latest/meta-data/instance-id",
+            "https://169.254.169.254/latest/meta-data/instance-id",
             headers={"X-aws-ec2-metadata-token": token},
         ).content.decode("UTF-8")
         return instance_id
