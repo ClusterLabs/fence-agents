@@ -18,6 +18,7 @@ except ImportError:
 
 sys.path.append("@FENCEAGENTSLIBDIR@")
 #sys.path.append("/usr/share/fence")
+#sys.path.append("/usr/share/fence")
 
 from fencing import *
 from fencing import (
