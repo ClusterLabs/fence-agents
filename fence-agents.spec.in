@@ -386,7 +386,7 @@ BuildArch: noarch
 Obsoletes: fence-agents < 3.1.13
 %description aws-vpc
 Fence agent for Amazon AWS instances that fences by modifying aws sec groups
-%files aws_vpc
+%files aws-vpc
 %{_sbindir}/fence_aws_vpc
 %{_mandir}/man8/fence_aws_vpc.8*
 
