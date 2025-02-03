@@ -16,21 +16,14 @@ try:
 except ImportError:
 	pass
 
-sys.path.append("@FENCEAGENTSLIBDIR@")
-#sys.path.append("/usr/share/fence")
-#sys.path.append("/usr/share/fence")
+#sys.path.append("@FENCEAGENTSLIBDIR@")
+sys.path.append("/usr/share/fence")
 
 from fencing import *
 from fencing import (
-    all_opt,
-    check_input,
-    process_input,
     run_delay,
-    show_docs,
-    fence_action,
     fail,
     fail_usage,
-    atexit_handler,
     EC_STATUS,
     SyslogLibHandler
 )
@@ -125,11 +118,11 @@ def get_instance_id():
     """Retrieve the instance ID of the current EC2 instance."""
     try:
         token = requests.put(
-            "https://169.254.169.254/latest/api/token",
+            "http://169.254.169.254/latest/api/token",
             headers={"X-aws-ec2-metadata-token-ttl-seconds": "21600"},
         ).content.decode("UTF-8")
         instance_id = requests.get(
-            "https://169.254.169.254/latest/meta-data/instance-id",
+            "http://169.254.169.254/latest/meta-data/instance-id",
             headers={"X-aws-ec2-metadata-token": token},
         ).content.decode("UTF-8")
         return instance_id
@@ -178,16 +171,15 @@ def get_instance_details(ec2_client, instance_id):
         raise
 
 # Check if we are the self-fencing node 
-
 def get_self_power_status(conn, instance_id):
 	try:
 		instance = conn.instances.filter(Filters=[{"Name": "instance-id", "Values": [instance_id]}])
 		state = list(instance)[0].state["Name"]
 		if state == "running":
-			logger.debug("Captured my (%s) state and it %s - returning OK - Proceeding with fencing",instance_id,state.upper())
+			logger.debug(f"Captured my ({instance_id}) state and it {state.upper()} - returning OK - Proceeding with fencing")
 			return "ok"
 		else:
-			logger.debug("Captured my (%s) state it is %s - returning Alert - Unable to fence other nodes",instance_id,state.upper())
+			logger.debug(f"Captured my ({instance_id}) state it is {state.upper()} - returning Alert - Unable to fence other nodes")
 			return "alert"
 	
 	except ClientError:
@@ -242,17 +234,18 @@ def create_backup_tag(ec2_client, instance_id, interfaces, timestamp):
         raise
 
 
-# Remove specified security groups
-def remove_security_groups(ec2_client, instance_id, sg_list, timestamp):
+def modify_security_groups(ec2_client, instance_id, sg_list, timestamp, mode="remove"):
     """
-    Removes all SGs in `sg_list` from each interface, if it doesn't leave zero SGs.
-    If no changes are made to any interface, we exit with an error.
+    Modifies security groups on network interfaces based on the specified mode.
+    In 'remove' mode: Removes all SGs in sg_list from each interface
+    In 'keep_only' mode: Keeps only the SGs in sg_list and removes all others
     
     Args:
         ec2_client: The boto3 EC2 client
         instance_id: The ID of the EC2 instance
-        sg_list: List of security group IDs to remove
+        sg_list: List of security group IDs to remove or keep
         timestamp: Unix timestamp for backup tag
+        mode: Either "remove" or "keep_only" to determine operation mode
         
     Raises:
         ClientError: If AWS API calls fail
@@ -273,99 +266,31 @@ def remove_security_groups(ec2_client, instance_id, sg_list, timestamp):
         for interface in interfaces:
             try:
                 original_sgs = interface["SecurityGroups"]
-                # Exclude any SGs that are in sg_list
-                updated_sgs = [sg for sg in original_sgs if sg not in sg_list]
+                
+                if mode == "remove":
+                    # Exclude any SGs that are in sg_list
+                    updated_sgs = [sg for sg in original_sgs if sg not in sg_list]
+                    operation_desc = f"removing {sg_list}"
+                else:  # keep_only mode
+                    # Set interface to only use the specified security groups
+                    updated_sgs = sg_list
+                    operation_desc = f"keeping only {sg_list}"
 
-                # Only skip if we'd end up with zero SGs
-                if not updated_sgs:
+                # Skip if we'd end up with zero SGs (only in remove mode)
+                if mode == "remove" and not updated_sgs:
                     logger.info(
                         f"Skipping interface {interface['NetworkInterfaceId']}: "
                         f"removal of {sg_list} would leave 0 SGs."
                     )
                     continue
                 
-                # Proceed even if there's no change (idempotency)
-
-                logger.info(
-                    f"Updating interface {interface['NetworkInterfaceId']} from {original_sgs} "
-                    f"to {updated_sgs} (removing {sg_list})"
-                )
-                
-                try:
-                    ec2_client.modify_network_interface_attribute(
-                        NetworkInterfaceId=interface["NetworkInterfaceId"],
-                        Groups=updated_sgs
-                    )
-                    changed_any = True
-                except ClientError as e:
-                    logger.error(
-                        f"Failed to modify security groups for interface "
-                        f"{interface['NetworkInterfaceId']}: {str(e)}"
-                    )
-                    continue
-                    
-            except KeyError as e:
-                logger.error(f"Malformed interface data: {str(e)}")
-                continue
-
-        # If we didn't remove anything, either the SGs weren't found or it left 0 SG
-        if not changed_any:
-            logger.error(
-                f"Security Groups {sg_list} not removed from any interface. "
-                f"Either not found, or removal left 0 SGs."
-            )
-            sys.exit(1)
-
-        # Wait a bit for changes to propagate
-        time.sleep(5)
-        
-    except ClientError as e:
-        logger.error(f"AWS API error: {str(e)}")
-        raise
-    except Exception as e:
-        logger.error(f"Unexpected error: {str(e)}")
-        raise
-
-def keep_only_security_groups(ec2_client, instance_id, sg_to_keep_list, timestamp):
-    """
-    Removes all security groups from each network interface except for the specified ones.
-    If none of the specified security groups are attached to an interface, that interface is skipped.
-    
-    Args:
-        ec2_client: The boto3 EC2 client
-        instance_id: The ID of the EC2 instance
-        sg_to_keep_list: List containing the IDs of the security groups to keep
-        timestamp: Unix timestamp for backup tag
-        
-    Raises:
-        ClientError: If AWS API calls fail
-        Exception: For other unexpected errors
-    """
-    try:
-        state, _, interfaces = get_instance_details(ec2_client, instance_id)
-
-        try:
-            # Create a backup tag before making changes
-            create_backup_tag(ec2_client, instance_id, interfaces, timestamp)
-        except ClientError as e:
-            logger.warning(f"Failed to create backup tag: {str(e)}")
-            # Continue execution even if backup tag creation fails
-
-        changed_any = False
-        for interface in interfaces:
-            try:
-                original_sgs = interface["SecurityGroups"]
-                
-                # Set interface to only use the specified security groups that exist
-                # This allows the function to work even if some SGs aren't currently attached
-                updated_sgs = sg_to_keep_list
-                
+                # Skip if no changes needed
                 if updated_sgs == original_sgs:
                     continue
 
                 logger.info(
                     f"Updating interface {interface['NetworkInterfaceId']} from {original_sgs} "
-                    f"to {updated_sgs} (keeping only {sg_to_keep_list})"
+                    f"to {updated_sgs} ({operation_desc})"
                 )
                 
                 try:
@@ -385,13 +310,14 @@ def keep_only_security_groups(ec2_client, instance_id, sg_to_keep_list, timestam
                 logger.error(f"Malformed interface data: {str(e)}")
                 continue
 
-        # If we didn't modify anything, the specified SGs weren't found on any interface
+        # If we didn't modify anything, log appropriate error
         if not changed_any:
-            logger.error(
-                f"Security Groups {sg_to_keep_list} not found on any interface. "
-                f"No changes made."
-            )
-            sys.exit(1)
+            if mode == "remove":
+                error_msg = f"Security Groups {sg_list} not removed from any interface. Either not found, or removal left 0 SGs."
+            else:
+                error_msg = f"Security Groups {sg_list} not found on any interface. No changes made."
+            logger.error(error_msg)
+            sys.exit(EC_GENERIC_ERROR)
 
         # Wait a bit for changes to propagate
         time.sleep(5)
@@ -436,7 +362,7 @@ def restore_security_groups(ec2_client, instance_id):
         
         if not lastfence_response["Tags"]:
             logger.error(f"No lastfence tag found for instance {instance_id}")
-            sys.exit(1)
+            sys.exit(EC_GENERIC_ERROR)
             
         lastfence_timestamp = lastfence_response["Tags"][0]["Value"]
         
@@ -450,7 +376,7 @@ def restore_security_groups(ec2_client, instance_id):
         
         if not backup_response["Tags"]:
             logger.error(f"No backup tags found for instance {instance_id}")
-            sys.exit(1)
+            sys.exit(EC_GENERIC_ERROR)
             
         # Find backup tags with matching timestamp
         matching_backups = {}
@@ -475,7 +401,7 @@ def restore_security_groups(ec2_client, instance_id):
                 
         if not matching_backups:
             logger.error("No backup tags found with matching timestamp")
-            sys.exit(1)
+            sys.exit(EC_GENERIC_ERROR)
             
         # Get current interfaces
         _, _, current_interfaces = get_instance_details(ec2_client, instance_id)
@@ -526,7 +452,7 @@ def restore_security_groups(ec2_client, instance_id):
                 
         if not changed_any:
             logger.error("No security groups were restored. All interfaces skipped.")
-            sys.exit(1)
+            sys.exit(EC_GENERIC_ERROR)
             
         # Wait for changes to propagate
         time.sleep(5)
@@ -658,16 +584,11 @@ def set_power_status(conn, options):
                 logger.info("Ignored Restoring security groups as --unfence-ignore-restore is set")
         elif options["--action"] == "off":
             if sg_to_remove:
-                if "--invert-sg-removal" not in options:
-                    remove_security_groups(ec2_client, instance_id, sg_to_remove, timestamp)
-                    set_lastfence_tag(ec2_client, instance_id, timestamp)
-                    if "--onfence-poweroff" in options:
-                        shutdown_instance(ec2_client, instance_id)
-                else:
-                    keep_only_security_groups(ec2_client, instance_id, sg_to_remove, timestamp)
-                    set_lastfence_tag(ec2_client, instance_id, timestamp)
-                    if "--onfence-poweroff" in options:
-                        shutdown_instance(ec2_client, instance_id)
+                mode = "keep_only" if "--invert-sg-removal" in options else "remove"
+                modify_security_groups(ec2_client, instance_id, sg_to_remove, timestamp, mode)
+                set_lastfence_tag(ec2_client, instance_id, timestamp)
+                if "--onfence-poweroff" in options:
+                    shutdown_instance(ec2_client, instance_id)
     except Exception as e:
         logger.error("Failed to set power status: %s", e)
         fail(EC_STATUS)
@@ -675,7 +596,8 @@ def set_power_status(conn, options):
 
 # Define fencing agent options
 def define_new_opts():
-    #print("in define new opts") 
+    all_opt["port"]["help"] = "-n, --plug=[id]                 AWS Instance ID to perform action on "
+    all_opt["port"]["shortdesc"] = "AWS Instance ID to perform action on "
     
     all_opt["region"] = {
         "getopt": "r:",
@@ -702,20 +624,12 @@ def define_new_opts():
         "order": 3,
     }
     all_opt["secg"] = {
-        "getopt": "g:",
+        "getopt": ":",
         "longopt": "secg",
         "help": "-g --secg=[sg1,sg2,...]         Comma-separated list of Security Groups to remove.",
         "shortdesc": "Security Groups to remove.",
         "required": "0",
         "order": 4,
-    }
-    all_opt["plug"] = {
-        "getopt": "n:",
-        "longopt": "plug",
-        "help": "-n, --plug=[id]                Instance ID or target identifier (mandatory).",
-        "shortdesc": "Target instance identifier.",
-        "required": "1",
-        "order": 5,
     }
     all_opt["skip_race_check"] = {
         "getopt": "",
@@ -728,7 +642,7 @@ def define_new_opts():
     all_opt["invert-sg-removal"] = {
         "getopt": "",
         "longopt": "invert-sg-removal",
-        "help": "--invert-sg-removal              Remove all security groups except the specified one.",
+        "help": "--invert-sg-removal              Remove all security groups except the specified one(s).",
         "shortdesc": "Remove all security groups except specified..",
         "required": "0",
         "order": 7,
@@ -769,12 +683,8 @@ def define_new_opts():
     }
 
 
-
-
-
 def main():
-    conn = None
-    #print("in main")    
+    conn = None 
 
     device_opt = [
         "no_password", 
@@ -782,7 +692,7 @@ def main():
         "access_key", 
         "secret_key",
         "secg",
-        "plug",
+        "port",
         "skip_race_check",
         "invert-sg-removal",
         "unfence-ignore-restore",
@@ -791,38 +701,28 @@ def main():
         "onfence-poweroff"
 ]
 
-    #device_opt = ["port", "no_password" "filter", "boto3_debug","region", "access_key", "secret_key", "skip_race_check"]
-    #device_opt = ["port", "no_password", "region", "access_key", "secret_key", "boto3_debug", "skip_race_check"]
- 
-
-
     atexit.register(atexit_handler)
-    #print("after atexit")
     
     define_new_opts()
 
-    #print("after define new opts") 
-
     try:
-        #print("before check input")
         processed_input = process_input(device_opt)
-        #print("Processed input:", processed_input)
         options = check_input(device_opt, processed_input)
-        #print("after check input")
     except Exception as e:
         logger.error(f"Failed to process input options: {str(e)}")
-        #print(f"Error details: {str(e)}")
-        sys.exit(1)
+        sys.exit(EC_GENERIC_ERROR)
 
     run_delay(options)
 
     docs = {
-        "shortdesc": "Fence agent for AWS VPC",
+        "shortdesc": "Network and Power Fencing agent for AWS VPC",
         "longdesc": (
-            "fence_aws_vpc is a Power Fencing agent for AWS VPC that works by "
+            "fence_aws_vpc is a Network and Power Fencing agent for AWS VPC that works by "
             "manipulating security groups. It uses the boto3 library to connect to AWS.\n\n"
             "boto3 can be configured with AWS CLI or by creating ~/.aws/credentials.\n"
             "For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.html#configuration"
+            " "
+            "Please note that if --onfence-poweroff is a set option the agent wont be able to power on the node again, and ths will have to be done manually or with other automation" 
         ),
         "vendorurl": "http://www.amazon.com"
     }
@@ -876,11 +776,9 @@ def main():
             pass
 
     # Operate the fencing device using the fence library's fence_action
-    #print("before fence action")
     result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list)
     sys.exit(result)
 
 
 if __name__ == "__main__":
     main()
-
