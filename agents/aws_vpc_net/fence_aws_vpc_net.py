@@ -6,17 +6,15 @@ import atexit
 import logging
 import time
 import requests
-from requests import HTTPError
-from requests.exceptions import HTTPError
-
 
 try:
 	import boto3
-	from botocore.exceptions import ConnectionError, ClientError, EndpointConnectionError, NoRegionError
+	from botocore.exceptions import ClientError, EndpointConnectionError, NoRegionError
 except ImportError:
 	pass
 
-sys.path.append("@FENCEAGENTSLIBDIR@")
+#sys.path.append("@FENCEAGENTSLIBDIR@")
+sys.path.append("/usr/share/fence")
 
 from fencing import *
 from fencing import (
@@ -716,14 +714,14 @@ def main():
     run_delay(options)
 
     docs = {
-        "shortdesc": "Network and Power Fencing agent for AWS VPC",
+        "shortdesc": "Fence agent for AWS (Amazon Web Services) Net",
         "longdesc": (
             "fence_aws_vpc is a Network and Power Fencing agent for AWS VPC that works by "
             "manipulating security groups. It uses the boto3 library to connect to AWS.\n\n"
             "boto3 can be configured with AWS CLI or by creating ~/.aws/credentials.\n"
             "For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.html#configuration"
             " "
-            "Please note that if --onfence-poweroff is a set option the agent wont be able to power on the node again, and ths will have to be done manually or with other automation" 
+            "NOTE: If --onfence-poweroff is set the agent wont be able to power on the node again, and will have to be powered on manually or with other automation."
         ),
         "vendorurl": "http://www.amazon.com"
     }
