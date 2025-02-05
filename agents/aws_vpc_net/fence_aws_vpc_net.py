@@ -16,8 +16,7 @@ try:
 except ImportError:
 	pass
 
-#sys.path.append("@FENCEAGENTSLIBDIR@")
-sys.path.append("/usr/share/fence")
+sys.path.append("@FENCEAGENTSLIBDIR@")
 
 from fencing import *
 from fencing import (
