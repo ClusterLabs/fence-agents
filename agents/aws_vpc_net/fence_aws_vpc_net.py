@@ -7,12 +7,6 @@ import logging
 import time
 import requests
 
-try:
-	import boto3
-	from botocore.exceptions import ClientError, EndpointConnectionError, NoRegionError
-except ImportError:
-	pass
-
 sys.path.append("@FENCEAGENTSLIBDIR@")
 
 from fencing import *
@@ -720,7 +714,7 @@ def main():
             "boto3 can be configured with AWS CLI or by creating ~/.aws/credentials.\n"
             "For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.html#configuration"
             " "
-            "NOTE: If --onfence-poweroff is set the agent wont be able to power on the node again, and will have to be powered on manually or with other automation."
+            "NOTE: If --onfence-poweroff is set, the agent won't be able to power on the node again, it will have to be powered on manually or with other automation."
         ),
         "vendorurl": "http://www.amazon.com"
     }

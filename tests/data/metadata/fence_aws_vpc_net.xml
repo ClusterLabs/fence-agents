@@ -3,7 +3,7 @@
 <longdesc>fence_aws_vpc is a Network and Power Fencing agent for AWS VPC that works by manipulating security groups. It uses the boto3 library to connect to AWS.
 
 boto3 can be configured with AWS CLI or by creating ~/.aws/credentials.
-For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.html#configuration NOTE: If --onfence-poweroff is set the agent wont be able to power on the node again, and will have to be powered on manually or with other automation.</longdesc>
+For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.html#configuration NOTE: If --onfence-poweroff is set, the agent won't be able to power on the node again, it will have to be powered on manually or with other automation.</longdesc>
 <vendor-url>http://www.amazon.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">

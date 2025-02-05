@@ -377,18 +377,18 @@ Fence agent for Amazon AWS instances.
 %{_sbindir}/fence_aws
 %{_mandir}/man8/fence_aws.8*
 
-%package aws-vpc
+%package aws-vpc-net
 License: GPL-2.0-or-later AND LGPL-2.0-or-later
-Summary: Fence agent for Amazon AWS VPC network fencer
+Summary: Fence agent for Amazon AWS VPC network and power fencer
 Requires: fence-agents-common = %{version}-%{release}
 Requires: python3-boto3
 BuildArch: noarch
 Obsoletes: fence-agents < 3.1.13
-%description aws-vpc
+%description aws-vpc-net
 Fence agent for Amazon AWS instances that fences by modifying aws sec groups
-%files aws-vpc
-%{_sbindir}/fence_aws_vpc
-%{_mandir}/man8/fence_aws_vpc.8*
+%files aws-vpc-net
+%{_sbindir}/fence_aws_vpc_net
+%{_mandir}/man8/fence_aws_vpc_net.8*
 
 %package azure-arm
 License: GPL-2.0-or-later AND LGPL-2.0-or-later
