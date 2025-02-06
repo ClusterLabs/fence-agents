@@ -104,10 +104,8 @@ def get_power_status(conn, options):
 		fail(EC_STATUS)
 
 # Retrieve instance ID for self-check
-#coverity[missing_tls]
 def get_instance_id():
     """Retrieve the instance ID of the current EC2 instance."""
-    #coverity[SIGMA.missing_tls]
     try:
         token = requests.put(
             "http://169.254.169.254/latest/api/token",
@@ -714,7 +712,7 @@ def main():
             "boto3 can be configured with AWS CLI or by creating ~/.aws/credentials.\n"
             "For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.html#configuration"
             " "
-            "NOTE: If --onfence-poweroff is set, the agent won't be able to power on the node again, it will have to be powered on manually or with other automation."
+            "NOTE: If onfence-poweroff is set, the agent won't be able to power on the node again, it will have to be powered on manually or with other automation."
         ),
         "vendorurl": "http://www.amazon.com"
     }
