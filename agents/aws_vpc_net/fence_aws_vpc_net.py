@@ -24,6 +24,7 @@ try:
 except ImportError:
 	pass
 
+
 # Logger configuration
 logger = logging.getLogger()
 logger.propagate = False
@@ -587,7 +588,7 @@ def set_power_status(conn, options):
 
 # Define fencing agent options
 def define_new_opts():
-    all_opt["port"]["help"] = "-n, --plug=[id]                 AWS Instance ID to perform action on "
+    all_opt["port"]["help"] = "-n, --plug=[id]                AWS Instance ID to perform action on "
     all_opt["port"]["shortdesc"] = "AWS Instance ID to perform action on "
     
     all_opt["region"] = {
@@ -617,7 +618,7 @@ def define_new_opts():
     all_opt["secg"] = {
         "getopt": ":",
         "longopt": "secg",
-        "help": "--secg=[sg1,sg2,...]         Comma-separated list of Security Groups to remove.",
+        "help": "--secg=[sg1,sg2,...]           Comma-separated list of Security Groups to remove.",
         "shortdesc": "Security Groups to remove.",
         "required": "0",
         "order": 4,
@@ -633,7 +634,7 @@ def define_new_opts():
     all_opt["invert-sg-removal"] = {
         "getopt": "",
         "longopt": "invert-sg-removal",
-        "help": "--invert-sg-removal              Remove all security groups except the specified one(s).",
+        "help": "--invert-sg-removal            Remove all security groups except the specified one(s).",
         "shortdesc": "Remove all security groups except specified..",
         "required": "0",
         "order": 7,
@@ -641,7 +642,7 @@ def define_new_opts():
     all_opt["unfence-ignore-restore"] = {
         "getopt": "",
         "longopt": "unfence-ignore-restore",
-        "help": "--unfence-ignore-restore              Do not restore security groups from tag when unfencing (off).",
+        "help": "--unfence-ignore-restore       Do not restore security groups from tag when unfencing (off).",
         "shortdesc": "Remove all security groups except specified..",
         "required": "0",
         "order": 8,
@@ -667,7 +668,7 @@ def define_new_opts():
     all_opt["onfence-poweroff"] = {
         "getopt": "",
         "longopt": "onfence-poweroff",
-        "help": "--onfence-poweroff              Power off the machine async upon fence (this is a network fencing agent...)",
+        "help": "--onfence-poweroff             Power off the machine async upon fence (this is a network fencing agent...)",
         "shortdesc": "Power off the machine async..",
         "required": "0",
         "order": 11
@@ -719,6 +720,8 @@ def main():
     }
     show_docs(options, docs)
 
+    if "--onfence-poweroff" not in options and options.get("--action", "") == "reboot":
+        options["--action"] = "off"
 
     # Configure logging
     if "--debug-file" in options:
