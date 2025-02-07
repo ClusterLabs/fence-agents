@@ -40,6 +40,7 @@ status = {
 		"shutting-down": "unknown",
 		"terminated": "unknown"
 }
+
 def get_power_status(conn, options):
 	logger.debug("Starting status operation")
 	try:
