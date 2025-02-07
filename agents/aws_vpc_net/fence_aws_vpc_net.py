@@ -7,7 +7,8 @@ import logging
 import time
 import requests
 
-sys.path.append("@FENCEAGENTSLIBDIR@")
+#sys.path.append("@FENCEAGENTSLIBDIR@")
+sys.path.append("/usr/share/fence")
 
 from fencing import *
 from fencing import (
@@ -561,12 +562,13 @@ def set_power_status(conn, options):
         if self_instance_id == instance_id:
             fail_usage("Self-fencing detected. Exiting.")
 
-    # Verify the instance is running
-    instance_state, _, _ = get_instance_details(ec2_client, instance_id)
-    if instance_state != "running":
-        fail_usage(f"Instance {instance_id} is not running. Exiting.")
-
     try:
+        # Only verify instance is running for 'off' action
+        if options["--action"] == "off":
+            instance_state, _, _ = get_instance_details(ec2_client, instance_id)
+            if instance_state != "running":
+                fail_usage(f"Instance {instance_id} is not running. Exiting.")
+
         if options["--action"] == "on":
             if not "--unfence-ignore-restore" in options:
                 restore_security_groups(ec2_client, instance_id)
@@ -616,7 +618,7 @@ def define_new_opts():
     all_opt["secg"] = {
         "getopt": ":",
         "longopt": "secg",
-        "help": "-g --secg=[sg1,sg2,...]         Comma-separated list of Security Groups to remove.",
+        "help": "--secg=[sg1,sg2,...]         Comma-separated list of Security Groups to remove.",
         "shortdesc": "Security Groups to remove.",
         "required": "0",
         "order": 4,
@@ -772,3 +774,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
