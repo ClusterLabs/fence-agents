@@ -37,7 +37,7 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 		<shortdesc lang="en">AWS Secret Key.</shortdesc>
 	</parameter>
 	<parameter name="secg" unique="0" required="0">
-		<getopt mixed="-g --secg=[sg1,sg2,...]" />
+		<getopt mixed="--secg=[sg1,sg2,...]" />
 		<content type="string"  />
 		<shortdesc lang="en">Security Groups to remove.</shortdesc>
 	</parameter>
