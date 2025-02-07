@@ -15,6 +15,7 @@ from fencing import (
     fail,
     fail_usage,
     EC_STATUS,
+    EC_GENERIC_ERROR,
     SyslogLibHandler
 )
 
