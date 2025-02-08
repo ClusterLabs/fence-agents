@@ -7,7 +7,8 @@ import logging
 import time
 import requests
 
-sys.path.append("@FENCEAGENTSLIBDIR@")
+sys.path.append("/usr/share/fence")
+#sys.path.append("@FENCEAGENTSLIBDIR@")
 
 from fencing import *
 from fencing import (
@@ -78,7 +79,7 @@ def get_power_status(conn, options):
 		for tag in response["Tags"]:
 			try:
 				backup_data = json.loads(tag["Value"])
-				backup_timestamp = backup_data.get("timestamp")
+				backup_timestamp = backup_data.get("t")  # Using shortened timestamp field
 				
 				if not backup_timestamp:
 					logger.debug("No timestamp found in backup data for tag %s", tag["Key"])
@@ -184,41 +185,65 @@ def get_self_power_status(conn, instance_id):
 
 # Create backup tags for each network interface
 def create_backup_tag(ec2_client, instance_id, interfaces, timestamp):
-    """Create tags on the instance to backup original security groups for each network interface."""
+    """Create tags on the instance to backup original security groups for each network interface.
+    If the security groups list is too long, it will be split across multiple tags."""
     try:
-        # Create a tag for each network interface
+        # Create tags for each network interface
         for idx, interface in enumerate(interfaces, 1):
-            sg_backup = {
-                "NetworkInterface": interface,
-                "timestamp": timestamp
-            }
-            tag_value = json.dumps(sg_backup)
-            tag_key = f"Original_SG_Backup_{instance_id}_{timestamp}_{idx}"
+            interface_id = interface["NetworkInterfaceId"]
+            security_groups = interface["SecurityGroups"]
+            
+            # Calculate how many security groups can fit in one tag
+            # Each SG is 20 chars, plus some JSON overhead and timestamp
+            sgs_per_tag = 8  # Conservative estimate to ensure we stay under 220 chars
+            
+            # Split security groups into chunks
+            sg_chunks = [security_groups[i:i + sgs_per_tag] 
+                        for i in range(0, len(security_groups), sgs_per_tag)]
+            
+            # Create a tag for each chunk
+            for chunk_idx, sg_chunk in enumerate(sg_chunks):
+                # Strip 'sg-' prefix from security group IDs to save space
+                stripped_sg_chunk = [sg[3:] if sg.startswith('sg-') else sg for sg in sg_chunk]
+                
+                sg_backup = {
+                    "n": {  # NetworkInterface shortened to n
+                        "i": interface_id,  # ni shortened to i
+                        "s": stripped_sg_chunk,  # sg shortened to s, with 'sg-' prefix stripped
+                        "c": {              # ci shortened to c
+                            "i": chunk_idx,
+                            "t": len(sg_chunks)
+                        }
+                    },
+                    "t": timestamp  # ts shortened to t
+                }
+                tag_value = json.dumps(sg_backup)
+                tag_key = f"Original_SG_Backup_{instance_id}_{timestamp}_{idx}_{chunk_idx}"
 
-            # Create the tag
-            ec2_client.create_tags(
-                Resources=[instance_id],
-                Tags=[{"Key": tag_key, "Value": tag_value}],
-            )
+                # Create the tag
+                ec2_client.create_tags(
+                    Resources=[instance_id],
+                    Tags=[{"Key": tag_key, "Value": tag_value}],
+                )
 
-            # Verify the tag was created by describing tags
-            response = ec2_client.describe_tags(
-                Filters=[
-                    {"Name": "resource-id", "Values": [instance_id]},
-                    {"Name": "key", "Values": [tag_key]}
-                ]
-            )
+                # Verify the tag was created
+                response = ec2_client.describe_tags(
+                    Filters=[
+                        {"Name": "resource-id", "Values": [instance_id]},
+                        {"Name": "key", "Values": [tag_key]}
+                    ]
+                )
 
-            if not response["Tags"]:
-                logger.error(f"Failed to verify creation of backup tag '{tag_key}' for instance {instance_id}")
-                raise Exception("Backup tag creation could not be verified")
+                if not response["Tags"]:
+                    logger.error(f"Failed to verify creation of backup tag '{tag_key}' for instance {instance_id}")
+                    raise Exception("Backup tag creation could not be verified")
 
-            created_tag_value = response["Tags"][0]["Value"]
-            if created_tag_value != tag_value:
-                logger.error(f"Created tag value does not match expected value for instance {instance_id}")
-                raise Exception("Backup tag value mismatch")
+                created_tag_value = response["Tags"][0]["Value"]
+                if created_tag_value != tag_value:
+                    logger.error(f"Created tag value does not match expected value for instance {instance_id}")
+                    raise Exception("Backup tag value mismatch")
 
-            logger.info(f"Backup tag '{tag_key}' created and verified for interface {interface['NetworkInterfaceId']}.")
+                logger.info(f"Backup tag '{tag_key}' chunk {chunk_idx + 1}/{len(sg_chunks)} created and verified for interface {interface_id}.")
     except ClientError as e:
         logger.error(f"AWS API error while creating/verifying backup tag: {str(e)}")
         raise
@@ -371,35 +396,63 @@ def restore_security_groups(ec2_client, instance_id):
             logger.error(f"No backup tags found for instance {instance_id}")
             sys.exit(EC_GENERIC_ERROR)
             
-        # Find backup tags with matching timestamp
+        # Find and combine backup tags with matching timestamp
         matching_backups = {}
+        interface_chunks = {}
+        
         for tag in backup_response["Tags"]:
             try:
                 backup_data = json.loads(tag["Value"])
-                backup_timestamp = backup_data.get("timestamp")
+                backup_timestamp = backup_data.get("t")  # Using shortened timestamp field
                 
-                if not backup_timestamp:
-                    logger.debug(f"No timestamp found in backup data for tag {tag['Key']}")
+                if not backup_timestamp or str(backup_timestamp) != str(lastfence_timestamp):
                     continue
                     
-                if str(backup_timestamp) == str(lastfence_timestamp):
-                    logger.info(f"Found matching backup tag {tag['Key']}")
-                    interface_data = backup_data.get("NetworkInterface")
-                    if interface_data and "NetworkInterfaceId" in interface_data:
-                        matching_backups[interface_data["NetworkInterfaceId"]] = interface_data["SecurityGroups"]
+                logger.info(f"Found matching backup tag {tag['Key']}")
+                interface_data = backup_data.get("n")  # Using shortened NetworkInterface field
+                
+                if not interface_data or "i" not in interface_data:  # Using shortened interface id field
+                    continue
+                    
+                interface_id = interface_data["i"]  # Using shortened interface id field
+                chunk_info = interface_data.get("c", {})  # Using shortened chunk info field
+                chunk_index = chunk_info.get("i", 0)
+                total_chunks = chunk_info.get("t", 1)
+                
+                # Initialize tracking for this interface if needed
+                if interface_id not in interface_chunks:
+                    interface_chunks[interface_id] = {
+                        "total": total_chunks,
+                        "chunks": {},
+                        "security_groups": []
+                    }
+                
+                # Add this chunk's security groups
+                interface_chunks[interface_id]["chunks"][chunk_index] = interface_data["s"]  # Using shortened security groups field
+                
+                # If we have all chunks for this interface, combine them
+                if len(interface_chunks[interface_id]["chunks"]) == total_chunks:
+                    # Combine chunks and restore 'sg-' prefix
+                    combined_sgs = []
+                    for i in range(total_chunks):
+                        chunk_sgs = interface_chunks[interface_id]["chunks"][i]
+                        # Add back 'sg-' prefix if not already present
+                        restored_sgs = ['sg-' + sg if not sg.startswith('sg-') else sg for sg in chunk_sgs]
+                        combined_sgs.extend(restored_sgs)
+                    matching_backups[interface_id] = combined_sgs
                     
             except (json.JSONDecodeError, KeyError) as e:
                 logger.error(f"Failed to parse backup data for tag {tag['Key']}: {str(e)}")
                 continue
                 
         if not matching_backups:
-            logger.error("No backup tags found with matching timestamp")
+            logger.error("No complete backup data found with matching timestamp")
             sys.exit(EC_GENERIC_ERROR)
             
         # Get current interfaces
         _, _, current_interfaces = get_instance_details(ec2_client, instance_id)
         
-        # Use the matching_backups map directly as our backup_sg_map
+        # Use the combined matching_backups as our backup_sg_map
         backup_sg_map = matching_backups
         
         changed_any = False
@@ -458,7 +511,7 @@ def restore_security_groups(ec2_client, instance_id):
             for tag in backup_response["Tags"]:
                 try:
                     backup_data = json.loads(tag["Value"])
-                    if str(backup_data.get("timestamp")) == str(lastfence_timestamp):
+                    if str(backup_data.get("t")) == str(lastfence_timestamp):  # Using shortened timestamp field
                         tags_to_delete.append({"Key": tag["Key"]})
                         deleted_tag_keys.append(tag["Key"])
                 except (json.JSONDecodeError, KeyError):
