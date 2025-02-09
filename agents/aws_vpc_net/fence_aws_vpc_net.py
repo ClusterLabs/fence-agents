@@ -7,8 +7,7 @@ import logging
 import time
 import requests
 
-sys.path.append("/usr/share/fence")
-#sys.path.append("@FENCEAGENTSLIBDIR@")
+sys.path.append("@FENCEAGENTSLIBDIR@")
 
 from fencing import *
 from fencing import (
@@ -193,23 +192,55 @@ def create_backup_tag(ec2_client, instance_id, interfaces, timestamp):
             interface_id = interface["NetworkInterfaceId"]
             security_groups = interface["SecurityGroups"]
             
-            # Calculate how many security groups can fit in one tag
-            # Each SG is 20 chars, plus some JSON overhead and timestamp
-            sgs_per_tag = 8  # Conservative estimate to ensure we stay under 220 chars
+            # Initialize variables for chunking
+            sg_chunks = []
+            current_chunk = []
             
-            # Split security groups into chunks
-            sg_chunks = [security_groups[i:i + sgs_per_tag] 
-                        for i in range(0, len(security_groups), sgs_per_tag)]
+            # Strip 'sg-' prefix from all security groups first
+            stripped_sgs = [sg[3:] if sg.startswith('sg-') else sg for sg in security_groups]
             
-            # Create a tag for each chunk
+            for sg in stripped_sgs:
+                # Create a test chunk with the new security group
+                test_chunk = current_chunk + [sg]
+                
+                # Create a test backup object with this chunk
+                test_backup = {
+                    "n": {
+                        "i": interface_id,
+                        "s": test_chunk,
+                        "c": {
+                            "i": len(sg_chunks),
+                            "t": 1  # Temporary value, will update later
+                        }
+                    },
+                    "t": timestamp
+                }
+                
+                # Check if adding this SG would exceed the character limit
+                if len(json.dumps(test_backup)) > 254:
+                    # Current chunk is full, add it to chunks and start a new one
+                    if current_chunk:  # Only add if not empty
+                        sg_chunks.append(current_chunk)
+                        current_chunk = [sg]
+                    else:
+                        # Edge case: single SG exceeds limit (shouldn't happen with normal SG IDs)
+                        logger.warning(f"Security group ID {sg} is unusually long")
+                        sg_chunks.append([sg])
+                else:
+                    # Add SG to current chunk
+                    current_chunk = test_chunk
+            
+            # Add the last chunk if it has any items
+            if current_chunk:
+                sg_chunks.append(current_chunk)
+            
+            # Update total chunks count and create tags
             for chunk_idx, sg_chunk in enumerate(sg_chunks):
-                # Strip 'sg-' prefix from security group IDs to save space
-                stripped_sg_chunk = [sg[3:] if sg.startswith('sg-') else sg for sg in sg_chunk]
                 
                 sg_backup = {
                     "n": {  # NetworkInterface shortened to n
                         "i": interface_id,  # ni shortened to i
-                        "s": stripped_sg_chunk,  # sg shortened to s, with 'sg-' prefix stripped
+                        "s": sg_chunk,  # sg shortened to s, with 'sg-' prefix stripped
                         "c": {              # ci shortened to c
                             "i": chunk_idx,
                             "t": len(sg_chunks)
