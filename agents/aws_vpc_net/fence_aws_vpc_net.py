@@ -47,7 +47,7 @@ def get_power_status(conn, options):
 	try:
 		instance_id = options["--plug"]
 		ec2_client = conn.meta.client
-		
+
 		# Get the lastfence tag first
 		lastfence_response = ec2_client.describe_tags(
 			Filters=[
@@ -55,13 +55,13 @@ def get_power_status(conn, options):
 				{"Name": "key", "Values": ["lastfence"]}
 			]
 		)
-		
+
 		if not lastfence_response["Tags"]:
 			logger.debug("No lastfence tag found for instance %s - instance is not fenced", instance_id)
 			return "on"
-			
+
 		lastfence_timestamp = lastfence_response["Tags"][0]["Value"]
-		
+
 		# Check for backup tags with pattern Original_SG_Backup_{instance_id}_*
 		response = ec2_client.describe_tags(
 			Filters=[
@@ -69,33 +69,33 @@ def get_power_status(conn, options):
 				{"Name": "key", "Values": [f"Original_SG_Backup_{instance_id}*"]}
 			]
 		)
-		
+
 		if not response["Tags"]:
 			logger.debug("No backup tags found for instance %s - instance is not fenced", instance_id)
 			return "on"
-			
+
 		# Loop through backup tags to find matching timestamp
 		for tag in response["Tags"]:
 			try:
 				backup_data = json.loads(tag["Value"])
 				backup_timestamp = backup_data.get("t")  # Using shortened timestamp field
-				
+
 				if not backup_timestamp:
 					logger.debug("No timestamp found in backup data for tag %s", tag["Key"])
 					continue
-					
+
 				# Validate timestamps match
 				if str(backup_timestamp) == str(lastfence_timestamp):
 					logger.debug("Found matching backup tag %s - instance is fenced", tag["Key"])
 					return "off"
-					
+
 			except (json.JSONDecodeError, KeyError) as e:
 				logger.error(f"Failed to parse backup data for tag {tag['Key']}: {str(e)}")
 				continue
-				
+
 		logger.debug("No backup tags with matching timestamp found - instance is not fenced")
 		return "on"
-			
+
 	except ClientError:
 		fail_usage("Failed: Incorrect Access Key or Secret Key.")
 	except EndpointConnectionError:
@@ -163,7 +163,7 @@ def get_instance_details(ec2_client, instance_id):
         logger.error(f"Unexpected error while retrieving instance details: {str(e)}")
         raise
 
-# Check if we are the self-fencing node 
+# Check if we are the self-fencing node
 def get_self_power_status(conn, instance_id):
 	try:
 		instance = conn.instances.filter(Filters=[{"Name": "instance-id", "Values": [instance_id]}])
@@ -174,7 +174,7 @@ def get_self_power_status(conn, instance_id):
 		else:
 			logger.debug(f"Captured my ({instance_id}) state it is {state.upper()} - returning Alert - Unable to fence other nodes")
 			return "alert"
-	
+
 	except ClientError:
 		fail_usage("Failed: Incorrect Access Key or Secret Key.")
 	except EndpointConnectionError:
@@ -191,18 +191,18 @@ def create_backup_tag(ec2_client, instance_id, interfaces, timestamp):
         for idx, interface in enumerate(interfaces, 1):
             interface_id = interface["NetworkInterfaceId"]
             security_groups = interface["SecurityGroups"]
-            
+
             # Initialize variables for chunking
             sg_chunks = []
             current_chunk = []
-            
+
             # Strip 'sg-' prefix from all security groups first
             stripped_sgs = [sg[3:] if sg.startswith('sg-') else sg for sg in security_groups]
-            
+
             for sg in stripped_sgs:
                 # Create a test chunk with the new security group
                 test_chunk = current_chunk + [sg]
-                
+
                 # Create a test backup object with this chunk
                 test_backup = {
                     "n": {
@@ -215,7 +215,7 @@ def create_backup_tag(ec2_client, instance_id, interfaces, timestamp):
                     },
                     "t": timestamp
                 }
-                
+
                 # Check if adding this SG would exceed the character limit
                 if len(json.dumps(test_backup)) > 254:
                     # Current chunk is full, add it to chunks and start a new one
@@ -229,14 +229,14 @@ def create_backup_tag(ec2_client, instance_id, interfaces, timestamp):
                 else:
                     # Add SG to current chunk
                     current_chunk = test_chunk
-            
+
             # Add the last chunk if it has any items
             if current_chunk:
                 sg_chunks.append(current_chunk)
-            
+
             # Update total chunks count and create tags
             for chunk_idx, sg_chunk in enumerate(sg_chunks):
-                
+
                 sg_backup = {
                     "n": {  # NetworkInterface shortened to n
                         "i": interface_id,  # ni shortened to i
@@ -288,14 +288,14 @@ def modify_security_groups(ec2_client, instance_id, sg_list, timestamp, mode="re
     Modifies security groups on network interfaces based on the specified mode.
     In 'remove' mode: Removes all SGs in sg_list from each interface
     In 'keep_only' mode: Keeps only the SGs in sg_list and removes all others
-    
+
     Args:
         ec2_client: The boto3 EC2 client
         instance_id: The ID of the EC2 instance
         sg_list: List of security group IDs to remove or keep
         timestamp: Unix timestamp for backup tag
         mode: Either "remove" or "keep_only" to determine operation mode
-        
+
     Raises:
         ClientError: If AWS API calls fail
         Exception: For other unexpected errors
@@ -303,19 +303,19 @@ def modify_security_groups(ec2_client, instance_id, sg_list, timestamp, mode="re
     try:
         # Get instance details
         state, _, interfaces = get_instance_details(ec2_client, instance_id)
-        
+
         try:
             # Create a backup tag before making changes
             create_backup_tag(ec2_client, instance_id, interfaces, timestamp)
         except ClientError as e:
             logger.warning(f"Failed to create backup tag: {str(e)}")
             # Continue execution even if backup tag creation fails
-        
+
         changed_any = False
         for interface in interfaces:
             try:
                 original_sgs = interface["SecurityGroups"]
-                
+
                 if mode == "remove":
                     # Exclude any SGs that are in sg_list
                     updated_sgs = [sg for sg in original_sgs if sg not in sg_list]
@@ -332,7 +332,7 @@ def modify_security_groups(ec2_client, instance_id, sg_list, timestamp, mode="re
                         f"removal of {sg_list} would leave 0 SGs."
                     )
                     continue
-                
+
                 # Skip if no changes needed
                 if updated_sgs == original_sgs:
                     continue
@@ -341,7 +341,7 @@ def modify_security_groups(ec2_client, instance_id, sg_list, timestamp, mode="re
                     f"Updating interface {interface['NetworkInterfaceId']} from {original_sgs} "
                     f"to {updated_sgs} ({operation_desc})"
                 )
-                
+
                 try:
                     ec2_client.modify_network_interface_attribute(
                         NetworkInterfaceId=interface["NetworkInterfaceId"],
@@ -354,7 +354,7 @@ def modify_security_groups(ec2_client, instance_id, sg_list, timestamp, mode="re
                         f"{interface['NetworkInterfaceId']}: {str(e)}"
                     )
                     continue
-                    
+
             except KeyError as e:
                 logger.error(f"Malformed interface data: {str(e)}")
                 continue
@@ -370,7 +370,7 @@ def modify_security_groups(ec2_client, instance_id, sg_list, timestamp, mode="re
 
         # Wait a bit for changes to propagate
         time.sleep(5)
-        
+
     except ClientError as e:
         logger.error(f"AWS API error: {str(e)}")
         raise
@@ -383,18 +383,18 @@ def restore_security_groups(ec2_client, instance_id):
     Restores the original security groups from backup tags to each network interface.
     Each network interface's original security groups are stored in a separate backup tag.
     All backup tags share the same timestamp as the lastfence tag for validation.
-    
+
     The process:
     1. Get lastfence tag timestamp
     2. Find all backup tags with matching timestamp
     3. Create a map of interface IDs to their original security groups
     4. Restore each interface's security groups from the map
     5. Clean up matching backup tags and lastfence tag
-    
+
     Args:
         ec2_client: The boto3 EC2 client
         instance_id: The ID of the EC2 instance
-        
+
     Raises:
         ClientError: If AWS API calls fail
         Exception: For other unexpected errors
@@ -408,13 +408,13 @@ def restore_security_groups(ec2_client, instance_id):
                 {"Name": "key", "Values": ["lastfence"]}
             ]
         )
-        
+
         if not lastfence_response["Tags"]:
             logger.error(f"No lastfence tag found for instance {instance_id}")
             sys.exit(EC_GENERIC_ERROR)
-            
+
         lastfence_timestamp = lastfence_response["Tags"][0]["Value"]
-        
+
         # Get all backup tags for this instance
         backup_response = ec2_client.describe_tags(
             Filters=[
@@ -422,34 +422,34 @@ def restore_security_groups(ec2_client, instance_id):
                 {"Name": "key", "Values": [f"Original_SG_Backup_{instance_id}*"]}
             ]
         )
-        
+
         if not backup_response["Tags"]:
             logger.error(f"No backup tags found for instance {instance_id}")
             sys.exit(EC_GENERIC_ERROR)
-            
+
         # Find and combine backup tags with matching timestamp
         matching_backups = {}
         interface_chunks = {}
-        
+
         for tag in backup_response["Tags"]:
             try:
                 backup_data = json.loads(tag["Value"])
                 backup_timestamp = backup_data.get("t")  # Using shortened timestamp field
-                
+
                 if not backup_timestamp or str(backup_timestamp) != str(lastfence_timestamp):
                     continue
-                    
+
                 logger.info(f"Found matching backup tag {tag['Key']}")
                 interface_data = backup_data.get("n")  # Using shortened NetworkInterface field
-                
+
                 if not interface_data or "i" not in interface_data:  # Using shortened interface id field
                     continue
-                    
+
                 interface_id = interface_data["i"]  # Using shortened interface id field
                 chunk_info = interface_data.get("c", {})  # Using shortened chunk info field
                 chunk_index = chunk_info.get("i", 0)
                 total_chunks = chunk_info.get("t", 1)
-                
+
                 # Initialize tracking for this interface if needed
                 if interface_id not in interface_chunks:
                     interface_chunks[interface_id] = {
@@ -457,10 +457,10 @@ def restore_security_groups(ec2_client, instance_id):
                         "chunks": {},
                         "security_groups": []
                     }
-                
+
                 # Add this chunk's security groups
                 interface_chunks[interface_id]["chunks"][chunk_index] = interface_data["s"]  # Using shortened security groups field
-                
+
                 # If we have all chunks for this interface, combine them
                 if len(interface_chunks[interface_id]["chunks"]) == total_chunks:
                     # Combine chunks and restore 'sg-' prefix
@@ -471,21 +471,21 @@ def restore_security_groups(ec2_client, instance_id):
                         restored_sgs = ['sg-' + sg if not sg.startswith('sg-') else sg for sg in chunk_sgs]
                         combined_sgs.extend(restored_sgs)
                     matching_backups[interface_id] = combined_sgs
-                    
+
             except (json.JSONDecodeError, KeyError) as e:
                 logger.error(f"Failed to parse backup data for tag {tag['Key']}: {str(e)}")
                 continue
-                
+
         if not matching_backups:
             logger.error("No complete backup data found with matching timestamp")
             sys.exit(EC_GENERIC_ERROR)
-            
+
         # Get current interfaces
         _, _, current_interfaces = get_instance_details(ec2_client, instance_id)
-        
+
         # Use the combined matching_backups as our backup_sg_map
         backup_sg_map = matching_backups
-        
+
         changed_any = False
         for interface in current_interfaces:
             try:
@@ -495,21 +495,21 @@ def restore_security_groups(ec2_client, instance_id):
                         f"No backup data found for interface {interface_id}. Skipping."
                     )
                     continue
-                    
+
                 original_sgs = backup_sg_map[interface_id]
                 current_sgs = interface["SecurityGroups"]
-                
+
                 if original_sgs == current_sgs:
                     logger.info(
                         f"Interface {interface_id} already has original security groups. Skipping."
                     )
                     continue
-                
+
                 logger.info(
                     f"Restoring interface {interface_id} from {current_sgs} "
                     f"to original security groups {original_sgs}"
                 )
-                
+
                 try:
                     ec2_client.modify_network_interface_attribute(
                         NetworkInterfaceId=interface_id,
@@ -522,18 +522,18 @@ def restore_security_groups(ec2_client, instance_id):
                         f"{interface_id}: {str(e)}"
                     )
                     continue
-                    
+
             except KeyError as e:
                 logger.error(f"Malformed interface data: {str(e)}")
                 continue
-                
+
         if not changed_any:
             logger.error("No security groups were restored. All interfaces skipped.")
             sys.exit(EC_GENERIC_ERROR)
-            
+
         # Wait for changes to propagate
         time.sleep(5)
-        
+
         # Clean up only the matching backup tags and lastfence tag after successful restore
         try:
             # Delete all backup tags that match the lastfence timestamp
@@ -557,7 +557,7 @@ def restore_security_groups(ec2_client, instance_id):
         except ClientError as e:
             logger.warning(f"Failed to remove tags: {str(e)}")
             # Continue since the restore operation was successful
-            
+
     except ClientError as e:
         logger.error(f"AWS API error: {str(e)}")
         raise
@@ -571,7 +571,7 @@ def shutdown_instance(ec2_client, instance_id):
     try:
         logger.info(f"Initiating shutdown for instance {instance_id}...")
         ec2_client.stop_instances(InstanceIds=[instance_id], Force=True)
- 
+
         while True:
             try:
                 state, _, _ = get_instance_details(ec2_client, instance_id)
@@ -676,7 +676,7 @@ def set_power_status(conn, options):
 def define_new_opts():
     all_opt["port"]["help"] = "-n, --plug=[id]                AWS Instance ID to perform action on "
     all_opt["port"]["shortdesc"] = "AWS Instance ID to perform action on "
-    
+
     all_opt["region"] = {
         "getopt": "r:",
         "longopt": "region",
@@ -732,7 +732,7 @@ def define_new_opts():
         "shortdesc": "Remove all security groups except specified..",
         "required": "0",
         "order": 8,
-        
+
     }
     all_opt["filter"] = {
         "getopt": ":",
@@ -750,7 +750,7 @@ def define_new_opts():
         "required": "0",
         "default": "False",
         "order": 10
-    }    
+    }
     all_opt["onfence-poweroff"] = {
         "getopt": "",
         "longopt": "onfence-poweroff",
@@ -762,12 +762,12 @@ def define_new_opts():
 
 
 def main():
-    conn = None 
+    conn = None
 
     device_opt = [
-        "no_password", 
+        "no_password",
         "region",
-        "access_key", 
+        "access_key",
         "secret_key",
         "secg",
         "port",
@@ -780,7 +780,7 @@ def main():
 ]
 
     atexit.register(atexit_handler)
-    
+
     define_new_opts()
 
     try:
@@ -834,7 +834,7 @@ def main():
         fdh.setFormatter(log_format)
         logging.getLogger('boto3').addHandler(fdh)
         logging.getLogger('botocore').addHandler(fdh)
-        logging.debug("Boto debug level is %s and sending debug info to /var/log/fence_aws_vpc_boto3.log", 
+        logging.debug("Boto debug level is %s and sending debug info to /var/log/fence_aws_vpc_boto3.log",
                      options.get("--boto3_debug"))
 
     # Establish AWS connection
@@ -862,4 +862,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
