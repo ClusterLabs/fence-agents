@@ -71,25 +71,25 @@ sequenceDiagram
     Client->>FenceAgent: Execute fence operation
     FenceAgent->>AWS: Validate AWS credentials
     AWS-->>FenceAgent: Credentials valid
-    
+
     FenceAgent->>AWS: Get instance details
     AWS-->>FenceAgent: Instance details
-    
+
     alt Instance is running
         FenceAgent->>SecurityGroups: Backup current security groups
         SecurityGroups-->>FenceAgent: Backup created
-        
+
         FenceAgent->>Tags: Create lastfence tag
         Tags-->>FenceAgent: Tag created
-        
+
         FenceAgent->>SecurityGroups: Modify security groups
         SecurityGroups-->>FenceAgent: Groups modified
-        
+
         opt onfence-poweroff enabled
             FenceAgent->>AWS: Initiate shutdown
             AWS-->>FenceAgent: Shutdown initiated
         end
-        
+
         FenceAgent-->>Client: Success
     else Instance not running
         FenceAgent-->>Client: Fail - Instance not running
@@ -109,20 +109,20 @@ sequenceDiagram
     Client->>FenceAgent: Execute unfence operation
     FenceAgent->>AWS: Validate AWS credentials
     AWS-->>FenceAgent: Credentials valid
-    
+
     FenceAgent->>Tags: Get lastfence tag
     Tags-->>FenceAgent: Lastfence tag
-    
+
     FenceAgent->>Tags: Get backup tags
     Tags-->>FenceAgent: Backup tags
-    
+
     alt Valid backup found
         FenceAgent->>SecurityGroups: Restore original security groups
         SecurityGroups-->>FenceAgent: Groups restored
-        
+
         FenceAgent->>Tags: Cleanup backup tags
         Tags-->>FenceAgent: Tags cleaned
-        
+
         FenceAgent-->>Client: Success
     else No valid backup
         FenceAgent-->>Client: Fail - No valid backup found
