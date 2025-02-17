@@ -41,6 +41,46 @@ status = {
     "terminated": "unknown"
 }
 
+def check_sg_modifications(ec2_client, instance_id, options):
+    """Check if security groups have been modified according to the specified options.
+
+    Args:
+        ec2_client: The boto3 EC2 client
+        instance_id: The ID of the EC2 instance
+        options: Dictionary containing the fencing options
+
+    Returns:
+        bool: True if all interfaces have been properly modified, False otherwise
+    """
+    try:
+        state, _, interfaces = get_instance_details(ec2_client, instance_id)
+        if state == "running":  # Only check SGs if instance is running
+            sg_to_remove = options.get("--secg", "").split(",") if options.get("--secg") else []
+            if sg_to_remove:
+                # Check if all interfaces have had their security groups modified
+                all_interfaces_fenced = True
+                for interface in interfaces:
+                    current_sgs = interface["SecurityGroups"]
+                    if "--invert-sg-removal" in options:
+                        # In keep_only mode, check if interface only has the specified groups
+                        if sorted(current_sgs) != sorted(sg_to_remove):
+                            logger.debug(f"Interface {interface['NetworkInterfaceId']} still has different security groups")
+                            all_interfaces_fenced = False
+                            break
+                    else:
+                        # In remove mode, check if specified groups were removed
+                        if any(sg in current_sgs for sg in sg_to_remove):
+                            logger.debug(f"Interface {interface['NetworkInterfaceId']} still has security groups that should be removed")
+                            all_interfaces_fenced = False
+                            break
+
+                if all_interfaces_fenced:
+                    logger.debug("All interfaces have had their security groups successfully modified - considering instance fenced")
+                    return True
+    except Exception as e:
+        logger.debug("Failed to check security group modifications: %s", e)
+    return False
+
 def get_power_status(conn, options):
     logger.debug("Starting status operation")
     try:
@@ -55,41 +95,10 @@ def get_power_status(conn, options):
             ]
         )
 
-        # Helper function to check if security groups have been modified
-        def check_sg_modifications():
-            try:
-                state, _, interfaces = get_instance_details(ec2_client, instance_id)
-                if state == "running":  # Only check SGs if instance is running
-                    sg_to_remove = options.get("--secg", "").split(",") if options.get("--secg") else []
-                    if sg_to_remove:
-                        # Check if all interfaces have had their security groups modified
-                        all_interfaces_fenced = True
-                        for interface in interfaces:
-                            current_sgs = interface["SecurityGroups"]
-                            if "--invert-sg-removal" in options:
-                                # In keep_only mode, check if interface only has the specified groups
-                                if sorted(current_sgs) != sorted(sg_to_remove):
-                                    logger.debug(f"Interface {interface['NetworkInterfaceId']} still has different security groups")
-                                    all_interfaces_fenced = False
-                                    break
-                            else:
-                                # In remove mode, check if specified groups were removed
-                                if any(sg in current_sgs for sg in sg_to_remove):
-                                    logger.debug(f"Interface {interface['NetworkInterfaceId']} still has security groups that should be removed")
-                                    all_interfaces_fenced = False
-                                    break
-
-                        if all_interfaces_fenced:
-                            logger.debug("All interfaces have had their security groups successfully modified - considering instance fenced")
-                            return True
-            except Exception as e:
-                logger.debug("Failed to check security group modifications: %s", e)
-            return False
-
         # If --ignore-tag-write-failure is set, prioritize checking SG modifications
         if "--ignore-tag-write-failure" in options:
             logger.debug("--ignore-tag-write-failure is set, checking security group modifications first")
-            if check_sg_modifications():
+            if check_sg_modifications(ec2_client, instance_id, options):
                 logger.info("All interfaces are properly fenced based on security group state, ignoring tag state")
                 return "off"
             logger.debug("Not all interfaces are fenced, proceeding with tag checks")
@@ -135,33 +144,10 @@ def get_power_status(conn, options):
                 # Validate timestamps match
                 if str(backup_timestamp) == str(lastfence_timestamp):
                     # Check if security groups were actually modified to confirm fencing
-                    try:
-                        state, _, interfaces = get_instance_details(ec2_client, instance_id)
-                        if state == "running":  # Only check SGs if instance is running
-                            sg_to_remove = options.get("--secg", "").split(",") if options.get("--secg") else []
-                            if sg_to_remove:
-                                # Check if all interfaces have had their security groups modified
-                                all_interfaces_fenced = True
-                                for interface in interfaces:
-                                    current_sgs = interface["SecurityGroups"]
-                                    if "--invert-sg-removal" in options:
-                                        # In keep_only mode, check if interface only has the specified groups
-                                        if sorted(current_sgs) != sorted(sg_to_remove):
-                                            logger.debug(f"Interface {interface['NetworkInterfaceId']} still has different security groups")
-                                            all_interfaces_fenced = False
-                                            break
-                                    else:
-                                        # In remove mode, check if specified groups were removed
-                                        if any(sg in current_sgs for sg in sg_to_remove):
-                                            logger.debug(f"Interface {interface['NetworkInterfaceId']} still has security groups that should be removed")
-                                            all_interfaces_fenced = False
-                                            break
-
-                                if all_interfaces_fenced:
-                                    logger.debug("Found matching backup tag %s and verified all interfaces have SG changes - instance is fenced", tag["Key"])
-                                    return "off"
-                    except Exception as e:
-                        logger.debug("Failed to check security group modifications: %s", e)
+                    if check_sg_modifications(ec2_client, instance_id, options):
+                        logger.debug("Found matching backup tag %s and verified all interfaces have SG changes - instance is fenced", tag["Key"])
+                        return "off"
+                    else:
                         # If we can't verify SG changes but have matching tags, assume fenced for backward compatibility
                         logger.debug("Found matching backup tag %s but couldn't verify SG changes - assuming instance is fenced", tag["Key"])
                         return "off"
