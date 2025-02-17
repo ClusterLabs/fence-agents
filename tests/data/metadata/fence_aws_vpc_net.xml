@@ -86,6 +86,16 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 		<content type="boolean"  />
 		<shortdesc lang="en">Power off the machine async..</shortdesc>
 	</parameter>
+	<parameter name="ignore-tag-write-failure" unique="0" required="0" deprecated="1">
+		<getopt mixed="--ignore-tag-write-failure" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Continue to fence even if backup tag fails..</shortdesc>
+	</parameter>
+	<parameter name="ignore_tag_write_failure" unique="0" required="0" obsoletes="ignore-tag-write-failure">
+		<getopt mixed="--ignore-tag-write-failure" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Continue to fence even if backup tag fails..</shortdesc>
+	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
 		<content type="boolean"  />

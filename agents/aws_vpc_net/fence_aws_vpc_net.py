@@ -20,10 +20,11 @@ from fencing import (
 )
 
 try:
-	import boto3
-	from botocore.exceptions import ConnectionError, ClientError, EndpointConnectionError, NoRegionError
+    import boto3
+    from botocore.exceptions import ConnectionError, ClientError, EndpointConnectionError, NoRegionError
 except ImportError:
-	pass
+    logger.error("Unable to import boto3 module. Please install boto3: pip install boto3")
+    sys.exit(EC_GENERIC_ERROR)
 
 
 # Logger configuration
@@ -34,77 +35,155 @@ logger.addHandler(SyslogLibHandler())
 logging.getLogger('botocore.vendored').propagate = False
 
 status = {
-		"running": "on",
-		"stopped": "off",
-		"pending": "unknown",
-		"stopping": "unknown",
-		"shutting-down": "unknown",
-		"terminated": "unknown"
+    "running": "on",
+    "stopped": "off",
+    "pending": "unknown",
+    "stopping": "unknown",
+    "shutting-down": "unknown",
+    "terminated": "unknown"
 }
 
 def get_power_status(conn, options):
-	logger.debug("Starting status operation")
-	try:
-		instance_id = options["--plug"]
-		ec2_client = conn.meta.client
+    logger.debug("Starting status operation")
+    try:
+        instance_id = options["--plug"]
+        ec2_client = conn.meta.client
 
-		# Get the lastfence tag first
-		lastfence_response = ec2_client.describe_tags(
-			Filters=[
-				{"Name": "resource-id", "Values": [instance_id]},
-				{"Name": "key", "Values": ["lastfence"]}
-			]
-		)
+        # Get the lastfence tag first
+        lastfence_response = ec2_client.describe_tags(
+            Filters=[
+                {"Name": "resource-id", "Values": [instance_id]},
+                {"Name": "key", "Values": ["lastfence"]}
+            ]
+        )
 
-		if not lastfence_response["Tags"]:
-			logger.debug("No lastfence tag found for instance %s - instance is not fenced", instance_id)
-			return "on"
+        # Helper function to check if security groups have been modified
+        def check_sg_modifications():
+            try:
+                state, _, interfaces = get_instance_details(ec2_client, instance_id)
+                if state == "running":  # Only check SGs if instance is running
+                    sg_to_remove = options.get("--secg", "").split(",") if options.get("--secg") else []
+                    if sg_to_remove:
+                        # Check if all interfaces have had their security groups modified
+                        all_interfaces_fenced = True
+                        for interface in interfaces:
+                            current_sgs = interface["SecurityGroups"]
+                            if "--invert-sg-removal" in options:
+                                # In keep_only mode, check if interface only has the specified groups
+                                if sorted(current_sgs) != sorted(sg_to_remove):
+                                    logger.debug(f"Interface {interface['NetworkInterfaceId']} still has different security groups")
+                                    all_interfaces_fenced = False
+                                    break
+                            else:
+                                # In remove mode, check if specified groups were removed
+                                if any(sg in current_sgs for sg in sg_to_remove):
+                                    logger.debug(f"Interface {interface['NetworkInterfaceId']} still has security groups that should be removed")
+                                    all_interfaces_fenced = False
+                                    break
 
-		lastfence_timestamp = lastfence_response["Tags"][0]["Value"]
+                        if all_interfaces_fenced:
+                            logger.debug("All interfaces have had their security groups successfully modified - considering instance fenced")
+                            return True
+            except Exception as e:
+                logger.debug("Failed to check security group modifications: %s", e)
+            return False
 
-		# Check for backup tags with pattern Original_SG_Backup_{instance_id}_*
-		response = ec2_client.describe_tags(
-			Filters=[
-				{"Name": "resource-id", "Values": [instance_id]},
-				{"Name": "key", "Values": [f"Original_SG_Backup_{instance_id}*"]}
-			]
-		)
+        # If --ignore-tag-write-failure is set, prioritize checking SG modifications
+        if "--ignore-tag-write-failure" in options:
+            logger.debug("--ignore-tag-write-failure is set, checking security group modifications first")
+            if check_sg_modifications():
+                logger.info("All interfaces are properly fenced based on security group state, ignoring tag state")
+                return "off"
+            logger.debug("Not all interfaces are fenced, proceeding with tag checks")
+            # Only proceed with tag checks if we haven't determined state from SG modifications
 
-		if not response["Tags"]:
-			logger.debug("No backup tags found for instance %s - instance is not fenced", instance_id)
-			return "on"
+        try:
+            # If no lastfence tag exists, instance is not fenced
+            if not lastfence_response["Tags"]:
+                logger.debug("No lastfence tag found for instance %s - instance is not fenced", instance_id)
+                return "on"
 
-		# Loop through backup tags to find matching timestamp
-		for tag in response["Tags"]:
-			try:
-				backup_data = json.loads(tag["Value"])
-				backup_timestamp = backup_data.get("t")  # Using shortened timestamp field
+            lastfence_timestamp = lastfence_response["Tags"][0]["Value"]
+        except Exception as e:
+            if "--ignore-tag-write-failure" in options:
+                logger.warning(f"Failed to check lastfence tag but continuing due to ignore-tag-write-failure: {str(e)}")
+                # If we can't read tags but --ignore-tag-write-failure is set, rely on SG state
+                return "on"  # Default to "on" to allow fence operation to proceed
+            raise
 
-				if not backup_timestamp:
-					logger.debug("No timestamp found in backup data for tag %s", tag["Key"])
-					continue
+        # Check for backup tags with pattern Original_SG_Backup_{instance_id}_*
+        response = ec2_client.describe_tags(
+            Filters=[
+                {"Name": "resource-id", "Values": [instance_id]},
+                {"Name": "key", "Values": [f"Original_SG_Backup_{instance_id}*"]}
+            ]
+        )
 
-				# Validate timestamps match
-				if str(backup_timestamp) == str(lastfence_timestamp):
-					logger.debug("Found matching backup tag %s - instance is fenced", tag["Key"])
-					return "off"
+        # If no backup tags exist, instance is not fenced (unless --ignore-tag-write-failure handled above)
+        if not response["Tags"]:
+            logger.debug("No backup tags found for instance %s - instance is not fenced", instance_id)
+            return "on"
 
-			except (json.JSONDecodeError, KeyError) as e:
-				logger.error(f"Failed to parse backup data for tag {tag['Key']}: {str(e)}")
-				continue
+        # Loop through backup tags to find matching timestamp
+        for tag in response["Tags"]:
+            try:
+                backup_data = json.loads(tag["Value"])
+                backup_timestamp = backup_data.get("t")  # Using shortened timestamp field
 
-		logger.debug("No backup tags with matching timestamp found - instance is not fenced")
-		return "on"
+                if not backup_timestamp:
+                    logger.debug("No timestamp found in backup data for tag %s", tag["Key"])
+                    continue
 
-	except ClientError:
-		fail_usage("Failed: Incorrect Access Key or Secret Key.")
-	except EndpointConnectionError:
-		fail_usage("Failed: Incorrect Region.")
-	except IndexError:
-		fail(EC_STATUS)
-	except Exception as e:
-		logger.error("Failed to get power status: %s", e)
-		fail(EC_STATUS)
+                # Validate timestamps match
+                if str(backup_timestamp) == str(lastfence_timestamp):
+                    # Check if security groups were actually modified to confirm fencing
+                    try:
+                        state, _, interfaces = get_instance_details(ec2_client, instance_id)
+                        if state == "running":  # Only check SGs if instance is running
+                            sg_to_remove = options.get("--secg", "").split(",") if options.get("--secg") else []
+                            if sg_to_remove:
+                                # Check if all interfaces have had their security groups modified
+                                all_interfaces_fenced = True
+                                for interface in interfaces:
+                                    current_sgs = interface["SecurityGroups"]
+                                    if "--invert-sg-removal" in options:
+                                        # In keep_only mode, check if interface only has the specified groups
+                                        if sorted(current_sgs) != sorted(sg_to_remove):
+                                            logger.debug(f"Interface {interface['NetworkInterfaceId']} still has different security groups")
+                                            all_interfaces_fenced = False
+                                            break
+                                    else:
+                                        # In remove mode, check if specified groups were removed
+                                        if any(sg in current_sgs for sg in sg_to_remove):
+                                            logger.debug(f"Interface {interface['NetworkInterfaceId']} still has security groups that should be removed")
+                                            all_interfaces_fenced = False
+                                            break
+
+                                if all_interfaces_fenced:
+                                    logger.debug("Found matching backup tag %s and verified all interfaces have SG changes - instance is fenced", tag["Key"])
+                                    return "off"
+                    except Exception as e:
+                        logger.debug("Failed to check security group modifications: %s", e)
+                        # If we can't verify SG changes but have matching tags, assume fenced for backward compatibility
+                        logger.debug("Found matching backup tag %s but couldn't verify SG changes - assuming instance is fenced", tag["Key"])
+                        return "off"
+
+            except (json.JSONDecodeError, KeyError) as e:
+                logger.error(f"Failed to parse backup data for tag {tag['Key']}: {str(e)}")
+                continue
+
+        logger.debug("No backup tags with matching timestamp found - instance is not fenced")
+        return "on"
+
+    except ClientError:
+        fail_usage("Failed: Incorrect Access Key or Secret Key.")
+    except EndpointConnectionError:
+        fail_usage("Failed: Incorrect Region.")
+    except IndexError:
+        fail(EC_STATUS)
+    except Exception as e:
+        logger.error("Failed to get power status: %s", e)
+        fail(EC_STATUS)
 
 # Retrieve instance ID for self-check
 def get_instance_id():
@@ -165,22 +244,22 @@ def get_instance_details(ec2_client, instance_id):
 
 # Check if we are the self-fencing node
 def get_self_power_status(conn, instance_id):
-	try:
-		instance = conn.instances.filter(Filters=[{"Name": "instance-id", "Values": [instance_id]}])
-		state = list(instance)[0].state["Name"]
-		if state == "running":
-			logger.debug(f"Captured my ({instance_id}) state and it {state.upper()} - returning OK - Proceeding with fencing")
-			return "ok"
-		else:
-			logger.debug(f"Captured my ({instance_id}) state it is {state.upper()} - returning Alert - Unable to fence other nodes")
-			return "alert"
+    try:
+        instance = conn.instances.filter(Filters=[{"Name": "instance-id", "Values": [instance_id]}])
+        state = list(instance)[0].state["Name"]
+        if state == "running":
+            logger.debug(f"Captured my ({instance_id}) state and it {state.upper()} - returning OK - Proceeding with fencing")
+            return "ok"
+        else:
+            logger.debug(f"Captured my ({instance_id}) state it is {state.upper()} - returning Alert - Unable to fence other nodes")
+            return "alert"
 
-	except ClientError:
-		fail_usage("Failed: Incorrect Access Key or Secret Key.")
-	except EndpointConnectionError:
-		fail_usage("Failed: Incorrect Region.")
-	except IndexError:
-		return "fail"
+    except ClientError:
+        fail_usage("Failed: Incorrect Access Key or Secret Key.")
+    except EndpointConnectionError:
+        fail_usage("Failed: Incorrect Region.")
+    except IndexError:
+        return "fail"
 
 # Create backup tags for each network interface
 def create_backup_tag(ec2_client, instance_id, interfaces, timestamp):
@@ -283,7 +362,7 @@ def create_backup_tag(ec2_client, instance_id, interfaces, timestamp):
         raise
 
 
-def modify_security_groups(ec2_client, instance_id, sg_list, timestamp, mode="remove"):
+def modify_security_groups(ec2_client, instance_id, sg_list, timestamp, mode="remove", options=None):
     """
     Modifies security groups on network interfaces based on the specified mode.
     In 'remove' mode: Removes all SGs in sg_list from each interface
@@ -304,12 +383,25 @@ def modify_security_groups(ec2_client, instance_id, sg_list, timestamp, mode="re
         # Get instance details
         state, _, interfaces = get_instance_details(ec2_client, instance_id)
 
+        # Create a backup tag before making any changes
         try:
-            # Create a backup tag before making changes
             create_backup_tag(ec2_client, instance_id, interfaces, timestamp)
-        except ClientError as e:
-            logger.warning(f"Failed to create backup tag: {str(e)}")
-            # Continue execution even if backup tag creation fails
+            try:
+                set_lastfence_tag(ec2_client, instance_id, timestamp)
+            except Exception as e:
+                if "--ignore-tag-write-failure" in options:
+                    logger.warning(f"Failed to set lastfence tag but continuing due to --ignore-tag-write-failure: {str(e)}")
+                    logger.info("Will rely on security group state for fencing status")
+                else:
+                    logger.error(f"Failed to set lastfence tag: {str(e)}")
+                    raise
+        except Exception as e:
+            if "--ignore-tag-write-failure" in options:
+                logger.warning(f"Failed to create backup tag but continuing due to --ignore-tag-write-failure: {str(e)}")
+                logger.info("Will rely on security group state for fencing status")
+            else:
+                logger.error(f"Failed to create backup tag: {str(e)}")
+                raise
 
         changed_any = False
         for interface in interfaces:
@@ -359,14 +451,14 @@ def modify_security_groups(ec2_client, instance_id, sg_list, timestamp, mode="re
                 logger.error(f"Malformed interface data: {str(e)}")
                 continue
 
-        # If we didn't modify anything, log appropriate error
+        # If we didn't modify anything, raise an error
         if not changed_any:
             if mode == "remove":
                 error_msg = f"Security Groups {sg_list} not removed from any interface. Either not found, or removal left 0 SGs."
             else:
                 error_msg = f"Security Groups {sg_list} not found on any interface. No changes made."
             logger.error(error_msg)
-            sys.exit(EC_GENERIC_ERROR)
+            raise Exception("Failed to modify security groups: " + error_msg)
 
         # Wait a bit for changes to propagate
         time.sleep(5)
@@ -663,12 +755,26 @@ def set_power_status(conn, options):
         elif options["--action"] == "off":
             if sg_to_remove:
                 mode = "keep_only" if "--invert-sg-removal" in options else "remove"
-                modify_security_groups(ec2_client, instance_id, sg_to_remove, timestamp, mode)
-                set_lastfence_tag(ec2_client, instance_id, timestamp)
-                if "--onfence-poweroff" in options:
-                    shutdown_instance(ec2_client, instance_id)
+                try:
+                    modify_security_groups(ec2_client, instance_id, sg_to_remove, timestamp, mode, options)
+                    if "--onfence-poweroff" in options:
+                        shutdown_instance(ec2_client, instance_id)
+                except Exception as e:
+                    if isinstance(e, ClientError):
+                        logger.error("AWS API error: %s", e)
+                        fail_usage(str(e))
+                    elif "--ignore-tag-write-failure" in options:
+                        # If we're ignoring tag failures, only fail if the security group modifications failed
+                        if "Failed to modify security groups" in str(e):
+                            logger.error("Failed to modify security groups: %s", e)
+                            fail(EC_STATUS)
+                        else:
+                            logger.warning("Ignoring error due to ignore-tag-write-failure: %s", e)
+                    else:
+                        logger.error("Failed to set power status: %s", e)
+                        fail(EC_STATUS)
     except Exception as e:
-        logger.error("Failed to set power status: %s", e)
+        logger.error("Unexpected error in set_power_status: %s", e)
         fail(EC_STATUS)
 
 
@@ -759,6 +865,14 @@ def define_new_opts():
         "required": "0",
         "order": 11
     }
+    all_opt["ignore-tag-write-failure"] = {
+        "getopt": "",
+        "longopt": "ignore-tag-write-failure",
+        "help": "--ignore-tag-write-failure     Continue to fence even if backup tag fails.  This ensures prioriization of fencing over AWS backplane access",
+        "shortdesc": "Continue to fence even if backup tag fails..",
+        "required": "0",
+        "order": 12
+    }
 
 
 def main():
@@ -776,7 +890,8 @@ def main():
         "unfence-ignore-restore",
         "filter",
         "boto3_debug",
-        "onfence-poweroff"
+        "onfence-poweroff",
+        "ignore-tag-write-failure"
 ]
 
     atexit.register(atexit_handler)
@@ -862,3 +977,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
