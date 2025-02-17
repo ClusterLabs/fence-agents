@@ -23,9 +23,7 @@ try:
     import boto3
     from botocore.exceptions import ConnectionError, ClientError, EndpointConnectionError, NoRegionError
 except ImportError:
-    logger.error("Unable to import boto3 module. Please install boto3: pip install boto3")
-    sys.exit(EC_GENERIC_ERROR)
-
+    pass
 
 # Logger configuration
 logger = logging.getLogger()
