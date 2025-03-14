@@ -31,6 +31,12 @@ else
 HAVE_BOTO3 = 0
 endif
 
+if HAVE_GOOGLE_AUTH
+HAVE_GOOGLE_AUTH = 1
+else
+HAVE_GOOGLE_AUTH = 0
+endif
+
 .PHONY: $(SUBDIRS)
 
 agents: lib
@@ -84,6 +90,7 @@ $(SPEC): $(SPEC).in
 	numcomm="" && \
 	ver="$(VERSION)" && \
 	boto3_br="$(HAVE_BOTO3)" && \
+	google_auth_br="$(HAVE_GOOGLE_AUTH)" && \
 	if echo $$ver | grep -q -- "-dirty$$"; then \
 		dirty="dirty" && \
 		echo VERSION IS DIRTY && \
@@ -121,6 +128,7 @@ $(SPEC): $(SPEC).in
 		-e "s#@linux-ha@#$(LINUX_HA)#g" \
 		-e "s#@compat-habindir@#$(COMPAT_HABINDIR)#g" \
 		-e "s#@boto3_br@#$$boto3_br#g" \
+		-e "s#@google_auth_br@#$$google_auth_br#g" \
 	$< > $@-t; \
 	if [ -z "$$dirty" ]; then sed -i -e "s#%glo.*dirty.*##g" $@-t; fi; \
 	if [ -z "$$alphatag" ]; then sed -i -e "s#%glo.*alphatag.*##g" $@-t; fi; \

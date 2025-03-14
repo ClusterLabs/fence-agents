@@ -25,6 +25,7 @@ URL: https://github.com/ClusterLabs/fence-agents
 Source0: %{name}-%{version}%{?rcver:%{rcver}}%{?numcomm:.%{numcomm}}%{?alphatag:-%{alphatag}}%{?dirty:-%{dirty}}.tar.bz2
 
 %define boto3_br @boto3_br@
+%define google_auth_br @google_auth_br@
 
 # skipped: pve, raritan, rcd-serial, virsh
 %global allfenceagents %(cat <<EOF
@@ -49,7 +50,6 @@ fence-agents-eaton-ssh \\
 fence-agents-ecloud \\
 fence-agents-emerson \\
 fence-agents-eps \\
-fence-agents-gce \\
 fence-agents-hds-cb \\
 fence-agents-heuristics-ping \\
 fence-agents-hpblade \\
@@ -97,11 +97,15 @@ EOF)
 %{allfenceagents} \\
 fence-agents-aws \\
 fence-agents-compute \\
-fence-agents-gce \\
 fence-agents-ironic \\
 fence-agents-openstack
-
 EOF)
+
+%if %{google_auth_br}
+%global allfenceagents %(cat <<EOF
+fence-agents-gce
+EOF)
+%endif
 %endif
 
 # Build dependencies
@@ -600,6 +604,7 @@ via the HTTP(s) protocol.
 %{_sbindir}/fence_eps*
 %{_mandir}/man8/fence_eps*.8*
 
+%if %{google_auth_br}
 %package gce
 License: GPL-2.0-or-later AND LGPL-2.0-or-later
 Summary: Fence agent for GCE (Google Cloud Engine)
@@ -616,6 +621,7 @@ Fence agent for GCE (Google Cloud Engine) instances.
 %files gce
 %{_sbindir}/fence_gce
 %{_mandir}/man8/fence_gce.8*
+%endif
 
 %package hds-cb
 License: GPL-2.0-or-later AND LGPL-2.0-or-later

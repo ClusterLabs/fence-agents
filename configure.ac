@@ -299,6 +299,8 @@ AC_PYTHON_MODULE(requests, 1)
 
 AC_PYTHON_MODULE(boto3)
 AM_CONDITIONAL(HAVE_BOTO3, [test "x$HAVE_PYMOD_BOTO3" == xyes ])
+AC_PYTHON_MODULE(google.auth)
+AM_CONDITIONAL(HAVE_GOOGLE_AUTH, [test "x$HAVE_PYMOD_GOOGLE_AUTH" == xyes ])
 
 if echo "$AGENTS_LIST" | grep -q amt_ws; then
 	AC_PYTHON_MODULE(pywsman)
@@ -313,9 +315,6 @@ if echo "$AGENTS_LIST" | grep -q -E "ovh|vmware_soap"; then
 		AGENTS_LIST=$(echo "$AGENTS_LIST" | sed -E "s#(ovh/fence_ovh|vmware_soap/fence_vmware_soap).py( |$)##g")
 		AC_MSG_WARN("Not building fence_ovh and fence_vmware_soap")
 	fi
-fi
-if echo "$AGENTS_LIST" | grep -q gce; then
-	AC_PYTHON_MODULE(google.auth)
 fi
 
 ## path to 3rd-party binaries
