@@ -34,7 +34,6 @@ fence-agents-amt \\
 fence-agents-amt-ws \\
 fence-agents-apc \\
 fence-agents-apc-snmp \\
-fence-agents-aws \\
 fence-agents-azure-arm \\
 fence-agents-bladecenter \\
 fence-agents-brocade \\
