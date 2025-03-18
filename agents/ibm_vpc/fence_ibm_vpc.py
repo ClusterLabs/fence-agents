@@ -105,6 +105,8 @@ def get_bearer_token(conn, options):
 			except Exception as e:
 				logging.error("Failed: Unable to authenticate: {}".format(e))
 				fail(EC_LOGIN_DENIED)
+			if len(token) < 1:
+				fail(EC_LOGIN_DENIED)
 			file_obj.write(token)
 	finally:
 		os.umask(oldumask)
@@ -151,6 +153,14 @@ def connect(opt):
 
 	# set auth token for later requests
 	conn = set_bearer_token(conn, bearer_token)
+
+	try:
+		command = "instances?version=2021-05-25&generation=2&limit=1"
+		res = send_command(conn, opt, command)
+	except Exception as e:
+		logging.warning("Failed to login/connect. Updating bearer-token.")
+		bearer_token = get_bearer_token(conn, opt)
+		conn = set_bearer_token(conn, bearer_token)
 
 	return conn
 
