@@ -192,6 +192,7 @@ def set_power_status(conn, options):
 
     target_status = options["--action"]
     plug = options["--plug"]
+    enable_crashdump = "--crashdump" in options
     return_code = 99
     out = ""
     err = ""
@@ -200,9 +201,11 @@ def set_power_status(conn, options):
     if "on" == target_status:
         (return_code, out, err) = send_sbd_message(conn, options, plug, "clear")
     elif "off" == target_status:
-        (return_code, out, err) = send_sbd_message(conn, options, plug, "off")
+        msg = "crashdump" if enable_crashdump else "off"
+        (return_code, out, err) = send_sbd_message(conn, options, plug, msg)
     elif "reboot" == target_status:
-        (return_code, out, err) = send_sbd_message(conn, options, plug, "reset")
+        msg = "crashdump" if enable_crashdump else "reset"
+        (return_code, out, err) = send_sbd_message(conn, options, plug, msg)
 
     if 0 != return_code:
         logging.error("sending message to sbd device(s) \
@@ -357,6 +360,21 @@ Comma separated list of sbd devices",
         "order": 200
         }
 
+    all_opt["crashdump"] = {
+        "getopt" : "",
+        "longopt" : "crashdump",
+        "help" : "--crashdump                    Enable crashdump, default is disabled",
+        "required" : "0",
+        "shortdesc" : "Crashdump instead of regular fence",
+        "longdesc" : "If SBD is given a fence command, this option will perform a \
+kernel crash instead of a reboot or power-off, which on a properly configured \
+system can lead to a crashdump for analysis. \
+\nWARNING:\n \
+This is unsafe for production environments. Please use with caution \
+and for debugging purposes only.",
+        "order": 201
+        }
+
 
 def sbd_daemon_is_running():
     """Check if the sbd daemon is running
@@ -390,7 +408,7 @@ def main():
     """
     # We need to define "no_password" otherwise we will be ask about it if
     # we don't provide any password.
-    device_opt = ["no_password", "devices", "port", "method", "sbd_path"]
+    device_opt = ["no_password", "devices", "port", "method", "sbd_path", "crashdump"]
 
     # close stdout if we get interrupted
     atexit.register(atexit_handler)
