@@ -221,7 +221,7 @@ def create_nova_connection(options):
 
 	versions = [ "2.11", "2" ]
 	for version in versions:
-		clientargs = inspect.getargspec(client.Client).varargs
+		clientargs = inspect.getfullargspec(client.Client).varargs
 
 		# Some versions of Openstack prior to Ocata only
 		# supported positional arguments for username,
