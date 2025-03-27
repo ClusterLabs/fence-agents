@@ -228,10 +228,12 @@ def reboot_cycle(conn, options):
 
     plug = options["--plug"]
     return_code = 99
+    enable_crashdump = "--crashdump" in options
     out = ""
     err = ""
 
-    (return_code, out, err) = send_sbd_message(conn, options, plug, "reset")
+    msg = "crashdump" if enable_crashdump else "reset"
+    (return_code, out, err) = send_sbd_message(conn, options, plug, msg)
     return not bool(return_code)
 
 def get_power_status(conn, options):
