@@ -4,6 +4,7 @@ import sys, stat
 import logging
 import os
 import atexit
+import re
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import fail_usage, run_commands, fence_action, all_opt
 from fencing import atexit_handler, check_input, process_input, show_docs
@@ -147,18 +148,19 @@ def send_sbd_message(conn, options, plug, message):
 
     return (return_code, out, err)
 
-def get_msg_timeout(options):
+def get_sbd_header_timeout(options):
     """Reads the configured sbd message timeout from each device.
 
     Key arguments:
     options -- options dictionary
 
     Return Value:
-    msg_timeout (integer, seconds)
+    (msg_timeout, watchdog_timeout)
     """
 
     # get the defined msg_timeout
     msg_timeout = -1 # default sbd msg timeout
+    watchdog_timeout = -1 # default sbd watchdog timeout
 
     cmd = generate_sbd_command(options, "dump")
 
@@ -174,10 +176,26 @@ def get_msg_timeout(options):
                 logging.warning(\
                         "sbd message timeouts differ in different devices")
             # we only save the highest timeout
-            if tmp_msg_timeout > msg_timeout:
-                msg_timeout = tmp_msg_timeout
+            msg_timeout = max(msg_timeout, tmp_msg_timeout)
+        elif "watchdog" in line:
+            tmp_watchdog_timeout = int(line.split(':')[1])
+            if -1 != watchdog_timeout and tmp_watchdog_timeout != watchdog_timeout:
+                logging.warning(\
+                        "sbd watchdog timeouts differ in different devices")
+            # we only save the highest timeout
+            watchdog_timeout = max(watchdog_timeout, tmp_watchdog_timeout)
 
-    return msg_timeout
+    return msg_timeout, watchdog_timeout
+
+def get_crashdump_timeout():
+    crashdump_timeout = -1
+    sbd_opts = os.getenv("SBD_OPTS", None)
+    if sbd_opts:
+        # parse '-C N'
+        match = re.search(r'-C\s+(\d+)', sbd_opts)
+        if match:
+            crashdump_timeout = int(match.group(1))
+    return crashdump_timeout
 
 def set_power_status(conn, options):
     """send status to sbd device (poison pill)
@@ -404,7 +422,6 @@ def sbd_daemon_is_running():
 
     return True
 
-
 def main():
     """Main function
     """
@@ -469,10 +486,20 @@ which can be used in environments where sbd can be used (shared storage)."
     # we check against the defined timeouts. If the pacemaker timeout is smaller
     # then that defined within sbd we should report this.
     power_timeout = int(options["--power-timeout"])
-    sbd_msg_timeout = get_msg_timeout(options)
+    sbd_msg_timeout, sbd_watchdog_timeout = get_sbd_header_timeout(options)
     if 0 < power_timeout <= sbd_msg_timeout:
         logging.warning("power timeout needs to be \
                 greater then sbd message timeout")
+
+    action = options.get("--action", None)
+    if "--crashdump" in options and action in ("reboot", "off"):
+        target_node = options.get("--plug", "UNKNOWN")
+        crashdump_timeout = get_crashdump_timeout()
+        logging.warning("crashdump option is enabled while doing action %s on node %s", action, target_node)
+        logging.warning(
+                "sbd watchdog timeout: %d, crashdump timeout(compare to setting on target-node %s): %d",
+                sbd_watchdog_timeout, target_node, crashdump_timeout
+        )
 
     result = fence_action(\
                 None, \
