@@ -6,6 +6,7 @@ define gen_agent_from_py
 		-e 's#@''RELEASE_VERSION@#${VERSION}#g' \
 		-e 's#@''FENCEAGENTSLIBDIR@#${FENCEAGENTSLIBDIR}#g' \
 		-e 's#@''LOGDIR@#${LOGDIR}#g' \
+		-e 's#@''INITCONFDIR@#${initconfdir}#g' \
 		-e 's#@''SBINDIR@#${sbindir}#g' \
 		-e 's#@''LIBEXECDIR@#${libexecdir}#g' \
 		-e 's#@''FENCETMPDIR@#${FENCETMPDIR}#g' \
