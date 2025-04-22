@@ -45,35 +45,42 @@ fvlibdir			= $(libdir)/fence-virt
 fvlib_LTLIBRARIES		=
 
 MODULESCFLAGS			= $(VIRT_AM_CFLAGS) $(AM_CFLAGS)
-MODULESLDFLAGS			= $(VIRT_AM_LDFLAGS) $(VIRT_COMMON_LIBS) $(VIRT_COMMON_LDFLAGS) -module -avoid-version -export-dynamic
+MODULESLDFLAGS			= $(VIRT_AM_LDFLAGS) $(VIRT_COMMON_LDFLAGS) -module -avoid-version -export-dynamic
+MODULESLIBADD			= $(VIRT_COMMON_LIBS)
 
 if modlibvirt
 fvlib_LTLIBRARIES		+= virt.la
 virt_la_CFLAGS			= $(MODULESCFLAGS) $(nss_CFLAGS) $(virt_CFLAGS)
-virt_la_LDFLAGS			= $(MODULESLDFLAGS) $(nss_LIBS) $(virt_LIBS)
+virt_la_LDFLAGS			= $(MODULESLDFLAGS)
+virt_la_LIBADD			= $(MODULESLIBADD) $(nss_LIBS) $(virt_LIBS) $(uuid_LIBS)
 endif
 if modcpg
 fvlib_LTLIBRARIES		+= cpg.la
 cpg_la_CFLAGS			= $(MODULESCFLAGS) $(nss_CFLAGS) $(cpg_CFLAGS) $(virt_CFLAGS)
-cpg_la_LDFLAGS			= $(MODULESLDFLAGS) $(nss_LIBS) $(cpg_LIBS) $(virt_LIBS)
+cpg_la_LDFLAGS			= $(MODULESLDFLAGS)
+cpg_la_LIBADD			= $(MODULESLIBADD) $(nss_LIBS) $(cpg_LIBS) $(virt_LIBS) $(uuid_LIBS)
 endif
 if modmulticast
 fvlib_LTLIBRARIES		+= multicast.la
 multicast_la_CFLAGS		= $(MODULESCFLAGS) $(nss_CFLAGS)
-multicast_la_LDFLAGS		= $(MODULESLDFLAGS) $(nss_LIBS)
+multicast_la_LDFLAGS		= $(MODULESLDFLAGS)
+multicast_la_LIBADD		= $(MODULESLIBADD) $(nss_LIBS)
 endif
 if modserial
 fvlib_LTLIBRARIES		+= serial.la
 serial_la_CFLAGS		= $(MODULESCFLAGS) $(nss_CFLAGS) $(xml2_CFLAGS) $(virt_CFLAGS)
-serial_la_LDFLAGS		= $(MODULESLDFLAGS) $(nss_LIBS) $(xml2_LIBS) $(virt_LIBS)
+serial_la_LDFLAGS		= $(MODULESLDFLAGS)
+serial_la_LIBADD		= $(MODULESLIBADD) $(nss_LIBS) $(xml2_LIBS) $(virt_LIBS)
 endif
 if modtcp
 fvlib_LTLIBRARIES		+= tcp.la
 tcp_la_CFLAGS			= $(MODULESCFLAGS) $(nss_CFLAGS)
-tcp_la_LDFLAGS			= $(MODULESLDFLAGS) $(nss_LIBS)
+tcp_la_LDFLAGS			= $(MODULESLDFLAGS)
+tcp_la_LIBADD			= $(MODULESLIBADD) $(nss_LIBS)
 endif
 if modvsock
 fvlib_LTLIBRARIES		+= vsock.la
 vsock_la_CFLAGS			= $(MODULESCFLAGS) $(nss_CFLAGS)
-vsock_la_LDFLAGS		= $(MODULESLDFLAGS) $(nss_LIBS)
+vsock_la_LDFLAGS		= $(MODULESLDFLAGS)
+vsock_la_LIBADD			= $(MODULESLIBADD) $(nss_LIBS)
 endif
