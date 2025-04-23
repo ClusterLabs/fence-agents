@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
-<resource-agent name="fence_nutanix_ahv" shortdesc="Fencing agent for Nutanix AHV Cluster VMs." >
-<longdesc>fence_ahv is a power fencing agent for virtual machines deployed on Nutanix AHV cluster with the AHV cluster being managed by Prism Central.</longdesc>
+<resource-agent name="fence_nutanix_ahv" shortdesc="Fence agent for Nutanix AHV Cluster VMs." >
+<longdesc>fence_nutanix_ahv is a Power Fencing agent for virtual machines deployed on Nutanix AHV cluster with the AHV cluster being managed by Prism Central.</longdesc>
 <vendor-url>https://www.nutanix.com</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
