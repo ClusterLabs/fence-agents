@@ -563,8 +563,8 @@ def main():
     all_opt["power_timeout"]["default"] = str(MIN_TIMEOUT)
     options = check_input(device_opt, process_input(device_opt))
     docs = {}
-    docs["shortdesc"] = "Fencing agent for Nutanix AHV Cluster VMs."
-    docs["longdesc"] = """fence_ahv is a power fencing agent for \
+    docs["shortdesc"] = "Fence agent for Nutanix AHV Cluster VMs."
+    docs["longdesc"] = """fence_nutanix_ahv is a Power Fencing agent for \
 virtual machines deployed on Nutanix AHV cluster with the AHV cluster \
 being managed by Prism Central."""
     docs["vendorurl"] = "https://www.nutanix.com"
