@@ -25,6 +25,14 @@
 #define DEBUG1(fmt, ...) dbg_printf(5, "%s:%d: " fmt "\n", \
         __func__, __LINE__, __VA_ARGS__)
 
+#if LIBXML_VERSION >= 21400
+#if __GNUC__ * 100 + __GNUC_MINOR__ >= 207
+#define ATTRIBUTE_UNUSED __attribute__((unused))
+#else
+#define ATTRIBUTE_UNUSED
+#endif
+#endif
+
 #include "serial.h"
 
 #define STREQ(a,b) (strcmp((a),(b)) == 0)
