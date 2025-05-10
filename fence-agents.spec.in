@@ -80,6 +80,7 @@ fence-agents-rsb \\
 fence-agents-sanbox2 \\
 fence-agents-sbd \\
 fence-agents-scsi \\
+fence-agents-shelly \\
 fence-agents-vbox \\
 fence-virt \\
 fence-agents-vmware \\
@@ -1116,6 +1117,17 @@ Fence agent for SCSI persistent reservations.
 %{_datadir}/cluster/fence_scsi_check
 %{_datadir}/cluster/fence_scsi_check_hardreboot
 %{_mandir}/man8/fence_scsi.8*
+
+%package shelly
+License: GPL-2.0-or-later AND LGPL-2.0-or-later
+Summary: Fence agent for Shelly Switches
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description shelly
+Fence agent for Shelly Switches.
+%files shelly
+%{_sbindir}/fence_shelly_gen2
+%{_mandir}/man8/fence_shelly_gen2.8*
 
 %package vbox
 License: GPL-2.0-or-later AND LGPL-2.0-or-later
