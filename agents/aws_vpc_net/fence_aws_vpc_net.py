@@ -54,29 +54,29 @@ def check_sg_modifications(ec2_client, instance_id, options):
     """
     try:
         state, _, interfaces = get_instance_details(ec2_client, instance_id)
-        if state == "running":  # Only check SGs if instance is running
-            sg_to_remove = options.get("--secg", "").split(",") if options.get("--secg") else []
-            if sg_to_remove:
-                # Check if all interfaces have had their security groups modified
-                all_interfaces_fenced = True
-                for interface in interfaces:
-                    current_sgs = interface["SecurityGroups"]
-                    if "--invert-sg-removal" in options:
-                        # In keep_only mode, check if interface only has the specified groups
-                        if sorted(current_sgs) != sorted(sg_to_remove):
-                            logger.debug(f"Interface {interface['NetworkInterfaceId']} still has different security groups")
-                            all_interfaces_fenced = False
-                            break
-                    else:
-                        # In remove mode, check if specified groups were removed
-                        if any(sg in current_sgs for sg in sg_to_remove):
-                            logger.debug(f"Interface {interface['NetworkInterfaceId']} still has security groups that should be removed")
-                            all_interfaces_fenced = False
-                            break
+        #if state == "running":  # Only check SGs if instance is running
+        sg_to_remove = options.get("--secg", "").split(",") if options.get("--secg") else []
+        if sg_to_remove:
+            # Check if all interfaces have had their security groups modified
+            all_interfaces_fenced = True
+            for interface in interfaces:
+                current_sgs = interface["SecurityGroups"]
+                if "--invert-sg-removal" in options:
+                    # In keep_only mode, check if interface only has the specified groups
+                    if sorted(current_sgs) != sorted(sg_to_remove):
+                        logger.debug(f"Interface {interface['NetworkInterfaceId']} still has different security groups")
+                        all_interfaces_fenced = False
+                        break
+                else:
+                    # In remove mode, check if specified groups were removed
+                    if any(sg in current_sgs for sg in sg_to_remove):
+                        logger.debug(f"Interface {interface['NetworkInterfaceId']} still has security groups that should be removed")
+                        all_interfaces_fenced = False
+                        break
 
-                if all_interfaces_fenced:
-                    logger.debug("All interfaces have had their security groups successfully modified - considering instance fenced")
-                    return True
+            if all_interfaces_fenced:
+                logger.debug("All interfaces have had their security groups successfully modified - considering instance fenced")
+                return True
     except Exception as e:
         logger.debug("Failed to check security group modifications: %s", e)
     return False
@@ -86,6 +86,81 @@ def get_power_status(conn, options):
     try:
         instance_id = options["--plug"]
         ec2_client = conn.meta.client
+
+        # First check if the instance is in stopping or stopped state
+        try:
+            state, _, _ = get_instance_details(ec2_client, instance_id)
+            logger.info(f"Current instance state: {state}")
+            if state in ["stopping", "stopped"] and "--ignore-instance-state" not in options:
+                logger.info(f"Instance {instance_id} is in '{state}' state - returning 'off'")
+                return "off"
+        except Exception as e:
+            logger.error(f"Error checking instance state: {e}")
+            # Continue with normal flow if we can't check instance state
+
+        # Check if any interface options are present - if so, bypass tag logic completely
+        interface_sg_present = False
+        for i in range(16):
+            if options.get(f"--interface{i}-sg") or options.get(f"interface{i}-sg"):
+                interface_sg_present = True
+                break
+        
+        if interface_sg_present:
+            logger.info(f"Interface security group options detected - bypassing tag logic for status check")
+            
+            # Special handling for action=off with interface options
+            # For OFF action, we need to check if the security groups have been modified according to --secg option
+            if options.get("--action") == "off":
+                sg_to_remove = options.get("--secg", "").split(",") if options.get("--secg") else []
+                if sg_to_remove:
+                    # Check if security groups have been modified according to --secg option
+                    if check_sg_modifications(ec2_client, instance_id, options):
+                        logger.info(f"Security groups have been modified according to --secg option - instance is considered fenced")
+                        return "off"
+                    else:
+                        logger.debug(f"Security groups have not been modified according to --secg option yet")
+            
+            # Special handling for action=on with interface options
+            # For ON action, we need to check if the security groups match the interface options
+            elif options.get("--action") == "on":
+                # Check if the current security groups match the desired security groups
+                # If they don't match, return "off" to force the fence_action function to call set_power_status
+                try:
+                    _, _, interfaces = get_instance_details(ec2_client, instance_id)
+                    all_interfaces_match = True
+                    any_interface_option = False
+                    
+                    for idx, interface in enumerate(interfaces):
+                        opt_key1 = f"interface{idx}-sg"
+                        opt_key2 = f"--interface{idx}-sg"
+                        
+                        if opt_key1 in options and options[opt_key1]:
+                            desired_sgs = [sg.strip() for sg in options[opt_key1].split(",") if sg.strip()]
+                            any_interface_option = True
+                        elif opt_key2 in options and options[opt_key2]:
+                            desired_sgs = [sg.strip() for sg in options[opt_key2].split(",") if sg.strip()]
+                            any_interface_option = True
+                        else:
+                            continue
+                            
+                        current_sgs = interface["SecurityGroups"]
+                        if sorted(current_sgs) != sorted(desired_sgs):
+                            logger.info(f"Interface {interface['NetworkInterfaceId']} security groups don't match desired state - need to apply interface options")
+                            all_interfaces_match = False
+                            break
+                    
+                    if all_interfaces_match and any_interface_option:
+                        logger.info(f"All interfaces already have desired security groups from interface options")
+                        return "on"
+                    elif any_interface_option:
+                        # Return "off" to force the fence_action function to call set_power_status
+                        logger.info(f"Need to apply interface options to set security groups")
+                        return "off"
+                except Exception as e:
+                    logger.debug(f"Error checking interface security groups: {e}")
+            
+            # For other cases or if we couldn't verify SG changes, return "on" to allow operation to proceed
+            return "on"
 
         # Get the lastfence tag first
         lastfence_response = ec2_client.describe_tags(
@@ -346,7 +421,7 @@ def create_backup_tag(ec2_client, instance_id, interfaces, timestamp):
         raise
 
 
-def modify_security_groups(ec2_client, instance_id, sg_list, timestamp, mode="remove", options=None):
+def modify_security_groups(ec2_client, instance_id, sg_list, timestamp, mode="remove", options=None, skip_tags=False):
     """
     Modifies security groups on network interfaces based on the specified mode.
     In 'remove' mode: Removes all SGs in sg_list from each interface
@@ -358,6 +433,7 @@ def modify_security_groups(ec2_client, instance_id, sg_list, timestamp, mode="re
         sg_list: List of security group IDs to remove or keep
         timestamp: Unix timestamp for backup tag
         mode: Either "remove" or "keep_only" to determine operation mode
+        skip_tags: If True, skip creating backup tags and lastfence tag
 
     Raises:
         ClientError: If AWS API calls fail
@@ -367,25 +443,28 @@ def modify_security_groups(ec2_client, instance_id, sg_list, timestamp, mode="re
         # Get instance details
         state, _, interfaces = get_instance_details(ec2_client, instance_id)
 
-        # Create a backup tag before making any changes
-        try:
-            create_backup_tag(ec2_client, instance_id, interfaces, timestamp)
+        # Create a backup tag before making any changes (unless skip_tags is True)
+        if not skip_tags:
             try:
-                set_lastfence_tag(ec2_client, instance_id, timestamp)
+                create_backup_tag(ec2_client, instance_id, interfaces, timestamp)
+                try:
+                    set_lastfence_tag(ec2_client, instance_id, timestamp)
+                except Exception as e:
+                    if "--ignore-tag-write-failure" in options:
+                        logger.warning(f"Failed to set lastfence tag but continuing due to --ignore-tag-write-failure: {str(e)}")
+                        logger.info("Will rely on security group state for fencing status")
+                    else:
+                        logger.error(f"Failed to set lastfence tag: {str(e)}")
+                        raise
             except Exception as e:
                 if "--ignore-tag-write-failure" in options:
-                    logger.warning(f"Failed to set lastfence tag but continuing due to --ignore-tag-write-failure: {str(e)}")
+                    logger.warning(f"Failed to create backup tag but continuing due to --ignore-tag-write-failure: {str(e)}")
                     logger.info("Will rely on security group state for fencing status")
                 else:
-                    logger.error(f"Failed to set lastfence tag: {str(e)}")
+                    logger.error(f"Failed to create backup tag: {str(e)}")
                     raise
-        except Exception as e:
-            if "--ignore-tag-write-failure" in options:
-                logger.warning(f"Failed to create backup tag but continuing due to --ignore-tag-write-failure: {str(e)}")
-                logger.info("Will rely on security group state for fencing status")
-            else:
-                logger.error(f"Failed to create backup tag: {str(e)}")
-                raise
+        else:
+            logger.info("Skipping tag creation as interface options are specified")
 
         changed_any = False
         for interface in interfaces:
@@ -643,27 +722,11 @@ def restore_security_groups(ec2_client, instance_id):
 
 # Shutdown instance
 def shutdown_instance(ec2_client, instance_id):
-    """Shutdown the instance and confirm the state transition."""
+    """Initiate shutdown of the instance without waiting for state transition."""
     try:
         logger.info(f"Initiating shutdown for instance {instance_id}...")
         ec2_client.stop_instances(InstanceIds=[instance_id], Force=True)
-
-        while True:
-            try:
-                state, _, _ = get_instance_details(ec2_client, instance_id)
-                logger.info(f"Current instance state: {state}")
-                if state == "stopping":
-                    logger.info(
-                        f"Instance {instance_id} is transitioning to 'stopping'. Proceeding without waiting further."
-                    )
-                    break
-            except ClientError as e:
-                logger.error(f"Failed to get instance state during shutdown: {str(e)}")
-                fail_usage(f"AWS API error while checking instance state: {str(e)}")
-            except Exception as e:
-                logger.error(f"Unexpected error while checking instance state: {str(e)}")
-                fail_usage(f"Failed to check instance state: {str(e)}")
-
+        logger.info(f"Shutdown initiated for instance {instance_id}. Status checking will be handled by get_power_status.")
     except ClientError as e:
         logger.error(f"AWS API error during instance shutdown: {str(e)}")
         fail_usage(f"Failed to shutdown instance: {str(e)}")
@@ -711,6 +774,195 @@ def set_lastfence_tag(ec2_client, instance_id, timestamp):
         logger.error(f"Failed to set lastfence tag: {str(e)}")
         raise
 
+def restore_security_groups_from_options(ec2_client, instance_id, options):
+    """
+    Restore security groups for each interface using interface{i}-sg options.
+    Bypasses tag logic entirely.
+    
+    The interface{i}-sg option defines a network interface and a list of AWS security groups
+    to be applied. When this option is used, all the tag logic is ignored.
+    
+    IMPORTANT: When action=on, all interfaces must have corresponding interface{i}-sg options.
+    If any interface is missing an option, the function will error out.
+    
+    Up to 16 interfaces per EC2 node can be configured (i from 0 to 15).
+    """
+    try:
+        logger.info(f"Using direct interface security group options for instance {instance_id} (bypassing all tag logic)")
+        
+        # Get current interfaces
+        _, _, interfaces = get_instance_details(ec2_client, instance_id)
+        changed_any = False
+        modified_interfaces = []
+        
+        # First, log all interfaces and their current security groups
+        logger.info(f"Instance {instance_id} has {len(interfaces)} network interfaces:")
+        for idx, interface in enumerate(interfaces):
+            logger.info(f"  Interface {idx}: {interface['NetworkInterfaceId']} with SGs: {interface['SecurityGroups']}")
+        
+        # Log which interfaces have corresponding interface options
+        interface_options_found = []
+        for i in range(16):
+            opt_key1 = f"interface{i}-sg"
+            opt_key2 = f"--interface{i}-sg"
+            if opt_key1 in options and options[opt_key1]:
+                interface_options_found.append((i, opt_key1, options[opt_key1]))
+            elif opt_key2 in options and options[opt_key2]:
+                interface_options_found.append((i, opt_key2, options[opt_key2]))
+        
+        logger.info(f"Found {len(interface_options_found)} interface options:")
+        for i, key, value in interface_options_found:
+            logger.info(f"  {key}={value}")
+            
+        # When action=on, check that all interfaces have corresponding options
+        if options.get("--action") == "on":
+            missing_interfaces = []
+            for idx, interface in enumerate(interfaces):
+                opt_key1 = f"interface{idx}-sg"
+                opt_key2 = f"--interface{idx}-sg"
+                
+                if (opt_key1 not in options or not options[opt_key1]) and (opt_key2 not in options or not options[opt_key2]):
+                    missing_interfaces.append((idx, interface["NetworkInterfaceId"]))
+            
+            if missing_interfaces:
+                error_msg = f"ERROR: When action=on, all interfaces must have corresponding interface options.\n"
+                error_msg += f"The following interfaces are missing options:\n"
+                for idx, interface_id in missing_interfaces:
+                    error_msg += f"  Interface {idx}: {interface_id}\n"
+                error_msg += f"Please define security groups for all interfaces using the interface{{i}}-sg option."
+                
+                logger.error(error_msg)
+                fail_usage(error_msg)
+        
+        # Map interface index to network interface
+        for idx, interface in enumerate(interfaces):
+            # Check for both with and without -- prefix
+            opt_key1 = f"interface{idx}-sg"
+            opt_key2 = f"--interface{idx}-sg"
+            
+            if opt_key1 in options and options[opt_key1]:
+                sg_list = [sg.strip() for sg in options[opt_key1].split(",") if sg.strip()]
+                logger.info(f"Found {opt_key1}={options[opt_key1]} for interface {interface['NetworkInterfaceId']}")
+            elif opt_key2 in options and options[opt_key2]:
+                sg_list = [sg.strip() for sg in options[opt_key2].split(",") if sg.strip()]
+                logger.info(f"Found {opt_key2}={options[opt_key2]} for interface {interface['NetworkInterfaceId']}")
+            else:
+                logger.info(f"No interface option found for interface {idx}: {interface['NetworkInterfaceId']} - leaving unchanged")
+                continue
+            
+            # Process the security group list
+            if not sg_list:
+                logger.warning(f"Empty security group list for interface {interface['NetworkInterfaceId']} - skipping")
+                continue
+                
+            current_sgs = interface["SecurityGroups"]
+            if sorted(current_sgs) == sorted(sg_list):
+                logger.info(f"Interface {interface['NetworkInterfaceId']} already has desired SGs {sg_list}, skipping.")
+                continue
+                
+            logger.info(f"Setting interface {interface['NetworkInterfaceId']} SGs from {current_sgs} to {sg_list} (bypassing tag logic)")
+            
+            # Attempt to modify security groups with retries
+            max_retries = 3
+            retry_delay = 2
+            success = False
+            
+            for attempt in range(max_retries):
+                try:
+                    # Modify the security groups
+                    ec2_client.modify_network_interface_attribute(
+                        NetworkInterfaceId=interface["NetworkInterfaceId"],
+                        Groups=sg_list
+                    )
+                    
+                    # Wait for changes to propagate
+                    logger.info(f"Waiting for security group changes to propagate for interface {interface['NetworkInterfaceId']} (attempt {attempt+1}/{max_retries})")
+                    time.sleep(retry_delay)
+                    
+                    # Verify the changes were applied
+                    response = ec2_client.describe_network_interfaces(
+                        NetworkInterfaceIds=[interface["NetworkInterfaceId"]]
+                    )
+                    
+                    if not response.get("NetworkInterfaces"):
+                        logger.warning(f"Could not verify security group changes - no interface data returned (attempt {attempt+1}/{max_retries})")
+                        time.sleep(retry_delay)
+                        continue
+                        
+                    updated_sgs = [sg["GroupId"] for sg in response["NetworkInterfaces"][0].get("Groups", [])]
+                    
+                    if sorted(updated_sgs) == sorted(sg_list):
+                        logger.info(f"Successfully verified security group changes for interface {interface['NetworkInterfaceId']}")
+                        success = True
+                        changed_any = True
+                        modified_interfaces.append(interface["NetworkInterfaceId"])
+                        break
+                    else:
+                        logger.warning(
+                            f"Security group changes not fully applied for interface {interface['NetworkInterfaceId']} "
+                            f"(attempt {attempt+1}/{max_retries}). Expected: {sorted(sg_list)}, Got: {sorted(updated_sgs)}"
+                        )
+                        time.sleep(retry_delay * (attempt + 1))  # Exponential backoff
+                        
+                except ClientError as e:
+                    logger.error(
+                        f"Failed to set security groups for interface "
+                        f"{interface['NetworkInterfaceId']} (attempt {attempt+1}/{max_retries}): {str(e)}"
+                    )
+                    time.sleep(retry_delay * (attempt + 1))  # Exponential backoff
+            
+            if not success:
+                logger.error(f"Failed to apply security group changes to interface {interface['NetworkInterfaceId']} after {max_retries} attempts")
+                
+        if changed_any:
+            logger.info(f"Successfully modified security groups for instance {instance_id} using interface options")
+            logger.info(f"Modified interfaces: {modified_interfaces}")
+            
+            # Final verification of all modified interfaces
+            logger.info("Performing final verification of all modified interfaces")
+            time.sleep(5)  # Allow time for AWS to fully commit all changes
+            
+            # Get updated interface information
+            _, _, updated_interfaces = get_instance_details(ec2_client, instance_id)
+            
+            # Verify each modified interface
+            verification_failed = False
+            for interface in updated_interfaces:
+                if interface["NetworkInterfaceId"] in modified_interfaces:
+                    interface_idx = next((idx for idx, iface in enumerate(interfaces) 
+                                         if iface["NetworkInterfaceId"] == interface["NetworkInterfaceId"]), None)
+                    
+                    if interface_idx is not None:
+                        opt_key1 = f"interface{interface_idx}-sg"
+                        opt_key2 = f"--interface{interface_idx}-sg"
+                        
+                        if opt_key1 in options and options[opt_key1]:
+                            expected_sgs = [sg.strip() for sg in options[opt_key1].split(",") if sg.strip()]
+                        elif opt_key2 in options and options[opt_key2]:
+                            expected_sgs = [sg.strip() for sg in options[opt_key2].split(",") if sg.strip()]
+                        else:
+                            continue
+                            
+                        current_sgs = interface["SecurityGroups"]
+                        if sorted(current_sgs) != sorted(expected_sgs):
+                            logger.error(
+                                f"Final verification failed for interface {interface['NetworkInterfaceId']}: "
+                                f"Expected SGs {sorted(expected_sgs)}, but found {sorted(current_sgs)}"
+                            )
+                            verification_failed = True
+                        else:
+                            logger.info(f"Final verification successful for interface {interface['NetworkInterfaceId']}")
+            
+            if verification_failed:
+                logger.error("Some interfaces failed final verification - security group changes may not be fully committed")
+            else:
+                logger.info("All security group changes successfully verified and committed")
+        else:
+            logger.warning(f"No security groups were modified for instance {instance_id} using interface options")
+    except Exception as e:
+        logger.error(f"Error in restore_security_groups_from_options: {str(e)}")
+        raise
+
 def set_power_status(conn, options):
     """Set power status of the instance."""
     timestamp = int(time.time())  # Unix timestamp
@@ -729,18 +981,33 @@ def set_power_status(conn, options):
         if options["--action"] == "off":
             instance_state, _, _ = get_instance_details(ec2_client, instance_id)
             if instance_state != "running":
-                fail_usage(f"Instance {instance_id} is not running. Exiting.")
+                if "--ignore-instance-state" not in options:
+                    fail_usage(f"Instance {instance_id} is not running. Exiting.")
 
-        if options["--action"] == "on":
+        # Check for interface options both with and without -- prefix
+        interface_sg_present = any([
+            options.get(f"--interface{i}-sg") or options.get(f"interface{i}-sg") for i in range(16)
+        ])
+        
+        # Handle different combinations of action and options
+        if options["--action"] == "on" and interface_sg_present:
+            # For ON action with interface options: set the security groups specified in interface options
+            logger.info("Action=ON with interface options: setting security groups from interface options")
+            restore_security_groups_from_options(ec2_client, instance_id, options)
+        elif options["--action"] == "on":
+            # Standard ON action without interface options: restore from tags
             if not "--unfence-ignore-restore" in options:
                 restore_security_groups(ec2_client, instance_id)
             else:
                 logger.info("Ignored Restoring security groups as --unfence-ignore-restore is set")
         elif options["--action"] == "off":
+            # For OFF action: always use --secg option regardless of whether interface options are present
             if sg_to_remove:
+                logger.info("Action=OFF: using --secg option to determine security groups")
                 mode = "keep_only" if "--invert-sg-removal" in options else "remove"
                 try:
-                    modify_security_groups(ec2_client, instance_id, sg_to_remove, timestamp, mode, options)
+                    # Skip tag creation when interface options are present
+                    modify_security_groups(ec2_client, instance_id, sg_to_remove, timestamp, mode, options, skip_tags=interface_sg_present)
                     if "--onfence-poweroff" in options:
                         shutdown_instance(ec2_client, instance_id)
                 except Exception as e:
@@ -757,15 +1024,33 @@ def set_power_status(conn, options):
                     else:
                         logger.error("Failed to set power status: %s", e)
                         fail(EC_STATUS)
+            elif interface_sg_present:
+                # If no --secg option but interface options are present, log a warning
+                logger.warning("Action=OFF with interface options but no --secg option: no security groups will be modified")
     except Exception as e:
         logger.error("Unexpected error in set_power_status: %s", e)
         fail(EC_STATUS)
+    
+    # Explicitly return True to indicate success
+    return True
 
 
 # Define fencing agent options
 def define_new_opts():
     all_opt["port"]["help"] = "-n, --plug=[id]                AWS Instance ID to perform action on "
     all_opt["port"]["shortdesc"] = "AWS Instance ID to perform action on "
+
+    # New options for static interface security group restoration
+    # Up to 16 interfaces per EC2 node
+    for i in range(16):
+        all_opt[f"interface{i}-sg"] = {
+            "getopt": ":",
+            "longopt": f"interface{i}-sg",
+            "help": f"--interface{i}-sg=[sg1,sg2,...]   Comma-separated list of Security Groups to restore for interface {i} (bypasses tag logic)",
+            "shortdesc": f"Security Groups to restore for interface {i} (bypasses tag logic)",
+            "required": "0",
+            "order": 13 + i,
+        }
 
     all_opt["region"] = {
         "getopt": "r:",
@@ -822,7 +1107,6 @@ def define_new_opts():
         "shortdesc": "Remove all security groups except specified..",
         "required": "0",
         "order": 8,
-
     }
     all_opt["filter"] = {
         "getopt": ":",
@@ -857,6 +1141,14 @@ def define_new_opts():
         "required": "0",
         "order": 12
     }
+    all_opt["ignore-instance-state"] = {
+        "getopt": "",
+        "longopt": "ignore-instance-state",
+        "help": "--ignore-instance-state         Fence regardless of what AWS returns re the power state of the instance, (this is a network fencing agent...)",
+        "shortdesc": "Fence regardless of AWS state",
+        "required": "0",
+        "order": 13
+    }
 
 
 def main():
@@ -875,8 +1167,13 @@ def main():
         "filter",
         "boto3_debug",
         "onfence-poweroff",
-        "ignore-tag-write-failure"
-]
+        "ignore-tag-write-failure",
+        "ignore-instance-state"
+    ]
+    
+    # Add interface{i}-sg options to device_opt
+    for i in range(16):
+        device_opt.append(f"interface{i}-sg")
 
     atexit.register(atexit_handler)
 
@@ -905,7 +1202,7 @@ def main():
     }
     show_docs(options, docs)
 
-    if "--onfence-poweroff" not in options and options.get("--action", "") == "reboot":
+    if options.get("--action", "") == "reboot":
         options["--action"] = "off"
 
     # Configure logging

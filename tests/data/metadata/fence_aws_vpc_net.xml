@@ -96,6 +96,176 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 		<content type="boolean"  />
 		<shortdesc lang="en">Continue to fence even if backup tag fails..</shortdesc>
 	</parameter>
+	<parameter name="ignore-instance-state" unique="0" required="0" deprecated="1">
+		<getopt mixed="--ignore-instance-state" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Fence regardless of AWS state</shortdesc>
+	</parameter>
+	<parameter name="ignore_instance_state" unique="0" required="0" obsoletes="ignore-instance-state">
+		<getopt mixed="--ignore-instance-state" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Fence regardless of AWS state</shortdesc>
+	</parameter>
+	<parameter name="interface0-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface0-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 0 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface0_sg" unique="0" required="0" obsoletes="interface0-sg">
+		<getopt mixed="--interface0-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 0 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface1-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface1-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 1 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface1_sg" unique="0" required="0" obsoletes="interface1-sg">
+		<getopt mixed="--interface1-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 1 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface2-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface2-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 2 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface2_sg" unique="0" required="0" obsoletes="interface2-sg">
+		<getopt mixed="--interface2-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 2 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface3-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface3-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 3 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface3_sg" unique="0" required="0" obsoletes="interface3-sg">
+		<getopt mixed="--interface3-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 3 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface4-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface4-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 4 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface4_sg" unique="0" required="0" obsoletes="interface4-sg">
+		<getopt mixed="--interface4-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 4 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface5-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface5-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 5 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface5_sg" unique="0" required="0" obsoletes="interface5-sg">
+		<getopt mixed="--interface5-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 5 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface6-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface6-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 6 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface6_sg" unique="0" required="0" obsoletes="interface6-sg">
+		<getopt mixed="--interface6-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 6 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface7-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface7-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 7 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface7_sg" unique="0" required="0" obsoletes="interface7-sg">
+		<getopt mixed="--interface7-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 7 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface8-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface8-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 8 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface8_sg" unique="0" required="0" obsoletes="interface8-sg">
+		<getopt mixed="--interface8-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 8 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface9-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface9-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 9 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface9_sg" unique="0" required="0" obsoletes="interface9-sg">
+		<getopt mixed="--interface9-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 9 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface10-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface10-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 10 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface10_sg" unique="0" required="0" obsoletes="interface10-sg">
+		<getopt mixed="--interface10-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 10 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface11-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface11-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 11 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface11_sg" unique="0" required="0" obsoletes="interface11-sg">
+		<getopt mixed="--interface11-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 11 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface12-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface12-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 12 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface12_sg" unique="0" required="0" obsoletes="interface12-sg">
+		<getopt mixed="--interface12-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 12 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface13-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface13-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 13 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface13_sg" unique="0" required="0" obsoletes="interface13-sg">
+		<getopt mixed="--interface13-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 13 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface14-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface14-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 14 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface14_sg" unique="0" required="0" obsoletes="interface14-sg">
+		<getopt mixed="--interface14-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 14 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface15-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface15-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 15 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface15_sg" unique="0" required="0" obsoletes="interface15-sg">
+		<getopt mixed="--interface15-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 15 (bypasses tag logic)</shortdesc>
+	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
 		<content type="boolean"  />

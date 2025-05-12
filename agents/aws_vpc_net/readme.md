@@ -14,44 +14,47 @@ classDiagram
         -options: dict
         +main()
         +define_new_opts()
-        +process_input()
-        +check_input()
+        +fence_action()
+    }
+
+    class PowerManagement {
         +get_power_status()
         +set_power_status()
+        +get_nodes_list()
+        +get_self_power_status()
     }
 
     class InstanceOperations {
         +get_instance_id()
         +get_instance_details()
         +shutdown_instance()
-        +get_nodes_list()
+        +check_sg_modifications()
     }
 
     class SecurityGroupOperations {
         +modify_security_groups()
-        +create_backup_tag()
         +restore_security_groups()
-        -validate_sg_changes()
+        +restore_security_groups_from_options()
     }
 
     class TagOperations {
         +set_lastfence_tag()
         +create_backup_tag()
-        +restore_from_backup()
-        -handle_chunked_tags()
     }
 
-    class LoggingManager {
-        +configure_logging()
-        +configure_boto3_logging()
-        +handle_debug_file()
+    class InputProcessing {
+        +process_input()
+        +check_input()
+        +run_delay()
+        +show_docs()
     }
 
-    FenceAWSVPCNet --> InstanceOperations
-    FenceAWSVPCNet --> SecurityGroupOperations
-    FenceAWSVPCNet --> TagOperations
-    FenceAWSVPCNet --> LoggingManager
+    FenceAWSVPCNet --> PowerManagement
+    FenceAWSVPCNet --> InputProcessing
+    PowerManagement --> InstanceOperations
+    PowerManagement --> SecurityGroupOperations
     SecurityGroupOperations --> TagOperations
+    SecurityGroupOperations --> InstanceOperations
 ```
 
 ## Sequence Diagrams
@@ -79,17 +82,22 @@ sequenceDiagram
     FenceAgent->>AWS: Get instance details
     AWS-->>FenceAgent: Instance details
 
-    alt Instance is running
-        FenceAgent->>SecurityGroups: Backup current security groups
-        SecurityGroups-->>FenceAgent: Backup created
+    alt Instance is running or ignore-instance-state set
+        alt interface options present
+            FenceAgent->>SecurityGroups: Modify security groups using interface options
+            SecurityGroups-->>FenceAgent: Groups modified
+        else
+            FenceAgent->>SecurityGroups: Backup current security groups
+            SecurityGroups-->>FenceAgent: Backup created
 
-        alt ignore-tag-write-failure not set
-            FenceAgent->>Tags: Create lastfence tag
-            Tags-->>FenceAgent: Tag created
+            alt ignore-tag-write-failure not set
+                FenceAgent->>Tags: Create lastfence tag
+                Tags-->>FenceAgent: Tag created
+            end
+
+            FenceAgent->>SecurityGroups: Modify security groups using --secg option
+            SecurityGroups-->>FenceAgent: Groups modified
         end
-
-        FenceAgent->>SecurityGroups: Modify security groups
-        SecurityGroups-->>FenceAgent: Groups modified
 
         opt onfence-poweroff enabled
             FenceAgent->>AWS: Initiate shutdown
@@ -97,7 +105,7 @@ sequenceDiagram
         end
 
         FenceAgent-->>Client: Success
-    else Instance not running
+    else Instance not running and ignore-instance-state not set
         FenceAgent-->>Client: Fail - Instance not running
     end
 ```
@@ -116,26 +124,32 @@ sequenceDiagram
     FenceAgent->>AWS: Validate AWS credentials
     AWS-->>FenceAgent: Credentials valid
 
-    alt unfence-ignore-restore not set
-        FenceAgent->>Tags: Get lastfence tag
-        Tags-->>FenceAgent: Lastfence tag
+    alt interface options present
+        FenceAgent->>SecurityGroups: Restore security groups using interface options
+        SecurityGroups-->>FenceAgent: Groups restored
+        FenceAgent-->>Client: Success
+    else interface options not present
+        alt unfence-ignore-restore not set
+            FenceAgent->>Tags: Get lastfence tag
+            Tags-->>FenceAgent: Lastfence tag
 
-        FenceAgent->>Tags: Get backup tags
-        Tags-->>FenceAgent: Backup tags
+            FenceAgent->>Tags: Get backup tags
+            Tags-->>FenceAgent: Backup tags
 
-        alt Valid backup found
-            FenceAgent->>SecurityGroups: Restore original security groups
-            SecurityGroups-->>FenceAgent: Groups restored
+            alt Valid backup found
+                FenceAgent->>SecurityGroups: Restore original security groups
+                SecurityGroups-->>FenceAgent: Groups restored
 
-            FenceAgent->>Tags: Cleanup backup tags
-            Tags-->>FenceAgent: Tags cleaned
+                FenceAgent->>Tags: Cleanup backup tags
+                Tags-->>FenceAgent: Tags cleaned
 
-            FenceAgent-->>Client: Success
-        else No valid backup
-            FenceAgent-->>Client: Fail - No valid backup found
+                FenceAgent-->>Client: Success
+            else No valid backup
+                FenceAgent-->>Client: Fail - No valid backup found
+            end
+        else unfence-ignore-restore set
+            FenceAgent-->>Client: Success - Restore skipped
         end
-    else
-        FenceAgent-->>Client: Success - Restore skipped
     end
 ```
 
