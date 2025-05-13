@@ -1,0 +1,366 @@
+<?xml version="1.0" ?>
+<resource-agent name="fence_aws_vpc_net" shortdesc="Fence agent for AWS (Amazon Web Services) Net" >
+<longdesc>fence_aws_vpc is a Network and Power Fencing agent for AWS VPC that works by manipulating security groups. It uses the boto3 library to connect to AWS.
+
+boto3 can be configured with AWS CLI or by creating ~/.aws/credentials.
+For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.html#configuration NOTE: If onfence-poweroff is set, the agent won't be able to power on the node again, it will have to be powered on manually or with other automation.</longdesc>
+<vendor-url>http://www.amazon.com</vendor-url>
+<parameters>
+	<parameter name="action" unique="0" required="1">
+		<getopt mixed="-o, --action=[action]" />
+		<content type="string" default="reboot"  />
+		<shortdesc lang="en">Fencing action</shortdesc>
+	</parameter>
+	<parameter name="plug" unique="0" required="1" obsoletes="port">
+		<getopt mixed="-n, --plug=[id]" />
+		<content type="string"  />
+		<shortdesc lang="en">AWS Instance ID to perform action on </shortdesc>
+	</parameter>
+	<parameter name="port" unique="0" required="1" deprecated="1">
+		<getopt mixed="-n, --plug=[id]" />
+		<content type="string"  />
+		<shortdesc lang="en">AWS Instance ID to perform action on </shortdesc>
+	</parameter>
+	<parameter name="region" unique="0" required="0">
+		<getopt mixed="-r, --region=[region]" />
+		<content type="string"  />
+		<shortdesc lang="en">AWS Region.</shortdesc>
+	</parameter>
+	<parameter name="access_key" unique="0" required="0">
+		<getopt mixed="-a, --access-key=[key]" />
+		<content type="string"  />
+		<shortdesc lang="en">AWS Access Key.</shortdesc>
+	</parameter>
+	<parameter name="secret_key" unique="0" required="0">
+		<getopt mixed="-s, --secret-key=[key]" />
+		<content type="string"  />
+		<shortdesc lang="en">AWS Secret Key.</shortdesc>
+	</parameter>
+	<parameter name="secg" unique="0" required="0">
+		<getopt mixed="--secg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to remove.</shortdesc>
+	</parameter>
+	<parameter name="skip_race_check" unique="0" required="0">
+		<getopt mixed="--skip-race-check" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Skip race condition check.</shortdesc>
+	</parameter>
+	<parameter name="invert-sg-removal" unique="0" required="0" deprecated="1">
+		<getopt mixed="--invert-sg-removal" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Remove all security groups except specified..</shortdesc>
+	</parameter>
+	<parameter name="invert_sg_removal" unique="0" required="0" obsoletes="invert-sg-removal">
+		<getopt mixed="--invert-sg-removal" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Remove all security groups except specified..</shortdesc>
+	</parameter>
+	<parameter name="unfence-ignore-restore" unique="0" required="0" deprecated="1">
+		<getopt mixed="--unfence-ignore-restore" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Remove all security groups except specified..</shortdesc>
+	</parameter>
+	<parameter name="unfence_ignore_restore" unique="0" required="0" obsoletes="unfence-ignore-restore">
+		<getopt mixed="--unfence-ignore-restore" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Remove all security groups except specified..</shortdesc>
+	</parameter>
+	<parameter name="filter" unique="0" required="0">
+		<getopt mixed="--filter=[key=value]" />
+		<content type="string"  />
+		<shortdesc lang="en">Filter for list-action</shortdesc>
+	</parameter>
+	<parameter name="boto3_debug" unique="0" required="0">
+		<getopt mixed="-b, --boto3_debug=[option]" />
+		<content type="string" default="False"  />
+		<shortdesc lang="en">Boto Lib debug</shortdesc>
+	</parameter>
+	<parameter name="onfence-poweroff" unique="0" required="0" deprecated="1">
+		<getopt mixed="--onfence-poweroff" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Power off the machine async..</shortdesc>
+	</parameter>
+	<parameter name="onfence_poweroff" unique="0" required="0" obsoletes="onfence-poweroff">
+		<getopt mixed="--onfence-poweroff" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Power off the machine async..</shortdesc>
+	</parameter>
+	<parameter name="ignore-tag-write-failure" unique="0" required="0" deprecated="1">
+		<getopt mixed="--ignore-tag-write-failure" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Continue to fence even if backup tag fails..</shortdesc>
+	</parameter>
+	<parameter name="ignore_tag_write_failure" unique="0" required="0" obsoletes="ignore-tag-write-failure">
+		<getopt mixed="--ignore-tag-write-failure" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Continue to fence even if backup tag fails..</shortdesc>
+	</parameter>
+	<parameter name="ignore-instance-state" unique="0" required="0" deprecated="1">
+		<getopt mixed="--ignore-instance-state" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Fence regardless of AWS state</shortdesc>
+	</parameter>
+	<parameter name="ignore_instance_state" unique="0" required="0" obsoletes="ignore-instance-state">
+		<getopt mixed="--ignore-instance-state" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Fence regardless of AWS state</shortdesc>
+	</parameter>
+	<parameter name="interface0-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface0-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 0 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface0_sg" unique="0" required="0" obsoletes="interface0-sg">
+		<getopt mixed="--interface0-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 0 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface1-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface1-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 1 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface1_sg" unique="0" required="0" obsoletes="interface1-sg">
+		<getopt mixed="--interface1-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 1 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface2-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface2-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 2 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface2_sg" unique="0" required="0" obsoletes="interface2-sg">
+		<getopt mixed="--interface2-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 2 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface3-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface3-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 3 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface3_sg" unique="0" required="0" obsoletes="interface3-sg">
+		<getopt mixed="--interface3-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 3 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface4-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface4-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 4 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface4_sg" unique="0" required="0" obsoletes="interface4-sg">
+		<getopt mixed="--interface4-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 4 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface5-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface5-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 5 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface5_sg" unique="0" required="0" obsoletes="interface5-sg">
+		<getopt mixed="--interface5-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 5 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface6-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface6-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 6 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface6_sg" unique="0" required="0" obsoletes="interface6-sg">
+		<getopt mixed="--interface6-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 6 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface7-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface7-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 7 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface7_sg" unique="0" required="0" obsoletes="interface7-sg">
+		<getopt mixed="--interface7-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 7 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface8-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface8-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 8 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface8_sg" unique="0" required="0" obsoletes="interface8-sg">
+		<getopt mixed="--interface8-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 8 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface9-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface9-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 9 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface9_sg" unique="0" required="0" obsoletes="interface9-sg">
+		<getopt mixed="--interface9-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 9 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface10-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface10-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 10 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface10_sg" unique="0" required="0" obsoletes="interface10-sg">
+		<getopt mixed="--interface10-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 10 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface11-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface11-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 11 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface11_sg" unique="0" required="0" obsoletes="interface11-sg">
+		<getopt mixed="--interface11-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 11 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface12-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface12-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 12 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface12_sg" unique="0" required="0" obsoletes="interface12-sg">
+		<getopt mixed="--interface12-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 12 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface13-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface13-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 13 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface13_sg" unique="0" required="0" obsoletes="interface13-sg">
+		<getopt mixed="--interface13-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 13 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface14-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface14-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 14 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface14_sg" unique="0" required="0" obsoletes="interface14-sg">
+		<getopt mixed="--interface14-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 14 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface15-sg" unique="0" required="0" deprecated="1">
+		<getopt mixed="--interface15-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 15 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="interface15_sg" unique="0" required="0" obsoletes="interface15-sg">
+		<getopt mixed="--interface15-sg=[sg1,sg2,...]" />
+		<content type="string"  />
+		<shortdesc lang="en">Security Groups to restore for interface 15 (bypasses tag logic)</shortdesc>
+	</parameter>
+	<parameter name="quiet" unique="0" required="0">
+		<getopt mixed="-q, --quiet" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Disable logging to stderr. Does not affect --verbose or --debug-file or logging to syslog.</shortdesc>
+	</parameter>
+	<parameter name="verbose" unique="0" required="0">
+		<getopt mixed="-v, --verbose" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Verbose mode. Multiple -v flags can be stacked on the command line (e.g., -vvv) to increase verbosity.</shortdesc>
+	</parameter>
+	<parameter name="verbose_level" unique="0" required="0">
+		<getopt mixed="--verbose-level" />
+		<content type="integer"  />
+		<shortdesc lang="en">Level of debugging detail in output. Defaults to the number of --verbose flags specified on the command line, or to 1 if verbose=1 in a stonith device configuration (i.e., on stdin).</shortdesc>
+	</parameter>
+	<parameter name="debug" unique="0" required="0" deprecated="1">
+		<getopt mixed="-D, --debug-file=[debugfile]" />
+		<content type="string"  />
+		<shortdesc lang="en">Write debug information to given file</shortdesc>
+	</parameter>
+	<parameter name="debug_file" unique="0" required="0" obsoletes="debug">
+		<getopt mixed="-D, --debug-file=[debugfile]" />
+		<shortdesc lang="en">Write debug information to given file</shortdesc>
+	</parameter>
+	<parameter name="version" unique="0" required="0">
+		<getopt mixed="-V, --version" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Display version information and exit</shortdesc>
+	</parameter>
+	<parameter name="help" unique="0" required="0">
+		<getopt mixed="-h, --help" />
+		<content type="boolean"  />
+		<shortdesc lang="en">Display help and exit</shortdesc>
+	</parameter>
+	<parameter name="plug_separator" unique="0" required="0">
+		<getopt mixed="--plug-separator=[char]" />
+		<content type="string" default=","  />
+		<shortdesc lang="en">Separator for plug parameter when specifying more than 1 plug</shortdesc>
+	</parameter>
+	<parameter name="separator" unique="0" required="0">
+		<getopt mixed="-C, --separator=[char]" />
+		<content type="string" default=","  />
+		<shortdesc lang="en">Separator for CSV created by 'list' operation</shortdesc>
+	</parameter>
+	<parameter name="delay" unique="0" required="0">
+		<getopt mixed="--delay=[seconds]" />
+		<content type="second" default="0"  />
+		<shortdesc lang="en">Wait X seconds before fencing is started</shortdesc>
+	</parameter>
+	<parameter name="disable_timeout" unique="0" required="0">
+		<getopt mixed="--disable-timeout=[true/false]" />
+		<content type="string"  />
+		<shortdesc lang="en">Disable timeout (true/false) (default: true when run from Pacemaker 2.0+)</shortdesc>
+	</parameter>
+	<parameter name="login_timeout" unique="0" required="0">
+		<getopt mixed="--login-timeout=[seconds]" />
+		<content type="second" default="5"  />
+		<shortdesc lang="en">Wait X seconds for cmd prompt after login</shortdesc>
+	</parameter>
+	<parameter name="power_timeout" unique="0" required="0">
+		<getopt mixed="--power-timeout=[seconds]" />
+		<content type="second" default="20"  />
+		<shortdesc lang="en">Test X seconds for status change after ON/OFF</shortdesc>
+	</parameter>
+	<parameter name="power_wait" unique="0" required="0">
+		<getopt mixed="--power-wait=[seconds]" />
+		<content type="second" default="0"  />
+		<shortdesc lang="en">Wait X seconds after issuing ON/OFF</shortdesc>
+	</parameter>
+	<parameter name="shell_timeout" unique="0" required="0">
+		<getopt mixed="--shell-timeout=[seconds]" />
+		<content type="second" default="3"  />
+		<shortdesc lang="en">Wait X seconds for cmd prompt after issuing command</shortdesc>
+	</parameter>
+	<parameter name="stonith_status_sleep" unique="0" required="0">
+		<getopt mixed="--stonith-status-sleep=[seconds]" />
+		<content type="second" default="1"  />
+		<shortdesc lang="en">Sleep X seconds between status calls during a STONITH action</shortdesc>
+	</parameter>
+	<parameter name="retry_on" unique="0" required="0">
+		<getopt mixed="--retry-on=[attempts]" />
+		<content type="integer" default="1"  />
+		<shortdesc lang="en">Count of attempts to retry power on</shortdesc>
+	</parameter>
+</parameters>
+<actions>
+	<action name="on" automatic="0"/>
+	<action name="off" />
+	<action name="reboot" />
+	<action name="status" />
+	<action name="list" />
+	<action name="list-status" />
+	<action name="monitor" />
+	<action name="metadata" />
+	<action name="manpage" />
+	<action name="validate-all" />
+</actions>
+</resource-agent>
