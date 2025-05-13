@@ -32,6 +32,13 @@ logger.setLevel(logging.INFO)
 logger.addHandler(SyslogLibHandler())
 logging.getLogger('botocore.vendored').propagate = False
 
+# DESIGN HEURISTIC:
+# The code follows a clear separation of concerns pattern:
+# - get_power_status: Should ONLY contain logic to READ the current state, never modify it
+# - set_power_status: Should contain the logic to CHANGE the state
+# This separation ensures that status checking operations are non-destructive and
+# state changes are explicitly handled in the appropriate function.
+
 status = {
     "running": "on",
     "stopped": "off",
@@ -81,7 +88,205 @@ def check_sg_modifications(ec2_client, instance_id, options):
         logger.debug("Failed to check security group modifications: %s", e)
     return False
 
+def is_instance_fenced(ec2_client, instance_id, options):
+    """
+    Determine if an instance is currently fenced based on security groups and tags.
+    This is a helper function for get_power_status that focuses on the actual state determination.
+    
+    Args:
+        ec2_client: The boto3 EC2 client
+        instance_id: The ID of the EC2 instance
+        options: Dictionary containing the fencing options
+        
+    Returns:
+        bool: True if the instance is fenced, False otherwise
+    """
+    try:
+        # Check if security groups have been modified according to options
+        if check_sg_modifications(ec2_client, instance_id, options):
+            logger.debug("Security groups have been modified according to options - instance is considered fenced")
+            return True
+            
+        # Get the lastfence tag
+        lastfence_response = ec2_client.describe_tags(
+            Filters=[
+                {"Name": "resource-id", "Values": [instance_id]},
+                {"Name": "key", "Values": ["lastfence"]}
+            ]
+        )
+        
+        # If no lastfence tag exists, instance is not fenced
+        if not lastfence_response["Tags"]:
+            logger.debug("No lastfence tag found for instance %s - instance is not fenced", instance_id)
+            return False
+            
+        lastfence_timestamp = lastfence_response["Tags"][0]["Value"]
+        
+        # Check for backup tags with pattern Original_SG_Backup_{instance_id}_*
+        response = ec2_client.describe_tags(
+            Filters=[
+                {"Name": "resource-id", "Values": [instance_id]},
+                {"Name": "key", "Values": [f"Original_SG_Backup_{instance_id}*"]}
+            ]
+        )
+        
+        # If no backup tags exist, instance is not fenced
+        if not response["Tags"]:
+            logger.debug("No backup tags found for instance %s - instance is not fenced", instance_id)
+            return False
+            
+        # Loop through backup tags to find matching timestamp
+        for tag in response["Tags"]:
+            try:
+                backup_data = json.loads(tag["Value"])
+                backup_timestamp = backup_data.get("t")  # Using shortened timestamp field
+                
+                if not backup_timestamp:
+                    logger.debug("No timestamp found in backup data for tag %s", tag["Key"])
+                    continue
+                    
+                # Validate timestamps match
+                if str(backup_timestamp) == str(lastfence_timestamp):
+                    logger.debug("Found matching backup tag %s - instance is fenced", tag["Key"])
+                    return True
+                    
+            except (json.JSONDecodeError, KeyError) as e:
+                logger.error(f"Failed to parse backup data for tag {tag['Key']}: {str(e)}")
+                continue
+                
+        logger.debug("No backup tags with matching timestamp found - instance is not fenced")
+        return False
+        
+    except Exception as e:
+        logger.error(f"Error checking if instance is fenced: {str(e)}")
+        return False
+
+def handle_interface_options_with_ignore_instance_state(ec2_client, instance_id, state, options):
+    """
+    Handle the special case for interface options with --ignore-instance-state flag.
+    This is a helper function for get_power_status that encapsulates the logic for this specific case.
+    
+    Args:
+        ec2_client: The boto3 EC2 client
+        instance_id: The ID of the EC2 instance
+        state: The current state of the instance
+        options: Dictionary containing the fencing options
+        
+    Returns:
+        str: "on" if the instance is not fenced, "off" if it's fenced
+    """
+    logger.debug(f"Interface security group options detected with --ignore-instance-state")
+    action = options.get("--action", "on")
+    
+    # Check if security groups match the desired state
+    sg_match = check_interface_sg_match(ec2_client, instance_id, options)
+    
+    if action == "on":  # Unfencing
+        if sg_match:
+            # For unfencing, if security groups match the desired state, the instance is considered "on"
+            logger.debug(f"Action=on: All interfaces have the desired security groups - instance is considered 'on'")
+            return "on"
+        else:
+            # For unfencing, if security groups don't match the desired state, the instance is considered "off"
+            logger.debug(f"Action=on: Security groups don't match desired state - instance is considered 'off'")
+            return "off"
+    else:  # Fencing (action=off)
+        if sg_match:
+            # For fencing, if security groups match the desired state, the instance is considered "off"
+            logger.debug(f"Action=off: All interfaces have the desired security groups - instance is considered 'off'")
+            return "off"
+        else:
+            # For fencing, if security groups don't match the desired state, the instance is considered "on"
+            logger.debug(f"Action=off: Security groups don't match desired state - instance is considered 'on'")
+            return "on"
+
+
+def check_interface_sg_match(ec2_client, instance_id, options):
+    """
+    Check if the current security groups match the desired security groups based on the action.
+    
+    For action=on (unfencing): Checks against interface{i}-sg options
+    For action=off (fencing): Checks against --secg option (with invert-sg-removal handling)
+    
+    Args:
+        ec2_client: The boto3 EC2 client
+        instance_id: The ID of the EC2 instance
+        options: Dictionary containing the fencing options
+        
+    Returns:
+        bool: True if all interfaces match their desired security groups, False otherwise
+    """
+    try:
+        _, _, interfaces = get_instance_details(ec2_client, instance_id)
+        action = options.get("--action", "on")
+        
+        # For action=off (fencing), check against --secg option
+        if action == "off":
+            sg_to_remove = options.get("--secg", "").split(",") if options.get("--secg") else []
+            if not sg_to_remove:
+                # If no --secg option, fall back to interface options check
+                logger.debug("No --secg option for fencing, falling back to interface options check")
+            else:
+                # Check if security groups have been modified according to --secg option
+                all_interfaces_fenced = True
+                for interface in interfaces:
+                    current_sgs = interface["SecurityGroups"]
+                    if "--invert-sg-removal" in options:
+                        # In keep_only mode, check if interface only has the specified groups
+                        if sorted(current_sgs) != sorted(sg_to_remove):
+                            logger.debug(f"Interface {interface['NetworkInterfaceId']} still has different security groups")
+                            all_interfaces_fenced = False
+                            break
+                    else:
+                        # In remove mode, check if specified groups were removed
+                        if any(sg in current_sgs for sg in sg_to_remove):
+                            logger.debug(f"Interface {interface['NetworkInterfaceId']} still has security groups that should be removed")
+                            all_interfaces_fenced = False
+                            break
+                
+                # For fencing, return True if all interfaces are fenced (opposite of unfencing logic)
+                return all_interfaces_fenced
+        
+        # For action=on (unfencing) or if no --secg option for fencing, check against interface options
+        all_interfaces_match = True
+        any_interface_option = False
+        
+        for idx, interface in enumerate(interfaces):
+            opt_key1 = f"interface{idx}-sg"
+            opt_key2 = f"--interface{idx}-sg"
+            
+            if opt_key1 in options and options[opt_key1]:
+                desired_sgs = [sg.strip() for sg in options[opt_key1].split(",") if sg.strip()]
+                any_interface_option = True
+            elif opt_key2 in options and options[opt_key2]:
+                desired_sgs = [sg.strip() for sg in options[opt_key2].split(",") if sg.strip()]
+                any_interface_option = True
+            else:
+                continue
+                
+            current_sgs = interface["SecurityGroups"]
+            if sorted(current_sgs) != sorted(desired_sgs):
+                logger.debug(f"Interface {interface['NetworkInterfaceId']} security groups don't match desired state")
+                all_interfaces_match = False
+                break
+        
+        return all_interfaces_match and any_interface_option
+    except Exception as e:
+        logger.error(f"Error checking interface security groups: {str(e)}")
+        return False
+
 def get_power_status(conn, options):
+    """
+    Get the power status of the instance.
+    This function ONLY determines the current state without making any changes.
+    
+    Args:
+        conn: The boto3 EC2 resource connection
+        options: Dictionary containing the fencing options
+        
+    Returns:
+        str: "on" if the instance is running and not fenced, "off" if it's stopped or fenced
+    """
     logger.debug("Starting status operation")
     try:
         instance_id = options["--plug"]
@@ -90,149 +295,29 @@ def get_power_status(conn, options):
         # First check if the instance is in stopping or stopped state
         try:
             state, _, _ = get_instance_details(ec2_client, instance_id)
-            logger.info(f"Current instance state: {state}")
-            if state in ["stopping", "stopped"] and "--ignore-instance-state" not in options:
-                logger.info(f"Instance {instance_id} is in '{state}' state - returning 'off'")
-                return "off"
+            logger.debug(f"Current instance state: {state}")
+            
+            # Check if any interface options are present
+            interface_sg_present = False
+            for i in range(16):
+                if options.get(f"--interface{i}-sg") or options.get(f"interface{i}-sg"):
+                    interface_sg_present = True
+                    break
+            
+            # Special handling for interface options with --ignore-instance-state
+            if interface_sg_present and "--ignore-instance-state" in options:
+                return handle_interface_options_with_ignore_instance_state(ec2_client, instance_id, state, options)
         except Exception as e:
             logger.error(f"Error checking instance state: {e}")
             # Continue with normal flow if we can't check instance state
-
-        # Check if any interface options are present - if so, bypass tag logic completely
-        interface_sg_present = False
-        for i in range(16):
-            if options.get(f"--interface{i}-sg") or options.get(f"interface{i}-sg"):
-                interface_sg_present = True
-                break
         
-        if interface_sg_present:
-            logger.info(f"Interface security group options detected - bypassing tag logic for status check")
-            
-            # Special handling for action=off with interface options
-            # For OFF action, we need to check if the security groups have been modified according to --secg option
-            if options.get("--action") == "off":
-                sg_to_remove = options.get("--secg", "").split(",") if options.get("--secg") else []
-                if sg_to_remove:
-                    # Check if security groups have been modified according to --secg option
-                    if check_sg_modifications(ec2_client, instance_id, options):
-                        logger.info(f"Security groups have been modified according to --secg option - instance is considered fenced")
-                        return "off"
-                    else:
-                        logger.debug(f"Security groups have not been modified according to --secg option yet")
-            
-            # Special handling for action=on with interface options
-            # For ON action, we need to check if the security groups match the interface options
-            elif options.get("--action") == "on":
-                # Check if the current security groups match the desired security groups
-                # If they don't match, return "off" to force the fence_action function to call set_power_status
-                try:
-                    _, _, interfaces = get_instance_details(ec2_client, instance_id)
-                    all_interfaces_match = True
-                    any_interface_option = False
-                    
-                    for idx, interface in enumerate(interfaces):
-                        opt_key1 = f"interface{idx}-sg"
-                        opt_key2 = f"--interface{idx}-sg"
-                        
-                        if opt_key1 in options and options[opt_key1]:
-                            desired_sgs = [sg.strip() for sg in options[opt_key1].split(",") if sg.strip()]
-                            any_interface_option = True
-                        elif opt_key2 in options and options[opt_key2]:
-                            desired_sgs = [sg.strip() for sg in options[opt_key2].split(",") if sg.strip()]
-                            any_interface_option = True
-                        else:
-                            continue
-                            
-                        current_sgs = interface["SecurityGroups"]
-                        if sorted(current_sgs) != sorted(desired_sgs):
-                            logger.info(f"Interface {interface['NetworkInterfaceId']} security groups don't match desired state - need to apply interface options")
-                            all_interfaces_match = False
-                            break
-                    
-                    if all_interfaces_match and any_interface_option:
-                        logger.info(f"All interfaces already have desired security groups from interface options")
-                        return "on"
-                    elif any_interface_option:
-                        # Return "off" to force the fence_action function to call set_power_status
-                        logger.info(f"Need to apply interface options to set security groups")
-                        return "off"
-                except Exception as e:
-                    logger.debug(f"Error checking interface security groups: {e}")
-            
-            # For other cases or if we couldn't verify SG changes, return "on" to allow operation to proceed
+        # For standard fencing, check if the instance is fenced
+        if is_instance_fenced(ec2_client, instance_id, options):
+            logger.debug(f"Instance {instance_id} is fenced - returning 'off'")
+            return "off"
+        else:
+            logger.debug(f"Instance {instance_id} is not fenced - returning 'on'")
             return "on"
-
-        # Get the lastfence tag first
-        lastfence_response = ec2_client.describe_tags(
-            Filters=[
-                {"Name": "resource-id", "Values": [instance_id]},
-                {"Name": "key", "Values": ["lastfence"]}
-            ]
-        )
-
-        # If --ignore-tag-write-failure is set, prioritize checking SG modifications
-        if "--ignore-tag-write-failure" in options:
-            logger.debug("--ignore-tag-write-failure is set, checking security group modifications first")
-            if check_sg_modifications(ec2_client, instance_id, options):
-                logger.info("All interfaces are properly fenced based on security group state, ignoring tag state")
-                return "off"
-            logger.debug("Not all interfaces are fenced, proceeding with tag checks")
-            # Only proceed with tag checks if we haven't determined state from SG modifications
-
-        try:
-            # If no lastfence tag exists, instance is not fenced
-            if not lastfence_response["Tags"]:
-                logger.debug("No lastfence tag found for instance %s - instance is not fenced", instance_id)
-                return "on"
-
-            lastfence_timestamp = lastfence_response["Tags"][0]["Value"]
-        except Exception as e:
-            if "--ignore-tag-write-failure" in options:
-                logger.warning(f"Failed to check lastfence tag but continuing due to ignore-tag-write-failure: {str(e)}")
-                # If we can't read tags but --ignore-tag-write-failure is set, rely on SG state
-                return "on"  # Default to "on" to allow fence operation to proceed
-            raise
-
-        # Check for backup tags with pattern Original_SG_Backup_{instance_id}_*
-        response = ec2_client.describe_tags(
-            Filters=[
-                {"Name": "resource-id", "Values": [instance_id]},
-                {"Name": "key", "Values": [f"Original_SG_Backup_{instance_id}*"]}
-            ]
-        )
-
-        # If no backup tags exist, instance is not fenced (unless --ignore-tag-write-failure handled above)
-        if not response["Tags"]:
-            logger.debug("No backup tags found for instance %s - instance is not fenced", instance_id)
-            return "on"
-
-        # Loop through backup tags to find matching timestamp
-        for tag in response["Tags"]:
-            try:
-                backup_data = json.loads(tag["Value"])
-                backup_timestamp = backup_data.get("t")  # Using shortened timestamp field
-
-                if not backup_timestamp:
-                    logger.debug("No timestamp found in backup data for tag %s", tag["Key"])
-                    continue
-
-                # Validate timestamps match
-                if str(backup_timestamp) == str(lastfence_timestamp):
-                    # Check if security groups were actually modified to confirm fencing
-                    if check_sg_modifications(ec2_client, instance_id, options):
-                        logger.debug("Found matching backup tag %s and verified all interfaces have SG changes - instance is fenced", tag["Key"])
-                        return "off"
-                    else:
-                        # If we can't verify SG changes but have matching tags, assume fenced for backward compatibility
-                        logger.debug("Found matching backup tag %s but couldn't verify SG changes - assuming instance is fenced", tag["Key"])
-                        return "off"
-
-            except (json.JSONDecodeError, KeyError) as e:
-                logger.error(f"Failed to parse backup data for tag {tag['Key']}: {str(e)}")
-                continue
-
-        logger.debug("No backup tags with matching timestamp found - instance is not fenced")
-        return "on"
 
     except ClientError:
         fail_usage("Failed: Incorrect Access Key or Secret Key.")
@@ -514,14 +599,37 @@ def modify_security_groups(ec2_client, instance_id, sg_list, timestamp, mode="re
                 logger.error(f"Malformed interface data: {str(e)}")
                 continue
 
-        # If we didn't modify anything, raise an error
+        # If we didn't modify anything, check if it's because the SGs were already in the desired state
         if not changed_any:
-            if mode == "remove":
-                error_msg = f"Security Groups {sg_list} not removed from any interface. Either not found, or removal left 0 SGs."
+            # Check if any interface has the security groups we're trying to modify
+            sg_found = False
+            for interface in interfaces:
+                current_sgs = interface["SecurityGroups"]
+                if mode == "remove":
+                    # In remove mode, check if any of the SGs to remove are present
+                    if any(sg in current_sgs for sg in sg_list):
+                        sg_found = True
+                        break
+                else:  # keep_only mode
+                    # In keep_only mode, check if the interface doesn't already have exactly these SGs
+                    if sorted(current_sgs) != sorted(sg_list):
+                        sg_found = True
+                        break
+            
+            if sg_found:
+                # SGs were found but couldn't be modified - this is an error
+                if mode == "remove":
+                    error_msg = f"Security Groups {sg_list} found but could not be removed from interfaces. Removal may have left 0 SGs."
+                else:
+                    error_msg = f"Security Groups {sg_list} could not be set on interfaces. No changes made."
+                logger.error(error_msg)
+                raise Exception("Failed to modify security groups: " + error_msg)
             else:
-                error_msg = f"Security Groups {sg_list} not found on any interface. No changes made."
-            logger.error(error_msg)
-            raise Exception("Failed to modify security groups: " + error_msg)
+                # SGs were not found - this is actually success (already in desired state)
+                if mode == "remove":
+                    logger.info(f"Security Groups {sg_list} not found on any interface. Instance is already fenced.")
+                else:
+                    logger.info(f"Interfaces already have the desired security groups. No changes needed.")
 
         # Wait a bit for changes to propagate
         time.sleep(5)
@@ -786,6 +894,9 @@ def restore_security_groups_from_options(ec2_client, instance_id, options):
     If any interface is missing an option, the function will error out.
     
     Up to 16 interfaces per EC2 node can be configured (i from 0 to 15).
+    
+    Returns:
+        bool: True if any security groups were modified, False otherwise
     """
     try:
         logger.info(f"Using direct interface security group options for instance {instance_id} (bypassing all tag logic)")
@@ -955,16 +1066,29 @@ def restore_security_groups_from_options(ec2_client, instance_id, options):
             
             if verification_failed:
                 logger.error("Some interfaces failed final verification - security group changes may not be fully committed")
+                return False
             else:
                 logger.info("All security group changes successfully verified and committed")
+                return True
         else:
             logger.warning(f"No security groups were modified for instance {instance_id} using interface options")
+            return False
     except Exception as e:
         logger.error(f"Error in restore_security_groups_from_options: {str(e)}")
         raise
 
 def set_power_status(conn, options):
-    """Set power status of the instance."""
+    """
+    Set power status of the instance.
+    This function contains all the logic to CHANGE the state based on the requested action.
+    
+    Args:
+        conn: The boto3 EC2 resource connection
+        options: Dictionary containing the fencing options
+        
+    Returns:
+        bool: True if the operation was successful
+    """
     timestamp = int(time.time())  # Unix timestamp
     ec2_client = conn.meta.client
     instance_id = options["--plug"]
@@ -977,11 +1101,16 @@ def set_power_status(conn, options):
             fail_usage("Self-fencing detected. Exiting.")
 
     try:
-        # Only verify instance is running for 'off' action
-        if options["--action"] == "off":
-            instance_state, _, _ = get_instance_details(ec2_client, instance_id)
-            if instance_state != "running":
-                if "--ignore-instance-state" not in options:
+        # Get instance details
+        instance_state, _, interfaces = get_instance_details(ec2_client, instance_id)
+        
+        # Log instance state and whether we're ignoring it
+        if instance_state != "running":
+            if "--ignore-instance-state" in options:
+                logger.info(f"Instance {instance_id} is in '{instance_state}' state but --ignore-instance-state is set, proceeding with fencing")
+            else:
+                # Only verify instance is running for 'off' action if --ignore-instance-state is not set
+                if options["--action"] == "off":
                     fail_usage(f"Instance {instance_id} is not running. Exiting.")
 
         # Check for interface options both with and without -- prefix
@@ -990,26 +1119,38 @@ def set_power_status(conn, options):
         ])
         
         # Handle different combinations of action and options
-        if options["--action"] == "on" and interface_sg_present:
-            # For ON action with interface options: set the security groups specified in interface options
-            logger.info("Action=ON with interface options: setting security groups from interface options")
-            restore_security_groups_from_options(ec2_client, instance_id, options)
-        elif options["--action"] == "on":
-            # Standard ON action without interface options: restore from tags
-            if not "--unfence-ignore-restore" in options:
-                restore_security_groups(ec2_client, instance_id)
+        if options["--action"] == "on":
+            logger.info(f"Executing ON action for instance {instance_id}")
+            
+            if interface_sg_present:
+                # For ON action with interface options: set the security groups specified in interface options
+                logger.info("Using interface options to set security groups")
+                restore_security_groups_from_options(ec2_client, instance_id, options)
             else:
-                logger.info("Ignored Restoring security groups as --unfence-ignore-restore is set")
+                # Standard ON action without interface options: restore from tags
+                if "--unfence-ignore-restore" in options:
+                    logger.info("Skipping security group restoration as --unfence-ignore-restore is set")
+                else:
+                    logger.info("Restoring security groups from backup tags")
+                    restore_security_groups(ec2_client, instance_id)
+                    
         elif options["--action"] == "off":
-            # For OFF action: always use --secg option regardless of whether interface options are present
+            logger.info(f"Executing OFF action for instance {instance_id}")
+            
+            # For OFF action with --secg option: modify security groups
             if sg_to_remove:
-                logger.info("Action=OFF: using --secg option to determine security groups")
+                logger.info(f"Using --secg option to modify security groups: {sg_to_remove}")
                 mode = "keep_only" if "--invert-sg-removal" in options else "remove"
+                
                 try:
                     # Skip tag creation when interface options are present
                     modify_security_groups(ec2_client, instance_id, sg_to_remove, timestamp, mode, options, skip_tags=interface_sg_present)
+                    
+                    # If onfence-poweroff is set, also shut down the instance
                     if "--onfence-poweroff" in options:
+                        logger.info("--onfence-poweroff is set, initiating instance shutdown")
                         shutdown_instance(ec2_client, instance_id)
+                        
                 except Exception as e:
                     if isinstance(e, ClientError):
                         logger.error("AWS API error: %s", e)
@@ -1025,8 +1166,30 @@ def set_power_status(conn, options):
                         logger.error("Failed to set power status: %s", e)
                         fail(EC_STATUS)
             elif interface_sg_present:
-                # If no --secg option but interface options are present, log a warning
-                logger.warning("Action=OFF with interface options but no --secg option: no security groups will be modified")
+                # If no --secg option but interface options are present, check if we need to apply interface options
+                logger.info("No --secg option provided with interface options")
+                
+                # Special handling for --ignore-instance-state flag
+                if "--ignore-instance-state" in options:
+                    logger.info("--ignore-instance-state flag detected with interface options - applying interface options regardless of instance state")
+                    success = restore_security_groups_from_options(ec2_client, instance_id, options)
+                    if not success:
+                        logger.error("Failed to apply interface security group options")
+                        fail(EC_STATUS)
+                # Normal flow without --ignore-instance-state
+                else:
+                    # Check if current security groups match desired state
+                    if not check_interface_sg_match(ec2_client, instance_id, options):
+                        logger.info("Current security groups don't match desired state, applying interface options")
+                        success = restore_security_groups_from_options(ec2_client, instance_id, options)
+                        if not success:
+                            logger.error("Failed to apply interface security group options")
+                            fail(EC_STATUS)
+                    else:
+                        logger.info("Current security groups already match desired state, no changes needed")
+            else:
+                logger.warning("No --secg option or interface options provided for OFF action, no changes will be made")
+                
     except Exception as e:
         logger.error("Unexpected error in set_power_status: %s", e)
         fail(EC_STATUS)
