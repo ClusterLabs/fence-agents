@@ -108,7 +108,7 @@ def define_new_opts():
 def virtctl_vm_action(conn, action, namespace, name, apiversion):
     path = '/apis/subresources.{api_version}/namespaces/{namespace}/virtualmachines/{name}/{action}'
     path = path.format(api_version=apiversion, namespace=namespace, name=name, action=action)
-    return conn.request('put', path, header_params={'accept': '*/*'})
+    return conn.request('put', path, header_params={'accept': '*/*'}, body={'gracePeriod': 0} if action == 'stop' else None)
 
 # Main agent method
 def main():

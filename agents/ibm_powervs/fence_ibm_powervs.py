@@ -35,6 +35,7 @@ def get_token(conn, options):
 							api_key = keys.get("apikey", "")
 					# data is text, return as is
 					except ValueError:
+						f.seek(0)
 						api_key = f.read().strip()
 			except FileNotFoundError:
 				logging.debug("Failed: Cannot open file {}".format(key_file))
