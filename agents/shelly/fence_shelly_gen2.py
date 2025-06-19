@@ -41,13 +41,9 @@ def set_power_status(conn, opt):
 
 # We use method here as the RPC procedure not HTTP method as all commands use POST
 def gen_payload(opt, method, output=None):
-	if "--sw_id" in opt:
-		sw_id = opt["--sw_id"]
-	else:
-		sw_id = 0
 	ret = {"id": 1,
 		   "method": method,
-		   "params": {"id": sw_id}}
+		   "params": {"id": opt["--plug"]}}
 	if output is not None:
 		ret["params"]["on"] = output
 	return ret
@@ -132,18 +128,7 @@ def main():
 		"notls",
 		"web",
 		"port",
-		"sw_id",
 	]
-
-	all_opt["sw_id"] = {
-		"getopt": ":",
-		"longopt": "sw-id",
-		"help": "--sw-id=[id]  Id of the Switch component instance",
-		"default": "0",
-		"required": "0",
-		"shortdesc": "The id of the Switch component instance",
-		"order": 2
-	}
 
 	atexit.register(atexit_handler)
 	all_opt["shell_timeout"]["default"] = "5"

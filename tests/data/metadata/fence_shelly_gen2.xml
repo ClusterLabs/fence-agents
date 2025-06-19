@@ -73,11 +73,6 @@
 		<content type="boolean"  />
 		<shortdesc lang="en">Use SSL connection with verifying certificate</shortdesc>
 	</parameter>
-	<parameter name="sw_id" unique="0" required="0">
-		<getopt mixed="--sw-id=[id]" />
-		<content type="string" default="0"  />
-		<shortdesc lang="en">The id of the Switch component instance</shortdesc>
-	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
 		<content type="boolean"  />
