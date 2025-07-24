@@ -120,9 +120,19 @@ def get_self_power_status(conn, instance_id):
 def set_power_status(conn, options):
 	my_instance = get_instance_id(options)
 	try:
+		if "--skip-os-shutdown" in options and options["--skip-os-shutdown"] == "on":
+			shutdown_option = {
+				"SkipOsShutdown": True,
+				"Force": True
+			}
+		else:
+			shutdown_option = {
+				"SkipOsShutdown": False,
+				"Force": True
+			}
 		if (options["--action"]=="off"):
 			if "--skip-race-check" in options or get_self_power_status(conn,my_instance) == "ok":
-				conn.instances.filter(InstanceIds=[options["--plug"]]).stop(Force=True)
+				conn.instances.filter(InstanceIds=[options["--plug"]]).stop(**shutdown_option)
 				logger.debug("Called StopInstance API call for %s", options["--plug"])
 			else:
 				logger.debug("Skipping fencing as instance is not in running status")
@@ -183,12 +193,21 @@ def define_new_opts():
 		"required": "0",
 		"order": 7
 	}
+	all_opt["skip_os_shutdown"] = {
+		"getopt": "k:",
+		"longopt": "skip-os-shutdown",
+		"help": "-k, --skip-os-shutdown=[on|off]    Uses SkipOsShutdown flag",
+		"shortdesc": "Use SkipOsShutdown flag to stop the EC2 instance",
+		"required": "0",
+		"default": "off",
+		"order": 8
+	}
 
 # Main agent method
 def main():
 	conn = None
 
-	device_opt = ["port", "no_password", "region", "access_key", "secret_key", "filter", "boto3_debug", "skip_race_check"]
+	device_opt = ["port", "no_password", "region", "access_key", "secret_key", "filter", "boto3_debug", "skip_race_check", "skip_os_shutdown"]
 
 	atexit.register(atexit_handler)
 

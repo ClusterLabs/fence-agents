@@ -51,6 +51,11 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 		<content type="boolean"  />
 		<shortdesc lang="en">Skip race condition check</shortdesc>
 	</parameter>
+	<parameter name="skip_os_shutdown" unique="0" required="0">
+		<getopt mixed="-k, --skip-os-shutdown=[on|off]" />
+		<content type="string" default="off"  />
+		<shortdesc lang="en">Use SkipOsShutdown flag to stop the EC2 instance</shortdesc>
+	</parameter>
 	<parameter name="quiet" unique="0" required="0">
 		<getopt mixed="-q, --quiet" />
 		<content type="boolean"  />
