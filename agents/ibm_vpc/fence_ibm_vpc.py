@@ -7,7 +7,7 @@ import atexit
 import hashlib
 sys.path.append("@FENCEAGENTSLIBDIR@")
 from fencing import *
-from fencing import fail, run_delay, EC_LOGIN_DENIED, EC_STATUS, EC_GENERIC_ERROR
+from fencing import fail, run_delay, EC_BAD_ARGS, EC_LOGIN_DENIED, EC_STATUS, EC_GENERIC_ERROR
 
 state = {
 	 "running": "on",
@@ -314,6 +314,27 @@ used with IBM Cloud VPC to fence virtual machines."""
 	## Fence operations
 	####
 	run_delay(options)
+
+	if options["--apikey"][0] == '@':
+		key_file = options["--apikey"][1:]
+		try:
+			# read the API key from a file
+			with open(key_file, "r") as f:
+				try:
+					keys = json.loads(f.read())
+					# data seems to be in json format
+					# return the value of the item with the key 'Apikey'
+					options["--apikey"] = keys.get("Apikey", "")
+					if not options["--apikey"]:
+						# backward compatibility: former key name was 'apikey'
+						options["--apikey"] = keys.get("apikey", "")
+				# data is text, return as is
+				except ValueError:
+					f.seek(0)
+					options["--apikey"] = f.read().strip()
+		except FileNotFoundError:
+			logging.error("Failed: Cannot open file {}".format(key_file))
+			sys.exit(EC_BAD_ARGS)
 
 	conn = connect(options)
 	atexit.register(disconnect, conn)
