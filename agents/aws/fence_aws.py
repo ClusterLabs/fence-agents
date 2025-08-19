@@ -12,7 +12,7 @@ from requests import HTTPError
 
 try:
 	import boto3
-	from botocore.exceptions import ConnectionError, ClientError, EndpointConnectionError, NoRegionError
+	from botocore.exceptions import ConnectionError, ClientError, EndpointConnectionError, NoRegionError, ParamValidationError
 except ImportError:
 	pass
 
@@ -120,14 +120,28 @@ def get_self_power_status(conn, instance_id):
 def set_power_status(conn, options):
 	my_instance = get_instance_id(options)
 	try:
+		if options.get("--skip-os-shutdown", "false").lower() in ["1", "yes", "on", "true"]:
+			shutdown_option = {
+				"SkipOsShutdown": True,
+				"Force": True
+			}
+		else:
+			shutdown_option = {
+				"SkipOsShutdown": False,
+				"Force": True
+			}
 		if (options["--action"]=="off"):
 			if "--skip-race-check" in options or get_self_power_status(conn,my_instance) == "ok":
-				conn.instances.filter(InstanceIds=[options["--plug"]]).stop(Force=True)
+				conn.instances.filter(InstanceIds=[options["--plug"]]).stop(**shutdown_option)
 				logger.debug("Called StopInstance API call for %s", options["--plug"])
 			else:
 				logger.debug("Skipping fencing as instance is not in running status")
 		elif (options["--action"]=="on"):
 			conn.instances.filter(InstanceIds=[options["--plug"]]).start()
+	except ParamValidationError:
+		if (options["--action"] == "off"):
+			logger.warning(f"SkipOsShutdown not supported with the current boto3 version {boto3.__version__} - falling back to graceful shutdown")
+			conn.instances.filter(InstanceIds=[options["--plug"]]).stop(Force=True)
 	except Exception as e:
 		logger.debug("Failed to power %s %s: %s", \
 				options["--action"], options["--plug"], e)
@@ -183,12 +197,21 @@ def define_new_opts():
 		"required": "0",
 		"order": 7
 	}
+	all_opt["skip_os_shutdown"] = {
+		"getopt" : ":",
+		"longopt" : "skip-os-shutdown",
+		"help" : "--skip-os-shutdown=[true|false]    Uses SkipOsShutdown flag",
+		"shortdesc" : "Use SkipOsShutdown flag to stop the EC2 instance",
+		"required" : "0",
+		"default" : "true",
+		"order" : 8
+	}
 
 # Main agent method
 def main():
 	conn = None
 
-	device_opt = ["port", "no_password", "region", "access_key", "secret_key", "filter", "boto3_debug", "skip_race_check"]
+	device_opt = ["port", "no_password", "region", "access_key", "secret_key", "filter", "boto3_debug", "skip_race_check", "skip_os_shutdown"]
 
 	atexit.register(atexit_handler)
 
