@@ -258,9 +258,10 @@ def define_new_opts():
 	all_opt["api-type"] = {
 		"getopt" : ":",
 		"longopt" : "api-type",
-		"help" : "--api-type=[public|private]          API-type: 'public' (default) or 'private'",
+		"help" : "--api-type=[private|public]          API-type: 'private' (default) or 'public'",
 		"required" : "0",
-		"shortdesc" : "API-type (public|private)",
+		"shortdesc" : "API-type (private|public)",
+		"default" : "private",
 		"order" : 0
 	}
 	all_opt["proxy"] = {
@@ -293,7 +294,6 @@ def main():
 	all_opt["power_timeout"]["default"] = "120"
 	all_opt["power_wait"]["default"] = "15"
 	all_opt["stonith_status_sleep"]["default"] = "10"
-	all_opt["api-type"]["default"] = "private"
 	all_opt["proxy"]["default"] = ""
 
 	options = check_input(device_opt, process_input(device_opt))

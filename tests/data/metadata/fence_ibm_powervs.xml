@@ -4,14 +4,14 @@
 <vendor-url>https://www.ibm.com</vendor-url>
 <parameters>
 	<parameter name="api-type" unique="0" required="0" deprecated="1">
-		<getopt mixed="--api-type=[public|private]" />
+		<getopt mixed="--api-type=[private|public]" />
 		<content type="string" default="private"  />
-		<shortdesc lang="en">API-type (public|private)</shortdesc>
+		<shortdesc lang="en">API-type (private|public)</shortdesc>
 	</parameter>
 	<parameter name="api_type" unique="0" required="0" obsoletes="api-type">
-		<getopt mixed="--api-type=[public|private]" />
+		<getopt mixed="--api-type=[private|public]" />
 		<content type="string" default="private"  />
-		<shortdesc lang="en">API-type (public|private)</shortdesc>
+		<shortdesc lang="en">API-type (private|public)</shortdesc>
 	</parameter>
 	<parameter name="crn" unique="0" required="1">
 		<getopt mixed="--crn=[crn]" />
