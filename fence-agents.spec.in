@@ -402,7 +402,9 @@ Requires: python3-azure-common
 Requires: python3-azure-identity
 Requires: python3-azure-mgmt-compute
 Requires: python3-azure-mgmt-network
+%if 0%{?rhel} && 0%{?rhel} < 10
 Requires: python3-msrestazure
+%endif
 %endif
 BuildArch: noarch
 Obsoletes: fence-agents < 3.1.13
