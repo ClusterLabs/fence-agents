@@ -10,7 +10,10 @@ from fencing import fail, fail_usage, run_delay, EC_STATUS, EC_FETCH_VM_UUID
 try:
     from kubernetes.client.exceptions import ApiException
 except ImportError:
-    logging.error("Couldn\'t import kubernetes.client.exceptions.ApiException - not found or not accessible")
+    try:
+        from kubernetes.client.rest import ApiException
+    except ImportError:
+        logging.error("Couldn\'t import kubernetes.client.exceptions.ApiException or kubernetes.client.rest.ApiException - not found or not accessible")
 
 def _get_namespace(options):
     from kubernetes import config
