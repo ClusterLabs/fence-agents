@@ -49,6 +49,7 @@ fence-agents-eaton-ssh \\
 fence-agents-ecloud \\
 fence-agents-emerson \\
 fence-agents-eps \\
+fence-agents-fence-recorder \\
 fence-agents-gce \\
 fence-agents-hds-cb \\
 fence-agents-hetzner-cloud \\
@@ -616,6 +617,20 @@ via the HTTP(s) protocol.
 %files eps
 %{_sbindir}/fence_eps*
 %{_mandir}/man8/fence_eps*.8*
+
+%package fence-recorder
+License: Apache-2.0
+Summary: Fence agent using request/response files
+Requires: fence-agents-common = %{version}-%{release}
+BuildArch: noarch
+%description fence-recorder
+Fence agent that coordinates fencing with external agent via a
+request/response file pattern. When Pacemaker decides to fence a node,
+this agent writes a fence request file and waits for an external
+coordinator to write a response file indicating success or failure.
+%files fence-recorder
+%{_sbindir}/fence_recorder
+%{_mandir}/man8/fence_recorder.8*
 
 %package gce
 License: GPL-2.0-or-later AND LGPL-2.0-or-later

@@ -1,0 +1,21 @@
+[Unit]
+Description=Fence Request Watcher - Companion service for fence_recorder
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /usr/local/bin/external_fence_watcher.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=fence-watcher
+
+# Environment variables (optional overrides)
+# These must match the --request-dir and --response-dir options used with fence_recorder
+#Environment="REQUEST_DIR=/var/run/fence_recorder/requests"
+#Environment="RESPONSE_DIR=/var/run/fence_recorder/responses"
+#Environment="POLL_INTERVAL=0.5"
+
+[Install]
+WantedBy=multi-user.target
