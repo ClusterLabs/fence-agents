@@ -148,9 +148,11 @@ def translate_status(instance_status):
 
 def get_nodes_list(conn, options):
 	result = {}
+	action = options["--action"] if "--action" in options else ""
 	plug = options["--plug"] if "--plug" in options else ""
 	zones = options["--zone"] if "--zone" in options else ""
 	filter = "name="+plug if plug != "" else ""
+        max_results = 1 if action == "monitor" else 500
 	if not zones:
 		zones = get_zone(conn, options, plug) if "--plugzonemap" not in options else options["--plugzonemap"][plug]
 	try:
@@ -158,7 +160,8 @@ def get_nodes_list(conn, options):
 			request = conn.instances().list(
 				project=options["--project"],
 				zone=zone,
-				filter=filter)
+				filter=filter,
+				maxResults=max_results)
 		while request is not None:
 			instanceList = retry_api_execute(options, request)
 			for instance in instanceList["items"]:
