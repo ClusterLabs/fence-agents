@@ -150,7 +150,7 @@ def get_nodes_list(conn, options):
 	result = {}
 	plug = options["--plug"] if "--plug" in options else ""
 	zones = options["--zone"] if "--zone" in options else ""
-	filter = "name="+port if port != "" else ""
+	filter = "name="+plug if plug != "" else ""
 	if not zones:
 		zones = get_zone(conn, options, plug) if "--plugzonemap" not in options else options["--plugzonemap"][plug]
 	try:
