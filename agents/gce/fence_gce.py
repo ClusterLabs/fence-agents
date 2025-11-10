@@ -163,6 +163,8 @@ def get_nodes_list(conn, options):
 				maxResults=max_results)
 		while request is not None:
 			instanceList = retry_api_execute(options, request)
+			if "items" not in instanceList:
+				break
 			for instance in instanceList["items"]:
 				result[instance["id"]] = (instance["name"], translate_status(instance["status"]))
 			request = conn.instances().list_next(previous_request=request, previous_response=instanceList)
