@@ -150,15 +150,24 @@ def get_nodes_list(conn, options):
 	result = {}
 	plug = options["--plug"] if "--plug" in options else ""
 	zones = options["--zone"] if "--zone" in options else ""
+	filter = "name="+plug if plug != "" else ""
+	max_results = 1 if options.get("--action") == "monitor" else 500
 	if not zones:
 		zones = get_zone(conn, options, plug) if "--plugzonemap" not in options else options["--plugzonemap"][plug]
 	try:
 		for zone in zones.split(","):
-			instanceList = retry_api_execute(options, conn.instances().list(
+			request = conn.instances().list(
 				project=options["--project"],
-				zone=zone))
+				zone=zone,
+				filter=filter,
+				maxResults=max_results)
+		while request is not None:
+			instanceList = retry_api_execute(options, request)
+			if "items" not in instanceList:
+				break
 			for instance in instanceList["items"]:
 				result[instance["id"]] = (instance["name"], translate_status(instance["status"]))
+			request = conn.instances().list_next(previous_request=request, previous_response=instanceList)
 	except Exception as err:
 		fail_fence_agent(options, "Failed: get_nodes_list: {}".format(str(err)))
 
