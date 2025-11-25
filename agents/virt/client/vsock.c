@@ -13,7 +13,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program; see the file COPYING.  If not, write to the
-  Free Software Foundation, Inc.,  675 Mass Ave, Cambridge, 
+  Free Software Foundation, Inc.,  675 Mass Ave, Cambridge,
   MA 02139, USA.
 */
 
@@ -163,7 +163,7 @@ vsock_fence_virt(fence_virt_args_t *args)
 			ret = sock_exchange(fd, args->net.auth, key, key_len,
 					    args->timeout);
 			break;
-		/* case AUTH_X509: 
+		/* case AUTH_X509:
 			return ssl_exchange(...); */
 		default:
 			dbg_printf(3, "Unknown auth type: %d\n", args->net.auth);

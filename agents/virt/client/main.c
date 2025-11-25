@@ -13,7 +13,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program; see the file COPYING.  If not, write to the
-  Free Software Foundation, Inc.,  675 Mass Ave, Cambridge, 
+  Free Software Foundation, Inc.,  675 Mass Ave, Cambridge,
   MA 02139, USA.
 */
 /*
@@ -95,16 +95,16 @@ main(int argc, char **argv)
 
 	args_finalize(&args);
 	dset(args.debug);
-	
-	if (args.debug > 0) 
+
+	if (args.debug > 0)
 		args_print(&args);
 
 	/* Additional validation here */
 	if (!args.domain && (args.op != FENCE_DEVSTATUS &&
 			     args.op != FENCE_HOSTLIST &&
 			     args.op != FENCE_METADATA)) {
-		printf("No domain specified!\n");
-		syslog(LOG_NOTICE, "No domain specified");
+		fprintf(stderr, "No domain specified!\n");
+		syslog(LOG_ERR, "No domain specified");
 		args.flags |= F_ERR;
 	}
 

@@ -13,7 +13,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program; see the file COPYING.  If not, write to the
-  Free Software Foundation, Inc.,  675 Mass Ave, Cambridge, 
+  Free Software Foundation, Inc.,  675 Mass Ave, Cambridge,
   MA 02139, USA.
 */
 
@@ -425,12 +425,12 @@ static struct arg_info _arg_info[] = {
 
 	{ '\xff', NULL, "self",
 	  NULL, 0, 0, "string", NULL,
-	  "Not user serviceable", 
+	  "Not user serviceable",
 	  NULL },
 
 	{ '\xff', NULL, "nodename",
 	  NULL, 0, 0, "string", NULL,
-	  "Not user serviceable", 
+	  "Not user serviceable",
 	  NULL },
 
 	{ 'd', "-d", "debug",
@@ -473,7 +473,7 @@ static struct arg_info _arg_info[] = {
 	  "Network interface name to listen on",
 	  assign_interface },
 
-	{ 'r', "-r <retrans>", "retrans", 
+	{ 'r', "-r <retrans>", "retrans",
 	  NULL, 0, 0, "string", "20",
 	  "Multicast retransmit time (in 1/10sec; default=20)",
 	  assign_retrans },
@@ -489,7 +489,7 @@ static struct arg_info _arg_info[] = {
 	  assign_auth },
 
 	{ 'k', "-k <file>", "key_file",
-	  NULL, 0, 0, "string", DEFAULT_KEY_FILE, 
+	  NULL, 0, 0, "string", DEFAULT_KEY_FILE,
 	  "Shared key file (default=" DEFAULT_KEY_FILE ")",
 	  assign_key },
 
@@ -541,12 +541,12 @@ static struct arg_info _arg_info[] = {
 
 	{ 'h', "-h", NULL,
 	  NULL, 0, 0, "boolean", "0",
- 	  "Help",
+	  "Help",
 	  assign_help },
 
 	{ '?', "-?", NULL,
 	  NULL, 0, 0, "boolean", "0",
- 	  "Help (alternate)", 
+	  "Help (alternate)",
 	  assign_help },
 
 	{ 'w', "-w <delay>", "delay",
@@ -556,7 +556,7 @@ static struct arg_info _arg_info[] = {
 
 	{ 'V', "-V", NULL,
 	  NULL, 0, 0, "boolean", "0",
- 	  "Display version and exit", 
+	  "Display version and exit",
 	  assign_version },
 
 	/* Terminator */
@@ -819,16 +819,16 @@ args_metadata(char *progname, const char *optstr)
 
 	printf("</parameters>\n");
 	printf("<actions>\n");
-	printf("\t<action name=\"null\" />\n");	
+	printf("\t<action name=\"null\" />\n");
 	printf("\t<action name=\"on\" />\n");
 	printf("\t<action name=\"off\" />\n");
 	printf("\t<action name=\"reboot\" />\n");
-	printf("\t<action name=\"metadata\" />\n");	
-	printf("\t<action name=\"status\" />\n");	
-	printf("\t<action name=\"monitor\" />\n");	
-	printf("\t<action name=\"list\" />\n");	
-	printf("\t<action name=\"list-status\" />\n");	
-	printf("\t<action name=\"validate-all\" />\n");	
+	printf("\t<action name=\"metadata\" />\n");
+	printf("\t<action name=\"status\" />\n");
+	printf("\t<action name=\"monitor\" />\n");
+	printf("\t<action name=\"list\" />\n");
+	printf("\t<action name=\"list-status\" />\n");
+	printf("\t<action name=\"validate-all\" />\n");
 	printf("</actions>\n");
 	printf("</resource-agent>\n");
 }
@@ -846,7 +846,7 @@ cleanup(char *line, size_t linelen)
 {
 	char *p;
 	int x;
-	
+
 	/* Remove leading whitespace. */
 	p = line;
 	for (x = 0; x < linelen; x++) {
@@ -887,7 +887,7 @@ eol:
 
 /**
   Parse args from stdin and assign to the specified args structure.
-  
+
   @param optstr		Command line option string in getopt(3) format
   @param args		Args structure to fill in.
  */
@@ -913,7 +913,7 @@ args_get_stdin(const char *optstr, fence_virt_args_t *args)
 		}
 
 		arg = find_arg_by_string(name);
-		if (!arg || (arg->opt != '\xff' && 
+		if (!arg || (arg->opt != '\xff' &&
 			     arg->opt != SCHEMA_COMPAT &&
 			     !strchr(optstr, arg->opt))) {
 			fprintf(stderr,
@@ -930,7 +930,7 @@ args_get_stdin(const char *optstr, fence_virt_args_t *args)
 
 /**
   Parse args from stdin and assign to the specified args structure.
-  
+
   @param optstr		Command line option string in getopt(3) format
   @param args		Args structure to fill in.
  */

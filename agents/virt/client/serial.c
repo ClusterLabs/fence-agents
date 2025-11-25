@@ -1,11 +1,11 @@
-/* 
+/*
  * Copyright (C) 2002-2003, 2009 Red Hat, Inc.
  *
  * License: GPLv2+
  *
  * Written by Lon Hohberger <lhh@redhat.com>
  *
- * Serial client for fence_virt (incomplete, but 
+ * Serial client for fence_virt (incomplete, but
  * a good start)
  *
  * Based on:
@@ -147,7 +147,7 @@ open_port(char *file, char *cspeed, char *cparam)
 		perror("tcsetattr");
 		close(fd);
 		return -1;
-	}                             
+	}
 
 	(void) tcflush(fd, TCIOFLUSH);
 
@@ -171,7 +171,7 @@ hangup(int fd, int delay)
 		perror("ioctl2");
 		return;
 	}
-	
+
 	usleep(delay);
 
 	bits |= (TIOCM_DTR | TIOCM_CTS | TIOCM_RTS | TIOCM_DSR | TIOCM_CD);
@@ -233,7 +233,7 @@ serial_fence_virt(fence_virt_args_t *args)
 			*flags = 0;
 			flags++;
 		}
-	
+
 		fd = open_port(args->serial.device, speed, flags);
 		if (fd == -1) {
 			perror("open_port");
@@ -264,9 +264,9 @@ serial_fence_virt(fence_virt_args_t *args)
 	gettimeofday(&tv, NULL);
 	req.seqno = (int)tv.tv_usec;
 
-	if (args->domain) 
+	if (args->domain)
 		strncpy((char *)req.domain, args->domain, sizeof(req.domain) - 1);
-	
+
 	tv.tv_sec = 3;
 	tv.tv_usec = 0;
 	swab_serial_req_t(&req);
