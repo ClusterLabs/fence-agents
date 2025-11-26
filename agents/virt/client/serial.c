@@ -100,7 +100,7 @@ char_to_flags(const char *param)
 			sb_f = CSTOPB;
 			break;
 		default:
-			printf("Fail: %c\n", param[x]);
+			fprintf(stderr, "Fail: %c\n", param[x]);
 			errno = EINVAL;
 			return -1;
 		}
@@ -251,7 +251,7 @@ serial_fence_virt(fence_virt_args_t *args)
 
 		if (fd < 0) {
 			perror("vmchannel connect");
-			printf("Failed to connect to %s:%d\n", args->serial.address,
+			fprintf(stderr, "Failed to connect to %s:%d\n", args->serial.address,
 			       args->net.port);
 			return -1;
 		}
@@ -276,7 +276,7 @@ serial_fence_virt(fence_virt_args_t *args)
 			close(fd);
 			return ret;
 		}
-		printf("Failed to send request\n");
+		fprintf(stderr, "Failed to send request\n");
 	}
 
 	tv.tv_sec = args->timeout;

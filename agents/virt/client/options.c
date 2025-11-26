@@ -83,7 +83,7 @@ assign_family(fence_virt_args_t *args, struct arg_info *arg,
 	} else if (!strcasecmp(value, "auto")) {
 		args->net.family = 0;
 	} else {
-		printf("Unsupported family: '%s'\n", value);
+		fprintf(stderr, "Unsupported family: '%s'\n", value);
 		args->flags |= F_ERR;
 	}
 }
@@ -134,7 +134,7 @@ assign_port(fence_virt_args_t *args, struct arg_info *arg, char *value)
 
 	ret = strtol(value, &p, 0);
 	if (ret <= 0 || ret >= 65536 || *p != '\0') {
-		printf("Invalid port: '%s'\n", value);
+		fprintf(stderr, "Invalid port: '%s'\n", value);
 		args->flags |= F_ERR;
 	} else
 		args->net.port = ret;
@@ -153,7 +153,7 @@ assign_cid(fence_virt_args_t *args, struct arg_info *arg, char *value)
 
 	ret = strtoul(value, &p, 0);
 	if (!p || *p != '\0' || ret < 2 || ret >= 0xffffffff) {
-		printf("Invalid CID: '%s'\n", value);
+		fprintf(stderr, "Invalid CID: '%s'\n", value);
 		args->flags |= F_ERR;
 	} else
 		args->net.cid = ret;
@@ -169,7 +169,7 @@ assign_interface(fence_virt_args_t *args, struct arg_info *arg, char *value)
 
 	ret = if_nametoindex(value);
 	if (ret <= 0) {
-		printf("Invalid interface: %s: %s\n", value, strerror(errno));
+		fprintf(stderr, "Invalid interface: %s: %s\n", value, strerror(errno));
 		args->net.ifindex = 0;
 	}
 
@@ -188,7 +188,7 @@ assign_retrans(fence_virt_args_t *args, struct arg_info *arg, char *value)
 
 	ret = strtol(value, &p, 0);
 	if (ret <= 0 || *p != '\0') {
-		printf("Invalid retransmit time: '%s'\n", value);
+		fprintf(stderr, "Invalid retransmit time: '%s'\n", value);
 		args->flags |= F_ERR;
 	} else
 		args->retr_time = ret;
@@ -209,7 +209,7 @@ assign_hash(fence_virt_args_t *args, struct arg_info *arg, char *value)
 	} else if (!strcasecmp(value, "sha512")) {
 		args->net.hash = HASH_SHA512;
 	} else {
-		printf("Unsupported hash: %s\n", value);
+		fprintf(stderr, "Unsupported hash: %s\n", value);
 		args->flags |= F_ERR;
 	}
 }
@@ -230,7 +230,7 @@ assign_auth(fence_virt_args_t *args, struct arg_info *arg, char *value)
 	} else if (!strcasecmp(value, "sha512")) {
 		args->net.auth = AUTH_SHA512;
 	} else {
-		printf("Unsupported auth type: %s\n", value);
+		fprintf(stderr, "Unsupported auth type: %s\n", value);
 		args->flags |= F_ERR;
 	}
 }
@@ -248,7 +248,7 @@ assign_key(fence_virt_args_t *args, struct arg_info *arg, char *value)
 	args->net.key_file = strdup(value);
 
 	if (stat(value, &st) == -1) {
-		printf("Invalid key file: '%s' (%s)\n", value,
+		fprintf(stderr, "Invalid key file: '%s' (%s)\n", value,
 		       strerror(errno));
 		args->flags |= F_ERR;
 	}
@@ -280,7 +280,7 @@ assign_op(fence_virt_args_t *args, struct arg_info *arg, char *value)
 	} else if (!strcasecmp(value, "validate-all")) {
 		args->op = FENCE_VALIDATEALL;
 	} else {
-		printf("Unsupported operation: %s\n", value);
+		fprintf(stderr, "Unsupported operation: %s\n", value);
 		args->flags |= F_ERR;
 	}
 }
@@ -310,7 +310,7 @@ static inline void
 assign_domain(fence_virt_args_t *args, struct arg_info *arg, char *value)
 {
 	if (args->domain) {
-		printf("Domain/UUID may not be specified more than once\n");
+		fprintf(stderr, "Domain/UUID may not be specified more than once\n");
 		args->flags |= F_ERR;
 		return;
 	}
@@ -321,13 +321,13 @@ assign_domain(fence_virt_args_t *args, struct arg_info *arg, char *value)
 	args->domain = strdup(value);
 
 	if (strlen(value) <= 0) {
-		printf("Invalid domain name\n");
+		fprintf(stderr, "Invalid domain name\n");
 		args->flags |= F_ERR;
 	}
 
 	if (strlen(value) >= MAX_DOMAINNAME_LENGTH) {
 		errno = ENAMETOOLONG;
-		printf("Invalid domain name: '%s' (%s)\n",
+		fprintf(stderr, "Invalid domain name: '%s' (%s)\n",
 		       value, strerror(errno));
 		args->flags |= F_ERR;
 	}
@@ -359,7 +359,7 @@ assign_timeout(fence_virt_args_t *args, struct arg_info *arg, char *value)
 
 	ret = strtol(value, &p, 0);
 	if (ret <= 0 || *p != '\0') {
-		printf("Invalid timeout: '%s'\n", value);
+		fprintf(stderr, "Invalid timeout: '%s'\n", value);
 		args->flags |= F_ERR;
 	} else
 		args->timeout = ret;
@@ -376,7 +376,7 @@ assign_delay(fence_virt_args_t *args, struct arg_info *arg, char *value)
 
 	ret = strtol(value, &p, 0);
 	if (ret < 0 || *p != '\0') {
-		printf("Invalid delay: '%s'\n", value);
+		fprintf(stderr, "Invalid delay: '%s'\n", value);
 		args->flags |= F_ERR;
 	} else
 		args->delay = ret;
@@ -979,7 +979,7 @@ args_finalize(fence_virt_args_t *args)
 		args->net.addr = addr;
 
 	if (!args->net.addr) {
-		printf("No multicast address available\n");
+		fprintf(stderr, "No multicast address available\n");
 		args->flags |= F_ERR;
 	}
 
@@ -994,7 +994,7 @@ args_finalize(fence_virt_args_t *args)
 	if (strchr(args->net.addr, '.'))
 		args->net.family = PF_INET;
 	if (!args->net.family) {
-		printf("Could not determine address family\n");
+		fprintf(stderr, "Could not determine address family\n");
 		args->flags |= F_ERR;
 	}
 }

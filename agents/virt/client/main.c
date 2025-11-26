@@ -167,28 +167,28 @@ main(int argc, char **argv)
 		break;
 	case RESP_FAIL:
 		if (args.domain) {
-			syslog(LOG_NOTICE, "Fence operation failed for domain \"%s\"",
+			syslog(LOG_ERR, "Fence operation failed for domain \"%s\"",
 				args.domain);
 		} else
-			syslog(LOG_NOTICE, "Fence operation failed");
-		printf("Operation failed\n");
+			syslog(LOG_ERR, "Fence operation failed");
+		fprintf(stderr, "Operation failed\n");
 		break;
 	case RESP_PERM:
 		if (args.domain) {
-			syslog(LOG_NOTICE,
+			syslog(LOG_ERR,
 				"Permission denied for Fence operation for domain \"%s\"",
 				args.domain);
 		} else
-			syslog(LOG_NOTICE, "Permission denied for fence operation");
-		printf("Permission denied\n");
+			syslog(LOG_ERR, "Permission denied for fence operation");
+		fprintf(stderr, "Permission denied\n");
 		break;
 	default:
 		if (args.domain) {
-			syslog(LOG_NOTICE, "Unknown response (%d) for domain \"%s\"",
+			syslog(LOG_ERR, "Unknown response (%d) for domain \"%s\"",
 				ret, args.domain);
 		} else
-			syslog(LOG_NOTICE, "Unknown response (%d)", ret);
-		printf("Unknown response (%d)\n", ret);
+			syslog(LOG_ERR, "Unknown response (%d)", ret);
+		fprintf(stderr, "Unknown response (%d)\n", ret);
 		break;
 	}
 

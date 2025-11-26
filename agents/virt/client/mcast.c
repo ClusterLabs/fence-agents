@@ -102,13 +102,13 @@ do_read_hostlist(int fd, int timeout)
 
 		ret = _select_retry(fd+1, &rfds, NULL, NULL, &tv);
 		if (ret == 0) {
-			printf("Timed out!\n");
+			fprintf(stderr, "Timed out!\n");
 			break;
 		}
 
 		ret = _read_retry(fd, &hinfo, sizeof(hinfo), &tv);
 		if (ret < sizeof(hinfo)) {
-			printf("Bad read!\n");
+			fprintf(stderr, "Bad read!\n");
 			break;
 		}
 
@@ -134,14 +134,14 @@ tcp_exchange(int fd, fence_auth_type_t auth, void *key,
 	dbg_printf(3, "Issuing TCP challenge\n");
 	if (sock_challenge(fd, auth, key, key_len, timeout) <= 0) {
 		/* Challenge failed */
-		printf("Invalid response to challenge\n");
+		fprintf(stderr, "Invalid response to challenge\n");
 		return 1;
 	}
 
 	/* Now they'll send us one, so we need to respond here */
 	dbg_printf(3, "Responding to TCP challenge\n");
 	if (sock_response(fd, auth, key, key_len, timeout) <= 0) {
-		printf("Invalid response to challenge\n");
+		fprintf(stderr, "Invalid response to challenge\n");
 		return 1;
 	}
 
@@ -277,14 +277,14 @@ mcast_fence_virt(fence_virt_args_t *args)
 	/* Initialize NSS; required to do hashing, as silly as that
 	   sounds... */
 	if (NSS_NoDB_Init(NULL) != SECSuccess) {
-		printf("Could not initialize NSS\n");
+		fprintf(stderr, "Could not initialize NSS\n");
 		return 1;
 	}
 
 	if (args->net.auth != AUTH_NONE || args->net.hash != HASH_NONE) {
 		key_len = read_key_file(args->net.key_file, key, sizeof(key));
 		if (key_len < 0) {
-			printf("Could not read %s; trying without "
+			fprintf(stderr, "Could not read %s; trying without "
 			       "authentication\n", args->net.key_file);
 			args->net.auth = AUTH_NONE;
 			args->net.hash = HASH_NONE;
@@ -294,7 +294,7 @@ mcast_fence_virt(fence_virt_args_t *args)
 
 	/* Do the real work */
 	if (ip_build_list(&ipl) < 0) {
-		printf("Error building IP address list\n");
+		fprintf(stderr, "Error building IP address list\n");
 		return 1;
 	}
 
@@ -320,7 +320,7 @@ mcast_fence_virt(fence_virt_args_t *args)
 		}
 
 		if (lfd < 0) {
-			printf("Failed to listen: %s\n", strerror(errno));
+			fprintf(stderr, "Failed to listen: %s\n", strerror(errno));
 			usleep(args->retr_time * 100000);
 			if (--attempts > 0)
 				goto listen_loop;
@@ -366,10 +366,10 @@ mcast_fence_virt(fence_virt_args_t *args)
 
 	if (fd < 0) {
 		if (attempts <= 0) {
-			printf("Timed out waiting for response\n");
+			fprintf(stderr, "Timed out waiting for response\n");
 			return 1;
 		}
-		printf("Operation failed: %s\n", strerror(errno));
+		fprintf(stderr, "Operation failed: %s\n", strerror(errno));
 		return -1;
 	}
 

@@ -53,14 +53,14 @@ tcp_exchange(int fd, fence_auth_type_t auth, void *key,
 	dbg_printf(3, "Issuing TCP challenge\n");
 	if (sock_challenge(fd, auth, key, key_len, timeout) <= 0) {
 		/* Challenge failed */
-		printf("Invalid response to challenge\n");
+		fprintf(stderr, "Invalid response to challenge\n");
 		return 1;
 	}
 
 	/* Now they'll send us one, so we need to respond here */
 	dbg_printf(3, "Responding to TCP challenge\n");
 	if (sock_response(fd, auth, key, key_len, timeout) <= 0) {
-		printf("Invalid response to challenge\n");
+		fprintf(stderr, "Invalid response to challenge\n");
 		return 1;
 	}
 
@@ -102,14 +102,14 @@ tcp_fence_virt(fence_virt_args_t *args)
 	/* Initialize NSS; required to do hashing, as silly as that
 	   sounds... */
 	if (NSS_NoDB_Init(NULL) != SECSuccess) {
-		printf("Could not initialize NSS\n");
+		fprintf(stderr, "Could not initialize NSS\n");
 		return 1;
 	}
 
 	if (args->net.auth != AUTH_NONE || args->net.hash != HASH_NONE) {
 		key_len = read_key_file(args->net.key_file, key, sizeof(key));
 		if (key_len < 0) {
-			printf("Could not read %s; trying without "
+			fprintf(stderr, "Could not read %s; trying without "
 			       "authentication\n", args->net.key_file);
 			args->net.auth = AUTH_NONE;
 			args->net.hash = HASH_NONE;
@@ -138,7 +138,7 @@ tcp_fence_virt(fence_virt_args_t *args)
 	}
 
 	if (fd < 0) {
-		printf("Unable to connect to fence_virtd host %s:%d %s\n",
+		fprintf(stderr, "Unable to connect to fence_virtd host %s:%d %s\n",
 			args->net.ipaddr, args->net.port, strerror(errno));
 		return 1;
 	}
