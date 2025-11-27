@@ -13,7 +13,7 @@
 
   You should have received a copy of the GNU General Public License
   along with this program; see the file COPYING.  If not, write to the
-  Free Software Foundation, Inc.,  675 Mass Ave, Cambridge, 
+  Free Software Foundation, Inc.,  675 Mass Ave, Cambridge,
   MA 02139, USA.
 */
 /*
@@ -95,16 +95,16 @@ main(int argc, char **argv)
 
 	args_finalize(&args);
 	dset(args.debug);
-	
-	if (args.debug > 0) 
+
+	if (args.debug > 0)
 		args_print(&args);
 
 	/* Additional validation here */
 	if (!args.domain && (args.op != FENCE_DEVSTATUS &&
 			     args.op != FENCE_HOSTLIST &&
 			     args.op != FENCE_METADATA)) {
-		printf("No domain specified!\n");
-		syslog(LOG_NOTICE, "No domain specified");
+		fprintf(stderr, "No domain specified!\n");
+		syslog(LOG_ERR, "No domain specified");
 		args.flags |= F_ERR;
 	}
 
@@ -167,28 +167,28 @@ main(int argc, char **argv)
 		break;
 	case RESP_FAIL:
 		if (args.domain) {
-			syslog(LOG_NOTICE, "Fence operation failed for domain \"%s\"",
+			syslog(LOG_ERR, "Fence operation failed for domain \"%s\"",
 				args.domain);
 		} else
-			syslog(LOG_NOTICE, "Fence operation failed");
-		printf("Operation failed\n");
+			syslog(LOG_ERR, "Fence operation failed");
+		fprintf(stderr, "Operation failed\n");
 		break;
 	case RESP_PERM:
 		if (args.domain) {
-			syslog(LOG_NOTICE,
+			syslog(LOG_ERR,
 				"Permission denied for Fence operation for domain \"%s\"",
 				args.domain);
 		} else
-			syslog(LOG_NOTICE, "Permission denied for fence operation");
-		printf("Permission denied\n");
+			syslog(LOG_ERR, "Permission denied for fence operation");
+		fprintf(stderr, "Permission denied\n");
 		break;
 	default:
 		if (args.domain) {
-			syslog(LOG_NOTICE, "Unknown response (%d) for domain \"%s\"",
+			syslog(LOG_ERR, "Unknown response (%d) for domain \"%s\"",
 				ret, args.domain);
 		} else
-			syslog(LOG_NOTICE, "Unknown response (%d)", ret);
-		printf("Unknown response (%d)\n", ret);
+			syslog(LOG_ERR, "Unknown response (%d)", ret);
+		fprintf(stderr, "Unknown response (%d)\n", ret);
 		break;
 	}
 
