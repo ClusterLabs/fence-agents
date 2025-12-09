@@ -133,7 +133,7 @@ def reset_dev(options, dev):
 
 def register_dev(options, dev, key, do_preempt=True):
 	dev = os.path.realpath(dev)
-	if re.search(r"^dm", dev[5:]):
+	if options.get("--mpath-register-method") == "multi" and re.search(r"^dm", dev[5:]):
 		devices = get_mpath_slaves(dev)
 		register_dev(options, devices[0], key)
 		for device in devices[1:]:
@@ -384,6 +384,15 @@ be removed from the device(s).",
 		"shortdesc" : "Use the APTPL flag for registrations. This option is only used for the 'on' action.",
 		"order": 1
 	}
+	all_opt["mpath_register_method"] = {
+		"getopt" : ":",
+		"longopt" : "mpath-register-method",
+		"help" : "--mpath-register-method=[multi|single]  Register key to all multipath sub devices (multi), or directly to the main multipath device (single).",
+		"required" : "0",
+		"shortdesc" : "Multipath register method (multi/single).",
+		"default": "multi",
+		"order": 3
+	}
 	all_opt["readonly"] = {
 		"getopt" : "",
 		"longopt" : "readonly",
@@ -523,8 +532,8 @@ def main():
 
 	device_opt = ["no_login", "no_password", "devices", "nodename", "port",\
 	"no_port", "key", "aptpl", "fabric_fencing", "on_target", "corosync_cmap_path",\
-	"sg_persist_path", "sg_turs_path", "readonly", "suppress-errors", "logfile", "vgs_path",\
-	"force_on", "key_value"]
+	"sg_persist_path", "sg_turs_path", "mpath_register_method", "readonly", \
+	"suppress-errors", "logfile", "vgs_path","force_on", "key_value"]
 
 	define_new_opts()
 
