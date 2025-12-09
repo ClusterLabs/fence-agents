@@ -55,7 +55,7 @@ struct domain_info {
 static int
 is_in_directory(const char *dir, const char *pathspec)
 {
-	char *last_slash = NULL;
+	const char *last_slash = NULL;
 	size_t dirlen, pathlen;
 
 	if (!dir || !pathspec)
