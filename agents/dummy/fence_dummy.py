@@ -17,11 +17,11 @@ from fencing import fail, fail_usage, run_delay
 plug_status = "on"
 
 # Defaults for recorder mode
-DEFAULT_REQUEST_DIR = "/var/run/fence_dummy/requests"
-DEFAULT_RESPONSE_DIR = "/var/run/fence_dummy/responses"
+DEFAULT_REQUEST_DIR = "@FENCETMPDIR@/fence_dummy/requests"
+DEFAULT_RESPONSE_DIR = "@FENCETMPDIR@/fence_dummy/responses"
 DEFAULT_RECORDER_TIMEOUT = 60
 DEFAULT_RECORDER_POLL_INTERVAL = 0.5
-DEFAULT_LOG_DIR = "/var/log/cluster"
+DEFAULT_LOG_DIR = "@LOGDIR@"
 
 def get_power_status_file(conn, options):
 	del conn
@@ -85,31 +85,35 @@ def get_outlets_fail(conn, options):
 	return result
 
 # Recorder mode logging functions
-def setup_logging(log_dir):
-	"""Initialize logging with the specified log directory (recorder mode only)"""
+def setup_recorder_logging(log_dir):
+	"""Initialize logging with the specified log directory (recorder mode only)
+	
+	Adds an additional file handler to log fence events to a separate file.
+	Keeps the default root logger format for pacemaker.log compatibility.
+	
+	Note: The root logger level must be set to INFO to allow INFO messages
+	through to handlers. fencing.py sets it to WARNING by default unless
+	--verbose is specified.
+	"""
 	os.makedirs(log_dir, exist_ok=True)
 	fence_log = os.path.join(log_dir, "fence-events.log")
 	
-	# Configure root logger
-	root_logger = logging.getLogger()
-	if root_logger.hasHandlers():
-		root_logger.handlers.clear()
+	# Add file handler for fence events (keeps existing root logger handlers)
+	file_handler = logging.FileHandler(fence_log)
+	file_handler.setLevel(logging.INFO)
+	file_handler.setFormatter(logging.Formatter('[%(asctime)s] [%(levelname)s] %(message)s', '%Y-%m-%d %H:%M:%S'))
 	
-	logging.basicConfig(
-		level=logging.INFO,
-		format='[%(asctime)s] [%(levelname)s] %(message)s',
-		datefmt='%Y-%m-%d %H:%M:%S',
-		handlers=[
-			logging.FileHandler(fence_log),
-			logging.StreamHandler(sys.stderr)
-		]
-	)
+	# Set root logger level to INFO to allow our INFO messages through
+	# (fencing.py defaults to WARNING unless --verbose is set)
+	root_logger = logging.getLogger()
+	if root_logger.level > logging.INFO:
+		root_logger.setLevel(logging.INFO)
+	root_logger.addHandler(file_handler)
 	
 	return log_dir, fence_log
 
-def record_fence_event(action, target_node, status, details="", log_dir=None):
+def record_fence_event(action, target_node, status, details=""):
 	"""Record fencing event to log"""
-	del log_dir  # Not used, kept for API compatibility
 	logging.info(f"Fence event: action={action}, target={target_node}, status={status}, details={details}")
 
 # Recorder mode functions
@@ -199,11 +203,10 @@ def sync_set_power_status_recorder(conn, options):
 	
 	action = options["--action"]
 	target_node = options["--plug"]
-	request_dir = options.get("--request-dir", DEFAULT_REQUEST_DIR)
-	response_dir = options.get("--response-dir", DEFAULT_RESPONSE_DIR)
-	timeout = int(options.get("--recorder-timeout", DEFAULT_RECORDER_TIMEOUT))
-	poll_interval = float(options.get("--recorder-poll-interval", DEFAULT_RECORDER_POLL_INTERVAL))
-	log_dir = options.get("--log-dir", DEFAULT_LOG_DIR)
+	request_dir = options["--request-dir"]
+	response_dir = options["--response-dir"]
+	timeout = int(options["--recorder-timeout"])
+	poll_interval = float(options["--recorder-poll-interval"])
 	
 	# Only handle off/reboot actions (not on/status/monitor)
 	if action not in ["off", "reboot"]:
@@ -214,8 +217,7 @@ def sync_set_power_status_recorder(conn, options):
 		action,
 		target_node,
 		"requested",
-		f"Fence action {action} requested",
-		log_dir
+		f"Fence action {action} requested"
 	)
 	
 	# Write request
@@ -225,8 +227,7 @@ def sync_set_power_status_recorder(conn, options):
 			action,
 			target_node,
 			"failed",
-			"Failed to create fence request file",
-			log_dir
+			"Failed to create fence request file"
 		)
 		return False
 	
@@ -241,8 +242,7 @@ def sync_set_power_status_recorder(conn, options):
 			action,
 			target_node,
 			"failed",
-			f"Fence action {action} failed: {message}",
-			log_dir
+			f"Fence action {action} failed: {message}"
 		)
 		return False
 	
@@ -251,8 +251,7 @@ def sync_set_power_status_recorder(conn, options):
 		action,
 		target_node,
 		"completed",
-		f"Fence action {action} completed successfully: {message}",
-		log_dir
+		f"Fence action {action} completed successfully: {message}"
 	)
 	
 	return True
@@ -263,7 +262,8 @@ def main():
 
 	atexit.register(atexit_handler)
 
-	# Port is optional for file/fail modes, but used by recorder mode to identify target node
+	# Port is optional - no_port in device_opt handles runtime validation,
+	# but we also need to set required=0 for correct metadata generation
 	all_opt["port"]["required"] = "0"
 
 	all_opt["status_file"] = {
@@ -357,8 +357,7 @@ def main():
 
 	# Setup persistent logging for recorder mode only
 	if options.get("--type") == "recorder":
-		log_dir = options.get("--log-dir", DEFAULT_LOG_DIR)
-		setup_logging(log_dir)
+		setup_recorder_logging(options["--log-dir"])
 
 	run_delay(options)
 
