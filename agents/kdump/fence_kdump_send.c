@@ -72,7 +72,7 @@ out:
 static void
 print_usage (const char *self)
 {
-    fprintf (stdout, "Usage: %s [options] [nodes]\n", basename (self));
+    fprintf (stdout, "Usage: %s [options] [nodes]\n", basename ((char *)self));
     fprintf (stdout, "\n");
     fprintf (stdout, "Options:\n");
     fprintf (stdout, "\n");
