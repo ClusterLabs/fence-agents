@@ -1,5 +1,5 @@
 <?xml version="1.0" ?>
-<resource-agent name="fence_dummy.py" shortdesc="Dummy fence agent" >
+<resource-agent name="fence_dummy" shortdesc="Dummy fence agent" >
 <longdesc>fence_dummy is a fake fence agent for testing. It supports three modes: 'file' (status in file), 'fail' (simulated failures), and 'recorder' (request/response coordination with external systems).</longdesc>
 <vendor-url>http://www.example.com</vendor-url>
 <parameters>
@@ -10,7 +10,7 @@
 	</parameter>
 	<parameter name="log_dir" unique="0" required="0">
 		<getopt mixed="--log-dir=[path]" />
-		<content type="string" default="@LOGDIR@"  />
+		<content type="string" default="/var/log/cluster"  />
 		<shortdesc lang="en">Log directory for fence events</shortdesc>
 	</parameter>
 	<parameter name="plug" unique="0" required="0" obsoletes="port">
@@ -40,12 +40,12 @@
 	</parameter>
 	<parameter name="request_dir" unique="0" required="0">
 		<getopt mixed="--request-dir=[path]" />
-		<content type="string" default="@FENCETMPDIR@/fence_dummy/requests"  />
+		<content type="string" default="/var/run/fence-agents/fence_dummy/requests"  />
 		<shortdesc lang="en">Request directory for recorder mode</shortdesc>
 	</parameter>
 	<parameter name="response_dir" unique="0" required="0">
 		<getopt mixed="--response-dir=[path]" />
-		<content type="string" default="@FENCETMPDIR@/fence_dummy/responses"  />
+		<content type="string" default="/var/run/fence-agents/fence_dummy/responses"  />
 		<shortdesc lang="en">Response directory for recorder mode</shortdesc>
 	</parameter>
 	<parameter name="status_file" unique="0" required="0">
