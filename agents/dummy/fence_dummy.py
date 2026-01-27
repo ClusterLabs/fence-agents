@@ -17,11 +17,11 @@ from fencing import fail, fail_usage, run_delay
 plug_status = "on"
 
 # Defaults for recorder mode
-DEFAULT_REQUEST_DIR = "@FENCETMPDIR@/fence_dummy/requests"
-DEFAULT_RESPONSE_DIR = "@FENCETMPDIR@/fence_dummy/responses"
+DEFAULT_REQUEST_PATH = "@FENCETMPDIR@/fence_dummy/requests"
+DEFAULT_RESPONSE_PATH = "@FENCETMPDIR@/fence_dummy/responses"
 DEFAULT_RECORDER_TIMEOUT = 60
 DEFAULT_RECORDER_POLL_INTERVAL = 0.5
-DEFAULT_LOG_DIR = "@LOGDIR@"
+DEFAULT_LOG_PATH = "@LOGDIR@"
 
 def get_power_status_file(conn, options):
 	del conn
@@ -85,7 +85,7 @@ def get_outlets_fail(conn, options):
 	return result
 
 # Recorder mode logging functions
-def setup_recorder_logging(log_dir):
+def setup_recorder_logging(log_path):
 	"""Initialize logging with the specified log directory (recorder mode only)
 	
 	Adds an additional file handler to log fence events to a separate file.
@@ -95,8 +95,8 @@ def setup_recorder_logging(log_dir):
 	through to handlers. fencing.py sets it to WARNING by default unless
 	--verbose is specified.
 	"""
-	os.makedirs(log_dir, exist_ok=True)
-	fence_log = os.path.join(log_dir, "fence-events.log")
+	os.makedirs(log_path, exist_ok=True)
+	fence_log = os.path.join(log_path, "fence-events.log")
 	
 	# Add file handler for fence events (keeps existing root logger handlers)
 	file_handler = logging.FileHandler(fence_log)
@@ -110,7 +110,7 @@ def setup_recorder_logging(log_dir):
 		root_logger.setLevel(logging.INFO)
 	root_logger.addHandler(file_handler)
 	
-	return log_dir, fence_log
+	return log_path, fence_log
 
 def record_fence_event(action, target_node, status, details=""):
 	"""Record fencing event to log"""
@@ -203,8 +203,8 @@ def sync_set_power_status_recorder(conn, options):
 	
 	action = options["--action"]
 	target_node = options["--plug"]
-	request_dir = options["--request-dir"]
-	response_dir = options["--response-dir"]
+	request_path = options["--request-path"]
+	response_path = options["--response-path"]
 	timeout = int(options["--recorder-timeout"])
 	poll_interval = float(options["--recorder-poll-interval"])
 	
@@ -221,7 +221,7 @@ def sync_set_power_status_recorder(conn, options):
 	)
 	
 	# Write request
-	request_id = write_fence_request_recorder(action, target_node, request_dir)
+	request_id = write_fence_request_recorder(action, target_node, request_path)
 	if not request_id:
 		record_fence_event(
 			action,
@@ -233,7 +233,7 @@ def sync_set_power_status_recorder(conn, options):
 	
 	# Wait for response
 	success, message = wait_for_fence_response_recorder(
-		request_id, target_node, response_dir, timeout, poll_interval
+		request_id, target_node, response_path, timeout, poll_interval
 	)
 	
 	if not success:
@@ -258,7 +258,7 @@ def sync_set_power_status_recorder(conn, options):
 
 def main():
 	device_opt = ["no_password", "status_file", "random_sleep_range", "type", "port", "no_port",
-		      "request_dir", "response_dir", "recorder_timeout", "recorder_poll_interval", "log_dir"]
+		      "request_path", "response_path", "recorder_timeout", "recorder_poll_interval", "log_path"]
 
 	atexit.register(atexit_handler)
 
@@ -295,23 +295,23 @@ def main():
 		"order": 1
 		}
 
-	all_opt["request_dir"] = {
+	all_opt["request_path"] = {
 		"getopt" : ":",
-		"longopt" : "request-dir",
-		"help":"--request-dir=[path]           Directory for fence request files (recorder mode)",
+		"longopt" : "request-path",
+		"help":"--request-path=[path]          Directory for fence request files (recorder mode)",
 		"required" : "0",
-		"shortdesc" : "Request directory for recorder mode",
-		"default" : DEFAULT_REQUEST_DIR,
+		"shortdesc" : "Request directory path for recorder mode",
+		"default" : DEFAULT_REQUEST_PATH,
 		"order": 1
 		}
 
-	all_opt["response_dir"] = {
+	all_opt["response_path"] = {
 		"getopt" : ":",
-		"longopt" : "response-dir",
-		"help":"--response-dir=[path]          Directory for fence response files (recorder mode)",
+		"longopt" : "response-path",
+		"help":"--response-path=[path]         Directory for fence response files (recorder mode)",
 		"required" : "0",
-		"shortdesc" : "Response directory for recorder mode",
-		"default" : DEFAULT_RESPONSE_DIR,
+		"shortdesc" : "Response directory path for recorder mode",
+		"default" : DEFAULT_RESPONSE_PATH,
 		"order": 1
 		}
 
@@ -335,13 +335,13 @@ def main():
 		"order": 1
 		}
 
-	all_opt["log_dir"] = {
+	all_opt["log_path"] = {
 		"getopt" : ":",
-		"longopt" : "log-dir",
-		"help":"--log-dir=[path]               Directory for fence event logs (recorder mode)",
+		"longopt" : "log-path",
+		"help":"--log-path=[path]              Directory for fence event logs (recorder mode)",
 		"required" : "0",
-		"shortdesc" : "Log directory for fence events",
-		"default" : DEFAULT_LOG_DIR,
+		"shortdesc" : "Log directory path for fence events",
+		"default" : DEFAULT_LOG_PATH,
 		"order": 1
 		}
 
@@ -357,7 +357,7 @@ def main():
 
 	# Setup persistent logging for recorder mode only
 	if options.get("--type") == "recorder":
-		setup_recorder_logging(options["--log-dir"])
+		setup_recorder_logging(options["--log-path"])
 
 	run_delay(options)
 

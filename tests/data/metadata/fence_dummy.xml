@@ -8,10 +8,9 @@
 		<content type="string" default="reboot"  />
 		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
-	<parameter name="log_dir" unique="0" required="0">
-		<getopt mixed="--log-dir=[path]" />
-		<content type="string" default="/var/log/cluster"  />
-		<shortdesc lang="en">Log directory for fence events</shortdesc>
+	<parameter name="log_path" unique="0" required="0">
+		<getopt mixed="--log-path=[path]" />
+		<shortdesc lang="en">Log directory path for fence events</shortdesc>
 	</parameter>
 	<parameter name="plug" unique="0" required="0" obsoletes="port">
 		<getopt mixed="-n, --plug=[id]" />
@@ -38,15 +37,13 @@
 		<content type="string" default="60"  />
 		<shortdesc lang="en">Response timeout for recorder mode</shortdesc>
 	</parameter>
-	<parameter name="request_dir" unique="0" required="0">
-		<getopt mixed="--request-dir=[path]" />
-		<content type="string" default="/var/run/fence-agents/fence_dummy/requests"  />
-		<shortdesc lang="en">Request directory for recorder mode</shortdesc>
+	<parameter name="request_path" unique="0" required="0">
+		<getopt mixed="--request-path=[path]" />
+		<shortdesc lang="en">Request directory path for recorder mode</shortdesc>
 	</parameter>
-	<parameter name="response_dir" unique="0" required="0">
-		<getopt mixed="--response-dir=[path]" />
-		<content type="string" default="/var/run/fence-agents/fence_dummy/responses"  />
-		<shortdesc lang="en">Response directory for recorder mode</shortdesc>
+	<parameter name="response_path" unique="0" required="0">
+		<getopt mixed="--response-path=[path]" />
+		<shortdesc lang="en">Response directory path for recorder mode</shortdesc>
 	</parameter>
 	<parameter name="status_file" unique="0" required="0">
 		<getopt mixed="--status-file=[file]" />

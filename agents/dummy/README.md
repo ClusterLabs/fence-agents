@@ -167,9 +167,9 @@ sudo mkdir -p /var/log/cluster
 pcs stonith create test-fence fence_dummy \
     type=recorder \
     plug=compute-node-1 \
-    request_dir=/var/run/fence_dummy/requests \
-    response_dir=/var/run/fence_dummy/responses \
-    log_dir=/var/log/cluster \
+    request_path=/var/run/fence_dummy/requests \
+    response_path=/var/run/fence_dummy/responses \
+    log_path=/var/log/cluster \
     recorder_timeout=30
 ```
 
@@ -179,17 +179,17 @@ pcs stonith create test-fence fence_dummy \
 | ------ | ------- | ----------- |
 | `--type` | `file` | Set to `recorder` for request/response mode |
 | `--plug` | (required) | Target node to fence |
-| `--request-dir` | `/var/run/fence_dummy/requests` | Directory for fence requests |
-| `--response-dir` | `/var/run/fence_dummy/responses` | Directory for fence responses |
+| `--request-path` | `/var/run/fence_dummy/requests` | Directory for fence requests |
+| `--response-path` | `/var/run/fence_dummy/responses` | Directory for fence responses |
 | `--recorder-timeout` | `60` | Seconds to wait for response |
 | `--recorder-poll-interval` | `0.5` | Seconds between response checks |
-| `--log-dir` | `/var/log/cluster` | Directory for fence event logs |
+| `--log-path` | `/var/log/cluster` | Directory for fence event logs |
 
 ### Logging (Recorder Mode)
 
 Recorder mode enables structured logging to track fence operations:
 
-- **Log file**: `<log-dir>/fence-events.log` (also to stderr)
+- **Log file**: `<log-path>/fence-events.log` (also to stderr)
 - **Format**: `[YYYY-MM-DD HH:MM:SS] [LEVEL] message`
 - **Events logged**:
   - Fence action requested
@@ -213,7 +213,7 @@ Example log entries:
 
 ### Request File Format
 
-**File**: `<request-dir>/<node-name>-<uuid>.json`
+**File**: `<request-path>/<node-name>-<uuid>.json`
 
 ```json
 {
@@ -227,7 +227,7 @@ Example log entries:
 
 ### Response File Format
 
-**File**: `<response-dir>/<node-name>-<uuid>.json`
+**File**: `<response-path>/<node-name>-<uuid>.json`
 
 ```json
 {
@@ -299,8 +299,8 @@ fence_dummy --plug node1 --action off --random_sleep_range=30
 # Combine with recorder mode
 fence_dummy --type=recorder --plug node1 --action off \
     --random_sleep_range=10 \
-    --request-dir=/var/run/fence_dummy/requests \
-    --response-dir=/var/run/fence_dummy/responses
+    --request-path=/var/run/fence_dummy/requests \
+    --response-path=/var/run/fence_dummy/responses
 ```
 
 ### Standard Fence Actions
