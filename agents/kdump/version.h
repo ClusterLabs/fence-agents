@@ -24,10 +24,12 @@
 
 #define FENCE_KDUMP_VERSION "0.1"
 
+#include <libgen.h>
+
 static inline void
 print_version (const char *self)
 {
-    fprintf (stdout, "%s %s\n", basename (self), FENCE_KDUMP_VERSION);
+    fprintf (stdout, "%s %s\n", basename ((char *)self), FENCE_KDUMP_VERSION);
 }
 
 #endif /* _FENCE_KDUMP_VERSION_H */

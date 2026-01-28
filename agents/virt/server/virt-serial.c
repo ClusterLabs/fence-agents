@@ -12,7 +12,7 @@
 #include <fcntl.h>
 
 #include <sys/types.h>
-#include <sys/poll.h>
+#include <poll.h>
 #include <libvirt/libvirt.h>
 
 #include <libxml/xmlreader.h>

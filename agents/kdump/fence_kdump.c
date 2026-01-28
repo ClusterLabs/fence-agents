@@ -229,7 +229,7 @@ static int
 do_action_metadata (const char *self)
 {
     fprintf (stdout, "<?xml version=\"1.0\" ?>\n");
-    fprintf (stdout, "<resource-agent name=\"%s\"", basename (self));
+    fprintf (stdout, "<resource-agent name=\"%s\"", basename ((char *)self));
     fprintf (stdout, " shortdesc=\"fencing agent for use with kdump crash recovery service\">\n");
     fprintf (stdout, "<longdesc>");
     fprintf (stdout, "fence_kdump is an I/O fencing agent to be used with the kdump\n"
@@ -335,7 +335,7 @@ do_action_metadata (const char *self)
 static void
 print_usage (const char *self)
 {
-    fprintf (stdout, "Usage: %s [options]\n", basename (self));
+    fprintf (stdout, "Usage: %s [options]\n", basename ((char *)self));
     fprintf (stdout, "\n");
     fprintf (stdout, "Options:\n");
     fprintf (stdout, "\n");

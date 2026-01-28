@@ -23,7 +23,7 @@
 #include <fcntl.h>
 #include <dirent.h>
 #include <sys/mman.h>
-#include <sys/errno.h>
+#include <errno.h>
 #include <libgen.h>
 #include <signal.h>
 #include <syslog.h>
