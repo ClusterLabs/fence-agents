@@ -16,8 +16,8 @@ state = {
 	 "stopping": "unknown",
 	 "restarting": "unknown",
 	 "pending": "unknown",
-     "deleting": "unknown",
-     "failed": "unknown",
+	 "deleting": "unknown",
+	 "failed": "unknown",
 }
 
 def get_list(conn, options):
