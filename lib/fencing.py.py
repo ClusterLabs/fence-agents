@@ -1274,7 +1274,7 @@ def fence_logout(conn, logout_string, sleep=0):
 
 def source_env(env_file):
     # POSIX: name shall not contain '=', value doesn't contain '\0'
-    output = subprocess.check_output("source {} && env -0".format(env_file), shell=True,
+    output = subprocess.check_output(". {} && env -0".format(env_file), shell=True,
                           executable="/bin/sh")
     # replace env
     os.environ.clear()
