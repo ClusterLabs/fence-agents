@@ -299,9 +299,7 @@ def main():
     all_opt["port"]["shortdesc"] = "UUID of the node to be fenced."
     all_opt["power_timeout"]["default"] = "60"
 
-    input_options = process_input(device_opt)
-    auth_plugin_provided = "--auth-plugin" in input_options
-    options = check_input(device_opt, input_options)
+    options = check_input(device_opt, process_input(device_opt))
 
     # workaround to avoid regressions
     if "--uuid" in options:
@@ -329,7 +327,7 @@ This agent calls the python-novaclient and it is mandatory to be installed "
     auth_options = None
     if options.get("--cloud"):
         cloud = get_cloud(options)
-        if not auth_plugin_provided:
+        if options["--auth-plugin"] == "password":
             options["--auth-plugin"] = cloud.get("auth_type") or options["--auth-plugin"]
         if options["--auth-plugin"] != "password":
             auth_options = cloud.get("auth")
