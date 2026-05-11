@@ -113,7 +113,8 @@ def set_power_status(conn, options):
 
 
 def nova_login(username, password, projectname, auth_url, user_domain_name,
-               project_domain_name, ssl_insecure, cacert, apitimeout):
+               project_domain_name, ssl_insecure, cacert, apitimeout,
+               auth_plugin="password", auth_options=None):
     legacy_import = False
 
     try:
@@ -131,16 +132,20 @@ def nova_login(username, password, projectname, auth_url, user_domain_name,
             fail_usage("Failed: Keystone client not found or not accessible")
 
     if not legacy_import:
-        loader = loading.get_plugin_loader("password")
-        auth = loader.load_from_options(
-            auth_url=auth_url,
-            username=username,
-            password=password,
-            project_name=projectname,
-            user_domain_name=user_domain_name,
-            project_domain_name=project_domain_name,
-        )
+        loader = loading.get_plugin_loader(auth_plugin)
+        if auth_options is None:
+            auth_options = dict(
+                auth_url=auth_url,
+                username=username,
+                password=password,
+                project_name=projectname,
+                user_domain_name=user_domain_name,
+                project_domain_name=project_domain_name,
+            )
+        auth = loader.load_from_options(**auth_options)
     else:
+        if auth_plugin != "password":
+            fail_usage("Failed: Keystone auth plugins require keystoneauth1")
         auth = v3.Password(
             auth_url=auth_url,
             username=username,
@@ -251,6 +256,15 @@ def define_new_opts():
         "default": 60,
         "order": 10,
     }
+    all_opt["auth-plugin"] = {
+        "getopt": ":",
+        "longopt": "auth-plugin",
+        "help": "--auth-plugin=[plugin]         Keystone auth plugin",
+        "required": "0",
+        "shortdesc": "Keystone auth plugin",
+        "default": "password",
+        "order": 11,
+    }
 
 
 def main():
@@ -265,6 +279,7 @@ def main():
         "project-name",
         "user-domain-name",
         "project-domain-name",
+        "auth-plugin",
         "cloud",
         "openrc",
         "port",
@@ -309,8 +324,13 @@ This agent calls the python-novaclient and it is mandatory to be installed "
 
     run_delay(options)
 
+    auth_options = None
     if options.get("--cloud"):
         cloud = get_cloud(options)
+        if options["--auth-plugin"] == "password":
+            options["--auth-plugin"] = cloud.get("auth_type") or options["--auth-plugin"]
+        if options["--auth-plugin"] != "password":
+            auth_options = cloud.get("auth")
         username = cloud.get("auth").get("username")
         password = cloud.get("auth").get("password")
         projectname = cloud.get("auth").get("project_name")
@@ -368,6 +388,8 @@ This agent calls the python-novaclient and it is mandatory to be installed "
             ssl_insecure,
             cacert,
             apitimeout,
+            options["--auth-plugin"],
+            auth_options,
         )
     except Exception as e:
         fail_usage("Failed: Unable to connect to Nova: " + str(e))
