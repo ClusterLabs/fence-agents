@@ -198,6 +198,7 @@ def send_command(conn, options, command, method="GET", action=None, expected_rc=
 	# auth if token has expired
 	if rc in [400, 401, 415]:
 		tokenconn = pycurl.Curl()
+		tokenconn.setopt(pycurl.PROXY, "{}".format(opt["--proxy"]))
 		token = get_bearer_token(tokenconn, options)
 		tokenconn.close()
 		conn = set_bearer_token(conn, token)
