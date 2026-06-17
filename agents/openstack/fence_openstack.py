@@ -52,15 +52,24 @@ def get_cloud(options):
 
 
 def get_nodes_list(conn, options):
-    logging.info("Running %s action", options["--action"])
+    logging.info("Running %s action", options.get("--original-action", options.get("--action")))
     result = {}
-    response = conn.servers.list(detailed=True)
-    if response is not None:
-        for item in response:
-            instance_id = item.id
-            instance_name = item.name
-            instance_status = item.status
-            result[instance_id] = (instance_name, translate_status(instance_status))
+    search_opts = {}
+    max_results = 1 if options.get("--original-action") == "monitor" else None
+
+    if "--plug" in options:
+        search_opts["uuid"] = options["--plug"]
+
+    try:
+        response = conn.servers.list(detailed=True, search_opts=search_opts, limit=max_results)
+        if response is not None:
+            for item in response:
+                instance_id = item.id
+                instance_name = item.name
+                instance_status = item.status
+                result[instance_id] = (instance_name, translate_status(instance_status))
+    except Exception as e:
+        logging.error("Failed to retrieve node list: %s", e)
     return result
 
 
