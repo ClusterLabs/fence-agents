@@ -20,7 +20,7 @@ from fencing import fail, fail_usage, EC_STATUS_HMC
 ##
 ## Transformation to standard ON/OFF status if possible
 def _normalize_status(status):
-	if status in ["Running", "Open Firmware", "Shutting Down", "Starting"]:
+	if status in ["Running", "Open Firmware", "Shutting Down", "Starting", "Error"]:
 		status = "on"
 	else:
 		status = "off"
