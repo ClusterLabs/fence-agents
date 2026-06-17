@@ -65,8 +65,11 @@ def get_power_status(conn, options):
         fail(EC_STATUS)
 
 def translate_status(instance_status):
+    logging.debug(f"translate_status(): {instance_status}")
     if instance_status == "Running":
         return "on"
+    elif instance_status in ["Succeeded", "Failed"]:
+        return "off"
     return "unknown"
 
 def set_power_status(conn, options):
