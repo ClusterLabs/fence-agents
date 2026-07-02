@@ -112,19 +112,15 @@ def set_power_status(conn, options):
         except Conflict as e:
             fail_usage(e)
         logging.info("Called stop API call for " + server.id)
-    if action == "reboot":
-        logging.info("Rebooting instance " + server.name)
-        try:
-            server.reboot("HARD")
-        except Conflict as e:
-            fail_usage(e)
-        logging.info("Called reboot hard API call for " + server.id)
 
 
 def reboot_cycle(conn, options):
     server = conn.servers.get(options["--plug"])
     logging.info("Hard rebooting instance " + server.name)
-    server.reboot("HARD")
+    try:
+        server.reboot("HARD")
+    except Conflict as e:
+        fail_usage(e)
     logging.info("Called reboot HARD API call for " + server.id)
     return True
 
