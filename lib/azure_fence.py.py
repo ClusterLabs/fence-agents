@@ -339,9 +339,9 @@ def get_cloud_from_arm_metadata_endpoint(arm_endpoint):
                 "authority_hosts":  metadata['authentication'].get('loginEndpoint').replace("https://","")
             }
         else:
-            fail_usage("Failed to get cloud from metadata endpoint: %s - %s" % arm_endpoint, e)
+            fail_usage("Failed to get cloud from metadata endpoint: %s - %s" % (arm_endpoint, e))
     except Exception as e:
-        fail_usage("Failed to get cloud from metadata endpoint: %s - %s" % arm_endpoint, e)
+        fail_usage("Failed to get cloud from metadata endpoint: %s - %s" % (arm_endpoint, e))
 
 def get_azure_arm_endpoints(cloudName, authority):
     cloudEnvironment = {
