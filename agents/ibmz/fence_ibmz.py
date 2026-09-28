@@ -69,7 +69,7 @@ class APIClient(object):
         # server)
         'read_retries': 3,
         # http methods that should be retried
-        'method_whitelist': ['HEAD', 'GET', 'OPTIONS'],
+        'allowed_methods': ['HEAD', 'GET', 'OPTIONS'],
         # limit of redirects to perform to avoid loops
         'redirect': 5,
         # how long to wait while establishing a connection
@@ -126,7 +126,7 @@ class APIClient(object):
                       self._config['read_retries']),
             connect=self._config['connect_retries'],
             read=self._config['read_retries'],
-            method_whitelist=self._config['method_whitelist'],
+            allowed_methods=self._config['allowed_methods'],
             redirect=self._config['redirect']
         )
         session.mount('http://', requests.adapters.HTTPAdapter(
