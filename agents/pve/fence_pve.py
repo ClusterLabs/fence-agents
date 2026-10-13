@@ -182,15 +182,6 @@ def main():
 			"(Must be specified if not using --pve-node-auto)",
 		"order": 2
 	}
-	all_opt["node_name"] = {
-		"getopt" : ":",
-		"longopt" : "nodename",
-		"help" : "--nodename                     "
-			"Replaced by --pve-node",
-		"required" : "0",
-		"shortdesc" : "Replaced by --pve-node",
-		"order": 3
-	}
 	all_opt["vmtype"] = {
 		"getopt" : ":",
 		"longopt" : "vmtype",
@@ -202,11 +193,20 @@ def main():
 			"(Default: qemu)",
 		"order": 2
 	}
+	all_opt["node_name"] = {
+		"getopt" : ":",
+		"longopt" : "nodename",
+		"help" : "--nodename                     "
+			"Replaced by --pve-node",
+		"required" : "0",
+		"shortdesc" : "Replaced by --pve-node",
+		"order": 3
+	}
 
 	# no_password: passwd required=0 is not enough. The library still
 	# demands a password unless this flag is set, which would reject a
 	# token-only configuration before the check below can accept it.
-	device_opt = ["ipaddr", "login", "passwd", "no_password", "ssl", "web", "port", "api_token", "pve_node", "pve_node_auto", "node_name", "vmtype", "method"]
+	device_opt = ["ipaddr", "login", "passwd", "no_password", "ssl", "web", "port", "api_token", "pve_node", "pve_node_auto", "vmtype", "node_name", "method"]
 
 	all_opt["login"]["required"] = "0"
 	all_opt["login"]["default"] = "root@pam"
