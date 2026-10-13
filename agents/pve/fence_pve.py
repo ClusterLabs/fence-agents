@@ -150,6 +150,17 @@ def send_cmd(options, cmd, post=None):
 def main():
 	atexit.register(atexit_handler)
 
+	all_opt["api_token"] = {
+		"getopt" : ":",
+		"longopt" : "api-token",
+		"help" : "--api-token=[token]            "
+			"Proxmox VE API token for authentication",
+		"required" : "0",
+		"shortdesc" : "Proxmox VE API token in the form "
+			"'user@realm!tokenid=uuid'. Takes precedence over "
+			"username and password authentication.",
+		"order": 1
+	}
 	all_opt["pve_node_auto"] = {
 		"getopt" : "A",
 		"longopt" : "pve-node-auto",
@@ -192,19 +203,10 @@ def main():
 		"order": 2
 	}
 
-	all_opt["api_token"] = {
-		"getopt" : ":",
-		"longopt" : "api-token",
-		"help" : "--api-token=[token]            "
-			"Proxmox VE API token for authentication",
-		"required" : "0",
-		"shortdesc" : "Proxmox VE API token in the form "
-			"'user@realm!tokenid=uuid'. Takes precedence over "
-			"username and password authentication.",
-		"order": 1
-	}
-
-	device_opt = ["ipaddr", "login", "passwd", "ssl", "web", "port", "pve_node", "pve_node_auto", "node_name", "vmtype", "method", "api_token"]
+	# no_password: passwd required=0 is not enough. The library still
+	# demands a password unless this flag is set, which would reject a
+	# token-only configuration before the check below can accept it.
+	device_opt = ["ipaddr", "login", "passwd", "no_password", "ssl", "web", "port", "api_token", "pve_node", "pve_node_auto", "node_name", "vmtype", "method"]
 
 	all_opt["login"]["required"] = "0"
 	all_opt["login"]["default"] = "root@pam"
