@@ -79,6 +79,12 @@ def get_outlet_list(conn, options):
 
 
 def get_ticket(options):
+	# An API token authenticates every request through a header and
+	# needs no ticket round trip; a username and password use the
+	# classic ticket with its CSRF token.
+	if "--api-token" in options and options["--api-token"]:
+		return {"token" : "PVEAPIToken=" + options["--api-token"]}
+
 	post = {'username': options["--username"], 'password': options["--password"]}
 	result = send_cmd(options, "access/ticket", post=post)
 	if type(result) is dict and "data" in result:
@@ -102,8 +108,12 @@ def send_cmd(options, cmd, post=None):
 	conn.setopt(pycurl.HTTPGET, 1)
 	conn.setopt(pycurl.URL, url.encode("ascii"))
 	if "auth" in options and options["auth"] is not None:
-		conn.setopt(pycurl.COOKIE, options["auth"]["ticket"])
-		conn.setopt(pycurl.HTTPHEADER, [options["auth"]["CSRF_token"]])
+		if "token" in options["auth"]:
+			conn.setopt(pycurl.HTTPHEADER,
+				["Authorization: " + options["auth"]["token"]])
+		else:
+			conn.setopt(pycurl.COOKIE, options["auth"]["ticket"])
+			conn.setopt(pycurl.HTTPHEADER, [options["auth"]["CSRF_token"]])
 	if post is not None:
 		if "skiplock" in post:
 			conn.setopt(conn.CUSTOMREQUEST, 'POST')
@@ -182,10 +192,23 @@ def main():
 		"order": 2
 	}
 
-	device_opt = ["ipaddr", "login", "passwd", "ssl", "web", "port", "pve_node", "pve_node_auto", "node_name", "vmtype", "method"]
+	all_opt["api_token"] = {
+		"getopt" : ":",
+		"longopt" : "api-token",
+		"help" : "--api-token=[token]            "
+			"Proxmox VE API token for authentication",
+		"required" : "0",
+		"shortdesc" : "Proxmox VE API token in the form "
+			"'user@realm!tokenid=uuid'. Takes precedence over "
+			"username and password authentication.",
+		"order": 1
+	}
+
+	device_opt = ["ipaddr", "login", "passwd", "ssl", "web", "port", "pve_node", "pve_node_auto", "node_name", "vmtype", "method", "api_token"]
 
 	all_opt["login"]["required"] = "0"
 	all_opt["login"]["default"] = "root@pam"
+	all_opt["passwd"]["required"] = "0"
 	all_opt["ipport"]["default"] = "8006"
 	all_opt["ssl"]["default"] = "1"
 	all_opt["port"]["shortdesc"] = "Id of the virtual machine."
@@ -202,6 +225,13 @@ acting as nodes in a virtualized cluster."
 	show_docs(options, docs)
 
 	run_delay(options)
+
+	if "--api-token" in options and options["--api-token"]:
+		pass
+	elif "--password" in options and options["--password"]:
+		pass
+	else:
+		fail_usage("Either an API token or a password is required")
 
 	if "--pve-node-auto" in options:
 		# Force pve-node to None to allow autodiscovery

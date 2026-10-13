@@ -8,6 +8,11 @@
 		<content type="string" default="reboot"  />
 		<shortdesc lang="en">Fencing action</shortdesc>
 	</parameter>
+	<parameter name="api_token" unique="0" required="0">
+		<getopt mixed="--api-token=[token]" />
+		<content type="string"  />
+		<shortdesc lang="en">Proxmox VE API token in the form 'user@realm!tokenid=uuid'. Takes precedence over username and password authentication.</shortdesc>
+	</parameter>
 	<parameter name="ip" unique="0" required="1" obsoletes="ipaddr">
 		<getopt mixed="-a, --ip=[ip]" />
 		<content type="string"  />
