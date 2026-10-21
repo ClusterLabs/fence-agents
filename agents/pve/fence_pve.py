@@ -78,6 +78,23 @@ def get_outlet_list(conn, options):
 	return outlets
 
 
+def resolve_plug(options, outlets):
+	# The Proxmox API addresses guests by their numeric vmid, but a
+	# cluster may hand the agent the guest NAME as the plug (for
+	# example when pcmk_host_map cannot be applied). Accept both by
+	# resolving a non-numeric plug to its vmid through the outlet list.
+	plug = options.get("--plug")
+	if plug is None or plug.isdigit() or outlets is None:
+		return plug
+	for vmid in outlets:
+		if outlets[vmid][0] == plug:
+			logging.info("plug %s resolved to vmid %s" % (plug, vmid))
+			return str(vmid)
+	fail_usage("Unable to resolve plug '%s' to a %s guest; known guests: %s" %
+		(plug, options["--vmtype"],
+		", ".join("%s(%s)" % (v, outlets[v][0]) for v in outlets)))
+
+
 def get_ticket(options):
 	post = {'username': options["--username"], 'password': options["--password"]}
 	result = send_cmd(options, "access/ticket", post=post)
@@ -188,7 +205,7 @@ def main():
 	all_opt["login"]["default"] = "root@pam"
 	all_opt["ipport"]["default"] = "8006"
 	all_opt["ssl"]["default"] = "1"
-	all_opt["port"]["shortdesc"] = "Id of the virtual machine."
+	all_opt["port"]["shortdesc"] = "Id or name of the virtual machine."
 	all_opt["ipaddr"]["shortdesc"] = "IP Address or Hostname of a node " +\
 		"within the Proxmox cluster."
 
@@ -196,7 +213,8 @@ def main():
 	docs = {}
 	docs["shortdesc"] = "Fencing agent for the Proxmox Virtual Environment"
 	docs["longdesc"] = "fence_pve is a Power Fencing agent for virtual machines \
-acting as nodes in a virtualized cluster."
+acting as nodes in a virtualized cluster. Guests may be \
+addressed by their numeric vmid or by their name."
 	docs["vendorurl"] = "http://www.proxmox.com/"
 
 	show_docs(options, docs)
@@ -231,6 +249,10 @@ acting as nodes in a virtualized cluster."
 	if outlets is None:
 		result = fence_action(None, options, set_power_status, get_power_status, None, reboot_cycle)
 		sys.exit(result)
+
+	resolved = resolve_plug(options, outlets)
+	if resolved is not None:
+		options["--plug"] = resolved
 
 	result = fence_action(None, options, set_power_status, get_power_status, get_outlet_list, reboot_cycle)
 

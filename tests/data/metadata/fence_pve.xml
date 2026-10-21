@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <resource-agent name="fence_pve" shortdesc="Fencing agent for the Proxmox Virtual Environment" >
-<longdesc>fence_pve is a Power Fencing agent for virtual machines acting as nodes in a virtualized cluster.</longdesc>
+<longdesc>fence_pve is a Power Fencing agent for virtual machines acting as nodes in a virtualized cluster. Guests may be addressed by their numeric vmid or by their name.</longdesc>
 <vendor-url>http://www.proxmox.com/</vendor-url>
 <parameters>
 	<parameter name="action" unique="0" required="1">
@@ -59,12 +59,12 @@
 	<parameter name="plug" unique="0" required="1" obsoletes="port">
 		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />
-		<shortdesc lang="en">Id of the virtual machine.</shortdesc>
+		<shortdesc lang="en">Id or name of the virtual machine.</shortdesc>
 	</parameter>
 	<parameter name="port" unique="0" required="1" deprecated="1">
 		<getopt mixed="-n, --plug=[id]" />
 		<content type="string"  />
-		<shortdesc lang="en">Id of the virtual machine.</shortdesc>
+		<shortdesc lang="en">Id or name of the virtual machine.</shortdesc>
 	</parameter>
 	<parameter name="ssl" unique="0" required="0">
 		<getopt mixed="-z, --ssl" />
