@@ -84,6 +84,36 @@ def set_power_status(conn, options):
         logging.error("Failed to set power status, with Exception: %s", e)
         fail(EC_STATUS)
 
+def reboot_cycle(conn, options):
+    import uuid, time
+    logging.debug("Starting power cycle operation")
+    try:
+        apiversion= options.get("--apiversion")
+        namespace = _get_namespace(options)
+        name = options.get("--plug")
+        vmi_api = conn.resources.get(api_version=apiversion,
+                                              kind='VirtualMachineInstance')
+        vmi = vmi_api.get(name=name, namespace=namespace)
+        old_uuid = uuid.UUID(vmi.metadata.uid)
+        virtctl_vm_action(conn, "restart", namespace, name, apiversion)
+        for i in range(1, 30):
+            try:
+                vmi = vmi_api.get(name=name, namespace=namespace)
+                current_uuid = uuid.UUID(vmi.metadata.uid)
+                if old_uuid != current_uuid:
+                    logging.debug(f"New UUID: {current_uuid}")
+                    return True
+                logging.debug(f"Waiting for New UUID try {i} of 30: Old UUID: {old_uuid}, Current UUID: {current_uuid}")
+                time.sleep(1)
+            except ApiException as e:
+                logging.error(f"Unable to get Current UUID: {e.status} ({type(e).__name__}). Retrying.")
+                time.sleep(1)
+                continue
+    except Exception as e:
+        logging.error("Failed to set power status, with Exception: %s", e)
+        fail(EC_STATUS)
+    return False
+
 def define_new_opts():
     all_opt["namespace"] = {
         "getopt" : ":",
@@ -114,13 +144,19 @@ def define_new_opts():
 def virtctl_vm_action(conn, action, namespace, name, apiversion):
     path = '/apis/subresources.{api_version}/namespaces/{namespace}/virtualmachines/{name}/{action}'
     path = path.format(api_version=apiversion, namespace=namespace, name=name, action=action)
-    return conn.request('put', path, header_params={'accept': '*/*'}, body={'gracePeriod': 0} if action == 'stop' else None)
+    if action == 'stop':
+        body_content={'gracePeriod': 0}
+    elif action == 'restart':
+        body_content={'gracePeriodSeconds': 0}
+    else:
+        body_content=None
+    return conn.request('put', path, header_params={'accept': '*/*'}, body=body_content)
 
 # Main agent method
 def main():
     conn = None
 
-    device_opt = ["port", "namespace", "kubeconfig", "ssl_insecure", "no_password", "apiversion"]
+    device_opt = ["port", "namespace", "kubeconfig", "ssl_insecure", "no_password", "apiversion", "method"]
 
     atexit.register(atexit_handler)
     define_new_opts()
@@ -153,7 +189,7 @@ def main():
                       "openshift.dynamic.DynamicClient - not found or not accessible")
 
     # Operate the fencing device
-    result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list)
+    result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list, reboot_cycle_fn=reboot_cycle)
     sys.exit(result)
 
 if __name__ == "__main__":
