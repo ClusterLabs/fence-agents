@@ -480,6 +480,14 @@ def check_eni_ebs_target_is_dead(conn, options):
 
 	return False
 
+def reboot_diag(conn, options):
+	try:
+		conn.meta.client.send_diagnostic_interrupt(InstanceId=options["--plug"])
+		logger.info("Called SendDiagnosticInterrupt API call for %s", options["--plug"])
+		return True
+	except Exception as e:
+		logger.error("Failed to send diagnostic interrupt to %s: %s", options["--plug"], e)
+		return False
 
 def get_power_status(conn, options):
 	logger.debug("Starting status operation")
@@ -677,7 +685,7 @@ def define_new_opts():
 def main():
 	conn = None
 
-	device_opt = ["port", "no_password", "region", "access_key", "secret_key", "filter", "boto3_debug", "skip_race_check", "skip_os_shutdown", "tag", "identity_method"]
+	device_opt = ["port", "no_password", "region", "access_key", "secret_key", "filter", "boto3_debug", "skip_race_check", "skip_os_shutdown", "tag", "identity_method", "diag"]
 
 	atexit.register(atexit_handler)
 
@@ -768,7 +776,13 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 		except Exception as e:
 			logger.debug("Could not cache own build_number: %s", e)
 
-	result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list)
+	reboot_fn = None
+	if options["--action"] == "diag":
+		options["--action"] = "reboot"
+		options["--method"] = "cycle"
+		reboot_fn = reboot_diag
+
+	result = fence_action(conn, options, set_power_status, get_power_status, get_nodes_list, reboot_fn)
 	sys.exit(result)
 
 if __name__ == "__main__":
