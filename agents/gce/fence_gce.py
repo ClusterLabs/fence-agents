@@ -33,7 +33,6 @@ from fencing import fail_usage, run_delay, all_opt, atexit_handler, check_input,
 try:
   import httplib2
   import googleapiclient.discovery
-  import socks
   try:
     from google.oauth2.credentials import Credentials as GoogleCredentials
   except ImportError:
@@ -51,6 +50,8 @@ USER_AGENT = 'sap-core-eng/fencegce/%s/%s/ACTION/%s'
 METADATA_SERVER = 'http://metadata.google.internal/computeMetadata/v1/'
 METADATA_HEADERS = {'Metadata-Flavor': 'Google'}
 INSTANCE_LINK = 'https://www.googleapis.com/compute/v1/projects/{}/zones/{}/instances/{}'
+DEFAULT_UNIVERSE_DOMAIN = 'googleapis.com'
+UNIVERSE_DOMAIN_ENV = 'GOOGLE_CLOUD_UNIVERSE_DOMAIN'
 
 def run_on_fail(options):
 	if "--runonfail" in options:
@@ -65,10 +66,40 @@ def raise_fence_agent(options, message):
 	raise Exception(message)
 
 #
+# The universe domain is googleapis.com unless running in another Google Cloud
+# universe, e.g. Trusted Partner Cloud. Uses the GOOGLE_CLOUD_UNIVERSE_DOMAIN
+# environment variable, then the metadata server (except on bare metal).
+#
+def get_universe_domain(options):
+	universe_domain = os.environ.get(UNIVERSE_DOMAIN_ENV, "").strip().rstrip(".").lower()
+	if not universe_domain and "--baremetalsolution" not in options:
+		try:
+			universe_domain = get_metadata('universe/universe-domain', timeout=2).strip().rstrip(".").lower()
+		except Exception as err:
+			logging.debug("Failed retrieving the universe domain: %s" % str(err))
+	return universe_domain or DEFAULT_UNIVERSE_DOMAIN
+
+#
+# Rewrites *.googleapis.com uris to the universe domain, for client libraries
+# that do not support universe domains.
+#
+def universe_api_uri(options, uri):
+	universe_domain = options.get("universe_domain", DEFAULT_UNIVERSE_DOMAIN)
+	if universe_domain == DEFAULT_UNIVERSE_DOMAIN:
+		return uri
+	# Compute Engine resource links use www.googleapis.com/compute
+	uri = re.sub(r"^https://www\.googleapis\.com/compute/",
+		lambda m: "https://compute.%s/compute/" % universe_domain, uri)
+	return re.sub(r"^https://([a-z0-9-]+)\.googleapis\.com/",
+		lambda m: "https://%s.%s/" % (m.group(1), universe_domain), uri)
+
+#
 # Will use baremetalsolution setting or the environment variable
 # FENCE_GCE_URI_REPLACEMENTS to replace the uri for calls to *.googleapis.com.
 #
 def replace_api_uri(options, http_request):
+	if http_request is None:
+		return None
 	uri_replacements = []
 	# put any env var replacements first, then baremetalsolution if in options
 	if "FENCE_GCE_URI_REPLACEMENTS" in os.environ:
@@ -106,6 +137,7 @@ def replace_api_uri(options, http_request):
 		logging.debug("Replacing googleapis uri %s with %s" % (http_request.uri, replaced_uri))
 		http_request.uri = replaced_uri
 		break
+	http_request.uri = universe_api_uri(options, http_request.uri)
 	return http_request
 
 def retry_api_execute(options, http_request):
@@ -213,7 +245,7 @@ def check_for_existing_operation(conn, options, instance, zone, operation_type):
 		return False
 
 	project = options["--project"]
-	target_link = INSTANCE_LINK.format(project, zone, instance)
+	target_link = universe_api_uri(options, INSTANCE_LINK.format(project, zone, instance))
 	query_filter = '(targetLink = "{}") AND (operationType = "{}") AND (status = "RUNNING")'.format(target_link, operation_type)
 	result = retry_api_execute(
 			options,
@@ -535,6 +567,15 @@ def main():
 
 	run_delay(options)
 
+	# Detect the universe domain before creating any Google Cloud clients, and
+	# export it for client libraries that support it and for child processes.
+	options["universe_domain"] = get_universe_domain(options)
+	if options["universe_domain"] != DEFAULT_UNIVERSE_DOMAIN:
+		logging.debug("Using universe domain %s" % options["universe_domain"])
+		os.environ[UNIVERSE_DOMAIN_ENV] = options["universe_domain"]
+	else:
+		os.environ.pop(UNIVERSE_DOMAIN_ENV, None)
+
 	# Prepare logging
 	if options.get('--verbose') is None:
 		logging.getLogger('googleapiclient').setLevel(logging.ERROR)
@@ -542,7 +583,17 @@ def main():
 	if options.get('--stackdriver-logging') is not None and options.get('--plug'):
 		try:
 			import google.cloud.logging.handlers
-			client = google.cloud.logging.Client()
+			for logger_name in ('google.cloud', 'google.auth', 'google_auth_httplib2'):
+				logging.getLogger(logger_name).propagate = False
+			client_kwargs = {}
+			if options["universe_domain"] != DEFAULT_UNIVERSE_DOMAIN:
+				client_kwargs["client_options"] = {
+					"api_endpoint": "https://logging.%s" % options["universe_domain"]
+				}
+			try:
+				client = google.cloud.logging.Client(**client_kwargs)
+			except TypeError:
+				client = google.cloud.logging.Client()
 			handler = google.cloud.logging.handlers.CloudLoggingHandler(client, name=options['--plug'])
 			handler.setLevel(logging.INFO)
 			formatter = logging.Formatter('gcp:stonith "%(message)s"')
@@ -551,9 +602,9 @@ def main():
 			if options.get('--verbose') is None:
 				root_logger.setLevel(logging.INFO)
 			root_logger.addHandler(handler)
-		except ImportError:
-			logging.error('Couldn\'t import google.cloud.logging, '
-				'disabling Stackdriver-logging support')
+		except Exception as err:
+			logging.error('Couldn\'t initialize google.cloud.logging (%s), '
+				'disabling Stackdriver-logging support', str(err))
 
   # if apitimeout is defined we set the socket timeout, if not we keep the
   # socket default which is 60s
@@ -580,17 +631,33 @@ def main():
 				credentials = GoogleCredentials.get_application_default()
 			logging.debug("using application default credentials")
 
+		build_kwargs = {'cache_discovery': False}
 		if options.get("--proxyhost") and options.get("--proxyport"):
+			try:
+				import socks
+			except ImportError:
+				from httplib2 import socks
 			proxy_info = httplib2.ProxyInfo(
 				proxy_type=socks.PROXY_TYPE_HTTP,
 				proxy_host=options.get("--proxyhost"),
 				proxy_port=int(options.get("--proxyport")))
-			http = credentials.authorize(httplib2.Http(proxy_info=proxy_info))
-			conn = googleapiclient.discovery.build(
-				'compute', 'v1', http=http, cache_discovery=False)
+			build_kwargs['http'] = credentials.authorize(httplib2.Http(proxy_info=proxy_info))
 		else:
-			conn = googleapiclient.discovery.build(
-				'compute', 'v1', credentials=credentials, cache_discovery=False)
+			build_kwargs['credentials'] = credentials
+
+		if options["universe_domain"] != DEFAULT_UNIVERSE_DOMAIN:
+			build_kwargs['discoveryServiceUrl'] = (
+				'https://{api}.%s/$discovery/rest?version={apiVersion}'
+				% options["universe_domain"]
+			)
+			try:
+				conn = googleapiclient.discovery.build(
+					'compute', 'v1', static_discovery=True, **build_kwargs)
+			except TypeError:
+				conn = googleapiclient.discovery.build(
+					'compute', 'v1', **build_kwargs)
+		else:
+			conn = googleapiclient.discovery.build('compute', 'v1', **build_kwargs)
 	except SSLError as err:
 		fail_fence_agent(options, "Failed: Create GCE compute v1 connection: {}\n\nThis might be caused by old versions of httplib2.".format(str(err)))
 	except Exception as err:
