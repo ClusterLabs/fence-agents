@@ -172,5 +172,6 @@ For instructions see: https://boto3.readthedocs.io/en/latest/guide/quickstart.ht
 	<action name="metadata" />
 	<action name="manpage" />
 	<action name="validate-all" />
+	<action name="diag" />
 </actions>
 </resource-agent>
