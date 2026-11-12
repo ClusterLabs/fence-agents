@@ -204,6 +204,7 @@ def set_power_status(conn, options):
 			if options["--action"] == "on":
 				fail(EC_WAITING_ON)
 			else:
+				print(ex)
 				fail(EC_WAITING_OFF)
 
 def remove_tmp_dir(tmp_dir):
