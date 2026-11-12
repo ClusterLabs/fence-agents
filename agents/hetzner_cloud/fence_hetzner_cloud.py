@@ -119,7 +119,7 @@ def get_server(conn, options):
                 ] + list(map(lambda e: e["ip"], server["private_net"]))
                 if options["--plug"] in ips:
                     return server
-            fail(EC_STATUS)
+        fail(EC_STATUS)
 
 
 def get_power_status(conn, options):
